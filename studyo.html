@@ -1,0 +1,259 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Wolflano Tasarım Alanı</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;800&family=Inter+Tight:wght@400;500;600&display=swap">
+<style>
+/* Layout: tek ekran stüdyo — üstte başlık, ortada ürün sahnesi, altta ince araç şeridi */
+:root{
+  --bg:#f3f2ef; --stage:#e7e5e0; --fg:#17181a; --muted:#6c6d70; --line:#d6d3cc;
+  --accent:#17181a; --handle-ring:#ffffff; --chip:#ffffff;
+  --display:"Archivo","Helvetica Neue",Arial,sans-serif;
+  --body:"Inter Tight","Helvetica Neue",Arial,sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#121314; --stage:#1b1c1e; --fg:#f1f0ec; --muted:#9a9a9c; --line:#2c2d30;
+  --accent:#f1f0ec; --handle-ring:#121314; --chip:#232427; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#121314; --stage:#1b1c1e; --fg:#f1f0ec; --muted:#9a9a9c; --line:#2c2d30;
+  --accent:#f1f0ec; --handle-ring:#121314; --chip:#232427; color-scheme:dark}
+html,body{height:100%}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);padding-inline:16px;box-sizing:border-box;
+  -webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
+.app{max-width:520px;margin:0 auto;height:100%;display:flex;flex-direction:column;gap:12px;padding-block:14px}
+header{display:flex;align-items:baseline;justify-content:space-between;gap:12px}
+.brand{font-family:var(--display);font-weight:800;letter-spacing:.14em;font-size:15px}
+.hint{font-size:12px;color:var(--muted)}
+.stage{position:relative;flex:1;min-height:360px;background:var(--stage);border-radius:18px;overflow:hidden;
+  touch-action:none;display:grid;place-items:center}
+.shirt{width:min(92%,440px);max-width:100%;height:auto;display:block}
+.shirt path{transition:fill .25s}
+.area{position:absolute;outline:1px dashed color-mix(in srgb,var(--fg) 22%,transparent);outline-offset:0;
+  border-radius:2px;transition:outline-color .2s}
+.area.quiet{outline-color:transparent}
+.clip{position:absolute;overflow:hidden;pointer-events:none}
+.art{position:absolute;transform-origin:50% 50%}
+.art svg{width:100%;height:100%;display:block}
+.obj{position:absolute;transform-origin:50% 50%;touch-action:none;cursor:grab}
+.obj.sel::after{content:"";position:absolute;inset:-1px;border:1px solid color-mix(in srgb,var(--fg) 55%,transparent);pointer-events:none}
+.handle{position:absolute;right:-22px;bottom:-22px;width:44px;height:44px;display:none;place-items:center;touch-action:none;cursor:nwse-resize}
+.obj.sel .handle{display:grid}
+.handle span{width:16px;height:16px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 2px var(--handle-ring),0 2px 6px rgba(0,0,0,.25)}
+.bar{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.swatches{display:flex;gap:8px}
+.sw{width:28px;height:28px;border-radius:50%;border:1px solid var(--line);cursor:pointer;padding:0}
+.sw[aria-pressed="true"]{box-shadow:0 0 0 2px var(--bg),0 0 0 3.5px var(--fg)}
+.tools{display:flex;gap:6px}
+.tools button{font:500 13px/1 var(--body);color:var(--fg);background:var(--chip);border:1px solid var(--line);
+  border-radius:999px;padding:9px 13px;cursor:pointer}
+.tools button:focus-visible,.sw:focus-visible{outline:2px solid var(--fg);outline-offset:2px}
+.tools button.primary{background:var(--fg);color:var(--bg);border-color:var(--fg);font-weight:600}
+.sheet{position:fixed;inset:0;background:rgba(10,10,12,.55);display:grid;place-items:end center;padding:16px;
+  padding-bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:5}
+.panel{background:var(--bg);color:var(--fg);border-radius:18px;padding:18px;width:100%;max-width:440px;
+  display:flex;flex-direction:column;gap:10px;box-sizing:border-box}
+.ptitle{font-family:var(--display);font-weight:700;font-size:17px}
+.pnote{font-size:13px;color:var(--muted);line-height:1.45}
+.out{background-color:#fff;background-image:linear-gradient(45deg,#eee 25%,transparent 25%,transparent 75%,#eee 75%),
+  linear-gradient(45deg,#eee 25%,transparent 25%,transparent 75%,#eee 75%);background-size:16px 16px;
+  background-position:0 0,8px 8px;border:1px solid var(--line);border-radius:8px;display:grid;place-items:center;padding:10px}
+.out canvas{width:auto;max-width:100%;max-height:46vh;display:block}
+.pmeta{font-size:11px;color:var(--muted);letter-spacing:.04em;text-transform:uppercase;font-variant-numeric:tabular-nums}
+.panel button{font:600 14px/1 var(--body);background:var(--fg);color:var(--bg);border:0;border-radius:999px;padding:13px;cursor:pointer}
+.sizes{display:flex;gap:6px}
+.sizes button{display:inline-flex;align-items:center;gap:7px;font:600 13px/1 var(--body);color:var(--fg);
+  background:var(--chip);border:1px solid var(--line);border-radius:10px;padding:9px 12px;cursor:pointer}
+.sizes button[aria-pressed="true"]{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+.sizes svg{width:14px;height:14px;display:block}
+.sizes button:focus-visible{outline:2px solid var(--fg);outline-offset:2px}
+.readout{font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums;letter-spacing:.04em;text-transform:uppercase}
+@media (prefers-reduced-motion:reduce){.shirt path,.area{transition:none}}
+</style>
+
+<div class="app">
+  <header>
+    <div class="brand">WOLFLANO</div>
+    <div class="hint">Sürükle: taşı · Köşeyi çek: boyut ve açı</div>
+  </header>
+
+  <div class="sizes" id="sizes" role="group" aria-label="Baskı alanı">
+    <button type="button" data-s="a4p" aria-pressed="true" aria-label="A4 dikey">A4
+      <svg viewBox="0 0 14 14"><rect x="3.5" y="1.5" width="7" height="11" rx="1" fill="none" stroke="currentColor" stroke-width="1.5"/></svg></button>
+    <button type="button" data-s="a4l" aria-pressed="false" aria-label="A4 yatay">A4
+      <svg viewBox="0 0 14 14"><rect x="1.5" y="3.5" width="11" height="7" rx="1" fill="none" stroke="currentColor" stroke-width="1.5"/></svg></button>
+    <button type="button" data-s="a3p" aria-pressed="false" aria-label="A3 dikey">A3
+      <svg viewBox="0 0 14 14"><rect x="3.5" y="1.5" width="7" height="11" rx="1" fill="none" stroke="currentColor" stroke-width="1.5"/></svg></button>
+  </div>
+
+  <div class="stage" id="stage">
+    <svg class="shirt" id="shirt" viewBox="0 0 400 440" aria-label="Tişört önizleme">
+      <path id="shirtFill" fill="#fbfaf7" stroke="rgba(0,0,0,.12)" stroke-width="1.2"
+        d="M140 24 C155 44 245 44 260 24 L338 56 L392 132 L336 168 L314 144 L314 420 Q200 432 86 420 L86 144 L64 168 L8 132 L62 56 Z"/>
+      <path d="M140 24 C155 44 245 44 260 24" fill="none" stroke="rgba(0,0,0,.18)" stroke-width="1.4"/>
+    </svg>
+    <div class="area" id="area"></div>
+    <div class="clip" id="clip"><div class="art" id="art" role="img" aria-label="Örnek baskı">
+      <svg id="artSvg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+        <circle cx="100" cy="100" r="92" fill="none" stroke="#17181a" stroke-width="6"/>
+        <circle cx="100" cy="100" r="78" fill="none" stroke="#17181a" stroke-width="1.5"/>
+        <path d="M58 118 L72 66 L88 92 L100 58 L112 92 L128 66 L142 118 Z" fill="#17181a"/>
+        <text x="100" y="146" text-anchor="middle" font-family="Archivo,Arial" font-weight="800" font-size="20" letter-spacing="4" fill="#17181a">WOLFLANO</text>
+        <text x="100" y="166" text-anchor="middle" font-family="Archivo,Arial" font-weight="500" font-size="10" letter-spacing="5" fill="#17181a">İZMİR · 2026</text>
+      </svg>
+    </div></div>
+    <div class="obj sel" id="obj" aria-hidden="true">
+      <div class="handle" id="handle"><span></span></div>
+    </div>
+  </div>
+
+  <div class="bar">
+    <div class="swatches" id="swatches">
+      <button class="sw" style="background:#fbfaf7" data-c="#fbfaf7" aria-label="Beyaz" aria-pressed="true"></button>
+      <button class="sw" style="background:#c9c4b8" data-c="#c9c4b8" aria-label="Taş" aria-pressed="false"></button>
+      <button class="sw" style="background:#5d6b5a" data-c="#5d6b5a" aria-label="Haki" aria-pressed="false"></button>
+    </div>
+    <div class="tools">
+      <button id="rot90" type="button">90° çevir</button>
+      <button id="center" type="button">Ortala</button>
+      <button id="approve" type="button" class="primary">Onayla</button>
+    </div>
+  </div>
+  <div class="readout" id="readout"></div>
+</div>
+
+<div class="sheet" id="sheet" hidden>
+  <div class="panel">
+    <div class="ptitle">Baskıya giden dosya</div>
+    <div class="pnote">Baskı alanının dışında kalan kısımlar kırpıldı. Bu dosya size bu hâliyle ulaşır.</div>
+    <div class="out"><canvas id="out" width="720" height="950"></canvas></div>
+    <div class="pmeta" id="pmeta"></div>
+    <button id="closeSheet" type="button">Tasarıma dön</button>
+  </div>
+</div>
+
+<script>
+(()=>{
+  const stage=document.getElementById('stage'), shirt=document.getElementById('shirt'),
+        area=document.getElementById('area'), obj=document.getElementById('obj'),
+        handle=document.getElementById('handle'), readout=document.getElementById('readout'),
+        clip=document.getElementById('clip'), art=document.getElementById('art');
+
+  // Baskı alanı tişört üzerinde (viewBox birimleri): 130..270 x 110..300
+  // Baskı alanları (cm). Tişört çiziminde 1 cm ≈ 4.85 birim; üst kenar yakadan sabit mesafede.
+  const SIZES={a4p:{n:'A4 dikey',cw:21,ch:29.7},a4l:{n:'A4 yatay',cw:29.7,ch:21},a3p:{n:'A3 dikey',cw:29.7,ch:42}};
+  const U=144/29.7;
+  let cur=SIZES.a4p, PA={};
+  function setSize(k){
+    cur=SIZES[k];
+    PA={w:cur.cw*U,h:cur.ch*U,x:200-cur.cw*U/2,y:100};
+    document.querySelectorAll('#sizes button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.s===k));
+  }
+  setSize('a4p');
+  document.getElementById('sizes').addEventListener('click',e=>{
+    const b=e.target.closest('button'); if(!b) return; setSize(b.dataset.s); layout();
+  });
+  const st={cx:.5,cy:.42,size:.62,rot:0}; // cx,cy,size baskı alanına oranla
+  let box={};
+
+  function layout(){
+    const s=stage.getBoundingClientRect(), r=shirt.getBoundingClientRect(), k=r.width/400;
+    box={left:r.left-s.left+PA.x*k, top:r.top-s.top+PA.y*k, w:PA.w*k, h:PA.h*k};
+    const geo={left:box.left+'px',top:box.top+'px',width:box.w+'px',height:box.h+'px'};
+    Object.assign(area.style,geo); Object.assign(clip.style,geo);
+    render();
+  }
+  function render(){
+    const px=st.size*box.w, rot=`rotate(${st.rot}deg)`;
+    obj.style.width=obj.style.height=art.style.width=art.style.height=px+'px';
+    obj.style.left=(box.left+st.cx*box.w-px/2)+'px';
+    obj.style.top=(box.top+st.cy*box.h-px/2)+'px';
+    art.style.left=(st.cx*box.w-px/2)+'px';
+    art.style.top=(st.cy*box.h-px/2)+'px';
+    obj.style.transform=art.style.transform=rot;
+    let deg=((Math.round(st.rot)%360)+360)%360;
+    readout.textContent=`${cur.n} · Tasarım ${Math.round(st.size*cur.cw)} cm · Açı ${deg}°`;
+  }
+  const clamp=(v,a,b)=>Math.min(b,Math.max(a,v));
+
+  // Tek parmak kuralı: yalnızca ilk dokunuş takip edilir, diğerleri yok sayılır.
+  let active=null;
+  function begin(e,mode){
+    if(active) return;            // ikinci parmak: hiçbir şey yapma
+    e.preventDefault(); e.stopPropagation();
+    obj.classList.add('sel'); area.classList.remove('quiet');
+    const s=stage.getBoundingClientRect();
+    const c={x:s.left+box.left+st.cx*box.w, y:s.top+box.top+st.cy*box.h};
+    active={id:e.pointerId,mode,sx:e.clientX,sy:e.clientY,start:{...st},c,
+      a0:Math.atan2(e.clientY-c.y,e.clientX-c.x), d0:Math.hypot(e.clientX-c.x,e.clientY-c.y)};
+    (mode==='move'?obj:handle).setPointerCapture(e.pointerId);
+  }
+  function move(e){
+    if(!active||e.pointerId!==active.id) return;
+    e.preventDefault();
+    const a=active;
+    if(a.mode==='move'){
+      // Tasarım baskı alanının dışına taşabilir; tamamen kaybolmasın diye merkez biraz sınırlı
+      st.cx=clamp(a.start.cx+(e.clientX-a.sx)/box.w,-.3,1.3);
+      st.cy=clamp(a.start.cy+(e.clientY-a.sy)/box.h,-.3,1.3);
+    }else{
+      const d=Math.hypot(e.clientX-a.c.x,e.clientY-a.c.y);
+      st.size=clamp(a.start.size*d/Math.max(a.d0,1),.12,1.4);
+      let r=a.start.rot+(Math.atan2(e.clientY-a.c.y,e.clientX-a.c.x)-a.a0)*180/Math.PI;
+      const near=Math.round(r/90)*90; if(Math.abs(r-near)<4) r=near; // düz açılara hafif oturma
+      st.rot=r;
+    }
+    render();
+  }
+  function end(e){ if(active&&e.pointerId===active.id) active=null; }
+
+  obj.addEventListener('pointerdown',e=>begin(e,'move'));
+  handle.addEventListener('pointerdown',e=>begin(e,'turn'));
+  [obj,handle].forEach(el=>{
+    el.addEventListener('pointermove',move);
+    el.addEventListener('pointerup',end);
+    el.addEventListener('pointercancel',end);
+    el.addEventListener('lostpointercapture',end);
+  });
+  stage.addEventListener('pointerdown',e=>{
+    if(e.target===stage||e.target.closest('.shirt')||e.target===area){
+      obj.classList.remove('sel'); area.classList.add('quiet');
+    }
+  });
+  // Telefonun kendi iki parmak yakınlaştırmasını tasarım alanında kapat
+  ['gesturestart','gesturechange'].forEach(t=>stage.addEventListener(t,e=>e.preventDefault()));
+  stage.addEventListener('touchmove',e=>e.preventDefault(),{passive:false});
+
+  document.getElementById('rot90').onclick=()=>{st.rot=Math.round((st.rot+90)/90)*90;render();};
+  document.getElementById('center').onclick=()=>{st.cx=.5;st.cy=.42;render();};
+  document.getElementById('swatches').addEventListener('click',e=>{
+    const b=e.target.closest('.sw'); if(!b) return;
+    document.querySelectorAll('.sw').forEach(x=>x.setAttribute('aria-pressed',x===b));
+    document.getElementById('shirtFill').setAttribute('fill',b.dataset.c);
+  });
+
+  // Onay: baskı alanı kadar kırpılmış dosyayı üret (gerçek sistemde sunucuya bu dosya gider)
+  const sheet=document.getElementById('sheet'), out=document.getElementById('out');
+  document.getElementById('approve').onclick=()=>{
+    out.width=Math.round(cur.cw*36); out.height=Math.round(cur.ch*36);
+    const W=out.width, H=out.height, ctx=out.getContext('2d');
+    const svg=new XMLSerializer().serializeToString(document.getElementById('artSvg'));
+    const img=new Image();
+    img.onload=()=>{
+      ctx.clearRect(0,0,W,H);
+      ctx.save(); ctx.beginPath(); ctx.rect(0,0,W,H); ctx.clip();
+      const px=st.size*W;
+      ctx.translate(st.cx*W, st.cy*H); ctx.rotate(st.rot*Math.PI/180);
+      ctx.drawImage(img,-px/2,-px/2,px,px); ctx.restore();
+      document.getElementById('pmeta').textContent=`${cur.n} · ${cur.cw} × ${cur.ch} cm · Şeffaf arka plan`;
+      sheet.hidden=false;
+    };
+    img.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg);
+  };
+  document.getElementById('closeSheet').onclick=()=>{sheet.hidden=true;};
+  sheet.addEventListener('click',e=>{if(e.target===sheet) sheet.hidden=true;});
+
+  new ResizeObserver(layout).observe(stage);
+  layout();
+})();
+</script>
+
+</body></html>
