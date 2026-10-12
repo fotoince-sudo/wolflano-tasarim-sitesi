@@ -2037,6 +2037,24 @@ function buildInvoice(r,d){
 /* ===== MUHASEBE (gelir - gider) =====
    Veriler herkese açık data.json'a değil, yalnızca düzenleme yetkisi olanların okuyabildiği özel veritabanına (muhasebe koleksiyonu) yazılır. */
 var DBX=null,ACC={rows:[],ok:false,err:'',month:'all',unsub:null,inv:null};
+/* Canlı sitede muhasebe kayıtları Supabase'deki "muhasebe" tablosunda durur (yalnız yönetici okur/yazar).
+   Aşağıdaki küçük katman, muhasebe kodunun kullandığı collection/add/doc/update/delete/onSnapshot arayüzünü Supabase ile sağlar. */
+var SBDB={collection:function(name){
+  var subs=[];
+  async function fetchAll(){var tk=await sbToken();if(!tk)throw {code:'giriş gerekli'};
+    var r=await sbReq('/rest/v1/'+name+'?select=*&order=created_at.desc&limit=5000',{token:tk});
+    if(!r.ok)throw {code:r.status===404?'tablo yok':'okunamadı'};
+    return (Array.isArray(r.j)?r.j:[]).map(function(x){return {id:x.id,data:function(){return x.doc||{};}};});}
+  async function notify(){try{var docs=await fetchAll();subs.forEach(function(s){s[0]({docs:docs});});}catch(e){subs.forEach(function(s){if(s[1])s[1](e);});}}
+  async function call(path,method,body){var tk=await sbToken();if(!tk)throw {code:'giriş gerekli'};var r=await sbReq(path,{method:method,token:tk,prefer:'return=minimal',body:body});if(!r.ok)throw {code:'kaydedilemedi'};await notify();}
+  return {
+    onSnapshot:function(cb,err){var s=[cb,err];subs.push(s);notify();return function(){subs=subs.filter(function(x){return x!==s;});};},
+    add:function(doc){return call('/rest/v1/'+name,'POST',{doc:doc});},
+    doc:function(id){var q='/rest/v1/'+name+'?id=eq.'+encodeURIComponent(id);return {
+      delete:function(){return call(q,'DELETE');},
+      update:function(upd){var cur0=(ACC.rows.filter(function(x){return x.id===id;})[0])||{},nd=Object.assign({},cur0,upd);delete nd.id;return call(q,'PATCH',{doc:nd});}};}
+  };}};
+SBDB.collection=(function(f){var cache={};return function(n){return cache[n]||(cache[n]=f(n));};})(SBDB.collection);
 var ACC_G=['Site satışı','Baskı siparişi','Pazaryeri (Trendyol, n11...)','Toptan satış','Diğer gelir'],ACC_X=['Ürün / hammadde alımı','Baskı malzemesi (mürekkep, film)','Kargo','Reklam','Kira','Maaş ve SGK','Vergi','Komisyon (pazaryeri)','Ambalaj','Diğer gider'];
 function accInit(){
   if(!DBX||ACC.unsub)return;
@@ -2145,7 +2163,8 @@ function seoAdmin(){
   return h;
 }
 function accView(){
-  if(!EDIT||!DBX)return '<div class="aed" style="max-width:760px"><b>Muhasebe</b><p class="note">Muhasebe kayıtları gizli tutulur, yalnızca siteyi kendi hesabınla (düzenleme yetkisiyle) açtığında görünür ve düzenlenir.</p></div>';
+  if(!DBX&&!ART&&sbAdmin()){DBX=SBDB;accInit();}
+  if(!DBX||(DBX!==SBDB&&!EDIT))return '<div class="aed" style="max-width:760px"><b>Muhasebe</b><p class="note">Muhasebe kayıtları gizli tutulur, yalnızca yönetici hesabınla giriş yaptığında görünür ve düzenlenir.</p></div>';
   if(!ACC.ok)return '<div class="aed" style="max-width:760px"><b>Muhasebe</b><p class="note">'+(ACC.err?'Muhasebe verisine ulaşılamadı ('+esc(ACC.err)+').':'Yükleniyor…')+'</p></div>';
   var all=ACC.rows.slice().sort(function(a,b){return String(b.date).localeCompare(String(a.date))||(b.ts||0)-(a.ts||0);});
   var months={};all.forEach(function(r){if(r.date)months[r.date.slice(0,7)]=1;});months[accTodayStr().slice(0,7)]=1;
