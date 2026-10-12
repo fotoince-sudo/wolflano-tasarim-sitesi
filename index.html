@@ -647,14 +647,14 @@ function crmView(){
   if(C.orders===null){crmLoad();return '<div class="wrap page"><p class="eyebrow">Wolflano</p><h1 class="h2">Yönetim</h1><p class="note">Yükleniyor…</p></div>';}
   return crmHTML();
 }
-function crmRender(){if(cur==='yonetim'){if(A&&A.tab==='crm'&&admOk())adRender();return;}var m=document.getElementById('main');if(m&&cur==='crm'){var y=window.scrollY;m.innerHTML=crmView();window.scrollTo(0,y);}}
+function crmRender(){if(cur==='yonetim'){if(A&&(A.tab==='crm'||A.tab==='depo'||A.tab==='kanal')&&admOk()){var y=window.scrollY;adRender();window.scrollTo(0,y);}return;}var m=document.getElementById('main');if(m&&cur==='crm'){var y=window.scrollY;m.innerHTML=crmView();window.scrollTo(0,y);}}
 function crmBy(e){return (C.orders||[]).filter(function(o){return String(o.mail||'').toLowerCase()===e;});}
 function crmDate(d){try{return new Date(d).toLocaleDateString('tr-TR',{day:'2-digit',month:'short',year:'numeric'});}catch(_){return '';}}
 function crmContact(o){var t=String(o.tel||'').replace(/\D/g,'');if(t.charAt(0)==='0')t='9'+t;var wa=t?'https://wa.me/'+t:'';return '<div class="crmact">'+(o.tel?'<a class="btn soft sm" href="tel:'+esc(o.tel)+'">Ara</a>':'')+(wa?'<a class="btn soft sm" target="_blank" rel="noopener" href="'+wa+'">WhatsApp</a>':'')+(o.mail||o.email?'<a class="btn soft sm" href="mailto:'+esc(o.mail||o.email)+'">E-posta</a>':'')+'</div>';}
 function crmOrderCard(o){
   var its=(o.items||[]).map(function(x){return '<div class="sumr"><span>'+esc(x.n)+' × '+x.q+'</span><span>'+tl(x.t)+'</span></div>';}).join('');
   var st=ORST.map(function(v){return '<option'+(o.status===v?' selected':'')+'>'+v+'</option>';}).join('');
-  return '<div class="panel crmc"><div class="crmh"><b>'+esc(o.code)+'</b><span class="note" style="margin:0">'+crmDate(o.created_at)+'</span></div><div class="sumr"><span>'+esc(o.ad)+'</span><span><b>'+tl(o.total)+'</b></span></div>'+its+'<p class="note" style="margin:0">'+esc((o.adres||'')+', '+(o.ilce||'')+'/'+(o.il||''))+(o.note?'<br>Not: '+esc(o.note):'')+'</p>'+crmSpecial(o)+crmContact(o)+'<label class="crmsel">Durum<select data-crm="ost" data-id="'+esc(o.id)+'">'+st+'</select></label></div>';
+  return '<div class="panel crmc"><div class="crmh"><b>'+esc(o.code)+'</b><span class="note" style="margin:0">'+crmDate(o.created_at)+'</span></div><div class="sumr"><span>'+esc(o.ad)+'</span><span><b>'+tl(o.total)+'</b></span></div>'+its+'<p class="note" style="margin:0">'+esc((o.adres||'')+', '+(o.ilce||'')+'/'+(o.il||''))+(o.note?'<br>Not: '+esc(o.note):'')+'</p>'+crmSpecial(o)+crmFf(o)+crmContact(o)+'<label class="crmsel">Durum<select data-crm="ost" data-id="'+esc(o.id)+'">'+st+'</select></label></div>';
 }
 /* Özel indirim belgesi ve okul siparişi kutusu */
 var DOCST={bekliyor:['Belge kontrolü bekliyor','#a96a0f'],'onaylandı':['Belge onaylandı','#1d7f48'],reddedildi:['Belge reddedildi','#c42f36']};
@@ -731,6 +731,216 @@ async function crmSend(o){
    if(r.ok&&j.code){var l=lastOrder();if(l){l.code=j.code;localStorage.setItem('wf_last',JSON.stringify(l));}}
   }catch(_){}
 }
+
+/* ===== Yönetim: Depo ve gönderim, iadeler, pazaryeri takibi (Supabase) =====
+   Depo firması (fulfillment) ile anlaşma yapılınca firmanın API bilgileri sunucu tarafına (Supabase Edge Function) eklenir;
+   siparişler otomatik gider, durum ve takip numarası otomatik geri gelir. O zamana kadar her şey buradan elle işaretlenir. */
+var CARRIERS=['Yurtiçi Kargo','MNG Kargo','Aras Kargo','PTT Kargo','Sürat Kargo','HepsiJet','Kolay Gelsin','Sendeo','Trendyol Express','Diğer'];
+var FFST=[['bekliyor','Depoya gönderilmedi'],['gonderildi','Depoya gönderildi'],['toplaniyor','Toplanıyor'],['paketlendi','Paketlendi'],['kargoda','Kargoda'],['teslim','Teslim edildi'],['sorun','Sorun var']];
+var RTST=[['talep','İade talebi geldi'],['onay','Onaylandı'],['yolda','Bize doğru kargoda'],['ulasti','Depoya ulaştı'],['kontrol','Kontrol edildi'],['stok','Stoğa geri alındı'],['red','Reddedildi']];
+var RTWHY=['Beden uymadı','Kusurlu / hasarlı','Yanlış ürün gönderildi','Baskı hatası','Vazgeçti','Diğer'];
+var MKST=['Yüklenmedi','Yüklenecek','Onay bekliyor','Yayında','Reddedildi','Durduruldu'];
+var CHPRE={trendyol:'TY',n11:'N11',hepsiburada:'HB',ciceksepeti:'CS',amazon:'AMZ'};
+var FF={kv:null,returns:null,busy:false,err:'',sub:'sip',filt:'acik',open:null,del:null};
+function ffName(arr,k){for(var i=0;i<arr.length;i++)if(arr[i][0]===k)return arr[i][1];return k||'';}
+function ffOpts(arr,curv){return arr.map(function(x){var k=Array.isArray(x)?x[0]:x,l=Array.isArray(x)?x[1]:x;return '<option value="'+esc(k)+'"'+(k===curv?' selected':'')+'>'+esc(l)+'</option>';}).join('');}
+function ffChName(k){for(var i=0;i<CHANNELS.length;i++)if(CHANNELS[i][0]===k)return CHANNELS[i][1];return k==='site'||!k?'Site':k;}
+async function ffLoad(){
+  if(FF.busy)return;FF.busy=true;FF.err='';
+  try{var tk=await sbToken();if(!tk){FF.err='Giriş gerekli.';}else{
+    var rs=await Promise.all([sbReq('/rest/v1/admin_kv?select=*',{token:tk}),sbReq('/rest/v1/returns?select=*&order=created_at.desc&limit=300',{token:tk})]);
+    if(!rs[0].ok||!rs[1].ok)FF.err='Depo ve iade verileri okunamadı. Veritabanı güncellemesi henüz yapılmamış olabilir.';
+    FF.kv={};(Array.isArray(rs[0].j)?rs[0].j:[]).forEach(function(r){FF.kv[r.id]=r.data||{};});
+    FF.returns=Array.isArray(rs[1].j)?rs[1].j:[];}}
+  catch(_){FF.err='Bağlantı kurulamadı.';}
+  FF.kv=FF.kv||{};FF.returns=FF.returns||[];FF.busy=false;ffRender();
+}
+function ffRender(){if(cur==='yonetim'&&A&&(A.tab==='depo'||A.tab==='kanal')&&admOk()){var y=window.scrollY;adRender();window.scrollTo(0,y);}}
+function ffProv(){return ((FF.kv&&FF.kv.fulfill)||{}).providers||[];}
+function ffProvAll(){return [{id:'self',name:'Kendimiz gönderiyoruz (Wolflano)',on:true}].concat(ffProv().filter(function(p){return p.on!==false;}));}
+function ffProvName(id){var l=ffProvAll().concat(ffProv());for(var i=0;i<l.length;i++)if(l[i].id===id)return l[i].name;return '';}
+async function ffKvSave(key,data){var tk=await sbToken();if(!tk){toast('Oturum süresi doldu, yeniden giriş yap.');return false;}
+  var r=await sbReq('/rest/v1/admin_kv?on_conflict=id',{method:'POST',token:tk,prefer:'resolution=merge-duplicates,return=minimal',body:{id:key,data:data,updated_at:new Date().toISOString()}});
+  if(r.ok){FF.kv[key]=data;return true;}toast('Kaydedilemedi');return false;}
+function ffV(id){var n=document.getElementById(id);return n?String(n.value||'').trim():'';}
+function ffIn(id,label,val,type,ph){return '<label for="'+id+'">'+label+'<input id="'+id+'" type="'+(type||'text')+'" value="'+esc(val==null?'':val)+'"'+(ph?' placeholder="'+esc(ph)+'"':'')+'></label>';}
+function ffSel(id,label,arr,val){return '<label for="'+id+'">'+label+'<select id="'+id+'">'+ffOpts(arr,val)+'</select></label>';}
+
+function ffView(){
+  if(!sbAdmin())return '<p class="note">Bu bölüm için yönetici hesabınla giriş yapmalısın.</p>';
+  if(C.orders===null)crmLoad();
+  if(FF.kv===null){ffLoad();return '<p class="note">Yükleniyor…</p>';}
+  var subs=[['sip','Gönderimler'],['iade','İadeler ('+FF.returns.filter(function(r){return r.status!=='stok'&&r.status!=='red';}).length+')'],['firma','Depo firmaları']];
+  var h='<div class="crm"><div class="crmtabs">'+subs.map(function(x){return '<button type="button" data-ff="sub" data-v="'+x[0]+'"'+(FF.sub===x[0]?' class="on"':'')+'>'+x[1]+'</button>';}).join('')+'<button type="button" class="btn soft sm" data-ff="reload">Yenile</button></div>';
+  if(FF.err)h+='<p class="msg">'+esc(FF.err)+'</p>';
+  if(FF.sub==='firma')h+=ffFirms();else if(FF.sub==='iade')h+=ffReturns();else h+=ffShip();
+  return h+'</div>';
+}
+
+/* --- Gönderimler --- */
+function ffSt(o){return (o.fulfillment&&o.fulfillment.st)||'bekliyor';}
+function ffShip(){
+  if(C.orders===null)return '<p class="note">Siparişler yükleniyor…</p>';
+  var all=C.orders.filter(function(o){return o.status!=='iptal';});
+  var cnt={acik:0,kargo:0,teslim:0};all.forEach(function(o){var s=ffSt(o);if(s==='teslim')cnt.teslim++;else if(s==='kargoda')cnt.kargo++;else cnt.acik++;});
+  var fl=[['acik','Hazırlanacak ('+cnt.acik+')'],['kargo','Kargoda ('+cnt.kargo+')'],['teslim','Teslim edildi ('+cnt.teslim+')'],['tum','Tümü']];
+  var h='<p class="note" style="margin:0 0 10px">Her siparişi hangi depodan çıkacağını, durumunu ve kargo takip numarasını buradan işaretle. Depo firmasıyla otomatik bağlantı kurulunca bu bilgiler kendiliğinden güncellenecek.</p>'+
+   '<div class="crmf">'+fl.map(function(x){return '<button type="button" data-ff="filt" data-v="'+x[0]+'"'+(FF.filt===x[0]?' class="on" style="background:var(--green);border-color:var(--green)"':'')+'>'+x[1]+'</button>';}).join('')+'</div>';
+  var list=(FF.filt==='tum'?C.orders:all).filter(function(o){var s=ffSt(o);return FF.filt==='tum'||(FF.filt==='teslim'?s==='teslim':FF.filt==='kargo'?s==='kargoda':(s!=='teslim'&&s!=='kargoda'));});
+  if(!list.length)return h+'<p class="note">Bu listede sipariş yok.</p>';
+  return h+list.map(ffOrderCard).join('');
+}
+function ffOrderCard(o){
+  var f=o.fulfillment||{},s=ffSt(o),open=FF.open===o.id,k=o.id;
+  var its=(o.items||[]).map(function(x){return esc(x.n)+' × '+x.q;}).join(', ');
+  var h='<div class="panel crmc"><div class="crmh"><b>'+esc(o.code)+'</b><span class="note" style="margin:0">'+crmDate(o.created_at)+(o.channel&&o.channel!=='site'?' · '+esc(ffChName(o.channel)):'')+'</span></div>'+
+   '<span class="note" style="margin:0">'+esc(o.ad||'')+' · '+esc(o.il||'')+' · '+tl(o.total||0)+'</span><span style="font-size:14px">'+its+'</span>'+
+   '<div class="crmbox"><b>'+esc(ffName(FFST,s))+'</b><span class="note" style="margin:0">'+(f.prov?esc(ffProvName(f.prov)||f.provName||'')+' · ':'')+(f.carrier?esc(f.carrier)+' · ':'')+(f.track?'Takip: <b>'+esc(f.track)+'</b>':'Takip no yok')+'</span></div>';
+  if(!open)return h+'<div class="crmact"><button type="button" class="btn soft sm" data-ff="open" data-id="'+esc(k)+'">Güncelle</button>'+ffWa(o)+'</div></div>';
+  h+='<div class="aed" style="margin:0">'+ffSel('ffp-'+k,'Depo',ffProvAll().map(function(p){return [p.id,p.name];}),f.prov||'self')+ffSel('ffs-'+k,'Durum',FFST,s)+
+   '<div class="two">'+ffSel('ffc-'+k,'Kargo firması',[['','Seç']].concat(CARRIERS.map(function(c){return [c,c];})),f.carrier||'')+ffIn('fft-'+k,'Takip no',f.track||'')+'</div>'+
+   ffIn('ffn-'+k,'Not (isteğe bağlı)',f.note||'')+
+   '<div class="crmact"><button type="button" class="btn sm" data-ff="fsave" data-id="'+esc(k)+'">Kaydet</button><button type="button" class="btn soft sm" data-ff="open" data-id="">Vazgeç</button></div>'+
+   (f.hist&&f.hist.length?'<span class="note" style="margin:0">Geçmiş: '+f.hist.slice(-6).map(function(x){return crmDate(x.at)+' '+esc(ffName(FFST,x.st));}).join(' → ')+'</span>':'')+'</div>';
+  return h+'</div>';
+}
+function ffWa(o){var f=o.fulfillment||{};var t=String(o.tel||'').replace(/\D/g,'');if(t.charAt(0)==='0')t='9'+t;if(t.length===10)t='90'+t;
+  if(!t||!f.track)return '';var msg='Merhaba '+(o.ad||'')+', '+o.code+' numaralı Wolflano siparişin kargoya verildi. '+(f.carrier?f.carrier+' ':'')+'takip numaran: '+f.track;
+  return '<a class="btn soft sm" target="_blank" rel="noopener" href="https://wa.me/'+t+'?text='+encodeURIComponent(msg)+'">Takip no WhatsApp ile gönder</a>';}
+var FF_ORDST={gonderildi:'hazırlanıyor',toplaniyor:'hazırlanıyor',paketlendi:'hazırlanıyor',kargoda:'kargoda',teslim:'teslim edildi'};
+async function ffSaveOrder(id){
+  var o=(C.orders||[]).filter(function(x){return x.id===id;})[0];if(!o)return;
+  var old=o.fulfillment||{},st=ffV('ffs-'+id)||'bekliyor',prov=ffV('ffp-'+id)||'self';
+  var hist=(old.hist||[]).slice(-30);if(st!==(old.st||'bekliyor'))hist.push({st:st,at:new Date().toISOString()});
+  var nf={prov:prov,provName:ffProvName(prov),st:st,carrier:ffV('ffc-'+id),track:ffV('fft-'+id),note:ffV('ffn-'+id),hist:hist,updated:new Date().toISOString()};
+  var body={fulfillment:nf};if(FF_ORDST[st]&&o.status!=='iptal')body.status=FF_ORDST[st];
+  var tk=await sbToken();if(!tk){toast('Oturum süresi doldu, yeniden giriş yap.');return;}
+  var r=await sbReq('/rest/v1/orders?id=eq.'+encodeURIComponent(id),{method:'PATCH',token:tk,prefer:'return=minimal',body:body});
+  if(r.ok){o.fulfillment=nf;if(body.status)o.status=body.status;FF.open=null;toast('Kaydedildi');ffRender();}
+  else toast(r.status===400?'Kaydedilemedi: veritabanı güncellemesi gerekli.':'Kaydedilemedi');
+}
+
+/* --- İadeler --- */
+function ffReturns(){
+  var ords=(C.orders||[]).slice(0,200);
+  var h='<div class="aed" style="margin:0 0 12px"><b>Yeni iade kaydı</b>'+
+   ffSel('frO','Sipariş',[['','Sipariş seç (isteğe bağlı)']].concat(ords.map(function(o){return [o.id,o.code+' · '+(o.ad||'')];})),'')+
+   ffIn('frC','Müşteri','', 'text','Siparişi seçersen otomatik dolar')+ffIn('frI','İade edilen ürünler','', 'text','Ör. Siyah tişört L × 1')+
+   '<div class="two">'+ffSel('frW','Sebep',RTWHY.map(function(x){return [x,x];}),RTWHY[0])+ffSel('frP','Geleceği depo',ffProvAll().map(function(p){return [p.id,p.name];}),'self')+'</div>'+
+   ffIn('frN','Not','')+'<div><button type="button" class="btn" data-ff="radd">İadeyi kaydet</button></div></div>';
+  if(!FF.returns.length)return h+'<p class="note">Henüz iade yok.</p>';
+  return h+FF.returns.map(function(r){var k=r.id;
+    return '<div class="panel crmc"><div class="crmh"><b>'+esc(r.order_code||'Siparişsiz iade')+'</b><span class="note" style="margin:0">'+crmDate(r.created_at)+'</span></div>'+
+     '<span class="note" style="margin:0">'+esc(r.customer||'')+(r.items?' · '+esc(r.items):'')+'</span><span class="note" style="margin:0">Sebep: '+esc(r.reason||'')+(r.provider?' · '+esc(ffProvName(r.provider)||r.provider):'')+(r.note?' · '+esc(r.note):'')+'</span>'+
+     '<div class="two">'+'<label for="frs-'+k+'">Durum<select id="frs-'+k+'" data-ffc="rst" data-id="'+esc(k)+'">'+ffOpts(RTST,r.status)+'</select></label>'+
+     '<label for="frt-'+k+'">Dönüş kargo takip no<input id="frt-'+k+'" value="'+esc(r.tracking_no||'')+'" data-ffc="rtr" data-id="'+esc(k)+'"></label></div>'+
+     (r.status==='stok'?'<span class="note" style="margin:0">Ürün stoğa alındı. Stok sayısını Hazır ürünler sekmesinden artırmayı unutma.</span>':'')+'</div>';}).join('');
+}
+async function ffAddReturn(){
+  var oid=ffV('frO'),o=(C.orders||[]).filter(function(x){return x.id===oid;})[0];
+  var body={order_id:o?o.id:null,order_code:o?o.code:null,customer:ffV('frC')||(o?o.ad:''),items:ffV('frI')||(o?(o.items||[]).map(function(x){return x.n+' × '+x.q;}).join(', '):''),reason:ffV('frW'),provider:ffV('frP')||'self',note:ffV('frN'),status:'talep'};
+  if(!body.customer&&!body.items){toast('Müşteri ya da ürün yaz');return;}
+  var tk=await sbToken();if(!tk){toast('Oturum süresi doldu, yeniden giriş yap.');return;}
+  var r=await sbReq('/rest/v1/returns?select=*',{method:'POST',token:tk,prefer:'return=representation',body:body});
+  if(r.ok&&Array.isArray(r.j)&&r.j[0]){FF.returns.unshift(r.j[0]);toast('İade kaydedildi');ffRender();}else toast('Kaydedilemedi');
+}
+async function ffPatchReturn(id,patch){
+  var tk=await sbToken();if(!tk){toast('Oturum süresi doldu, yeniden giriş yap.');return;}
+  patch.updated_at=new Date().toISOString();
+  var r=await sbReq('/rest/v1/returns?id=eq.'+encodeURIComponent(id),{method:'PATCH',token:tk,prefer:'return=minimal',body:patch});
+  if(r.ok){FF.returns.forEach(function(x){if(x.id===id)Object.assign(x,patch);});toast(patch.status==='stok'?'Stoğa alındı. Stok sayısını güncellemeyi unutma.':'Güncellendi');if(patch.status)ffRender();}else toast('Güncellenemedi');
+}
+
+/* --- Depo firmaları --- */
+function ffFirms(){
+  var l=ffProv();
+  var h='<p class="note" style="margin:0 0 10px">Ürünlerini depolayan, paketleyen ve kargoya veren firmaları (fulfillment) burada tanımla. Firmayla anlaşınca API bilgileri buraya yazılmaz; güvenlik için sunucu tarafına eklenir ve siparişler otomatik akmaya başlar.</p>';
+  h+='<div class="arow" style="grid-template-columns:1fr"><div><b>Kendimiz gönderiyoruz (Wolflano)</b><small>Her zaman var. Siparişi kendin paketleyip kargoya verdiğinde bunu seç.</small></div></div>';
+  l.forEach(function(p){var open=FF.open===p.id,k=p.id;
+    h+='<div class="arow" style="grid-template-columns:1fr auto"><div><b>'+esc(p.name||'Adsız')+(p.on===false?' (pasif)':'')+'</b><small>'+esc(p.kind||'Depo firması')+(p.city?' · '+esc(p.city):'')+(p.fee?' · sipariş başı '+tl(+p.fee):'')+' · '+(p.api?'Otomatik bağlantı: '+esc(p.api):'Elle takip')+'</small></div><div class="mini"><button data-ff="open" data-id="'+(open?'':esc(k))+'" aria-label="Düzenle">'+(open?'−':'✎')+'</button></div></div>';
+    if(open){
+      h+='<div class="aed">'+ffIn('fpn-'+k,'Firma adı',p.name)+'<div class="two">'+ffSel('fpk-'+k,'Tür',[['Depo firması','Depo firması (fulfillment)'],['Kendi depomuz','Kendi depomuz'],['Pazaryeri deposu','Pazaryeri deposu']],p.kind||'Depo firması')+ffIn('fpc-'+k,'Şehir',p.city)+'</div>'+
+       ffIn('fpa-'+k,'Depo adresi',p.addr)+'<div class="three">'+ffIn('fpy-'+k,'Yetkili',p.person)+ffIn('fpt-'+k,'Telefon',p.tel,'tel')+ffIn('fpm-'+k,'E-posta',p.mail,'email')+'</div>'+
+       '<div class="two">'+ffIn('fpw-'+k,'Firma paneli / site',p.panel,'url','https://')+ffIn('fpf-'+k,'Sipariş başı ücret (₺)',p.fee,'number')+'</div>'+
+       '<div class="two">'+ffIn('fps-'+k,'Depolama ücreti',p.store,'text','Ör. palet başı aylık')+ffSel('fpi-'+k,'Bağlantı',[['','Elle takip'],['API','API'],['Pazaryeri','Pazaryeri üzerinden'],['Panel','Firmanın paneli']],p.api||'')+'</div>'+
+       ffIn('fpx-'+k,'Not',p.note)+'<div class="chk"><label><input type="checkbox" id="fpo-'+k+'"'+(p.on!==false?' checked':'')+'>Aktif</label></div>'+
+       '<div class="crmact"><button type="button" class="btn sm" data-ff="psave" data-id="'+esc(k)+'">Kaydet</button><button type="button" class="btn soft sm" data-ff="pdel" data-id="'+esc(k)+'" style="color:var(--red)">'+(FF.del===k?'Silmek için tekrar dokun':'Firmayı sil')+'</button></div></div>';
+    }
+  });
+  return h+'<p><button type="button" class="btn soft" data-ff="padd">+ Yeni depo firması</button></p>';
+}
+async function ffProvSave(list){var cur0=FF.kv.fulfill||{};var ok=await ffKvSave('fulfill',Object.assign({},cur0,{providers:list}));if(ok){toast('Kaydedildi');ffRender();}return ok;}
+
+/* --- Pazaryeri takibi (Satış kanalları sekmesinin altında) --- */
+function mkView(d){
+  if(!sbAdmin())return '';
+  if(C.orders===null)crmLoad();
+  if(FF.kv===null){ffLoad();return '<div class="aed" style="max-width:760px"><p class="note" style="margin:0">Pazaryeri takibi yükleniyor…</p></div>';}
+  var mk=FF.kv.market||{},h='<div class="aed" style="max-width:760px"><b>Pazaryeri ürün takibi</b><p class="note" style="margin:0">Her ürünün pazaryerindeki durumunu ve pazaryerinin verdiği ürün numarasını buradan takip et. Bir ürünü kanala eklemek için Hazır ürünler sekmesinde o ürünün Satış kanalları kutusunu işaretle.</p>';
+  var any=false;
+  CHANNELS.forEach(function(c){var ps=chProducts(d,c[0]);if(!ps.length)return;any=true;var cm=mk[c[0]]||{};
+    var yay=ps.filter(function(p){return (cm[p.id]||{}).s==='Yayında';}).length;
+    h+='<b style="font-size:15px">'+c[1]+' · '+yay+'/'+ps.length+' yayında</b>'+ps.map(function(p){var x=cm[p.id]||{},k=c[0]+'-'+p.id;
+      return '<div class="two" style="align-items:end"><label for="mks-'+k+'">'+esc(p.name||'Adsız')+'<select id="mks-'+k+'" data-ffc="mks" data-ch="'+c[0]+'" data-p="'+esc(p.id)+'">'+ffOpts(MKST.map(function(s){return [s,s];}),x.s||'Yüklenmedi')+'</select></label>'+
+       '<label for="mki-'+k+'">Pazaryeri ürün no<input id="mki-'+k+'" value="'+esc(x.id||'')+'" data-ffc="mki" data-ch="'+c[0]+'" data-p="'+esc(p.id)+'"></label></div>';}).join('');
+  });
+  if(!any)h+='<p class="note" style="margin:0">Henüz hiçbir ürün bir pazaryerine eklenmemiş.</p>';
+  h+='</div>';
+  var po=(C.orders||[]).filter(function(o){return o.channel&&o.channel!=='site';});
+  h+='<div class="aed" style="max-width:760px"><b>Pazaryeri siparişi ekle</b><p class="note" style="margin:0">Pazaryerinden gelen siparişi buraya yazınca Siparişler, Müşteriler ve Depo ve gönderim bölümlerine düşer. Pazaryeri bağlantısı kurulunca bu kendiliğinden olacak.</p>'+
+   '<div class="two">'+ffSel('mpC','Pazaryeri',CHANNELS,CHANNELS[0][0])+ffIn('mpX','Pazaryeri sipariş no','')+'</div>'+
+   '<div class="two">'+ffIn('mpA','Müşteri adı','')+ffIn('mpT','Telefon','','tel')+'</div>'+
+   '<div class="two">'+ffIn('mpI','İl','')+ffIn('mpL','İlçe','')+'</div>'+ffIn('mpD','Adres','')+
+   '<label for="mpU">Ürünler (her satır: ürün ; adet ; tutar)<textarea id="mpU" placeholder="Siyah tişört L ; 2 ; 1398"></textarea></label>'+
+   '<div class="two">'+ffIn('mpK','Kargo ücreti (₺)','0','number')+ffIn('mpN','Not','')+'</div>'+
+   '<div><button type="button" class="btn" data-ff="madd">Siparişi ekle</button></div>'+
+   (po.length?'<span class="note" style="margin:0">Son pazaryeri siparişleri: '+po.slice(0,8).map(function(o){return esc(o.code);}).join(', ')+'</span>':'')+'</div>';
+  return h;
+}
+async function mkSet(ch,pid,field,val){
+  var mk=JSON.parse(JSON.stringify(FF.kv.market||{}));mk[ch]=mk[ch]||{};mk[ch][pid]=mk[ch][pid]||{};mk[ch][pid][field]=val;mk[ch][pid].at=new Date().toISOString();
+  if(await ffKvSave('market',mk))toast('Kaydedildi');
+}
+async function mkAddOrder(){
+  var ch=ffV('mpC'),ext=ffV('mpX'),ad=ffV('mpA');
+  if(!ext||!ad){toast('Sipariş no ve müşteri adı gerekli');return;}
+  var items=ffV('mpU').split('\n').map(function(l){var p=l.split(/[;\t]/).map(function(s){return s.trim();});if(!p[0])return null;var q=Math.max(1,parseInt(p[1],10)||1),t=parseFloat(String(p[2]||'0').replace(/\./g,'').replace(',','.'))||0;return {n:p[0],q:q,t:t};}).filter(Boolean);
+  if(!items.length){toast('En az bir ürün yaz');return;}
+  var sub=items.reduce(function(a,x){return a+x.t;},0),ship=parseFloat(ffV('mpK').replace(',','.'))||0;
+  var code=(CHPRE[ch]||ch.toUpperCase())+'-'+ext.replace(/[^\w-]/g,'').slice(0,40);
+  var tel=ffV('mpT'),body={code:code,channel:ch,ext_code:ext,guest:true,ad:ad,tel:(typeof normPhone==='function'&&normPhone(tel))||tel,mail:null,il:ffV('mpI'),ilce:ffV('mpL'),adres:ffV('mpD'),items:items,subtotal:sub,ship:ship,total:sub+ship,status:'yeni',pay_status:'ödendi',note:ffV('mpN')||null};
+  var tk=await sbToken();if(!tk){toast('Oturum süresi doldu, yeniden giriş yap.');return;}
+  var r=await sbReq('/rest/v1/orders?select=*',{method:'POST',token:tk,prefer:'return=representation',body:body});
+  if(r.ok&&Array.isArray(r.j)&&r.j[0]){(C.orders=C.orders||[]).unshift(r.j[0]);toast('Sipariş eklendi');ffRender();}
+  else toast(r.status===409?'Bu sipariş no zaten ekli':'Eklenemedi');
+}
+
+document.addEventListener('click',function(e){
+  var b=e.target.closest&&e.target.closest('[data-ff]');if(!b)return;var a=b.dataset.ff,v=b.dataset.v,id=b.dataset.id;e.preventDefault();
+  if(a==='sub'){FF.sub=v;FF.open=null;FF.del=null;ffRender();}
+  else if(a==='filt'){FF.filt=v;FF.open=null;ffRender();}
+  else if(a==='reload'){FF.kv=null;FF.returns=null;C.orders=null;C.cust=null;C.notes=null;ffRender();}
+  else if(a==='open'){FF.open=id||null;FF.del=null;ffRender();}
+  else if(a==='fsave')ffSaveOrder(id);
+  else if(a==='radd')ffAddReturn();
+  else if(a==='madd')mkAddOrder();
+  else if(a==='padd'){var l=ffProv().slice(),nid='f'+Date.now().toString(36);l.push({id:nid,name:'Yeni depo firması',kind:'Depo firması',on:true});FF.open=nid;ffProvSave(l);}
+  else if(a==='psave'){var k=id,l2=ffProv().map(function(p){if(p.id!==k)return p;var on=document.getElementById('fpo-'+k);
+      return {id:k,name:ffV('fpn-'+k)||'Adsız',kind:ffV('fpk-'+k),city:ffV('fpc-'+k),addr:ffV('fpa-'+k),person:ffV('fpy-'+k),tel:ffV('fpt-'+k),mail:ffV('fpm-'+k),panel:ffV('fpw-'+k),fee:ffV('fpf-'+k),store:ffV('fps-'+k),api:ffV('fpi-'+k),note:ffV('fpx-'+k),on:on?on.checked:true};});
+    FF.open=null;ffProvSave(l2);}
+  else if(a==='pdel'){if(FF.del===id){FF.del=null;FF.open=null;ffProvSave(ffProv().filter(function(p){return p.id!==id;}));}else{FF.del=id;ffRender();}}
+});
+document.addEventListener('change',function(e){
+  var t=e.target;if(!t||!t.dataset)return;
+  if(t.id==='frO'){var o=(C.orders||[]).filter(function(x){return x.id===t.value;})[0];if(o){var c=document.getElementById('frC'),i=document.getElementById('frI');if(c&&!c.value)c.value=o.ad||'';if(i&&!i.value)i.value=(o.items||[]).map(function(x){return x.n+' × '+x.q;}).join(', ');}return;}
+  var a=t.dataset.ffc;if(!a)return;
+  if(a==='rst')ffPatchReturn(t.dataset.id,{status:t.value});
+  else if(a==='rtr')ffPatchReturn(t.dataset.id,{tracking_no:t.value.trim()});
+  else if(a==='mks')mkSet(t.dataset.ch,t.dataset.p,'s',t.value);
+  else if(a==='mki')mkSet(t.dataset.ch,t.dataset.p,'id',t.value.trim());
+});
+function crmFf(o){var f=o.fulfillment,ch=o.channel&&o.channel!=='site'?'<span class="crmseg">'+esc(ffChName(o.channel))+(o.ext_code?' · '+esc(o.ext_code):'')+'</span>':'';
+  if(!f&&!ch)return '';return '<div class="crmact" style="align-items:center">'+ch+(f?'<span class="note" style="margin:0">'+esc(ffName(FFST,f.st||'bekliyor'))+(f.carrier?' · '+esc(f.carrier):'')+(f.track?' · Takip: '+esc(f.track):'')+'</span>':'')+'</div>';}
 
 /* ===== Yönetim: Tasarımlar sekmesi ===== */
 function bzAnchorSave(fn,bl){var u=URL.createObjectURL(bl),a=document.createElement('a');a.href=u;a.download=fn;document.body.appendChild(a);a.click();a.remove();setTimeout(function(){URL.revokeObjectURL(u);},4000);}
@@ -1558,7 +1768,8 @@ function vidEd(path,p){
 function adminView(){
   if(!ready)return '<div class="wrap page"><p class="eyebrow">Wolflano</p><h1 class="h2">Yönetim</h1><p class="lead">Yükleniyor…</p></div>';
   if(!admOk())return admGate();
-  var tabs=[['crm','Siparişler ve müşteriler'],['urun','Hazır ürünler'],['kategori','Kategoriler'],['baski','Baskıya uygun'],['studyo','Tasarım stüdyosu'],['fiyat','Fiyatlandırma'],['kanal','Satış kanalları'],['tedarik','Tedarikçiler'],['site','Site ve iletişim'],['muhasebe','Muhasebe'],['tasarim','Tasarımlar'],['seo','SEO'],['yedek','Yedek']];
+  if(!A)A=newA();
+  var tabs=[['crm','Siparişler ve müşteriler'],['depo','Depo ve gönderim'],['urun','Hazır ürünler'],['kategori','Kategoriler'],['baski','Baskıya uygun'],['studyo','Tasarım stüdyosu'],['fiyat','Fiyatlandırma'],['kanal','Satış kanalları'],['tedarik','Tedarikçiler'],['site','Site ve iletişim'],['muhasebe','Muhasebe'],['tasarim','Tasarımlar'],['seo','SEO'],['yedek','Yedek']];
   var h='<div class="wrap page ad"><p class="eyebrow">Wolflano</p><h1 class="h2">Yönetim paneli</h1><p><button class="btn soft sm" data-ad="logout">Çıkış yap</button></p><div class="tabs">'+tabs.map(function(x){return '<button data-ad="tab" data-v="'+x[0]+'"'+(A.tab===x[0]?' class="on"':'')+'>'+x[1]+'</button>';}).join('')+'</div>';
   var d=A.draft;
   if(A.tab==='urun'){
@@ -1597,6 +1808,7 @@ function adminView(){
     h+='<div class="aed" style="max-width:760px">'+fld('A3 baskı katsayısı (A4 ücreti ile çarpılır)','a3','n')+
     '<div class="two">'+fld('Kargo ücreti (₺)','ship.fee','n')+fld('Ücretsiz kargo limiti (₺, 0 = yok)','ship.free','n')+'</div><div class="three">'+d.tiers.map(function(t,i){return fld((i+1)+'. indirim: adet','tiers.'+i+'.0','n')+fld('İndirim %','tiers.'+i+'.1','n');}).join('')+'</div>'+
     '<label for="f-note">Fiyatlandırma açıklaması (her satır bir paragraf)<textarea id="f-note" data-bind="note" data-t="lines" style="min-height:200px">'+esc((d.note||[]).join('\n'))+'</textarea></label></div>';
+  }else if(A.tab==='depo'){h+=ffView();
   }else if(A.tab==='crm'){h+=crmView().replace(/^<div class="wrap page( crm)?"><p class="eyebrow">Wolflano<\/p><h1 class="h2">Yönetim<\/h1>/,'<div class="crm">');
   }else if(A.tab==='kategori'){h+=catAdmin(d);
   }else if(A.tab==='studyo'){h+=studioAdmin(d);
@@ -1620,7 +1832,7 @@ function adminView(){
     h+='<div class="aed" style="max-width:760px"><p class="note" style="margin:0">Pazaryerleri (Trendyol, n11, Hepsiburada vb.) bir firmayla anlaşınca bağlanır. API anahtarları bu sayfaya yazılmaz, sunucu tarafında tutulur. Şimdilik her kanal için ürün dosyası hazırlayıp kanalın kendi panelinden toplu yükleyebilirsin.</p>'+
     CHANNELS.map(function(c){var cc=chs(d,c[0]);return '<div class="arow" style="grid-template-columns:1fr auto"><div><b>'+c[1]+'</b><small>'+(MARKET.adapters[c[0]]?'Bağlı':'Bağlı değil')+' · '+PRODS_CH(d,c[0])+' ürün seçili</small></div><div class="chk"><label><input type="checkbox" data-bind="channels.'+c[0]+'.on" data-t="b"'+(cc.on?' checked':'')+'>Aktif</label></div></div><div class="two" style="margin:-4px 0 4px">'+fld('Fiyat farkı % ('+c[1]+')','channels.'+c[0]+'.markup','n','0')+'<div style="display:flex;align-items:end"><button class="btn soft sm" data-ad="msync" data-ch="'+c[0]+'">Stok ve fiyatı eşitle</button></div></div>';}).join('')+
     '<label for="kSel">Ürün dosyası için kanal<select id="kSel">'+CHANNELS.map(function(c){return '<option value="'+c[0]+'"'+(A.kch===c[0]?' selected':'')+'>'+c[1]+'</option>';}).join('')+'</select></label>'+
-    '<textarea class="code" id="f-kan" readonly>'+esc(channelCSV(d,A.kch))+'</textarea><div><button class="btn soft sm" data-ad="kcopy">Kopyala</button></div></div>';
+    '<textarea class="code" id="f-kan" readonly>'+esc(channelCSV(d,A.kch))+'</textarea><div><button class="btn soft sm" data-ad="kcopy">Kopyala</button></div></div>'+mkView(d);
   }else if(A.tab==='site'){
     h+='<div class="aed" style="max-width:760px"><b>Biz tasarlarız</b><div class="chk"><label><input type="checkbox" data-bind="biz.requireAccount" data-t="b"'+((d.biz||{}).requireAccount!==false?' checked':'')+'>Kullanmak için üyelik girişi zorunlu olsun</label></div><span class="note">Açıkken yalnızca giriş yapmış müşteriler kullanır. Üyelik sistemi bağlanana kadar bu bölüm ziyaretçilere kapalı görünür; sen yönetici olarak her zaman görebilirsin.</span></div>';
     h+='<div class="aed" style="max-width:760px"><b>Logo</b><div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap"><img src="'+src(d.logo||'builtin:logo')+'" alt="" id="logoPrev" style="width:88px;height:88px;object-fit:contain;background:#fff;border-radius:14px;border:1px solid var(--line)"><div><label class="btn soft sm" for="up-logo" style="display:inline-flex">Logo ekle / değiştir</label><input class="sr" id="up-logo" type="file" accept="image/*" data-uplogo="1"></div></div><span class="note">Yüklediğin logo otomatik olarak kare, beyaz zeminli ve köşeleri hafif yuvarlak bir alana, kenarlardan küçültülüp ortalanarak yerleştirilir.</span></div>';
