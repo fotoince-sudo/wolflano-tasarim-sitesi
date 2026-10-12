@@ -376,6 +376,7 @@ var DEF={v:1,
  channels:{trendyol:{on:false,markup:0},n11:{on:false,markup:0},hepsiburada:{on:false,markup:0},ciceksepeti:{on:false,markup:0},amazon:{on:false,markup:0}},
  hero:'builtin:hero',logo:'builtin:logo',strip:{a:'Wolflano online tasarımda hedefimiz',b:'Kızılelma'},
  cats:[{id:'kadin',name:'Kadın',show:true,subs:[]},{id:'erkek',name:'Erkek',show:true,subs:[]},{id:'cocuk',name:'Çocuk',show:true,subs:[{id:'kiz-cocuk',name:'Kız çocuk'},{id:'erkek-cocuk',name:'Erkek çocuk'}]}],
+ptypes:[{id:'tisort',name:'Tişört'},{id:'polo',name:'Polo tişört'},{id:'sweatshirt',name:'Sweatshirt'},{id:'esofman',name:'Eşofman'},{id:'jeans',name:'Jeans'},{id:'aksesuar',name:'Aksesuar'},{id:'ayakkabi',name:'Ayakkabı'}],
  studio:{
   tabs:[{id:'tee',label:'Ürün',show:true},{id:'text',label:'Yazı',show:true},{id:'clip',label:'Şekil',show:true},{id:'image',label:'Görsel',show:true},{id:'tpl',label:'Şablon',show:true}],
   colors:[['Beyaz','#f6f6f4'],['Siyah','#17181a'],['Gri','#8f9598'],['Yeşil','#1f6b4a'],['Mavi','#2f6fb5'],['Lacivert','#1c2a4b'],['Kahve','#5b3a29'],['Kiremit','#b2502d']].map(function(c,i){return {id:'c'+i,name:c[0],hex:c[1],show:true};}),
@@ -1332,6 +1333,10 @@ function invoiceInfo(){var k=document.getElementById('oFk');var g=function(i){va
 document.addEventListener('change',function(e){if(e.target&&e.target.id==='oFk'){var b=document.getElementById('oFb');b.hidden=!e.target.checked;b.style.display=e.target.checked?'grid':'none';}});
 function vatF(g){var v=D.vat||{};if(v.mode==='incl')return 1;var r=parseFloat(v[g]);if(isNaN(r))r=20;return 1+r/100;}
 function vp(x,g){if(x===null||x===undefined||x==='')return x;return Math.round(x*vatF(g)*100)/100;}
+/* Ürün kategorileri (Tişört, Polo...) her ana kategorinin ve alt kategorinin altında aynı listeyle görünür. */
+function PT(){var l=(D.ptypes&&D.ptypes.length)?D.ptypes:(DEF.ptypes||[]);return l.filter(function(x){return x.show!==false;});}
+function ptOf(p){if(p.pt)return p.pt;var t=String((p.type||'')+' '+(p.name||'')).toLocaleLowerCase('tr-TR');
+  if(/polo/.test(t))return 'polo';if(/sweat|kapüşon|hoodie/.test(t))return 'sweatshirt';if(/eşofman|esofman|jogger/.test(t))return 'esofman';if(/jean|kot/.test(t))return 'jeans';if(/ayakkab|sneaker|bot/.test(t))return 'ayakkabi';if(/şapka|sapka|kemer|çanta|canta|aksesuar|bere|cüzdan/.test(t))return 'aksesuar';if(/tişört|tisort|t-shirt|tshirt/.test(t))return 'tisort';return '';}
 function applyData(){if(!D.vat)D.vat={mode:'excl',ready:20,blank:20,print:20};
  ALLP=D.products.map(function(p){return Object.assign({},p,{price:vp(p.price,'ready'),old:vp(p.old,'ready')});});
  PRODUCTS=ALLP.filter(function(p){return p.show!==false;});
@@ -1349,7 +1354,7 @@ var CATS=[['kadin','Kadın'],['erkek','Erkek'],['cocuk','Çocuk']],subSel='';
 var SIDES={tee:{front:['a4','a3','logo'],back:['a4','a3']},sweat:{front:['a4','a3','logo'],back:['a4','a3']},polo:{front:['logo'],back:['a4','a3']},hat:{front:['hat'],back:[]}};
 var PNAME={a4:'A4 baskı',a3:'A3 baskı',logo:'Sol göğüs logo',hat:'Şapka ön baskı'};
 function printFee(b,k){if(k==='a4')return b.a4;if(k==='a3')return b.a4*A3_KAT;if(k==='logo')return b.logo;if(k==='hat')return b.hat;return 0;}
-var cart={},catSel='kadin',cur='ana',favs={};
+var cart={},catSel='kadin',ptSel='',cur='ana',favs={};
 try{cart=JSON.parse(localStorage.getItem('wf_cart')||'{}')||{};favs=JSON.parse(localStorage.getItem('wf_fav')||'{}')||{};}catch(_){cart={};favs={};}
 function saveLS(){try{localStorage.setItem('wf_cart',JSON.stringify(cart));localStorage.setItem('wf_fav',JSON.stringify(favs));}catch(_){}}
 /* ÖDEME ALTYAPISI: sağlayıcı (iyzico, PayTR vb.) bağlanınca provider ve pay doldurulur. pay(order) güvenli ödeme sayfasının adresini döndürür. */
@@ -1600,10 +1605,12 @@ odeme:function(){
  },
  hazir:function(){
   var cobj=(D.cats||[]).filter(function(c){return c.id===catSel;})[0]||{subs:[]},subs=cobj.subs||[];if(subSel&&!subs.some(function(x){return x.id===subSel;}))subSel='';
-  var list=PRODUCTS.filter(function(p){return (p.cat||[]).indexOf(catSel)>=0&&(!subSel||(p.sub||[]).indexOf(subSel)>=0);});
+  var pts=PT();if(ptSel&&!pts.some(function(x){return x.id===ptSel;}))ptSel='';
+  var list=PRODUCTS.filter(function(p){return (p.cat||[]).indexOf(catSel)>=0&&(!subSel||(p.sub||[]).indexOf(subSel)>=0)&&(!ptSel||ptOf(p)===ptSel);});
   return '<div class="wrap page"><p class="eyebrow">Mağaza</p><h1 class="h2">Hazır ürünler</h1><div class="claim" style="margin-bottom:28px"><p class="sl">'+esc((D.brand||{}).slogan||'')+'</p><p class="lead" style="margin:0">'+esc((D.brand||{}).readyText||'')+'</p></div>'+
   '<div class="chips" role="tablist">'+CATS.map(function(c){return '<button role="tab" data-cat="'+c[0]+'"'+(c[0]===catSel?' class="on" aria-selected="true"':'')+'>'+esc(c[1])+'</button>';}).join('')+'</div>'+
   (subs.length?'<div class="chips" style="margin-top:-12px">'+[{id:'',name:'Tümü'}].concat(subs).map(function(x){return '<button data-sub="'+x.id+'"'+(x.id===subSel?' class="on"':'')+'>'+esc(x.name||'Adsız')+'</button>';}).join('')+'</div>':'')+
+  (pts.length?'<div class="chips" style="margin-top:-12px">'+[{id:'',name:'Tüm ürünler'}].concat(pts).map(function(x){return '<button data-pt="'+x.id+'"'+(x.id===ptSel?' class="on"':'')+'>'+esc(x.name||'Adsız')+'</button>';}).join('')+'</div>':'')+
   (list.length?'<div class="grid">'+list.map(card).join('')+'</div>':'<p class="empty">Bu kategoride henüz ürün yok.</p>')+'</div>';
  },
  urun:function(id){
@@ -1729,6 +1736,7 @@ document.addEventListener('click',function(e){
   var q=t.closest('[data-q]');if(q){var qp=ALLP.filter(function(x){return x.id===q.dataset.q;})[0],nq=Math.max(0,(cart[q.dataset.q]||0)+(+q.dataset.d));if(nq===0)delete cart[q.dataset.q];if(qp&&hasStock(qp)&&nq>+qp.stock){toast('Stok sınırına ulaşıldı');return;}cart[q.dataset.q]=nq;syncCart();openCart();return;}
   var c=t.closest('[data-cat]');if(c&&!c.closest('.ad')){catSel=c.dataset.cat;subSel='';$('#main').innerHTML=VIEWS.hazir();return;}
   var sc=t.closest('[data-sub]');if(sc&&!sc.closest('.ad')){subSel=sc.dataset.sub;$('#main').innerHTML=VIEWS.hazir();return;}
+  var pc=t.closest('[data-pt]');if(pc&&!pc.closest('.ad')){ptSel=pc.dataset.pt;$('#main').innerHTML=VIEWS.hazir();return;}
   if(t.closest('#copyCart')){var L=['WOLFLANO sipariş'],tot=0;Object.keys(cart).forEach(function(id){if(cart[id]>0){var p=PRODUCTS.filter(function(x){return x.id===id;})[0];L.push(p.name+' × '+cart[id]+' = '+tl(p.price*cart[id]));tot+=p.price*cart[id];}});L.push('Toplam: '+tl(tot));copyText(L.join('\n'));return;}
   if(t.closest('#copyOrder')){copyText($('#coMsg').dataset.text||'');return;}
   if(t.closest('#copyBiz')){copyText($('#bText').textContent);return;}
@@ -1782,7 +1790,7 @@ function adminView(){
         '<div class="three">'+fld('Fiyat (₺)',pa+'.price','n')+fld('Eski fiyat (₺)',pa+'.old','n','boş = yok')+fld('Stok (adet)',pa+'.stock','n','boş = takip yok')+'</div>'+
         '<label for="'+aid(pa+'.desc')+'">Açıklama<textarea id="'+aid(pa+'.desc')+'" data-bind="'+pa+'.desc" data-t="s">'+esc(p.desc||'')+'</textarea></label>'+
         '<div><b style="font-size:14px">Kategoriler</b><div class="chk" style="margin-top:6px">'+(d.cats||[]).map(function(c){return '<label><input type="checkbox" data-cat="'+i+'" data-c="'+c.id+'"'+((p.cat||[]).indexOf(c.id)>=0?' checked':'')+'>'+esc(c.name||'Adsız')+'</label>';}).join('')+'<label><input type="checkbox" data-bind="'+pa+'.show" data-t="b"'+(p.show!==false?' checked':'')+'>Sitede göster</label></div>'+
-        subPick(d,p,i)+'</div>'+
+        subPick(d,p,i)+ptPick(d,p,i)+'</div>'+
         '<div class="three">'+fld('SKU / stok kodu',pa+'.sku')+fld('Barkod',pa+'.barcode')+fld('Marka',pa+'.brand','s','Wolflano')+'</div><div class="two"><label for="'+aid(pa+'.supplier')+'">Tedarikçi<select id="'+aid(pa+'.supplier')+'" data-bind="'+pa+'.supplier" data-t="s"><option value="">Kendi üretimimiz / yok</option>'+(d.suppliers||[]).map(function(s){return '<option value="'+s.id+'"'+(p.supplier===s.id?' selected':'')+'>'+esc(s.name||'Adsız')+'</option>';}).join('')+'</select></label>'+fld('Tedarikçi ürün kodu',pa+'.supSku')+'</div>'+
         '<div class="two">'+fld('Maliyet (tedarikçi para birimi)',pa+'.cost','n')+'<div style="display:flex;align-items:end;gap:8px;flex-wrap:wrap"><span class="note" id="sg-'+i+'">'+sugText(p,d)+'</span><button class="btn soft sm" data-ad="sugap" data-i="'+i+'">Fiyata uygula</button></div></div>'+
         '<div><b style="font-size:14px">Satış kanalları</b><div class="chk" style="margin-top:6px">'+CHANNELS.map(function(c){return '<label><input type="checkbox" data-pch="'+i+'" data-c="'+c[0]+'"'+((p.ch||[]).indexOf(c[0])>=0?' checked':'')+'>'+c[1]+'</label>';}).join('')+'</div></div>'+imgEd(pa)+vidEd(pa,p)+'<div><button class="btn soft sm" data-ad="delp" data-id="'+p.id+'" style="color:var(--red)">'+(A.del===p.id?'Silmek için tekrar dokun':'Ürünü sil')+'</button></div></div>';
@@ -1852,6 +1860,8 @@ function subPick(d,p,i){
     h+='<div style="margin-top:8px"><small style="color:var(--muted)">'+esc(c.name||'Adsız')+' alt kategorileri</small><div class="chk" style="margin-top:4px">'+c.subs.map(function(x){return '<label><input type="checkbox" data-psub="'+i+'" data-c="'+x.id+'"'+((p.sub||[]).indexOf(x.id)>=0?' checked':'')+'>'+esc(x.name||'Adsız')+'</label>';}).join('')+'</div></div>';});
   return h;
 }
+function ptPick(d,p,i){var l=(d.ptypes&&d.ptypes.length)?d.ptypes:(DEF.ptypes||[]),cv=ptOf(p),id=aid('products.'+i+'.pt');
+  return '<label for="'+id+'" style="margin-top:8px">Ürün kategorisi<select id="'+id+'" data-bind="products.'+i+'.pt" data-t="s"><option value="">Seç</option>'+l.map(function(x){return '<option value="'+esc(x.id)+'"'+(x.id===cv?' selected':'')+'>'+esc(x.name||'Adsız')+'</option>';}).join('')+'</select></label>';}
 function delBtn(act,id,label,extra){return '<button class="btn soft sm" data-ad="'+act+'" data-id="'+id+'"'+(extra||'')+' style="color:var(--red)">'+(A.del===id?'Silmek için tekrar dokun':label)+'</button>';}
 function mvBtns(act,i,extra){return '<button data-ad="'+act+'" data-i="'+i+'" data-d="-1"'+(extra||'')+' aria-label="Yukarı">▲</button><button data-ad="'+act+'" data-i="'+i+'" data-d="1"'+(extra||'')+' aria-label="Aşağı">▼</button>';}
 function catAdmin(d){
@@ -1869,6 +1879,11 @@ function catAdmin(d){
     }
   });
   h+='</div><p><button class="btn soft" data-ad="addc">+ Yeni kategori</button></p>';
+  if(!d.ptypes||!d.ptypes.length)d.ptypes=clone(DEF.ptypes);
+  h+='<div class="aed" style="max-width:760px"><b>Ürün kategorileri</b><p class="note" style="margin:0">Bu liste her ana kategorinin (Kadın, Erkek, Çocuk) ve alt kategorinin (Kız çocuk, Erkek çocuk) altında aynı şekilde görünür. Örneğin Erkek → Tişört. Ürünün kategorisini Hazır ürünler sekmesinde ürünü açıp seçersin.</p>';
+  d.ptypes.forEach(function(x,j){var n=d.products.filter(function(p){return ptOf(p)===x.id;}).length;
+    h+='<div style="display:grid;grid-template-columns:1fr auto;gap:8px;align-items:end">'+fld('Ürün kategorisi '+(j+1)+' · '+n+' ürün','ptypes.'+j+'.name')+'<div class="mini" style="padding-bottom:4px">'+mvBtns('mvpt',j)+'<button data-ad="delpt" data-id="'+x.id+'" aria-label="Sil" style="color:var(--red)">'+(A.del===x.id?'Sil?':'✕')+'</button></div></div>';});
+  h+='<div><button class="btn soft sm" data-ad="addpt">+ Ürün kategorisi ekle</button></div></div>';
   return h;
 }
 function stNorm(d){var st=d.studio=d.studio||clone(DEF.studio);['tabs','colors','clipCats','tplCats'].forEach(function(k){if(!st[k]||!st[k].length)st[k]=clone(DEF.studio[k]);});return st;}
@@ -2355,7 +2370,10 @@ document.addEventListener('click',function(e){
   else if(a==='mvc'){if(swapArr(d.cats,+b.dataset.i,+b.dataset.d)){dirty();adRender();}}
   else if(a==='addcs'){var c1=d.cats[+b.dataset.c];(c1.subs||(c1.subs=[])).push({id:nid('s'),name:'Yeni alt kategori'});dirty();adRender();}
   else if(a==='delcs'){var c2=d.cats[+b.dataset.c];if(A.del===b.dataset.id){c2.subs=c2.subs.filter(function(x){return x.id!==b.dataset.id;});d.products.forEach(function(p){if(p.sub)p.sub=p.sub.filter(function(x){return x!==b.dataset.id;});});A.del=null;dirty();}else A.del=b.dataset.id;adRender();}
-  else if(a==='mvcs'){if(swapArr(d.cats[+b.dataset.c].subs,+b.dataset.i,+b.dataset.d)){dirty();adRender();}}
+  else if(a==='addpt'){(d.ptypes=d.ptypes&&d.ptypes.length?d.ptypes:clone(DEF.ptypes)).push({id:nid('t'),name:'Yeni ürün kategorisi'});dirty();adRender();}
+if(a==='delpt'){if(A.del===b.dataset.id){d.ptypes=d.ptypes.filter(function(x){return x.id!==b.dataset.id;});d.products.forEach(function(p){if(p.pt===b.dataset.id)p.pt='';});A.del=null;dirty();}else A.del=b.dataset.id;adRender();}
+if(a==='mvpt'){if(swapArr(d.ptypes,+b.dataset.i,+b.dataset.d)){dirty();adRender();}}
+if(a==='mvcs'){if(swapArr(d.cats[+b.dataset.c].subs,+b.dataset.i,+b.dataset.d)){dirty();adRender();}}
   else if(a==='addsc'){var sk=stNorm(d)[b.dataset.k],sid=nid('k');sk.push({id:sid,name:'Yeni kategori',show:true,items:[]});A.open=sid;dirty();adRender();}
   else if(a==='delsc'){var sl=stNorm(d),kk=b.dataset.k;if(A.del===b.dataset.id){sl[kk]=sl[kk].filter(function(x){return x.id!==b.dataset.id;});A.del=null;A.open=null;dirty();}else A.del=b.dataset.id;adRender();}
   else if(a==='mvsc'){if(swapArr(stNorm(d)[b.dataset.k],+b.dataset.i,+b.dataset.d)){dirty();adRender();}}
