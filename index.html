@@ -130,8 +130,8 @@ main{min-height:60vh}
 .ksteps div:before{counter-increment:ks;content:counter(ks);display:grid;place-items:center;width:30px;height:30px;border-radius:50%;background:var(--green);color:#fff;font-weight:700;margin-bottom:10px}
 .ksteps b{display:block;font-size:16px;margin-bottom:4px}.ksteps span{color:var(--muted);font-size:14px;line-height:1.45}
 .wolfban{display:flex;align-items:center;gap:16px;margin-top:24px;padding:18px;border-radius:16px;background:#101a14;color:#fff;text-decoration:none;box-shadow:0 10px 30px rgba(16,26,20,.18)}
-.wolfban .wic{flex:none;width:64px;height:64px;border-radius:14px;background:#30703f;display:grid;place-items:center}
-.wolfban .wic svg{width:42px;height:42px}
+.wolfban .wic{flex:none;width:64px;height:64px;border-radius:14px;background:#fff;display:grid;place-items:center;overflow:hidden}
+.wolfban .wic img{width:56px;height:56px;object-fit:contain}
 .wolfban .wtx{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px}
 .wolfban b{font:700 20px var(--ui);letter-spacing:.02em}
 .wolfban small{font:500 14px/1.4 var(--ui);color:rgba(255,255,255,.75)}
@@ -1683,7 +1683,7 @@ function kurHTML(full){
   h+='<div class="kcta"><a class="btn" target="_blank" rel="noopener" href="'+kurWa('Merhaba Wolflano, kurumumuz için toplu baskı teklifi almak istiyorum.\nKurum adı: \nÜrün (tişört / sweatshirt / forma / eşofman): \nAdet: \nRenk: \nTarih: ')+'">Teklif iste '+IC.arrow+'</a>'+(full?'<a class="btn soft" href="#tasarla">Kendin tasarla</a>':'<a class="btn soft" href="#kurumsal">Detaylar</a>')+'</div></section>';
   return h;
 }
-function wolfBan(){return '<a class="wolfban" href="studyo.html?vitrin=wolf"><span class="wic"><svg viewBox="0 0 100 100" aria-hidden="true"><path fill="currentColor" fill-rule="evenodd" d="M18 6L38 34L50 30L62 34L82 6L90 44L82 66L66 90L50 96L34 90L18 66L10 44ZM28 52L44 58L40 64L28 58ZM72 52L56 58L60 64L72 58ZM44 80L56 80L50 88Z"/></svg></span><span class="wtx"><b>Wolf tasarımları</b><small>Wolflano\'ya özel kurt temalı hazır tasarımlar. Beğendiğini seç, baskı alanına yerleşsin. A4 dikey, A4 yatay veya A3.</small></span><span class="wgo">'+IC.arrow+'</span></a>';}
+function wolfBan(){return '<a class="wolfban" href="studyo.html?vitrin=wolf"><span class="wic"><img src="'+src(D.logo||'builtin:logo')+'" alt="Wolflano"></span><span class="wtx"><b>Wolf tasarımları</b><small>Wolflano\'ya özel kurt temalı hazır tasarımlar. Beğendiğini seç, baskı alanına yerleşsin. A4 dikey, A4 yatay veya A3.</small></span><span class="wgo">'+IC.arrow+'</span></a>';}
 function route(){
   var h=(location.hash||'#ana').slice(1),pid=null;
   if(h.indexOf('urun-')===0){pid=h.slice(5);h='urun';}
