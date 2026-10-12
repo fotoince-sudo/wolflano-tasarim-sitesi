@@ -66,6 +66,16 @@ header{display:flex;align-items:baseline;justify-content:space-between;gap:12px}
 .sizes svg{width:14px;height:14px;display:block}
 .sizes button:focus-visible{outline:2px solid var(--fg);outline-offset:2px}
 .readout{font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums;letter-spacing:.04em;text-transform:uppercase}
+.menus{display:flex;gap:6px;flex-wrap:wrap}
+.menus button{font:600 13px/1 var(--body);color:var(--fg);background:var(--chip);border:1px solid var(--line);border-radius:999px;padding:9px 13px;cursor:pointer}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chips button{font:600 13px/1 var(--body);color:var(--fg);background:var(--chip);border:1px solid var(--line);border-radius:999px;padding:8px 12px;cursor:pointer}
+.chips button[aria-pressed="true"]{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+.pick{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;max-height:46vh;overflow:auto}
+.pick button{aspect-ratio:1;background:#fff;border:1px solid var(--line);border-radius:12px;padding:6px;cursor:pointer}
+.pick img{width:100%;height:100%;object-fit:contain;display:block}
+.panel .ghost{background:transparent;color:var(--fg);border:1px solid var(--line)}
+.art img{width:100%;height:100%;object-fit:contain;display:block;pointer-events:none}
 @media (prefers-reduced-motion:reduce){.shirt path,.area{transition:none}}
 </style>
 
@@ -75,14 +85,8 @@ header{display:flex;align-items:baseline;justify-content:space-between;gap:12px}
     <div class="hint">Sürükle: taşı · Köşeyi çek: boyut ve açı</div>
   </header>
 
-  <div class="sizes" id="sizes" role="group" aria-label="Baskı alanı">
-    <button type="button" data-s="a4p" aria-pressed="true" aria-label="A4 dikey">A4
-      <svg viewBox="0 0 14 14"><rect x="3.5" y="1.5" width="7" height="11" rx="1" fill="none" stroke="currentColor" stroke-width="1.5"/></svg></button>
-    <button type="button" data-s="a4l" aria-pressed="false" aria-label="A4 yatay">A4
-      <svg viewBox="0 0 14 14"><rect x="1.5" y="3.5" width="11" height="7" rx="1" fill="none" stroke="currentColor" stroke-width="1.5"/></svg></button>
-    <button type="button" data-s="a3p" aria-pressed="false" aria-label="A3 dikey">A3
-      <svg viewBox="0 0 14 14"><rect x="3.5" y="1.5" width="7" height="11" rx="1" fill="none" stroke="currentColor" stroke-width="1.5"/></svg></button>
-  </div>
+  <div class="sizes" id="sizes" role="group" aria-label="Baskı alanı"></div>
+  <div class="menus" id="menus"></div>
 
   <div class="stage" id="stage">
     <svg class="shirt" id="shirt" viewBox="0 0 400 440" aria-label="Tişört önizleme">
@@ -106,11 +110,7 @@ header{display:flex;align-items:baseline;justify-content:space-between;gap:12px}
   </div>
 
   <div class="bar">
-    <div class="swatches" id="swatches">
-      <button class="sw" style="background:#fbfaf7" data-c="#fbfaf7" aria-label="Beyaz" aria-pressed="true"></button>
-      <button class="sw" style="background:#c9c4b8" data-c="#c9c4b8" aria-label="Taş" aria-pressed="false"></button>
-      <button class="sw" style="background:#5d6b5a" data-c="#5d6b5a" aria-label="Haki" aria-pressed="false"></button>
-    </div>
+    <div class="swatches" id="swatches"></div>
     <div class="tools">
       <button id="rot90" type="button">90° çevir</button>
       <button id="center" type="button">Ortala</button>
@@ -118,6 +118,15 @@ header{display:flex;align-items:baseline;justify-content:space-between;gap:12px}
     </div>
   </div>
   <div class="readout" id="readout"></div>
+</div>
+
+<div class="sheet" id="pickSheet" hidden>
+  <div class="panel">
+    <div class="ptitle" id="pickTitle"></div>
+    <div class="chips" id="pickSubs"></div>
+    <div class="pick" id="pickGrid"></div>
+    <button id="pickClose" type="button" class="ghost">Kapat</button>
+  </div>
 </div>
 
 <div class="sheet" id="sheet" hidden>
@@ -139,18 +148,66 @@ header{display:flex;align-items:baseline;justify-content:space-between;gap:12px}
 
   // Baskı alanı tişört üzerinde (viewBox birimleri): 130..270 x 110..300
   // Baskı alanları (cm). Tişört çiziminde 1 cm ≈ 4.85 birim; üst kenar yakadan sabit mesafede.
-  const SIZES={a4p:{n:'A4 dikey',cw:21,ch:29.7},a4l:{n:'A4 yatay',cw:29.7,ch:21},a3p:{n:'A3 dikey',cw:29.7,ch:42}};
+  // Stüdyo düğmeleri yönetim panelinden gelir (Supabase site_content). Yoksa varsayılanlar.
+  const SB={url:'https://wgovwmeirlzwalelazfj.supabase.co',key:'sb_publishable_PP5xFd7ga61xaDOCHeET_Q_zfMaE_4G'};
+  const DEF={
+    areas:[{id:'a4p',name:'A4 dikey',label:'A4',cw:21,ch:29.7},{id:'a4l',name:'A4 yatay',label:'A4',cw:29.7,ch:21},{id:'a3p',name:'A3',label:'A3',cw:29.7,ch:42}],
+    colors:[{id:'c1',name:'Beyaz',hex:'#fbfaf7'},{id:'c2',name:'Taş',hex:'#c9c4b8'},{id:'c3',name:'Haki',hex:'#5d6b5a'}],
+    tools:[{id:'rot90',label:'90° çevir'},{id:'center',label:'Ortala'},{id:'approve',label:'Onayla'}],
+    menus:[]};
+  let CFG=DEF, MEDIA='';
+  const esc=t=>String(t==null?'':t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  const srcOf=t=>!t?'':(/^(https?:|data:|blob:)/.test(t)?t:(MEDIA==='sb'&&/^(img|vid)\//.test(t)?SB.url+'/storage/v1/object/public/site/'+t:t));
+  const vis=l=>(l||[]).filter(x=>x&&x.show!==false);
   const U=144/29.7;
-  let cur=SIZES.a4p, PA={};
+  let SIZES={}, cur=null, PA={};
   function setSize(k){
-    cur=SIZES[k];
+    cur=SIZES[k]; if(!cur) return;
     PA={w:cur.cw*U,h:cur.ch*U,x:200-cur.cw*U/2,y:100};
     document.querySelectorAll('#sizes button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.s===k));
   }
-  setSize('a4p');
+  function icon(a){const p=a.cw<=a.ch;return '<svg viewBox="0 0 14 14"><rect x="'+(p?3.5:1.5)+'" y="'+(p?1.5:3.5)+'" width="'+(p?7:11)+'" height="'+(p?11:7)+'" rx="1" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>';}
+  function build(){
+    const areas=vis(CFG.areas).filter(a=>+a.cw>0&&+a.ch>0); const al=areas.length?areas:DEF.areas;
+    SIZES={}; al.forEach(a=>SIZES[a.id]={n:a.name||a.label||'',cw:+a.cw,ch:+a.ch});
+    document.getElementById('sizes').innerHTML=al.map(a=>'<button type="button" data-s="'+esc(a.id)+'" aria-pressed="false" aria-label="'+esc(a.name||a.label)+'">'+esc(a.label||a.name)+icon(a)+'</button>').join('');
+    const cols=vis(CFG.colors); const cl=cols.length?cols:DEF.colors;
+    document.getElementById('swatches').innerHTML=cl.map((c,i)=>'<button class="sw" style="background:'+esc(c.hex)+'" data-c="'+esc(c.hex)+'" aria-label="'+esc(c.name)+'" aria-pressed="'+(i===0)+'"></button>').join('');
+    document.getElementById('shirtFill').setAttribute('fill',cl[0].hex);
+    const tl={};(CFG.tools||[]).forEach(t=>tl[t.id]=t);
+    ['rot90','center','approve'].forEach(id=>{const el=document.getElementById(id),t=tl[id];if(!t)return;if(t.label)el.textContent=t.label;el.hidden=id!=='approve'&&t.show===false;});
+    const ms=vis(CFG.menus);
+    document.getElementById('menus').innerHTML=ms.map(m=>'<button type="button" data-m="'+esc(m.id)+'">'+esc(m.label||'Adsız')+'</button>').join('');
+    setSize(al[0].id);
+  }
   document.getElementById('sizes').addEventListener('click',e=>{
     const b=e.target.closest('button'); if(!b) return; setSize(b.dataset.s); layout();
   });
+  // Menü düğmesi → alt kategoriler → görseller
+  const pickSheet=document.getElementById('pickSheet');
+  let pm=null, ps=null;
+  function drawPick(){
+    const subs=pm.subs||[];
+    if(!subs.some(x=>x.id===ps)) ps=subs[0]?subs[0].id:null;
+    document.getElementById('pickTitle').textContent=pm.label||'';
+    document.getElementById('pickSubs').innerHTML=subs.length>1?subs.map(x=>'<button type="button" data-ps="'+esc(x.id)+'" aria-pressed="'+(x.id===ps)+'">'+esc(x.name||'Adsız')+'</button>').join(''):'';
+    const sub=subs.filter(x=>x.id===ps)[0], items=(sub&&sub.items)||[];
+    document.getElementById('pickGrid').innerHTML=items.length?items.map(it=>'<button type="button" data-img="'+esc(srcOf(it.img))+'" aria-label="'+esc(it.name||'Görsel')+'"><img src="'+esc(srcOf(it.img))+'" alt="" loading="lazy"></button>').join(''):'<p class="pnote" style="grid-column:1/-1">Bu bölümde henüz görsel yok.</p>';
+  }
+  document.getElementById('menus').addEventListener('click',e=>{
+    const b=e.target.closest('button'); if(!b) return;
+    pm=vis(CFG.menus).filter(m=>m.id===b.dataset.m)[0]; if(!pm) return; ps=null; drawPick(); pickSheet.hidden=false;
+  });
+  document.getElementById('pickSubs').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;ps=b.dataset.ps;drawPick();});
+  document.getElementById('pickGrid').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;setArt(b.dataset.img);pickSheet.hidden=true;});
+  document.getElementById('pickClose').onclick=()=>{pickSheet.hidden=true;};
+  pickSheet.addEventListener('click',e=>{if(e.target===pickSheet) pickSheet.hidden=true;});
+  let artImg=null;
+  function setArt(u){
+    artImg=u; art.innerHTML='<img src="'+esc(u)+'" alt="" crossorigin="anonymous">';
+    st.cx=.5; st.cy=.42; st.size=.62; st.rot=0; obj.classList.add('sel'); area.classList.remove('quiet'); render();
+  }
+  build();
   const st={cx:.5,cy:.42,size:.62,rot:0}; // cx,cy,size baskı alanına oranla
   let box={};
 
@@ -235,24 +292,29 @@ header{display:flex;align-items:baseline;justify-content:space-between;gap:12px}
   document.getElementById('approve').onclick=()=>{
     out.width=Math.round(cur.cw*36); out.height=Math.round(cur.ch*36);
     const W=out.width, H=out.height, ctx=out.getContext('2d');
-    const svg=new XMLSerializer().serializeToString(document.getElementById('artSvg'));
-    const img=new Image();
+    const svgEl=document.getElementById('artSvg');
+    const img=new Image(); img.crossOrigin='anonymous';
+    img.onerror=()=>{document.getElementById('pmeta').textContent='Görsel yüklenemedi, tekrar dene.';sheet.hidden=false;};
     img.onload=()=>{
       ctx.clearRect(0,0,W,H);
       ctx.save(); ctx.beginPath(); ctx.rect(0,0,W,H); ctx.clip();
       const px=st.size*W;
       ctx.translate(st.cx*W, st.cy*H); ctx.rotate(st.rot*Math.PI/180);
-      ctx.drawImage(img,-px/2,-px/2,px,px); ctx.restore();
+      const iw=img.naturalWidth||1, ih=img.naturalHeight||1, k=Math.min(px/iw,px/ih);
+      if(artImg) ctx.drawImage(img,-iw*k/2,-ih*k/2,iw*k,ih*k); else ctx.drawImage(img,-px/2,-px/2,px,px); ctx.restore();
       document.getElementById('pmeta').textContent=`${cur.n} · ${cur.cw} × ${cur.ch} cm · Şeffaf arka plan`;
       sheet.hidden=false;
     };
-    img.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg);
+    img.src=artImg||('data:image/svg+xml;charset=utf-8,'+encodeURIComponent(new XMLSerializer().serializeToString(svgEl)));
   };
   document.getElementById('closeSheet').onclick=()=>{sheet.hidden=true;};
   sheet.addEventListener('click',e=>{if(e.target===sheet) sheet.hidden=true;});
 
   new ResizeObserver(layout).observe(stage);
   layout();
+  fetch(SB.url+'/rest/v1/site_content?select=data&id=eq.main',{headers:{apikey:SB.key},cache:'no-store'})
+    .then(r=>r.ok?r.json():null).then(a=>{const d=a&&a[0]&&a[0].data;if(!d||!d.studio)return;CFG=Object.assign({},DEF,d.studio);MEDIA=d.media||'';build();layout();})
+    .catch(()=>{});
 })();
 </script>
 
