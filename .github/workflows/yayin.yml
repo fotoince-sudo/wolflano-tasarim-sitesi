@@ -1,0 +1,18 @@
+# main'e her gönderimde TurkHosting'e (Plesk) haber verir; Plesk çekip siteye dağıtır.
+name: TurkHosting'e yayınla
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  haber-ver:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Plesk'e çek-dağıt haberi gönder
+        run: |
+          curl -fsS -X POST --retry 3 --max-time 60 \
+            "https://static-159-253-45-63.sunucuhub.com:8443/modules/git/public/web-hook.php?uuid=87ba83a3-c255-4c42-4b2b-e90d390a8871" \
+            -H "Content-Type: application/json" -H "X-GitHub-Event: push" \
+            -d '{"ref":"refs/heads/main"}'

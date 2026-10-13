@@ -2,7 +2,7 @@
 Options -Indexes
 
 # Siteyle ilgisi olmayan dosyaları dışarıya kapat
-RedirectMatch 404 ^/(supabase|\.git)(/.*)?$
+RedirectMatch 404 ^/(supabase|\.git|\.github)(/.*)?$
 <FilesMatch "^(wrangler\.jsonc|README\.md|\.assetsignore|\.htaccess)$">
   Require all denied
 </FilesMatch>
