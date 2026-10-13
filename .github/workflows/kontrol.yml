@@ -1,0 +1,18 @@
+name: Canli site kontrol
+on:
+  push:
+    branches: [canli-kontrol]
+jobs:
+  k:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          UA="Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1"
+          for u in "https://wolflano.com.tr/" "https://wolflano.com.tr/?nc=$RANDOM" "https://wolflano.com.tr/index.html"; do
+            echo "=== $u"; curl -sS -A "$UA" -D h.txt -o live.html "$u"; cat h.txt
+            echo "size live=$(wc -c < live.html) repo=$(wc -c < index.html)"; cmp -s live.html index.html && echo AYNI || { echo FARKLI; diff <(tr '>' '\n' < index.html) <(tr '>' '\n' < live.html) | head -40; }
+            grep -o 'cdn-cgi[^"]*' live.html | sort -u | head; grep -o '<script[^>]*>' live.html | head
+          done
+          for f in img urunler; do ls $f | head -3; done
+          curl -sS -o /dev/null -w "img status %{http_code}\n" "https://wolflano.com.tr/urunler/tisort.jpg"
