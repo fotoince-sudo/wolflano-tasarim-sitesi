@@ -1834,11 +1834,14 @@ syncUndo();
 /* ===== Yönetim panelinden gelen stüdyo düğmeleri (Supabase site_content.studio) ===== */
 (function(){
   var SBX={url:'https://wgovwmeirlzwalelazfj.supabase.co',key:'sb_publishable_PP5xFd7ga61xaDOCHeET_Q_zfMaE_4G'};
-  var MEDIA='',CLIP_ITEMS={},TPL_ITEMS={},HIDE_TPL={};
+  var MEDIA='',CLIP_ITEMS={},TPL_ITEMS={},HIDE_TPL={};var WOLF_CAT='Wolf tasarımları';
   function esc(t){return String(t==null?'':t).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
   function srcOf(t){if(!t)return '';if(/^(https?:|data:|blob:)/.test(t))return t;if(MEDIA==='sb'&&/^(img|vid)\//.test(t))return SBX.url+'/storage/v1/object/public/site/'+t;return t;}
   function vis(l){return (l||[]).filter(function(x){return x&&x.show!==false;});}
   function itemBtns(list){return (list||[]).map(function(it){var u=srcOf(it.img);return '<button class="clipb" data-sitem="'+esc(u)+'" aria-label="'+esc(it.name||'Görsel')+'"><img alt="" src="'+esc(u)+'" loading="lazy" style="width:100%;height:100%;object-fit:contain"></button>';}).join('');}
+  var baseWolf=renderWolf;
+  renderWolf=function(){baseWolf();var g=$('#wfGrid');if(!g)return;var l=(WOLF_CAT&&TPL_ITEMS[WOLF_CAT])||[];
+    g.insertAdjacentHTML('afterbegin',l.map(function(it){var u=srcOf(it.img);return '<button class="wcard" data-sitem="'+esc(u)+'"><div class="prev" style="background:'+state.tee+'"><img alt="" src="'+esc(u)+'" loading="lazy" style="position:absolute;left:50%;top:10px;width:139px;height:196px;object-fit:contain;transform:translateX(-50%)"></div><b>'+esc(it.name||'Wolf tasarımı')+'</b><small>A4 dikey · A4 yatay · A3</small></button>';}).join(''));};
   var baseClip=renderClipGrid,baseTpl=renderTpl;
   renderClipGrid=function(){baseClip();var g=$('#clipGrid');if(g)g.insertAdjacentHTML('beforeend',itemBtns(CLIP_ITEMS[view.clipCat]));};
   renderTpl=function(){
@@ -1848,12 +1851,12 @@ syncUndo();
       if(extra.length)g.insertAdjacentHTML('afterbegin',itemBtns(extra));}
     $('#tplEmpty').hidden=g.children.length>0;
   };
-  function addFromUrl(u){
+  function addFromUrl(u,fresh){
     var im=new Image();im.crossOrigin='anonymous';
-    im.onload=function(){var id='a'+(++assetN);assets[id]={url:u,w:im.naturalWidth||1,h:im.naturalHeight||1};addImageObj(id);};
+    im.onload=function(){var id='a'+(++assetN);assets[id]={url:u,w:im.naturalWidth||1,h:im.naturalHeight||1};if(fresh){cur().objs=[];view.sel=null;}addImageObj(id);if(fresh)toast('Tasarım yerleşti. Geri almak için ↶');};
     im.onerror=function(){toast('Görsel yüklenemedi, tekrar dene.');};im.src=u;
   }
-  document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('[data-sitem]');if(!b)return;e.preventDefault();e.stopPropagation();addFromUrl(b.dataset.sitem);if(view.tab)closeTab();},true);
+  document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('[data-sitem]');if(!b)return;e.preventDefault();e.stopPropagation();var fw=!$('#wolfPage').hidden;addFromUrl(b.dataset.sitem,fw);if(view.tab)closeTab();if(fw)closeWolf();},true);
   function apply(st){
     var cols=vis(st.colors).filter(function(c){return /^#[0-9a-f]{6}$/i.test(c.hex||'');});
     if(cols.length){TEES.length=0;cols.forEach(function(c){TEES.push([c.name||c.hex,c.hex]);});if(!TEES.some(function(t){return t[1]===state.tee;}))state.tee=TEES[0][1];}
@@ -1867,7 +1870,7 @@ syncUndo();
     if(st.tplCats&&st.tplCats.length){
       var tm={};st.tplCats.forEach(function(c){if(c.orig)tm[c.orig]=c;});
       HIDE_TPL={};TPLS.forEach(function(t){var m=tm[t.c];if(m){if(m.show===false){t.c='__gizli__';}else t.c=m.name||t.c;t._q=null;}});HIDE_TPL.__gizli__=1;
-      var tv=vis(st.tplCats);TPL_ITEMS={};tv.forEach(function(c){if((c.items||[]).length)TPL_ITEMS[c.name]=c.items;});
+      var wc=tm['Wolf tasarımları'];WOLF_CAT=wc&&wc.show!==false?(wc.name||'Wolf tasarımları'):'';var tv=vis(st.tplCats);TPL_ITEMS={};tv.forEach(function(c){if((c.items||[]).length)TPL_ITEMS[c.name]=c.items;});
       TPL_CATS.length=0;TPL_CATS.push('Tümü');tv.forEach(function(c){TPL_CATS.push(c.name);});
       if(TPL_CATS.indexOf(view.tplCat)<0)view.tplCat='Tümü';
     }
@@ -1876,7 +1879,7 @@ syncUndo();
   }
   fetch(SBX.url+'/rest/v1/site_content?select=data&id=eq.main',{headers:{apikey:SBX.key},cache:'no-store'})
     .then(function(r){return r.ok?r.json():null;})
-    .then(function(a){var d=a&&a[0]&&a[0].data;if(!d||!d.studio)return;MEDIA=d.media||'';try{apply(d.studio);}catch(er){}})
+    .then(function(a){var d=a&&a[0]&&a[0].data;if(!d||!d.studio)return;MEDIA=d.media||'';try{apply(d.studio);if(!$('#wolfPage').hidden)renderWolf();}catch(er){}})
     .catch(function(){});
 })();
 })();
