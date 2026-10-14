@@ -102,6 +102,8 @@ svg.i{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stro
 .hint{position:absolute;left:50%;bottom:8px;transform:translateX(-50%);pointer-events:none;font:600 12px var(--ui);color:var(--muted);background:var(--panel);border:1px solid var(--line);padding:5px 12px;border-radius:999px;white-space:nowrap;transition:opacity .4s}
 .hint.gone{opacity:0}
 .toast{position:absolute;left:50%;top:10px;transform:translateX(-50%);background:var(--ink);color:var(--bg);font:600 13px var(--ui);padding:8px 14px;border-radius:999px;pointer-events:none;max-width:90%;text-align:center;z-index:5}
+.ad-warn{margin:0 0 10px;color:var(--warn);font:600 13px/1.45 var(--ui)}
+.toast.top{position:fixed;top:calc(env(safe-area-inset-top,0px) + 64px);z-index:80}
 .toast.long{border-radius:14px;width:min(320px,90%);line-height:1.4;font-weight:600}
 
 .ctxwrap{position:relative;background:var(--panel);border-top:1px solid var(--line)}
@@ -378,10 +380,12 @@ svg.i{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stro
   </div>
 </div>
 
+<div class="toast top" id="toastTop" role="status" hidden></div>
 <div id="added" hidden>
   <div class="ad-scrim" data-adx></div>
   <div class="ad-card" role="dialog" aria-modal="true" aria-labelledby="adT">
     <div class="ad-h"><span class="ad-ok" aria-hidden="true"><svg class="i" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span><div><b id="adT">Sepete eklendi</b><small id="adS"></small></div></div>
+    <p class="ad-warn" id="adW" hidden></p>
     <button class="primary ad-b" id="adNew">Yeni tasarıma başla</button>
     <button class="ghost ad-b" id="adSame">Bu tasarımı başka ürüne de ekle</button>
     <button class="ghost ad-b" id="adPay">Ödemeye geç</button>
@@ -993,15 +997,8 @@ function issueText(){
   if(r.over)t.push('Tasarımın bir kısmı baskı alanından taşıyor, taşan kısım basılmaz.');
   return t.join(' ');
 }
-function longToast(m){var t=$('#toast');t.textContent=m;t.hidden=false;t.classList.add('long');clearTimeout(toastT);toastT=setTimeout(function(){t.hidden=true;},6500);}
-/* Sorun varsa bir kez uyarır; aynı tasarımda ikinci dokunuşta işleme devam eder. */
-var warnedSig=null;
-function warnFirst(){
-  var sig=designSig();
-  if(warnedSig===sig||cartItems.some(function(x){return x.sig===sig;}))return false;
-  var m=issueText();if(!m)return false;
-  warnedSig=sig;longToast(m+' Yine de devam etmek için tekrar dokun.');return true;
-}
+function longToast(m){var t=toastEl();t.textContent=m;t.hidden=false;t.classList.add('long');clearTimeout(toastT);toastT=setTimeout(function(){t.hidden=true;},6500);}
+
 function select(id){
   view.sel=id||null;view.pop=null;
   buildSel();syncCtx();syncTextInput();
@@ -1495,7 +1492,10 @@ function renderAll(){
 }
 
 var toastT=0;
-function toast(m){var t=$('#toast');t.classList.remove('long');t.textContent=m;t.hidden=false;clearTimeout(toastT);toastT=setTimeout(function(){t.hidden=true;},2400);}
+/* Sipariş, ödeme veya ürün sayfası açıkken bildirim tasarım alanının arkasında kalmasın diye en üstte gösterilir. */
+function toastEl(){var top=['#order','#checkout','#prodPage','#wolfPage'].some(function(q){var e=$(q);return e&&!e.hidden;});
+  var t=top?$('#toastTop'):$('#toast'),o=top?$('#toast'):$('#toastTop');if(o)o.hidden=true;return t;}
+function toast(m){var t=toastEl();t.classList.remove('long');t.textContent=m;t.hidden=false;clearTimeout(toastT);toastT=setTimeout(function(){t.hidden=true;},2400);}
 
 /* ---------- Olaylar ---------- */
 $('#tabs').addEventListener('click',function(e){var b=e.target.closest('[data-tab]');if(b)openTab(b.dataset.tab);});
@@ -1851,11 +1851,12 @@ function showAdded(already){
   var n=cartItems.length,t=cartSub();
   $('#adT').textContent=already?'Bu tasarım zaten sepette':'Sepete eklendi';
   $('#adS').textContent='Sepette '+n+' tasarım · '+fmt(t);
+  var w=issueText(),aw=$('#adW');aw.hidden=!w;aw.textContent=w?w+' Düzeltmek istersen "Bu tasarıma geri dön".':'';
   $('#added').hidden=false;setTimeout(function(){$('#adNew').focus();},60);
 }
 function hideAdded(){$('#added').hidden=true;}
 function freshDesign(){['front','back'].forEach(function(s){state[s].objs=[];});view.sel=null;view.side='front';}
-$('#addCart').addEventListener('click',function(){if(warnFirst())return;addToCart();});
+$('#addCart').addEventListener('click',function(){addToCart();});
 $('#added').addEventListener('click',function(e){if(e.target.closest('[data-adx]'))hideAdded();});
 $('#adNew').addEventListener('click',function(){
   hideAdded();leaveOrder();closeOrder();freshDesign();renderAll();pushHist();
@@ -1951,7 +1952,7 @@ function askQuote(){
 $('#cIl').addEventListener('input',askQuote);$('#cIlce').addEventListener('input',askQuote);
 $('#goPay').addEventListener('click',async function(){
   var has=sidesOf().some(function(sd){return state[sd].objs.length;});
-  if(has&&priceInfo().qty&&warnFirst())return;
+  if(has&&priceInfo().qty){var pw=issueText();if(pw)longToast(pw);}
   if(has&&priceInfo().qty&&!cartItems.some(function(x){return x.sig===designSig();}))await addToCart(true);
   coFrom='order';openCheckout();
 });
