@@ -80,6 +80,7 @@ svg.i{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stro
 #stage{position:absolute;left:0;top:0;width:600px;height:640px;transform-origin:0 0;transition:transform .3s cubic-bezier(.2,.7,.2,1);--inv:1;--area:#111}
 #shirtHost svg{display:block;pointer-events:none}
 #clipLayer,#objLayer{position:absolute;inset:0}
+#shadeHost,#shadeHost>div{position:absolute;inset:0;pointer-events:none}#shadeHost svg{display:block}#shadeHost .sh-m{mix-blend-mode:multiply}#shadeHost .sh-s{mix-blend-mode:screen}
 .obj{position:absolute;left:0;top:0;transform-origin:50% 50%;cursor:grab}
 .obj.text{white-space:pre;line-height:1.1;padding:.08em .16em}
 .obj.text.warp{padding:0;line-height:0}
@@ -263,6 +264,7 @@ svg.i{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stro
     <div id="stage">
       <div id="shirtHost"></div>
       <div id="clipLayer"><div id="objLayer"></div></div>
+      <div id="shadeHost" aria-hidden="true"></div>
       <div id="areaBox"><span id="areaLabel"></span></div>
       <div id="selLayer"></div>
     </div>
@@ -757,14 +759,17 @@ function hatSVG(tee,thumb){
   '<g fill="none" stroke="#000" stroke-opacity=".16" stroke-width="2" stroke-linecap="round"><path d="M300 114C228 150 206 260 214 380"/><path d="M300 114C372 150 394 260 386 380"/><path d="M150 360Q300 332 450 360"/></g>'+
   '<circle cx="300" cy="116" r="9" fill="'+tee+'"/><circle cx="300" cy="116" r="9" fill="#000" fill-opacity=".18"/></svg>';
 }
-function shirtSVG(side,tee,product,cut){
-  var nc=side==='front'?(product==='polo'?112:140):90;
-  var sw=product==='sweat';
-  var kd=cut==='kadin';
-  var body=sw?(kd?'M232 62Q300 '+nc+' 368 62L468 88L548 384L496 400L468 268Q444 340 444 420Q446 510 458 596Q300 618 142 596Q154 510 156 420Q156 340 132 268L104 400L52 384L132 88Z'
+function shirtBody(side,product,cut){
+  var nc=side==='front'?(product==='polo'?112:140):90,sw=product==='sweat',kd=cut==='kadin';
+  return sw?(kd?'M232 62Q300 '+nc+' 368 62L468 88L548 384L496 400L468 268Q444 340 444 420Q446 510 458 596Q300 618 142 596Q154 510 156 420Q156 340 132 268L104 400L52 384L132 88Z'
                  :'M232 62Q300 '+nc+' 368 62L468 88L548 384L496 400L468 268L468 596Q300 618 132 596L132 268L104 400L52 384L132 88Z')
     :(kd?'M232 62Q300 '+nc+' 368 62L468 88L554 176L510 240L468 232Q440 330 442 410Q444 500 458 596Q300 618 142 596Q156 500 158 410Q160 330 132 232L90 240L46 176L132 88Z'
         :'M232 62Q300 '+nc+' 368 62L468 88L578 196L522 266L468 228L468 596Q300 618 132 596L132 228L78 266L22 196L132 88Z');
+}
+function shirtSVG(side,tee,product,cut){
+  var nc=side==='front'?(product==='polo'?112:140):90;
+  var sw=product==='sweat';
+  var body=shirtBody(side,product,cut);
   var seams=sw?'<path d="M468 88Q452 180 468 268"/><path d="M132 88Q148 180 132 268"/>'
     :'<path d="M468 88Q450 170 468 228"/><path d="M132 88Q150 170 132 228"/><path d="M132 578Q300 600 468 578"/>';
   var neck='M232 62Q300 '+nc+' 368 62';
@@ -777,7 +782,42 @@ function shirtSVG(side,tee,product,cut){
   '<path d="'+neck+'" fill="none" stroke="#000" stroke-opacity=".22" stroke-width="11" stroke-linecap="round"/>'+
   '<path d="'+neck+'" fill="none" stroke="#fff" stroke-opacity=".14" stroke-width="3" stroke-linecap="round" transform="translate(0,-4)"/>'+(product==='polo'?poloExtras(side,tee):(sw?sweatExtras(side,tee):''))+'</g></svg>';
 }
-function renderShirt(){$('#shirtHost').innerHTML=productSVG(view.side,state.tee,state.product,state.cut);stage.style.setProperty('--area',lum(state.tee)>0.5?'#111':'#fff');}
+/* ---------- Gerçekçi görünüm: kumaş dokusu ve kırışıklar ----------
+   Giysinin ve tasarımın ÜSTÜNE, yalnız görünüm için konur (karartma: multiply, parlama: screen).
+   Şekle, baskı alanlarına ve baskı dosyasına dokunmaz. Yalnız tişört, sweatshirt ve polo için. */
+var fabricSrc=null;
+function fabricURL(){
+  if(fabricSrc)return fabricSrc;
+  var n=64,c=document.createElement('canvas');c.width=c.height=n;var x=c.getContext('2d'),d=x.createImageData(n,n),i,v;
+  for(i=0;i<n*n;i++){var row=Math.floor(i/n);v=241+Math.random()*14-((row%2)?5:0);d.data[i*4]=d.data[i*4+1]=d.data[i*4+2]=Math.min(255,v);d.data[i*4+3]=255;}
+  x.putImageData(d,0,0);fabricSrc=c.toDataURL('image/png');return fabricSrc;
+}
+function shadeLayers(side,tee,product,cut){
+  if(PRODUCTS[product].draw)return null;
+  var body=shirtBody(side,product,cut),tf=cutTf(side,cut),L=lum(tee),sw=product==='sweat';
+  /* Hafif, doğal kırışıklar: koltuk altından inen dökümler ve etek dalgaları */
+  var folds=side==='front'
+    ?'<path d="M140 236Q168 300 176 380"/><path d="M460 236Q432 300 424 380"/><path d="M182 520Q214 556 236 590"/><path d="M418 520Q386 556 364 590"/><path d="M300 512Q296 556 300 596" stroke-width="10"/>'
+    :'<path d="M146 220Q176 290 184 372"/><path d="M454 220Q424 290 416 372"/><path d="M196 528Q226 560 246 592"/><path d="M404 528Q374 560 354 592"/>';
+  var hl=side==='front'
+    ?'<path d="M158 238Q186 302 194 382"/><path d="M442 238Q414 302 406 382"/><path d="M204 522Q234 556 254 588"/><path d="M396 522Q366 556 346 588"/>'
+    :'<path d="M164 222Q194 292 202 374"/><path d="M436 222Q406 292 398 374"/>';
+  if(sw)folds+='<path d="M150 566Q300 584 450 566" stroke-width="10"/>';
+  var head='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 640" width="600" height="640"><defs><clipPath id="sbc"><path d="'+body+'"/></clipPath>'+
+    '<filter id="sbl" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="12"/></filter>'+
+    '<pattern id="sfb" width="64" height="64" patternUnits="userSpaceOnUse"><image href="'+fabricURL()+'" width="64" height="64"/></pattern></defs>'+
+    '<g transform="'+tf+'"><g clip-path="url(#sbc)">';
+  var shade=head+'<rect x="0" y="0" width="600" height="640" fill="url(#sfb)" opacity="'+(L>0.5?0.9:0.55)+'"/>'+
+    '<g filter="url(#sbl)" fill="none" stroke="#000" stroke-opacity="'+(L>0.5?0.09:0.18)+'" stroke-width="16" stroke-linecap="round">'+folds+'</g></g></g></svg>';
+  var light=head+'<g filter="url(#sbl)" fill="none" stroke="#fff" stroke-opacity="'+(0.04+0.12*(1-L)).toFixed(3)+'" stroke-width="12" stroke-linecap="round">'+hl+'</g></g></g></svg>';
+  return {shade:shade,light:light};
+}
+function renderShade(){
+  var h=$('#shadeHost');if(!h)return;
+  var s=shadeLayers(view.side,state.tee,state.product,state.cut);
+  h.innerHTML=s?'<div class="sh-m">'+s.shade+'</div><div class="sh-s">'+s.light+'</div>':'';
+}
+function renderShirt(){$('#shirtHost').innerHTML=productSVG(view.side,state.tee,state.product,state.cut);renderShade();stage.style.setProperty('--area',lum(state.tee)>0.5?'#111':'#fff');}
 
 /* ---------- Nesneler ---------- */
 function place(el,o){
@@ -1563,6 +1603,9 @@ async function renderComposite(side,scale){
   var objs=state[side].objs;
   for(var i=0;i<objs.length;i++){await drawObj(x,objs[i],scale,0,0);}
   x.restore();
+  try{var sl=shadeLayers(side,state.tee,state.product,state.cut);
+    if(sl){x.save();x.globalCompositeOperation='multiply';x.drawImage(await loadImg(svgUrl(sl.shade)),0,0,c.width,c.height);
+      x.globalCompositeOperation='screen';x.drawImage(await loadImg(svgUrl(sl.light)),0,0,c.width,c.height);x.restore();}}catch(_){}
   return c;
 }
 async function renderPrint(side){
