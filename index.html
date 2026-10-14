@@ -676,7 +676,7 @@ function crmBy(e){return (C.orders||[]).filter(function(o){return String(o.mail|
 function crmDate(d){try{return new Date(d).toLocaleDateString('tr-TR',{day:'2-digit',month:'short',year:'numeric'});}catch(_){return '';}}
 function crmContact(o){var t=String(o.tel||'').replace(/\D/g,'');if(t.charAt(0)==='0')t='9'+t;var wa=t?'https://wa.me/'+t:'';return '<div class="crmact">'+(o.tel?'<a class="btn soft sm" href="tel:'+esc(o.tel)+'">Ara</a>':'')+(wa?'<a class="btn soft sm" target="_blank" rel="noopener" href="'+wa+'">WhatsApp</a>':'')+(o.mail||o.email?'<a class="btn soft sm" href="mailto:'+esc(o.mail||o.email)+'">E-posta</a>':'')+'</div>';}
 function crmOrderCard(o){
-  var its=(o.items||[]).map(function(x){return '<div class="sumr"><span>'+esc(x.n)+' × '+x.q+'</span><span>'+tl(x.t)+'</span></div>';}).join('');
+  var its=(o.items||[]).map(function(x){return '<div class="sumr"><span>'+esc(x.n)+' × '+x.q+'</span><span>'+tl(x.t)+'</span></div>'+(x.r&&x.r.length?'<p class="note" style="margin:0 0 6px">İsim/numara: '+esc(x.r.map(function(r){return r.s+' '+([r.n,r.k].filter(Boolean).join(' ')||'(boş)');}).join(', '))+'</p>':'');}).join('');
   var st=ORST.map(function(v){return '<option'+(o.status===v?' selected':'')+'>'+v+'</option>';}).join('');
   return '<div class="panel crmc"><div class="crmh"><b>'+esc(o.code)+'</b><span class="note" style="margin:0">'+crmDate(o.created_at)+'</span></div><div class="sumr"><span>'+esc(o.ad)+'</span><span><b>'+tl(o.total)+'</b></span></div>'+its+'<p class="note" style="margin:0">'+esc((o.adres||'')+', '+(o.ilce||'')+'/'+(o.il||''))+(o.note?'<br>Not: '+esc(o.note):'')+'</p>'+crmSpecial(o)+crmFf(o)+crmContact(o)+'<label class="crmsel">Durum<select data-crm="ost" data-id="'+esc(o.id)+'">'+st+'</select></label></div>';
 }
