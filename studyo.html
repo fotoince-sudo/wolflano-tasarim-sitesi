@@ -98,6 +98,7 @@ svg.i{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stro
 .hint{position:absolute;left:50%;bottom:8px;transform:translateX(-50%);pointer-events:none;font:600 12px var(--ui);color:var(--muted);background:var(--panel);border:1px solid var(--line);padding:5px 12px;border-radius:999px;white-space:nowrap;transition:opacity .4s}
 .hint.gone{opacity:0}
 .toast{position:absolute;left:50%;top:10px;transform:translateX(-50%);background:var(--ink);color:var(--bg);font:600 13px var(--ui);padding:8px 14px;border-radius:999px;pointer-events:none;max-width:90%;text-align:center;z-index:5}
+.toast.long{border-radius:14px;width:min(320px,90%);line-height:1.4;font-weight:600}
 
 .ctxwrap{position:relative;background:var(--panel);border-top:1px solid var(--line)}
 .ctxbar{display:flex;align-items:center;gap:4px;overflow-x:auto;padding:6px 12px}
@@ -280,6 +281,7 @@ svg.i{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stro
       <button data-c="stroke" data-t="text"><svg class="i" viewBox="0 0 24 24"><rect x="5" y="5" width="14" height="14" rx="3" stroke-dasharray="3 2.4"/></svg>Kontur</button>
       <button data-c="nobg" data-t="image" id="nobgBtn"><svg class="i" viewBox="0 0 24 24"><path d="M4 20l10-10"/><path d="M15 3l1 2 2 1-2 1-1 2-1-2-2-1 2-1z"/><path d="M19 11l.6 1.4L21 13l-1.4.6L19 15l-.6-1.4L17 13l1.4-.6z"/></svg>Arka planı sil</button>
       <span class="pill" id="qPill" data-t="image"></span>
+      <span class="pill mid" id="ovPill" data-t="text clip image" hidden>Taşan kısım basılmaz</span>
       <button data-c="fwd" data-t="text clip image"><svg class="i" viewBox="0 0 24 24"><path d="M12 19V5M5 12l7-7 7 7"/></svg>Öne</button>
       <button data-c="bwd" data-t="text clip image"><svg class="i" viewBox="0 0 24 24"><path d="M12 5v14M5 12l7 7 7-7"/></svg>Arkaya</button>
     </div>
@@ -909,6 +911,47 @@ function updateSel(){
   b.style.width=o.w+'px';b.style.height=o.h+'px';
   b.style.transform='translate('+o.x+'px,'+o.y+'px) translate(-50%,-50%) rotate('+o.rot+'deg)';
   b.style.setProperty('--rot',o.rot+'deg');
+  liveWarn(o);
+}
+/* ---------- Baskı uyarıları: düşük çözünürlük ve alandan taşma ----------
+   Hiçbir şeyi engellemez, yalnız haber verir. Taşma serbest (taşan kısım gizli kalır, baskıda kırpılır). */
+function overflowOf(o,A){
+  var w=o.w,h=o.h;
+  if(o.type==='text'&&o.size&&!isWarped(o)){w=Math.max(1,w-o.size*0.32);h=Math.max(1,h-o.size*0.16);}  /* yazı kutusunun boş kenar payı sayılmaz */
+  var c=Math.cos(o.rot*PI/180),sn=Math.sin(o.rot*PI/180);
+  var hw=(Math.abs(w*c)+Math.abs(h*sn))/2,hh=(Math.abs(w*sn)+Math.abs(h*c))/2;
+  return o.x-hw<A.l-1||o.x+hw>A.r+1||o.y-hh<A.t-1||o.y+hh>A.b+1;
+}
+function liveWarn(o){
+  var ov=$('#ovPill');if(!ov||!o)return;
+  ov.hidden=!overflowOf(o,areaBox(view.side,cur().area));
+  if(o.type==='image'){var r=qualityOf(o),q=$('#qPill');if(r&&q){q.className='pill '+r.cls;q.textContent='Baskı kalitesi: '+r.txt+' · '+r.ppi+' dpi';}}
+}
+function printIssues(){
+  var low=[],over=0;
+  sidesOf().forEach(function(sd){
+    var A=areaBox(sd,state[sd].area);
+    state[sd].objs.forEach(function(o){
+      if(o.type==='image'&&assets[o.assetId]&&assets[o.assetId].up){var r=qualityOf(o);if(r&&r.cls==='low')low.push(r.ppi);}
+      if(overflowOf(o,A))over++;
+    });
+  });
+  return {low:low,over:over};
+}
+function issueText(){
+  var r=printIssues(),t=[];
+  if(r.low.length)t.push('Fotoğrafın baskı kalitesi düşük ('+Math.min.apply(null,r.low)+' dpi), baskıda bulanık çıkabilir. Küçült ya da daha büyük bir fotoğraf yükle.');
+  if(r.over)t.push('Tasarımın bir kısmı baskı alanından taşıyor, taşan kısım basılmaz.');
+  return t.join(' ');
+}
+function longToast(m){var t=$('#toast');t.textContent=m;t.hidden=false;t.classList.add('long');clearTimeout(toastT);toastT=setTimeout(function(){t.hidden=true;},6500);}
+/* Sorun varsa bir kez uyarır; aynı tasarımda ikinci dokunuşta işleme devam eder. */
+var warnedSig=null;
+function warnFirst(){
+  var sig=designSig();
+  if(warnedSig===sig||cartItems.some(function(x){return x.sig===sig;}))return false;
+  var m=issueText();if(!m)return false;
+  warnedSig=sig;longToast(m+' Yine de devam etmek için tekrar dokun.');return true;
 }
 function select(id){
   view.sel=id||null;view.pop=null;
@@ -931,6 +974,7 @@ function syncCtx(){
   var pop=$('#colorPop');
   if(!o){pop.hidden=true;return;}
   $$('#ctxBar [data-t]').forEach(function(b){b.hidden=b.dataset.t.split(' ').indexOf(o.type)<0;});
+  liveWarn(o);
   $('#ctxDot').style.background=o.color||'transparent';
   var q=$('#qPill');
   if(o.type==='image'){var r=qualityOf(o);if(r){q.className='pill '+r.cls;q.textContent='Baskı kalitesi: '+r.txt+' · '+r.ppi+' dpi';}}
@@ -979,8 +1023,11 @@ function addImageObj(assetId){
 function loadFile(file){
   var url=URL.createObjectURL(file),im=new Image();
   im.onload=function(){
-    var id='a'+(++assetN);assets[id]={url:url,w:im.naturalWidth,h:im.naturalHeight};assetList.push(id);
-    renderUploads();addImageObj(id);toast('Fotoğraf eklendi');
+    var id='a'+(++assetN);assets[id]={url:url,w:im.naturalWidth,h:im.naturalHeight,up:true};assetList.push(id);
+    renderUploads();addImageObj(id);
+    var nq=qualityOf(selObj()||{});
+    if(nq&&nq.cls==='low')longToast('Fotoğraf eklendi. Baskı kalitesi düşük ('+nq.ppi+' dpi), baskıda bulanık çıkabilir. Küçült ya da daha büyük bir fotoğraf yükle.');
+    else toast('Fotoğraf eklendi');
   };
   im.onerror=function(){toast('Bu dosya açılamadı. PNG veya JPG dene.');};
   im.src=url;
@@ -995,7 +1042,7 @@ async function aiRemoveBg(url){
   var blob=await (await fetch(url)).blob();
   return await bgLib(blob,{model:'isnet_quint8',output:{format:'image/png',quality:1},progress:function(k,c,t){if(t&&/fetch/.test(k))bgToast('Yapay zekâ hazırlanıyor… %'+Math.round(c/t*100));}});
 }
-function bgToast(m){var t=$('#toast');t.textContent=m;t.hidden=false;clearTimeout(toastT);}
+function bgToast(m){var t=$('#toast');t.classList.remove('long');t.textContent=m;t.hidden=false;clearTimeout(toastT);}
 async function simpleRemoveBg(url){
   var im=await loadImg(url),W=im.naturalWidth,H=im.naturalHeight,c=document.createElement('canvas');c.width=W;c.height=H;
   var x=c.getContext('2d');x.drawImage(im,0,0);var d=x.getImageData(0,0,W,H),p=d.data;
@@ -1029,7 +1076,7 @@ async function removeBg(){
   if(!blob){bgBusy=false;syncCtx();toast('Arka plan silinemedi. Tekrar dene.');return;}
   var url=URL.createObjectURL(blob),im=new Image();
   im.onload=function(){
-    var id='a'+(++assetN);assets[id]={url:url,w:im.naturalWidth,h:im.naturalHeight,nobg:true};assetList.push(id);
+    var id='a'+(++assetN);assets[id]={url:url,w:im.naturalWidth,h:im.naturalHeight,nobg:true,up:!!a.up};assetList.push(id);
     o.assetId=id;
     renderObjects();renderUploads();bgBusy=false;syncCtx();pushHist();
     toast(how==='ai'?'Arka plan silindi. Beğenmezsen ↶ ile geri al.':'Düz renkli arka plan silindi. Beğenmezsen ↶ ile geri al.');
@@ -1389,7 +1436,7 @@ function renderAll(){
 }
 
 var toastT=0;
-function toast(m){var t=$('#toast');t.textContent=m;t.hidden=false;clearTimeout(toastT);toastT=setTimeout(function(){t.hidden=true;},2400);}
+function toast(m){var t=$('#toast');t.classList.remove('long');t.textContent=m;t.hidden=false;clearTimeout(toastT);toastT=setTimeout(function(){t.hidden=true;},2400);}
 
 /* ---------- Olaylar ---------- */
 $('#tabs').addEventListener('click',function(e){var b=e.target.closest('[data-tab]');if(b)openTab(b.dataset.tab);});
@@ -1706,7 +1753,7 @@ function showAdded(already){
 }
 function hideAdded(){$('#added').hidden=true;}
 function freshDesign(){['front','back'].forEach(function(s){state[s].objs=[];});view.sel=null;view.side='front';}
-$('#addCart').addEventListener('click',function(){addToCart();});
+$('#addCart').addEventListener('click',function(){if(warnFirst())return;addToCart();});
 $('#added').addEventListener('click',function(e){if(e.target.closest('[data-adx]'))hideAdded();});
 $('#adNew').addEventListener('click',function(){
   hideAdded();leaveOrder();closeOrder();freshDesign();renderAll();pushHist();
@@ -1802,6 +1849,7 @@ function askQuote(){
 $('#cIl').addEventListener('input',askQuote);$('#cIlce').addEventListener('input',askQuote);
 $('#goPay').addEventListener('click',async function(){
   var has=sidesOf().some(function(sd){return state[sd].objs.length;});
+  if(has&&priceInfo().qty&&warnFirst())return;
   if(has&&priceInfo().qty&&!cartItems.some(function(x){return x.sig===designSig();}))await addToCart(true);
   coFrom='order';openCheckout();
 });
