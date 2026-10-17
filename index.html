@@ -332,6 +332,7 @@ footer a{text-decoration:none}footer a:hover{color:var(--green)}
 .grid{row-gap:26px}.card .meta{padding-top:8px}.card .meta .row{gap:12px}.card .add{margin-top:8px;align-self:stretch;justify-content:center;padding:9px 12px;font:600 14px var(--ui);background:var(--green);color:#fff;border:1px solid #000;border-radius:999px}.card .add:disabled{background:var(--muted);color:#fff}.feat{padding-block:12px 8px}.page{padding-bottom:28px}
 @media (max-width:639px){.grid{column-gap:3px;margin-inline:-10px}.card .ph{border-radius:6px}.card .meta{padding-inline:6px}.card .add{margin-inline:6px}}
 .catmenu .cgrid{display:grid;grid-template-columns:1fr 1fr;gap:4px 8px}.catmenu .its1{display:grid}.catmenu button.grp{font:700 12px var(--ui);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding:10px 12px 4px}.catmenu button.grp.on{color:var(--green);background:none}.catmenu .its button,.catmenu .its1 button{padding:7px 12px}
+.catmenu .cgrid{gap:8px;padding:4px;align-items:start}.catmenu button.gt{display:flex;justify-content:space-between;align-items:center;width:100%;border:1px solid var(--green);border-radius:999px;padding:9px 14px;font:600 13px var(--ui);letter-spacing:.04em;color:var(--ink);background:none;text-transform:uppercase}.catmenu button.gt .cv{font-size:11px;color:var(--green);transition:transform .15s}.catmenu button.gt.open .cv{transform:rotate(180deg)}.catmenu button.gt.on{color:var(--green)}.catmenu .its1{padding-top:4px}
 </style>
 
 <header class="top"><div class="wrap">
@@ -1391,7 +1392,7 @@ var PAGES=[['ana','Ana Sayfa'],['hazir','Koleksiyon'],['atolye','Baskı Atölyes
 function pagesNow(){var l=PAGES.map(function(p){var m={hazir:'menuHazir',atolye:'menuAtolye',hakkimizda:'menuAbout'}[p[0]];return [p[0],m?TX(m):p[1]];});
   var cp=(D.cpages||[]).filter(function(x){return x&&x.show!==false&&x.menu!==false&&x.title;}).map(function(x){return ['p-'+x.id,x.title];});
   if(cp.length){var i=l.length-1;l=l.slice(0,i).concat(cp,l.slice(i));}return l;}
-var CATS=[['kadin','Kadın'],['erkek','Erkek'],['cocuk','Çocuk']],subSel='',sub2Sel='',catOpen='';
+var CATS=[['kadin','Kadın'],['erkek','Erkek'],['cocuk','Çocuk']],subSel='',sub2Sel='',catOpen='',grpOpen='';
 var SIDES={tee:{front:['a4','a3','logo'],back:['a4','a3']},sweat:{front:['a4','a3','logo'],back:['a4','a3']},polo:{front:['logo'],back:['a4','a3']},hat:{front:['hat'],back:[]}};
 var PNAME={a4:'A4 baskı',a3:'A3 baskı',logo:'Sol göğüs logo',hat:'Şapka ön baskı'};
 function printFee(b,k){if(k==='a4')return b.a4;if(k==='a3')return b.a4*A3_KAT;if(k==='logo')return b.logo;if(k==='hat'||k==='mug')return b.hat;return 0;}
@@ -1689,7 +1690,7 @@ odeme:function(){
   return '<div class="wrap page"><h1 class="h2" style="margin-bottom:20px">'+esc(TX('kolTitle'))+'</h1>'+
   '<div class="chips" role="tablist">'+CATS.map(function(c){var co=(D.cats||[]).filter(function(x){return x.id===c[0];})[0]||{},hs=(co.subs||[]).length,cl=(c[0]===catSel?'on':'')+(catOpen===c[0]?' open':'');return '<button role="tab" data-cat="'+c[0]+'"'+(cl?' class="'+cl.trim()+'"':'')+(c[0]===catSel?' aria-selected="true"':'')+(hs?' aria-expanded="'+(catOpen===c[0])+'"':'')+'>'+esc(c[1])+(hs?'<span class="cv">▾</span>':'')+'</button>';}).join('')+'</div>'+
   (catOpen===catSel&&subs.length?'<div class="catmenu">'+(subs.some(function(x){return (x.subs||[]).length;})?
-     '<div class="cgrid">'+subs.map(function(x){return '<div class="cg"><button class="grp'+(subSel===x.id&&!sub2Sel?' on':'')+'" data-pick="'+x.id+'" data-p2="">'+esc(x.name||'')+'</button><div class="its1">'+(x.subs||[]).map(function(y){return '<button data-pick="'+x.id+'" data-p2="'+y.id+'"'+(sub2Sel===y.id?' class="on"':'')+'>'+esc(y.name||'Adsız')+'</button>';}).join('')+'</div></div>';}).join('')+'</div>':
+     '<div class="cgrid">'+subs.map(function(x){var go=grpOpen===x.id;return '<div class="cg"><button class="gt'+(go?' open':'')+(subSel===x.id?' on':'')+'" data-gtog="'+x.id+'" aria-expanded="'+go+'">'+esc(x.name||'')+'<span class="cv">▾</span></button>'+(go?'<div class="its1">'+(x.subs||[]).map(function(y){return '<button data-pick="'+x.id+'" data-p2="'+y.id+'"'+(sub2Sel===y.id?' class="on"':'')+'>'+esc(y.name||'Adsız')+'</button>';}).join('')+'</div>':'')+'</div>';}).join('')+'</div>':
      '<div class="its">'+subs.map(function(x){return '<button data-pick="'+x.id+'" data-p2=""'+(x.id===subSel?' class="on"':'')+'>'+esc(x.name||'Adsız')+'</button>';}).join('')+'</div>')+'</div>':'')+
   (subSel&&catOpen!==catSel?'<div class="crumb">'+esc(cobj.name||'')+' › <b>'+esc((sobj.name||'')+(sub2Sel?' › '+(((sobj.subs||[]).filter(function(y){return y.id===sub2Sel;})[0]||{}).name||''):''))+'</b><button data-pick="" data-p2="">✕ Temizle</button></div>':'')+
   (list.length?'<div class="grid">'+list.map(card).join('')+'</div>':'<p class="empty">Bu kategoride henüz ürün yok.</p>')+'</div>';
@@ -1818,6 +1819,7 @@ document.addEventListener('click',function(e){
   var q=t.closest('[data-q]');if(q){var qp=ALLP.filter(function(x){return x.id===q.dataset.q;})[0],nq=Math.max(0,(cart[q.dataset.q]||0)+(+q.dataset.d));if(nq===0)delete cart[q.dataset.q];if(qp&&hasStock(qp)&&nq>+qp.stock){toast('Stok sınırına ulaşıldı');return;}cart[q.dataset.q]=nq;syncCart();openCart();return;}
   var hc=t.closest('[data-hcat]');if(hc){catSel=hc.dataset.hcat;subSel='';sub2Sel='';catOpen='';}
   var c=t.closest('[data-cat]');if(c&&!c.closest('.ad')){if(catSel===c.dataset.cat){catOpen=catOpen===catSel?'':catSel;}else{catSel=c.dataset.cat;subSel='';sub2Sel='';catOpen=catSel;}var yc=window.scrollY;$('#main').innerHTML=VIEWS.hazir();window.scrollTo(0,yc);return;}
+  var gt=t.closest('[data-gtog]');if(gt&&!gt.closest('.ad')){grpOpen=grpOpen===gt.dataset.gtog?'':gt.dataset.gtog;var yg=window.scrollY;$('#main').innerHTML=VIEWS.hazir();window.scrollTo(0,yg);return;}
   var pk=t.closest('[data-pick]');if(pk&&!pk.closest('.ad')){subSel=pk.dataset.pick;sub2Sel=pk.dataset.p2||'';catOpen='';var yp=window.scrollY;$('#main').innerHTML=VIEWS.hazir();window.scrollTo(0,yp);return;}
   var sc=t.closest('[data-sub]');if(sc&&!sc.closest('.ad')){subSel=sc.dataset.sub;sub2Sel='';$('#main').innerHTML=VIEWS.hazir();return;}
   var sc2=t.closest('[data-sub2]');if(sc2&&!sc2.closest('.ad')){sub2Sel=sc2.dataset.sub2;$('#main').innerHTML=VIEWS.hazir();return;}
