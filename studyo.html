@@ -744,7 +744,75 @@ function sweatExtras(side,tee){
   return f;
 }
 function cutTf(side,cut){var k=CUT_K[cut]||CUT_K.erkek,ay=NECK_Y[side];return 'translate(300 '+ay+') scale('+k[0]+' '+k[1]+') translate(-300 '+(-ay)+')';}
-function productSVG(side,tee,product,cut,thumb){var q=PRODUCTS[product];return q.draw?q.draw(side,tee,cut,thumb):shirtSVG(side,tee,product,cut);}
+function productSVG(side,tee,product,cut,thumb){var q=PRODUCTS[product];if(!thumb){var ph=phSVG(side,tee,product,cut);if(ph)return ph;}return q.draw?q.draw(side,tee,cut,thumb):shirtSVG(side,tee,product,cut);}
+/* ===== Gerçek ürün fotoğrafı: yönetimde ürüne renk renk yüklenen ön/arka fotoğraf, seçilen bedenin ölçüsüne göre sahnede gerçek boyutuyla durur =====
+   Sahne = baskı duvarı: 1 cm = PPC piksel. Fotoğraftaki giysinin boyu, beden tablosundaki "boy" (omuzdan eteğe) kadar ölçeklenir;
+   giysinin üst kenarı boğaz çizgisinin (NECK_Y) üstüne oturur, böylece A4/A3 boğazdan 8 cm aşağıda başlama kuralı ve logo yeri bozulmaz.
+   Arka planı şeffaf PNG en temiz sonucu verir; düz ve giysiyle zıt renkli zeminli fotoğrafta zemin otomatik ayıklanır. */
+var SZM={
+ tee:{erkek:{XS:[47,68],S:[50,70],M:[53,72],L:[56,74],XL:[59,76],XXL:[62,78],'2XL':[62,78],'3XL':[65,80]},kadin:{XS:[42,60],S:[44,62],M:[47,64],L:[50,66],XL:[53,68],XXL:[56,70],'2XL':[56,70]},cocuk:{'3-4':[32,44],'5-6':[35,48],'7-8':[38,52],'9-10':[41,56],'11-12':[44,60],'13-14':[47,64]}},
+ sweat:{erkek:{XS:[50,66],S:[53,68],M:[56,70],L:[59,72],XL:[62,74],XXL:[65,76],'2XL':[65,76],'3XL':[68,78]},kadin:{XS:[45,60],S:[48,62],M:[51,64],L:[54,66],XL:[57,68],XXL:[60,70],'2XL':[60,70]},cocuk:{'3-4':[34,44],'5-6':[37,48],'7-8':[40,52],'9-10':[43,56],'11-12':[46,60],'13-14':[49,63]}}
+};SZM.polo=SZM.tee;
+var NECK_DROP={front:39,back:14};
+var PH={site:null,media:'',cal:{},want:'',teesBase:null};
+function phSrc(t){if(!t)return '';if(/^(https?:|data:|blob:)/.test(t))return t;if(PH.media==='sb'&&/^(img|vid)\//.test(t))return 'https://wgovwmeirlzwalelazfj.supabase.co/storage/v1/object/public/site/'+t;return t;}
+function phBlank(product,cut){var l=(PH.site&&PH.site.blanks)||[];var m=l.filter(function(b){return b.show!==false&&(b.p||b.id)===product&&(!b.cut||b.cut===cut);});return m.filter(function(b){return b.cut===cut;})[0]||m[0]||null;}
+function phColors(b){return ((b&&b.colors)||[]).filter(function(c){return c&&(c.front||c.back)&&/^#[0-9a-f]{6}$/i.test(c.hex||'');});}
+function phSize(){var l=sizeList(),best=null,mx=0;if(PH.want&&(state.sizes[PH.want]||0)>0)return PH.want;l.forEach(function(z){if((state.sizes[z]||0)>mx){mx=state.sizes[z];best=z;}});return best||PH.want||l[1]||l[0];}
+function phDims(product,cut){var m=(SZM[product]||{})[cut];if(!m)return null;var z=phSize();return m[z]||m.M||m['7-8']||null;}
+function phCalib(u){
+  if(PH.cal[u])return PH.cal[u];
+  var rec={ready:false};PH.cal[u]=rec;
+  var im=new Image();im.crossOrigin='anonymous';
+  im.onload=function(){try{
+    var s=Math.min(1,900/Math.max(im.naturalWidth,im.naturalHeight)),W=Math.max(1,Math.round(im.naturalWidth*s)),H=Math.max(1,Math.round(im.naturalHeight*s));
+    var c=document.createElement('canvas');c.width=W;c.height=H;var x=c.getContext('2d');x.drawImage(im,0,0,W,H);
+    var D=x.getImageData(0,0,W,H),p=D.data,N=W*H,m=new Uint8Array(N),i,k,y,xx,hasA=false;
+    for(k=0;k<W;k++){if(p[k*4+3]<250||p[((H-1)*W+k)*4+3]<250){hasA=true;break;}}
+    if(hasA){for(i=0;i<N;i++)m[i]=p[i*4+3]>110?1:0;}
+    else{
+      var bgm=new Uint8Array(N),T=18*18;
+      for(y=0;y<H;y++){var r=0,g=0,b=0,n=0;for(k=0;k<4;k++){var o1=(y*W+k)*4,o2=(y*W+W-1-k)*4;r+=p[o1]+p[o2];g+=p[o1+1]+p[o2+1];b+=p[o1+2]+p[o2+2];n+=2;}r/=n;g/=n;b/=n;
+        for(xx=0;xx<W;xx++){var o=(y*W+xx)*4,dr=p[o]-r,dg=p[o+1]-g,db=p[o+2]-b;if(dr*dr+dg*dg+db*db<=T)bgm[y*W+xx]=1;}}
+      var q=new Int32Array(N),qh=0,qt=0,vis=new Uint8Array(N);
+      var push=function(j){if(!vis[j]&&bgm[j]){vis[j]=1;q[qt++]=j;}};
+      for(xx=0;xx<W;xx++){push(xx);push((H-1)*W+xx);}for(y=0;y<H;y++){push(y*W);push(y*W+W-1);}
+      while(qh<qt){i=q[qh++];y=(i/W)|0;xx=i-y*W;if(xx>0)push(i-1);if(xx<W-1)push(i+1);if(y>0)push(i-W);if(y<H-1)push(i+W);}
+      for(i=0;i<N;i++)m[i]=vis[i]?0:1;
+    }
+    var top=H,bot=-1,l=W,r2=-1,cnt=0;
+    for(i=0;i<N;i++){if(!m[i])continue;cnt++;y=(i/W)|0;xx=i-y*W;if(y<top)top=y;if(y>bot)bot=y;if(xx<l)l=xx;if(xx>r2)r2=xx;}
+    var frac=cnt/N;
+    if(!hasA&&(frac<.12||frac>.88)){rec.url=u;rec.W=W;rec.H=H;rec.top=Math.round(H*.08);rec.bot=Math.round(H*.92);rec.l=0;rec.r=W-1;rec.raw=true;}
+    else{if(!hasA){for(i=0;i<N;i++)if(!m[i])p[i*4+3]=0;x.putImageData(D,0,0);}rec.url=c.toDataURL('image/png');rec.W=W;rec.H=H;rec.top=top;rec.bot=bot;rec.l=l;rec.r=r2;}
+    rec.ready=true;try{renderShirt();}catch(_){}
+  }catch(er){rec.fail=true;}};
+  im.onerror=function(){rec.fail=true;};
+  im.src=u;return rec;
+}
+function phSVG(side,tee,product,cut){
+  if(!PH.site||PRODUCTS[product].draw)return null;
+  var b=phBlank(product,cut),cs=phColors(b);if(!cs.length)return null;
+  var co=cs.filter(function(c){return String(c.hex).toLowerCase()===String(tee).toLowerCase();})[0]||cs[0];
+  var u=phSrc(side==='back'?(co.back||''):(co.front||''));if(!u)return null;
+  var cal=phCalib(u);if(!cal.ready)return null;
+  var d=phDims(product,cut);if(!d)return null;
+  var sc=d[1]*PPC/Math.max(1,cal.bot-cal.top+1),w=cal.W*sc,h=cal.H*sc,topY=NECK_Y[side]-NECK_DROP[side],cx=(cal.l+cal.r)/2*sc;
+  var X=300-cx,Y=topY-cal.top*sc;
+  return '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 600 640" width="600" height="640"><image href="'+cal.url+'" xlink:href="'+cal.url+'" x="'+X.toFixed(1)+'" y="'+Y.toFixed(1)+'" width="'+w.toFixed(1)+'" height="'+h.toFixed(1)+'" preserveAspectRatio="none"/></svg>';
+}
+function phOn(){return !!(PH.site&&!P().draw&&phColors(phBlank(state.product,state.cut)).length);}
+function phApplyColors(){
+  if(!PH.teesBase)PH.teesBase=TEES.slice();
+  var cs=phColors(phBlank(state.product,state.cut));TEES.length=0;
+  (cs.length?cs.map(function(c){return [c.name||c.hex,c.hex];}):PH.teesBase).forEach(function(t){TEES.push(t);});
+  if(!TEES.some(function(t){return String(t[1]).toLowerCase()===String(state.tee).toLowerCase();}))state.tee=TEES[0][1];
+}
+window.phSite=function(d){PH.site=d;PH.media=d.media||'';PH.teesBase=TEES.slice();
+  try{var q=new URLSearchParams(location.search),rn=q.get('renk'),bd=q.get('beden');if(bd)PH.want=bd;
+    phApplyColors();if(rn!=null){var cs=phColors(phBlank(state.product,state.cut)),c=cs[+rn]||cs.filter(function(x){return x.name===rn;})[0];if(c)state.tee=c.hex;}}catch(_){}
+  try{renderAll();}catch(_){}
+};
 function mugSVG(side,tee,thumb){
   /* 8 cm çaplı, 9,5 cm boylu kupa; ön yüzde kulp sağda, arka yüzde solda görünür */
   var vb=thumb?'222 236 168 136':'0 0 600 640',hr=side!=='back',
@@ -806,7 +874,7 @@ function fabricURL(){
   x.putImageData(d,0,0);fabricSrc=c.toDataURL('image/png');return fabricSrc;
 }
 function shadeLayers(side,tee,product,cut){
-  if(PRODUCTS[product].draw)return null;
+  if(PRODUCTS[product].draw)return null;if(phSVG(side,tee,product,cut))return null;
   var body=shirtBody(side,product,cut),tf=cutTf(side,cut),L=lum(tee),sw=product==='sweat';
   /* Hafif, doğal kırışıklar: koltuk altından inen dökümler ve etek dalgaları */
   var folds=side==='front'
@@ -1210,6 +1278,7 @@ function chooseProduct(p,c){
   var ch=state.product!==p||state.cut!==c;
   if(state.product!==p)doProduct(p);
   if(state.cut!==c)state.cut=c;
+  try{if(PH.site)phApplyColors();}catch(_){}
   ensureSizes();
   if(!P().sides[view.side])view.side='front';
   view.sel=null;closeProdPage();
@@ -1767,7 +1836,7 @@ $('#rosterList').addEventListener('change',function(){pushHist();});
 $('#sizeGrid').addEventListener('click',function(e){
   var b=e.target.closest('[data-s]');if(!b)return;
   var s=b.dataset.s,v=(state.sizes[s]||0)+(+b.dataset.d);state.sizes[s]=clamp(v,0,999);
-  renderSizes();renderPrice();pushHist();
+  renderSizes();renderPrice();pushHist();if(phOn()){renderShirt();var dz=phDims(state.product,state.cut);if(dz)toast('Önizleme bedeni '+phSize()+': en '+dz[0]+' cm, boy '+dz[1]+' cm');}
 });
 $('#files').addEventListener('click',async function(e){
   var b=e.target.closest('[data-f]');if(!b||b.disabled)return;
@@ -2047,7 +2116,7 @@ syncUndo();
   }
   fetch(SBX.url+'/rest/v1/site_content?select=data&id=eq.main',{headers:{apikey:SBX.key},cache:'no-store'})
     .then(function(r){return r.ok?r.json():null;})
-    .then(function(a){var d=a&&a[0]&&a[0].data;if(!d||!d.studio)return;MEDIA=d.media||'';try{apply(d.studio);if(!$('#wolfPage').hidden)renderWolf();}catch(er){}})
+    .then(function(a){var d=a&&a[0]&&a[0].data;if(!d)return;MEDIA=d.media||'';if(d.studio){try{apply(d.studio);if(!$('#wolfPage').hidden)renderWolf();}catch(er){}}try{if(window.phSite)window.phSite(d);}catch(er){}})
     .catch(function(){});
 })();
 })();
