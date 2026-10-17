@@ -305,6 +305,23 @@ th{font-size:13px;letter-spacing:.05em;text-transform:uppercase;color:var(--mute
 .arow img{width:56px;height:56px;object-fit:cover;border-radius:10px;background:var(--mint)}
 .arow b{display:block}.arow small{color:var(--muted)}
 .alist{display:grid;gap:10px;max-width:760px}
+.adx-top{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.adx-f{display:flex;gap:6px;flex-wrap:wrap}
+.adx-f button{border:1px solid var(--line);background:var(--card);border-radius:999px;padding:6px 12px;font:600 13px var(--ui)}
+.adx-f button.on{border-color:var(--green);color:var(--green)}
+.adx-f small{color:var(--muted);font-weight:500}
+.adx-c{display:grid;grid-template-columns:84px 1fr;gap:12px;align-items:start;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:10px}
+.adx-c img{width:84px;height:84px;object-fit:cover;border-radius:10px;background:#eef1ef}
+.adx-b{display:grid;gap:5px;min-width:0}
+.adx-t{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.adx-k{font:600 11px var(--ui);padding:2px 8px;border-radius:999px;background:#eef1ef;color:var(--ink)}
+.adx-k.k-baski{background:#fde9d9;color:#8a3d0c}.adx-k.k-sablon{background:#e3f1e8;color:#1f6b3a}.adx-k.k-urun{background:#e4ecf8;color:#1d4b8f}.adx-k.k-wolf{background:#111;color:#fff}
+.adx-a{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-top:4px}
+.adx-a .btn.sm{padding:7px 11px;font-size:13px}
+.adx-s{display:flex;gap:6px;align-items:center;font:600 12px var(--ui);color:var(--muted)}
+.adx-s select{height:32px;border-radius:8px;border:1px solid var(--line);background:var(--bg);font:600 13px var(--ui);padding:0 6px}
+.adx-del{color:#b42318}
+
 .aed{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;display:grid;gap:12px;margin:-4px 0 8px}
 .aed .two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .aed .three{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
@@ -1171,6 +1188,79 @@ document.addEventListener('change',function(e){
 function crmFf(o){var f=o.fulfillment,ch=o.channel&&o.channel!=='site'?'<span class="crmseg">'+esc(ffChName(o.channel))+(o.ext_code?' · '+esc(o.ext_code):'')+'</span>':'';
   if(!f&&!ch)return '';return '<div class="crmact" style="align-items:center">'+ch+(f?'<span class="note" style="margin:0">'+esc(ffName(FFST,f.st||'bekliyor'))+(f.carrier?' · '+esc(f.carrier):'')+(f.track?' · Takip: '+esc(f.track):'')+'</span>':'')+'</div>';}
 
+
+/* ===== Yönetim: Admin tasarımları ve Yetkililer =====
+   Admin tasarımları yalnız yönetici ve yetkili kişilere görünür (Supabase: admin_designs, is_wf_admin).
+   Yetkilileri yalnız site sahibi ekler veya çıkarır (wf_staff). */
+function sbOwner(){return !!(SBS&&SBS.user&&String(SBS.user.email||'').toLowerCase()===OWNER_MAIL);}
+var ADX={rows:null,urls:{},err:'',busy:false,f:'hepsi',del:null,staff:null,sErr:''};
+var ADX_KIND={taslak:'Taslak',sablon:'Şablon',urun:'Ürün',baski:'Baskı'};
+var ADX_ST=['baskıda','basıldı','kargoda','teslim edildi'];
+function adxRefresh(){if(cur==='yonetim'&&A&&(A.tab==='admtas'||A.tab==='yetki')){var y=window.scrollY;adRender();window.scrollTo(0,y);}}
+async function adxLoad(){
+  if(ADX.busy)return;ADX.busy=true;ADX.err='';
+  try{var tk=await sbToken();if(!tk){ADX.err='Oturum süresi doldu, yeniden giriş yap.';ADX.rows=[];}
+    else{var r=await sbReq('/rest/v1/admin_designs?select=id,title,kind,status,product,cut,color,qty,sizes,thumb,files,published,by_wolf,note,created_by,created_at&order=created_at.desc&limit=120',{token:tk});
+      if(!r.ok){ADX.err='Admin tasarımları okunamadı.';ADX.rows=[];}else ADX.rows=r.j||[];
+      var ps=[];ADX.rows.forEach(function(x){(x.files||[]).forEach(function(f){if(f.path&&!ADX.urls[f.path])ps.push(f.path);});});
+      if(ps.length){var sg=await fetch(SB.url+'/storage/v1/object/sign/designs',{method:'POST',headers:{apikey:SB.key,Authorization:'Bearer '+tk,'Content-Type':'application/json'},body:JSON.stringify({expiresIn:3600,paths:ps})}).then(function(x){return x.json();}).catch(function(){return [];});
+        (Array.isArray(sg)?sg:[]).forEach(function(q){if(q.signedURL)ADX.urls[q.path]=SB.url+'/storage/v1'+q.signedURL;});}}
+  }catch(_){ADX.err='Bağlantı kurulamadı.';ADX.rows=[];}
+  ADX.busy=false;adxRefresh();
+}
+function adxView(){
+  if(ADX.rows===null&&!ADX.busy)adxLoad();
+  var h='<div class="alist"><div class="adx-top"><p class="note" style="margin:0;flex:1">Sitemiz için yapılan tasarımlar. Yalnız yönetici ve yetkililer görür. Stüdyoda yönetici olarak açınca üstteki kalkan düğmesiyle şablon, ürün, baskı veya taslak olarak kaydedersin; aynı işi Wolf panelinden yazarak da yaptırabilirsin.</p>'+
+    '<a class="btn sm" href="studyo.html" target="_blank" rel="noopener">Yeni tasarım yap</a><button type="button" class="btn soft sm" data-adx="reload">Yenile</button></div>';
+  h+='<div class="adx-f">'+[['hepsi','Hepsi'],['baski','Baskı'],['sablon','Şablon'],['urun','Ürün'],['taslak','Taslak']].map(function(x){var n=(ADX.rows||[]).filter(function(r){return x[0]==='hepsi'||r.kind===x[0];}).length;return '<button type="button" data-adx="f" data-v="'+x[0]+'"'+(ADX.f===x[0]?' class="on"':'')+'>'+x[1]+(ADX.rows?' <small>'+n+'</small>':'')+'</button>';}).join('')+'</div>';
+  if(ADX.rows===null)return h+'<p class="note">Yükleniyor…</p></div>';
+  if(ADX.err)h+='<p class="msg">'+esc(ADX.err)+'</p>';
+  var L=ADX.rows.filter(function(r){return ADX.f==='hepsi'||r.kind===ADX.f;});
+  if(!L.length&&!ADX.err)h+='<p class="note">Bu başlıkta tasarım yok.</p>';
+  L.forEach(function(x){
+    var sz=Object.keys(x.sizes||{}).filter(function(k){return x.sizes[k]>0;}).map(function(k){return k+' × '+x.sizes[k];}).join(', ');
+    h+='<div class="adx-c"><img src="'+esc(x.thumb||'')+'" alt="" loading="lazy"><div class="adx-b"><div class="adx-t"><b>'+esc(x.title)+'</b><span class="adx-k k-'+esc(x.kind)+'">'+(ADX_KIND[x.kind]||x.kind)+'</span>'+(x.by_wolf?'<span class="adx-k k-wolf">Wolf</span>':'')+'</div>'+
+      '<small class="note" style="margin:0">'+esc(new Date(x.created_at).toLocaleString('tr-TR'))+' · '+esc(x.created_by||'')+(x.kind==='baski'?' · '+(+x.qty||0)+' adet'+(sz?' ('+esc(sz)+')':''):'')+(x.kind==='sablon'?' · '+(x.published?'Yayında':'Yayında değil'):'')+(x.kind==='baski'?' · Durum: <b>'+esc(x.status)+'</b>':'')+'</small>'+
+      (x.note?'<small class="note" style="margin:0">'+esc(x.note)+'</small>':'')+
+      '<div class="adx-a"><a class="btn soft sm" href="studyo.html?ad='+esc(x.id)+'" target="_blank" rel="noopener">Stüdyoda aç</a>'+
+      (x.kind==='baski'?(x.files||[]).map(function(f){var u=ADX.urls[f.path];return u?'<button type="button" class="btn sm" data-adx="dl" data-u="'+esc(u)+'" data-fn="'+esc((x.title||'baski').replace(/[^\wçğıöşüÇĞİÖŞÜ -]/g,'')+'-'+(f.side==='back'?'arka':'on')+'.png')+'">'+(f.side==='back'?'Arka':'Ön')+' baskı dosyası</button>':'';}).join('')+
+        '<label class="adx-s">Durum<select data-adxs="'+esc(x.id)+'">'+ADX_ST.map(function(s){return '<option'+(s===x.status?' selected':'')+'>'+s+'</option>';}).join('')+'</select></label>':'')+
+      (x.kind==='sablon'?'<button type="button" class="btn soft sm" data-adx="pub" data-id="'+esc(x.id)+'" data-v="'+(x.published?'0':'1')+'">'+(x.published?'Yayından kaldır':'Yayınla')+'</button>':'')+
+      (x.kind!=='baski'?'<button type="button" class="btn soft sm" data-adx="kind" data-id="'+esc(x.id)+'" data-v="sablon"'+(x.kind==='sablon'?' hidden':'')+'>Şablon yap</button>':'')+
+      '<button type="button" class="btn soft sm adx-del" data-adx="del" data-id="'+esc(x.id)+'">'+(ADX.del===x.id?'Silmeyi onayla':'Sil')+'</button></div></div></div>';
+  });
+  return h+'</div>';
+}
+async function adxPatch(id,body){var tk=await sbToken();if(!tk){toast('Oturum süresi doldu');return false;}var r=await sbReq('/rest/v1/admin_designs?id=eq.'+id,{method:'PATCH',token:tk,body:Object.assign({updated_at:new Date().toISOString()},body),prefer:'return=minimal'});if(!r.ok){toast('Kaydedilemedi');return false;}return true;}
+document.addEventListener('click',async function(e){
+  var b=e.target.closest&&e.target.closest('[data-adx]');if(!b)return;e.preventDefault();var a=b.dataset.adx,id=b.dataset.id;
+  if(a==='reload'){ADX.rows=null;adxLoad();adxRefresh();return;}
+  if(a==='f'){ADX.f=b.dataset.v;adxRefresh();return;}
+  if(a==='dl'){try{var bl=await (await fetch(b.dataset.u)).blob();bzAnchorSave(b.dataset.fn||'baski.png',bl);}catch(_){window.open(b.dataset.u,'_blank','noopener');}return;}
+  if(a==='pub'){if(await adxPatch(id,{published:b.dataset.v==='1'})){ADX.rows.forEach(function(r){if(r.id===id)r.published=b.dataset.v==='1';});toast(b.dataset.v==='1'?'Şablon yayında':'Şablon yayından kaldırıldı');adxRefresh();}return;}
+  if(a==='kind'){if(await adxPatch(id,{kind:'sablon',published:true,status:'yayında'})){ADX.rows.forEach(function(r){if(r.id===id){r.kind='sablon';r.published=true;}});toast('Şablon olarak yayında');adxRefresh();}return;}
+  if(a==='del'){if(ADX.del!==id){ADX.del=id;adxRefresh();return;}ADX.del=null;var tk=await sbToken();var r=tk&&await sbReq('/rest/v1/admin_designs?id=eq.'+id,{method:'DELETE',token:tk,prefer:'return=minimal'});if(r&&r.ok){ADX.rows=ADX.rows.filter(function(x){return x.id!==id;});toast('Silindi');}else toast('Silinemedi');adxRefresh();return;}
+  if(a==='sadd'){var em=($('#adxMail').value||'').trim().toLowerCase(),nm=($('#adxName').value||'').trim();if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(em)){toast('Geçerli bir e-posta yaz');return;}
+    var tk2=await sbToken();var r2=tk2&&await sbReq('/rest/v1/wf_staff',{method:'POST',token:tk2,body:{email:em,name:nm},prefer:'resolution=merge-duplicates,return=minimal'});
+    if(r2&&r2.ok){toast('Yetkili eklendi');ADX.staff=null;adxStaffLoad();}else toast('Eklenemedi');return;}
+  if(a==='sdel'){var tk3=await sbToken();var r3=tk3&&await sbReq('/rest/v1/wf_staff?email=eq.'+encodeURIComponent(b.dataset.e),{method:'DELETE',token:tk3,prefer:'return=minimal'});if(r3&&r3.ok){toast('Yetki kaldırıldı');ADX.staff=null;adxStaffLoad();}else toast('Kaldırılamadı');return;}
+});
+document.addEventListener('change',async function(e){var t=e.target;if(!t||!t.dataset||!t.dataset.adxs)return;var id=t.dataset.adxs;if(await adxPatch(id,{status:t.value})){ADX.rows.forEach(function(r){if(r.id===id)r.status=t.value;});toast('Durum: '+t.value);}});
+async function adxStaffLoad(){
+  try{var tk=await sbToken();var r=tk&&await sbReq('/rest/v1/wf_staff?select=*&order=added_at',{token:tk});ADX.staff=r&&r.ok?r.j:[];ADX.sErr=r&&r.ok?'':'Liste okunamadı.';}catch(_){ADX.staff=[];ADX.sErr='Bağlantı kurulamadı.';}
+  adxRefresh();
+}
+function adxStaff(){
+  if(!sbOwner())return '<p class="note">Yetkilileri yalnız site sahibi yönetir.</p>';
+  if(ADX.staff===null){adxStaffLoad();return '<p class="note">Yükleniyor…</p>';}
+  var h='<div class="alist"><p class="note" style="margin:0">Buraya eklediğin kişiler kendi site hesaplarıyla (aynı e-posta) Yönetim\'e girip yönetim panelini ve Admin tasarımlarını kullanabilir: tasarım yapar, şablon/ürün olarak ekler, baskıya gönderir. Önce sitede o e-postayla üye olmaları gerekir. Yetkilileri yalnız sen ekler veya çıkarırsın.</p>';
+  if(ADX.sErr)h+='<p class="msg">'+esc(ADX.sErr)+'</p>';
+  h+='<div class="aed" style="display:grid;gap:8px"><b style="font-size:14px">Yetkili ekle</b><div class="two"><label for="adxName">Ad<input id="adxName" autocomplete="off"></label><label for="adxMail">E-posta<input id="adxMail" type="email" autocomplete="off" inputmode="email"></label></div><button type="button" class="btn sm" data-adx="sadd" style="justify-self:start">Ekle</button></div>';
+  if(!ADX.staff.length)h+='<p class="note">Henüz yetkili yok. Şu an yalnız sen ('+esc(OWNER_MAIL)+') yöneticisin.</p>';
+  ADX.staff.forEach(function(s){h+='<div class="arow" style="grid-template-columns:1fr auto"><div><b>'+esc(s.name||s.email)+'</b><small>'+esc(s.email)+' · '+esc(new Date(s.added_at).toLocaleDateString('tr-TR'))+'</small></div><div class="mini"><button type="button" data-adx="sdel" data-e="'+esc(s.email)+'" aria-label="Yetkiyi kaldır" style="width:auto;padding:0 10px">Kaldır</button></div></div>';});
+  return h+'</div>';
+}
+
 /* ===== Yönetim: Tasarımlar sekmesi ===== */
 function bzAnchorSave(fn,bl){var u=URL.createObjectURL(bl),a=document.createElement('a');a.href=u;a.download=fn;document.body.appendChild(a);a.click();a.remove();setTimeout(function(){URL.revokeObjectURL(u);},4000);}
 var DS={rows:null,urls:{},err:'',busy:false};
@@ -1653,7 +1743,7 @@ function sbReq(path,o){o=o||{};var h={apikey:SB.key,'Content-Type':'application/
 function sbErr(j){var m=String((j&&(j.error_description||j.msg||j.message||j.error))||'');
   if(/invalid login/i.test(m))return 'E-posta veya şifre hatalı.';if(/not confirmed/i.test(m))return 'Önce e-postandaki doğrulama bağlantısına tıkla.';if(/already|registered/i.test(m))return 'Bu e-posta ile zaten bir hesap var. Giriş yapmayı dene.';
   if(/password/i.test(m)&&/(short|least|weak)/i.test(m))return 'Şifre en az 6 karakter olmalı.';if(/rate|too many|seconds/i.test(m))return 'Çok sık denedin, biraz bekle.';if(/valid email|invalid.*email/i.test(m))return 'Geçerli bir e-posta yaz.';return m||'İşlem başarısız.';}
-function sbSession(j){if(!j||!j.access_token)return null;return {access:j.access_token,refresh:j.refresh_token,exp:Date.now()+((+j.expires_in||3600)-60)*1000,user:j.user||(SBS&&SBS.user)||null};}
+function sbSession(j){if(!j||!j.access_token)return null;return {access:j.access_token,refresh:j.refresh_token,exp:Date.now()+((+j.expires_in||3600)-60)*1000,user:j.user||(SBS&&SBS.user)||null,adm:(SBS&&SBS.adm)||null};}
 function sbSetUser(){ACCOUNT.user=SBS&&SBS.user?{id:SBS.user.id,email:SBS.user.email,name:(SBS.user.user_metadata||{}).name||''}:null;}
 async function sbToken(){
   if(!SBS)return null;if(Date.now()<SBS.exp)return SBS.access;
@@ -2200,7 +2290,7 @@ function adminView(){
   if(!ready)return '<div class="wrap page"><p class="eyebrow">Wolflano</p><h1 class="h2">Yönetim</h1><p class="lead">Yükleniyor…</p></div>';
   if(!admOk())return admGate();
   if(!A)A=newA();
-  var tabs=[['crm','Siparişler ve müşteriler'],['depo','Depo ve gönderim'],['metin','Sayfa metinleri'],['sayfa','Sayfalar'],['urun','Koleksiyon'],['kategori','Kategoriler'],['baski','Baskıya uygun'],['studyo','Tasarım stüdyosu'],['fiyat','Fiyatlandırma'],['kanal','Satış kanalları'],['tedarik','Tedarikçiler'],['site','Site ve iletişim'],['muhasebe','Muhasebe'],['tasarim','Tasarımlar'],['seo','SEO'],['yedek','Yedek']];
+  var tabs=[['crm','Siparişler ve müşteriler'],['admtas','Admin tasarımları'],['depo','Depo ve gönderim'],['metin','Sayfa metinleri'],['sayfa','Sayfalar'],['urun','Koleksiyon'],['kategori','Kategoriler'],['baski','Baskıya uygun'],['studyo','Tasarım stüdyosu'],['fiyat','Fiyatlandırma'],['kanal','Satış kanalları'],['tedarik','Tedarikçiler'],['site','Site ve iletişim'],['muhasebe','Muhasebe'],['tasarim','Müşteri tasarımları'],['seo','SEO'],['yedek','Yedek']];if(sbOwner()&&!ART)tabs.push(['yetki','Yetkililer']);
   var h='<div class="wrap page ad"><p class="eyebrow">Wolflano</p><h1 class="h2">Yönetim paneli</h1><p><button class="btn soft sm" data-ad="logout">Çıkış yap</button></p><div class="tabs">'+tabs.map(function(x){return '<button data-ad="tab" data-v="'+x[0]+'"'+(A.tab===x[0]?' class="on"':'')+'>'+x[1]+'</button>';}).join('')+'</div>';
   var d=A.draft;
   if(A.tab==='urun'){pNums(d.products);
@@ -2243,7 +2333,7 @@ function adminView(){
   }else if(A.tab==='crm'){h+=crmView().replace(/^<div class="wrap page( crm)?"><p class="eyebrow">Wolflano<\/p><h1 class="h2">Yönetim<\/h1>/,'<div class="crm">');
   }else if(A.tab==='kategori'){h+=catAdmin(d);
   }else if(A.tab==='studyo'){h+=studioAdmin(d);
-  }else if(A.tab==='tasarim'){h+=dsAdmin();}else if(A.tab==='muhasebe'){h+=accView();}else if(A.tab==='seo'){h+=seoAdmin();}else if(A.tab==='tedarik'){
+  }else if(A.tab==='admtas'){h+=adxView();}else if(A.tab==='yetki'){h+=adxStaff();}else if(A.tab==='tasarim'){h+=dsAdmin();}else if(A.tab==='muhasebe'){h+=accView();}else if(A.tab==='seo'){h+=seoAdmin();}else if(A.tab==='tedarik'){
     d.suppliers=d.suppliers||[];
     h+='<div class="alist"><p class="note" style="margin:0">Yerli ve yabancı tedarikçileri burada tanımla. Anlaşma sonrası her tedarikçi için bir bağlantı (API, XML, CSV) kurulur, katalog, stok ve sipariş otomatik akar. Bağlantı gelene kadar tedarikçinin stok dosyasını aşağıya yapıştırıp stok ve maliyeti güncelleyebilirsin.</p>';
     d.suppliers.forEach(function(s,i){
@@ -2414,7 +2504,7 @@ function channelCSV(d,id){
 
 /* ===== YÖNETİM GİRİŞİ (yalnız şifre) ===== */
 var OWNER_MAIL='ergunince68@hotmail.com',ADM_OK=false;
-function sbAdmin(){return !!(SBS&&SBS.user&&String(SBS.user.email||'').toLowerCase()===OWNER_MAIL);}
+function sbAdmin(){if(!(SBS&&SBS.user))return false;var em=String(SBS.user.email||'').toLowerCase();return em===OWNER_MAIL||(SBS.adm===em);}
 function admOk(){
   if(ADM_OK)return true;
   if(!ART&&sbAdmin())return true;
@@ -2424,8 +2514,9 @@ function admOk(){
 function admGate(){
   if(!ART)return '<div class="wrap page"><p class="eyebrow">Wolflano</p><h1 class="h2">Yönetim</h1><form class="panel" id="admSbForm" style="max-width:420px">'+
     '<p class="note" style="margin:0">Yönetici hesabınla gir. Site hesabının şifresini kullan.</p>'+
-    '<label for="admMail">E-posta<input id="admMail" type="email" value="'+OWNER_MAIL+'" readonly></label>'+
+    '<label for="admMail">E-posta<input id="admMail" type="email" value="'+OWNER_MAIL+'" autocomplete="username" inputmode="email" required></label>'+
     '<label for="admPw">Şifre<input id="admPw" type="password" autocomplete="current-password" required></label>'+
+    '<p class="note" style="margin:0">Yetkili kişiler kendi site hesaplarının e-posta ve şifresiyle girer.</p>'+
     '<button class="btn" type="submit" style="justify-content:center">Giriş yap</button><div class="msg" id="admMsg" hidden></div>'+
     '<p class="note" style="margin:0"><a href="#yonetim" data-adsb="reset" style="color:var(--green);font-weight:600">Şifremi unuttum</a></p></form></div>';
   var set=!(D.admin&&D.admin.h);
@@ -2451,14 +2542,17 @@ async function admHash(pw,salt){
 }
 document.addEventListener('submit',async function(e){
   if(!e.target||e.target.id!=='admSbForm')return;e.preventDefault();
-  admMsg('Giriş yapılıyor…');var r=await ACCOUNT.login({email:OWNER_MAIL,password:$('#admPw').value});
+  var am=String(($('#admMail')&&$('#admMail').value)||OWNER_MAIL).trim().toLowerCase();
+  admMsg('Giriş yapılıyor…');var r=await ACCOUNT.login({email:am,password:$('#admPw').value});
   if(!r.ok){admMsg(r.message||'Giriş yapılamadı.');return;}
-  if(!sbAdmin()){admMsg('Bu hesap yönetici değil.');return;}
+  if(!sbAdmin()){var tk=await sbToken(),ok=false;try{var rr=tk&&await sbReq('/rest/v1/rpc/is_wf_admin',{method:'POST',token:tk,body:{}});ok=!!(rr&&rr.ok&&rr.j===true);}catch(_){}
+    if(ok&&SBS){SBS.adm=String(SBS.user.email||'').toLowerCase();sbStore(SBS);}}
+  if(!sbAdmin()){admMsg('Bu hesap yönetici veya yetkili değil.');return;}
   A=newA();adRender();
 });
 document.addEventListener('click',async function(e){
   var x=e.target.closest&&e.target.closest('[data-adsb]');if(!x)return;e.preventDefault();
-  admMsg('Gönderiliyor…');var r=await ACCOUNT.reset({email:OWNER_MAIL});admMsg(r.message||'');
+  admMsg('Gönderiliyor…');var r=await ACCOUNT.reset({email:String(($('#admMail')&&$('#admMail').value)||OWNER_MAIL).trim()});admMsg(r.message||'');
 });
 function admMsg(t){var m=$('#admMsg');if(m){m.textContent=t;m.hidden=!t;}}
 function admRemember(h,rem){try{if(rem)localStorage.setItem('wf_adm',h);else sessionStorage.setItem('wf_adm',h);}catch(_){}}
