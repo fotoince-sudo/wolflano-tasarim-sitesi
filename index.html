@@ -398,8 +398,12 @@ body.chk #nav,body.chk .menu-btn,body.chk .lang,body.chk #cartBtn,body.chk #ann{
 .info .sz{flex:1 1 0;min-width:0;height:38px;padding:0 4px;font-size:13px}
 .ptop{display:grid;gap:2px}
 .ptop h1{margin:0}
-.pbig{display:flex;align-items:baseline;flex-wrap:wrap;gap:4px 10px}
-.pbig .old{font:500 18px var(--ui);color:var(--muted)}
+.info{gap:10px}
+.info .ptype{display:block;width:100%;text-align:center;margin:0}
+.info .szs p{text-align:center}
+.ptop{width:100%;text-align:center}
+.pbig{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:4px 10px;font:600 24px var(--ui)}
+.pbig .old{font:500 15px var(--ui);color:var(--muted)}
 .pbig .pct{font:600 12px var(--ui);font-style:normal;color:var(--green);border:1px solid var(--green);border-radius:999px;padding:2px 8px;align-self:center}
 /* Beden seçimi */
 .szs{display:grid;gap:8px;margin:4px 0}
@@ -1821,7 +1825,7 @@ odeme:function(){
   var p=PRODUCTS.filter(function(x){return x.id===id;})[0];szPick='';
   if(!p)return '<div class="wrap page"><a class="link back" href="#hazir">← Koleksiyon</a><p class="empty">Ürün bulunamadı.</p></div>';
   gv=0;
-  return '<div class="wrap page"><a class="link back" href="#hazir">← Koleksiyon</a><div class="pd"><div class="gal" id="gal">'+galHTML(p)+'</div><div class="info">'+(function(){var zs=pSizes(p);if(!zs.length||soldOut(p))return '';return '<div class="szs"><p>Beden: <b id="szT">Seç</b></p><div role="radiogroup" aria-label="Beden">'+zs.map(function(z){return '<button type="button" class="sz" role="radio" aria-checked="false" data-sz="'+esc(z)+'">'+esc(z)+'</button>';}).join('')+'</div></div>';})()+'<div class="ptop"><small>'+esc(p.type||'')+'</small>'+(String(p.name||'').trim().toLocaleLowerCase('tr')===String(p.type||'').trim().toLocaleLowerCase('tr')?'':'<h1>'+esc(p.name)+'</h1>')+'<div class="pbig">'+prBig(p)+'</div></div>'+stk(p)+(soldOut(p)?'<button class="btn" disabled>Tükendi</button>':'<button class="btn" data-add="'+p.id+'">Sepete ekle</button>')+'<button class="btn soft sm" data-fav="'+p.id+'" style="gap:8px">'+(favs[p.id]?'♥ Favorilerde':'♡ Favorilere ekle')+'</button>'+(p.desc?'<p style="margin:0;color:var(--muted)">'+esc(p.desc)+'</p>':'')+(function(){var pn=String(p.pnote||'').trim();if(pn==='-')return '';if(!pn){if(/kupa/i.test((p.type||'')+' '+(p.name||'')))return '';pn=TX('pnote');}return pn?'<div class="pnote"><b>'+esc(TX('pnoteTitle'))+'</b><p>'+esc(pn)+'</p></div>':'';})()+'<ul><li>Siparişler 2-4 iş gününde hazırlanır</li><li>Hediye paketi her siparişte ücretsiz</li></ul></div></div></div>';
+  return '<div class="wrap page"><a class="link back" href="#hazir">← Koleksiyon</a><div class="pd"><div class="gal" id="gal">'+galHTML(p)+'</div><div class="info"><small class="ptype">'+esc(p.type||'')+'</small>'+(function(){var zs=pSizes(p);if(!zs.length||soldOut(p))return '';return '<div class="szs"><p>Beden: <b id="szT">Seç</b></p><div role="radiogroup" aria-label="Beden">'+zs.map(function(z){return '<button type="button" class="sz" role="radio" aria-checked="false" data-sz="'+esc(z)+'">'+esc(z)+'</button>';}).join('')+'</div></div>';})()+'<div class="ptop">'+(String(p.name||'').trim().toLocaleLowerCase('tr')===String(p.type||'').trim().toLocaleLowerCase('tr')?'':'<h1>'+esc(p.name)+'</h1>')+'<div class="pbig">'+prBig(p)+'</div></div>'+stk(p)+(soldOut(p)?'<button class="btn" disabled>Tükendi</button>':'<button class="btn" data-add="'+p.id+'">Sepete ekle</button>')+'<button class="btn soft sm" data-fav="'+p.id+'" style="gap:8px">'+(favs[p.id]?'♥ Favorilerde':'♡ Favorilere ekle')+'</button>'+(p.desc?'<p style="margin:0;color:var(--muted)">'+esc(p.desc)+'</p>':'')+(function(){var pn=String(p.pnote||'').trim();if(pn==='-')return '';if(!pn){if(/kupa/i.test((p.type||'')+' '+(p.name||'')))return '';pn=TX('pnote');}return pn?'<div class="pnote"><b>'+esc(TX('pnoteTitle'))+'</b><p>'+esc(pn)+'</p></div>':'';})()+'<ul><li>Siparişler 2-4 iş gününde hazırlanır</li><li>Hediye paketi her siparişte ücretsiz</li></ul></div></div></div>';
  },
  baski:function(){return VIEWS.tasarla();},
  tasarla:function(){
