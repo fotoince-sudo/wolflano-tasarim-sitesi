@@ -348,6 +348,42 @@ th{font-size:13px;letter-spacing:.05em;text-transform:uppercase;color:var(--mute
 .qp-link.del{color:#b42318}
 .qp-ex{background:none!important;border:0!important;padding:4px 2px!important}
 .qp-bar .in{justify-content:flex-end}.qp-bar .btn:not(.soft){flex:1;justify-content:center;max-width:320px}
+/* Sıkı yerleşim: panelde gereksiz boşluk yok */
+.pn .pn-top{margin-bottom:10px}
+.pn .h2{font-size:26px}
+.pn-hero{padding:10px 12px;gap:10px;border-radius:14px;margin-bottom:4px}
+.pn-hero b{font-size:16px}.pn-hero small{font-size:12px;margin-top:0}
+.pn-plus{width:34px;height:34px;border-radius:10px;font-size:22px}
+.pn-g{margin:14px 0 6px;font-size:11px}
+.pn-grid{gap:6px}
+.pn-tile{min-height:0;flex-direction:row;align-items:center;gap:10px;padding:10px;border-radius:12px;font-size:13px}
+.pn-tile svg{flex:none;width:20px;height:20px}
+.pn-bar{margin:-10px 0 8px;padding:4px 0 8px}
+.pn-bar b{font-size:16px}
+.pn-back{padding:6px 10px;font-size:12px}
+.pn-new{margin:0 0 8px;padding:10px 14px}
+.pn .alist{gap:6px}
+.pn .arow{padding:6px 8px;gap:10px;grid-template-columns:48px 1fr auto;border-radius:12px}
+.pn .arow img{width:48px;height:48px}
+.pn .arow small{line-height:1.3;font-size:12px}
+.pn .arow b{font-size:15px}
+.pn .mini{gap:4px}.pn .mini button{width:30px;height:30px;font-size:12px}
+.qp{gap:6px}
+.qp section{padding:10px;gap:8px;border-radius:12px}
+.qp h3{font-size:13px}
+.qp-ph{grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+.qp-add{font-size:11px}.qp-add span{font-size:24px}
+.qp-f{gap:3px;font-size:11px}
+.qp-f input,.qp-f textarea{padding:8px 10px}
+.qp-2{gap:8px}
+.qp-ch{gap:5px}
+.qp-ch button{padding:6px 11px;font-size:13px}
+.qp-ch.sm button{padding:5px 9px;font-size:12px}
+.qp-sub{gap:4px;padding-top:0}
+.qp-tg{padding-bottom:6px}
+.qp-link{padding:2px 0;font-size:13px}
+.qp-bar{padding-top:8px;padding-bottom:calc(8px + env(safe-area-inset-bottom,0px))}
+.qp-bar .btn{padding:10px 14px}
 
 .adx-top{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 .adx-f{display:flex;gap:6px;flex-wrap:wrap}
@@ -2564,7 +2600,7 @@ function adminView(){
   }else{
     h+='<div class="aed" style="max-width:760px"><b>Veri yedeği</b><p class="note">Kaydetme çalışmazsa bu metni kopyalayıp bana gönder, ben siteye işlerim. Görseller bu metne dahil değildir.</p><textarea class="code" id="f-bak" readonly>'+esc(JSON.stringify(stripD(A.draft),null,1))+'</textarea><div><button class="btn soft sm" data-ad="bcopy">Kopyala</button></div></div>';
   }
-  h+='</div><div class="sbar'+(A.dirty||A.msg?'':' pn-hide')+'"><div class="in"><span id="sbm">'+(A.dirty?'Kaydedilmemiş değişiklik var':(A.msg||'Değişiklik yok'))+'</span><button class="btn soft sm" data-ad="reset"'+(A.dirty?'':' disabled')+'>Vazgeç</button><button class="btn sm" data-ad="save"'+(A.dirty?'':' disabled')+'>Kaydet</button></div></div>';
+  h+='</div><div class="sbar'+(A.dirty||(A.msg&&!/^Kaydedildi/.test(A.msg))?'':' pn-hide')+'"><div class="in"><span id="sbm">'+(A.dirty?'Kaydedilmemiş değişiklik var':(A.msg||'Değişiklik yok'))+'</span><button class="btn soft sm" data-ad="reset"'+(A.dirty?'':' disabled')+'>Vazgeç</button><button class="btn sm" data-ad="save"'+(A.dirty?'':' disabled')+'>Kaydet</button></div></div>';
   return h;
 }
 function stripD(d){return d;}
