@@ -1476,7 +1476,7 @@ function acctHome(){
   var u=ACCOUNT.user,p=ACCOUNT.prof||{},f=function(id,l,v,ex){return '<label for="'+id+'">'+l+(ex||'<input id="'+id+'" value="'+esc(v||'')+'">')+'</label>';};
   return '<div class="wrap page acct"><div class="acth"><p class="eyebrow" style="margin:0">Hesabım</p><button class="outsm" type="button" id="outBtn">Çıkış yap</button></div><h1 class="h2">Merhaba'+((p.ad||u.name)?', '+esc((p.ad||u.name).split(' ')[0]):'')+'</h1><p class="lead">'+esc(u.email)+'</p>'+
   '<form class="panel" id="profForm" style="max-width:460px;margin-top:20px">'+f('pAd','Ad soyad',p.ad||u.name)+f('pTel','Cep telefonu',p.tel,'<input id="pTel" type="tel" inputmode="tel" placeholder="05xx xxx xx xx" value="'+esc(p.tel||'')+'">')+f('pAdr','Adres',p.adres)+'<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">'+f('pIl','İl',p.il)+f('pIlce','İlçe',p.ilce)+'</div><button class="btn" type="submit">Kaydet</button><div class="msg" id="profMsg" hidden></div></form>'+
-  '<div class="acts"><a class="btn soft" href="#siparis">Son siparişim</a><a class="btn soft" href="#favoriler">Favorilerim</a><button class="btn soft" type="button" onclick="var c=document.getElementById('cartBtn');if(c)c.click();">Sepetim</button></div></div>';
+  '<div class="acts"><a class="btn soft" href="#siparis">Son siparişim</a><a class="btn soft" href="#favoriler">Favorilerim</a><button class="btn soft" type="button" id="accCart">Sepetim</button></div></div>';
 }
 document.addEventListener('submit',async function(e){
   if(!e.target||e.target.id!=='profForm')return;e.preventDefault();var g=function(i){return document.getElementById(i).value.trim();},m=document.getElementById('profMsg');
@@ -1484,6 +1484,7 @@ document.addEventListener('submit',async function(e){
   m.hidden=false;m.textContent='Kaydediliyor…';var ok=await ACCOUNT.saveProfile({ad:g('pAd'),tel:tel?normPhone(tel):'',adres:g('pAdr'),il:g('pIl'),ilce:g('pIlce')});m.textContent=ok?'Bilgilerin kaydedildi.':'Kaydedilemedi, tekrar dene.';
 });
 document.addEventListener('click',async function(e){if(e.target.closest&&e.target.closest('#outBtn')){await ACCOUNT.logout();route();}});
+document.addEventListener('click',function(e){if(e.target.closest&&e.target.closest('#accCart')){openCart();}});
 /* ödeme sayfasında kayıtlı bilgileri doldur */
 new MutationObserver(function(){var f=document.getElementById('coForm');if(!f||f.dataset.pf||!ACCOUNT.user)return;f.dataset.pf='1';var p=ACCOUNT.prof||{},set=function(i,v){var e=document.getElementById(i);if(e&&v&&!e.value)e.value=v;};
   set('oAd',p.ad||ACCOUNT.user.name);set('oMail',ACCOUNT.user.email);set('oTel',p.tel);set('oAdr',p.adres);set('oIl',p.il);set('oIlce',p.ilce);var h=document.getElementById('oH1');if(h){var pn=h.closest('.panel');if(pn)pn.style.display='none';var m=document.getElementById('oH2');if(m)m.checked=true;}
