@@ -340,6 +340,7 @@ footer a{text-decoration:none}footer a:hover{color:var(--green)}
 .ann{background:#000;color:var(--red);font:600 11px var(--ui);letter-spacing:.12em;text-transform:uppercase;height:28px;overflow:hidden;position:relative;text-align:center}.ann .r{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:0 12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;opacity:0;transition:opacity .6s}.ann .r.on{opacity:1}.ann .mq{display:flex;align-items:center;height:100%;white-space:nowrap}.ann .mq span{display:inline-block;padding-left:100%;animation:annq 28s linear infinite}.ann .mq i{font-style:normal;margin:0 14px;color:#fff;opacity:.5}@keyframes annq{to{transform:translateX(-100%)}}@media (prefers-reduced-motion:reduce){.ann .mq span{animation:none;padding-left:12px}}.chips button .cv{display:inline-flex;font-size:inherit;margin-left:0}
 /* Üst ikonlar aynı hizada */
 .top .wrap{align-items:center}.top .ib{display:inline-flex!important;align-items:center;justify-content:center;height:44px;padding:0;margin:0;vertical-align:middle;line-height:1}.top .ib .i{display:block;width:22px;height:22px;margin:0}.top #favBtn .i{transform:translateY(1px)}.top #cartBtn .i{transform:translateY(1px)}.top .lang .lg{transform:translateY(4px)}.top .lang{width:auto!important;gap:3px;padding:0 4px}.top .lang .lg{font:600 14px/1 var(--ui);display:block}
+body.guide .top .wrap{position:relative}body.guide .top .wrap::after{content:'';position:absolute;left:0;right:0;top:calc(50% + 8.25px);height:1px;background:#e5393a;pointer-events:none;z-index:50}
 </style>
 
 <header class="top"><div class="wrap">
@@ -353,6 +354,7 @@ footer a{text-decoration:none}footer a:hover{color:var(--green)}
 </div><div class="ann" id="ann" hidden></div></header>
 
 <main id="main"></main>
+<script>try{if(/[?&]cizgi/.test(location.search))document.body.classList.add('guide');}catch(_){}</script>
 
 <footer><div class="wrap">
   <div class="fbrand"><a class="brand" href="#ana"><img data-logo alt=""><span class="word">WOLF<b>LANO</b></span></a><p id="fsig">Wolflano. Karakterini Üzerinde Taşı.</p></div>
