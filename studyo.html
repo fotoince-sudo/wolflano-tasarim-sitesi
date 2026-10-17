@@ -1,6 +1,6 @@
 <!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover"><style>html,body{touch-action:manipulation}:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <title>Wolflano Stüdyo</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Oswald:wght@700&family=Bebas+Neue&family=Staatliches&family=Montserrat:wght@800&family=Poppins:wght@800&family=Archivo+Black&family=Alfa+Slab+One&family=Playfair+Display:wght@800&family=Abril+Fatface&family=Righteous&family=Bangers&family=Fredoka:wght@600&family=Black+Ops+One&family=Press+Start+2P&family=Lobster&family=Pacifico&family=Dancing+Script:wght@700&family=Caveat:wght@700&family=Barlow:wght@500;600;700&family=Barlow+Condensed:wght@600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Oswald:wght@700&family=Bebas+Neue&family=Staatliches&family=Montserrat:wght@800&family=Poppins:wght@800&family=Archivo+Black&family=Alfa+Slab+One&family=Playfair+Display:wght@800&family=Abril+Fatface&family=Righteous&family=Bangers&family=Fredoka:wght@600&family=Black+Ops+One&family=Press+Start+2P&family=Lobster&family=Pacifico&family=Dancing+Script:wght@700&family=Caveat:wght@700&family=Barlow:wght@500;600;700&family=Barlow+Condensed:wght@600;700&family=Rubik:wght@800&family=Teko:wght@600&family=Russo+One&family=Saira+Condensed:wght@800&family=Exo+2:wght@800&family=Kanit:wght@800&family=Rajdhani:wght@700&family=Bungee&family=Chakra+Petch:wght@700&family=Lilita+One&family=Kaushan+Script&family=Sacramento&family=Cinzel:wght@700&family=Merriweather:wght@900&family=Cormorant+Garamond:wght@700&family=Manrope:wght@800&display=swap">
 <style>
 /* Layout: tek ekranlık stüdyo. Üstte ürün ve baskı alanı seçimi, ortada sahne, altta bağlamsal araçlar, sayfa ve sekme çubuğu. */
 :root{
@@ -306,6 +306,15 @@ svg.i{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stro
 .ctxbar svg.i{width:16px;height:16px}
 .thumb-grid{grid-template-columns:repeat(auto-fill,minmax(58px,1fr));gap:6px}
 .csw{width:26px;height:26px}
+.tpl-grid{grid-template-columns:repeat(auto-fill,minmax(76px,1fr));gap:6px}
+.tpl{padding:4px 4px 6px;gap:4px;border-radius:12px}
+.tpl .prev{height:100px}
+.tpl .prev .in{transform:translateX(-50%) scale(.47)}
+.tpl span,.atpl span{font-size:11px}
+.atpl .prev{height:100px}
+.atpl{padding:4px 4px 6px;gap:4px;border-radius:12px}
+.search{height:38px;margin-bottom:8px}
+.search input{font-size:16px}
 .panel .chips button{padding:5px 10px;font-size:12px}
 .panel .chips{margin-bottom:8px;padding-right:40px}
 .clip-grid{grid-template-columns:repeat(auto-fill,minmax(46px,1fr))}
@@ -593,8 +602,8 @@ function areaBox(side,key,land){
 function cmText(key,land){return dimsOf(key,land).join(' × ').replace(/\./g,',')+' cm';}
 
 var TEES=[['Beyaz','#f6f6f4'],['Siyah','#17181a'],['Gri','#8f9598'],['Yeşil','#1f6b4a'],['Mavi','#2f6fb5'],['Lacivert','#1c2a4b'],['Kahve','#5b3a29'],['Kiremit','#b2502d']];
-var PALETTE=['#111111','#ffffff','#e63946','#f4a261','#ffd23f','#3fae49','#159b91','#1d70b8','#2f3e9e','#7b3fa0','#e75a9a','#7a5230','#8a8f94'];
-var FONTS=[['Anton',400],['Oswald',700],['Bebas Neue',400],['Staatliches',400],['Montserrat',800],['Poppins',800],['Archivo Black',400],['Alfa Slab One',400],['Playfair Display',800],['Abril Fatface',400],['Righteous',400],['Bangers',400],['Fredoka',600],['Black Ops One',400],['Press Start 2P',400],['Lobster',400],['Pacifico',400],['Dancing Script',700],['Caveat',700],['Barlow Condensed',700]];
+var PALETTE=['#111111','#ffffff','#e63946','#8b1e2d','#ff7a00','#f4a261','#ffd23f','#c9a227','#3fae49','#0f4c3a','#2fbf71','#159b91','#00a6d6','#1d70b8','#2f3e9e','#7b3fa0','#e75a9a','#7a5230','#f2e6d0','#b0b7bd','#8a8f94','#5a5f66'];
+var FONTS=[['Anton',400],['Oswald',700],['Bebas Neue',400],['Staatliches',400],['Montserrat',800],['Poppins',800],['Archivo Black',400],['Alfa Slab One',400],['Playfair Display',800],['Abril Fatface',400],['Righteous',400],['Bangers',400],['Fredoka',600],['Black Ops One',400],['Press Start 2P',400],['Lobster',400],['Pacifico',400],['Dancing Script',700],['Caveat',700],['Barlow Condensed',700],['Rubik',800],['Teko',600],['Russo One',400],['Saira Condensed',800],['Exo 2',800],['Kanit',800],['Rajdhani',700],['Bungee',400],['Chakra Petch',700],['Lilita One',400],['Kaushan Script',400],['Sacramento',400],['Cinzel',700],['Merriweather',900],['Cormorant Garamond',700],['Manrope',800]];
 function fw(f){for(var i=0;i<FONTS.length;i++){if(FONTS[i][0]===f)return FONTS[i][1];}return 700;}
 function fontStack(f){return '"'+f+'", "Arial Narrow", Arial, sans-serif';}
 
@@ -683,10 +692,10 @@ function libLoad(){
   fetch(LIB_DIR+'index.json',{cache:'no-cache'}).then(function(r){return r.ok?r.json():null;}).then(function(m){
     var l=(m&&(m.ikonlar||m.icons))||[];if(!l.length)return;
     return Promise.all(l.map(function(it){var f=String(it.dosya||it.file||'');if(!/^[\w.-]+\.svg$/i.test(f))return null;
-      return fetch(LIB_DIR+f).then(function(r){return r.ok?r.text():'';}).then(function(t){var inn=libInner(t);return inn?['lib-'+f.replace(/\.svg$/i,''),it.ad||it.name||f,LIB_CAT,inn]:null;}).catch(function(){return null;});}))
+      return fetch(LIB_DIR+f).then(function(r){return r.ok?r.text():'';}).then(function(t){var inn=libInner(t);var kc=it.kategori||it.category||'';return inn?['lib-'+f.replace(/\.svg$/i,''),it.ad||it.name||f,(kc&&CLIP_CATS.indexOf(kc)>=0)?kc:LIB_CAT,inn]:null;}).catch(function(){return null;});}))
     .then(function(rows){
       rows=rows.filter(Boolean);if(!rows.length)return;
-      CLIPS=CLIPS.filter(function(c){return c[2]!==LIB_CAT;}).concat(rows);LIB_READY=true;libEnsureCat();
+      CLIPS=CLIPS.filter(function(c){return String(c[0]).indexOf('lib-')!==0;}).concat(rows);LIB_READY=true;libEnsureCat();
       if(!view.clipCat||view.clipCat===CLIP_CATS[1])view.clipCat=LIB_CAT;
       try{buildPanels();}catch(_){}
     });
@@ -821,7 +830,30 @@ var TPLS=[
 {c:'Türkiye',n:'İzmir',items:[TX('İZMİR','Alfa Slab One','ink',40,-40,0,0,{w:'arc',a:40}),CL('gunes',OR,52,6),CL('dalga',BL,96,46),TX('GÜZEL İZMİR','Dancing Script','ink',22,84)]},
 {c:'Türkiye',n:'23 Nisan',items:[CL('ayyildiz',RD,40,-66),TX('23','Anton',RD,90,-8),TX('NİSAN','Anton','ink',36,54),TX('çocuk bayramı','Fredoka',RD,18,86)]},
 {c:'Türkiye',n:'19 Mayıs',items:[TX('19','Anton',RD,90,-30),TX('MAYIS','Anton','ink',38,34),TX('GENÇLİK VE SPOR BAYRAMI','Barlow Condensed',RD,13,68)]},
-{c:'Türkiye',n:'İstanbul',items:[TX('İSTANBUL','Alfa Slab One','ink',20,-30),CL('marti','ink',80,8),CL('dalga',BL,96,50),TX('BOĞAZ','Oswald',BL,22,84)]}
+{c:'Türkiye',n:'İstanbul',items:[TX('İSTANBUL','Alfa Slab One','ink',20,-30),CL('marti','ink',80,8),CL('dalga',BL,96,50),TX('BOĞAZ','Oswald',BL,22,84)]},
+/* Yeni eklenenler: yazı tipleri ve şekillerle zenginleştirilmiş şablonlar */
+{c:'Wolf tasarımları',n:'Sessiz güç',items:[CL('k_geo','ink',70,-44),TX('SESSİZ GÜÇ','Cinzel','ink',22,22),TX('WOLFLANO','Manrope',TC,12,50)]},
+{c:'Wolf tasarımları',n:'Lider bağımsız korkusuz',items:[TX('LİDER','Teko','ink',38,-50),TX('BAĞIMSIZ','Teko',TC,28,-12),TX('KORKUSUZ','Teko','ink',30,24),CL('k_pence','ink',28,74)]},
+{c:'Wolf tasarımları',n:'Kuzey kurdu',items:[CL('dag','ink',120,-34),CL('k_uluyan',TC,40,-66,26),TX('KUZEY','Russo One','ink',32,36),TX('kurdu','Kaushan Script',TC,26,70)]},
+{c:'Spor',n:'Şampiyon',items:[CL('kupa',YL,64,-44),TX('ŞAMPİYON','Bungee','ink',22,18),TX('2026','Rubik',TC,30,52)]},
+{c:'Spor',n:'Koşu kulübü',items:[TX('KOŞU','Saira Condensed','ink',48,-30,0,-6),TX('KULÜBÜ','Saira Condensed',TC,30,14,0,-6),CL('simsek',YL,26,58),TX('HER SABAH 7.00','Rajdhani','ink',14,86)]},
+{c:'Spor',n:'Gym',items:[CL('halter','ink',96,-42),TX('NO PAIN','Teko','ink',36,10),TX('NO GAIN','Teko',RD,36,46)]},
+{c:'Takım ve okul',n:'Mezuniyet',items:[CL('defne',TC,124,4),TX('SINIF','Anton','ink',30,-46),TX('2026','Anton','ink',56,6),TX('MEZUNLARI','Barlow Condensed',TC,18,60)]},
+{c:'Takım ve okul',n:'Okul takımı',items:[CL('kalkan','ink',92,-34),CL('yildiz',YL,30,-38),TX('OKUL TAKIMI','Russo One','ink',20,36),TX('KAPTAN · 10','Rajdhani',TC,18,64)]},
+{c:'Takım ve okul',n:'Gezi',items:[CL('cadir','ink',60,-40),TX('OKUL GEZİSİ','Lilita One',TC,24,14),TX('KAMP 2026','Chakra Petch','ink',20,46)]},
+{c:'Takım ve okul',n:'Sınıf ruhu',items:[TX('12-A','Bungee',TC,48,-34),TX('BİR AİLEYİZ','Kanit','ink',22,18),CL('kalp',RD,26,56)]},
+{c:'Takım ve okul',n:'Kulüp',items:[CL('halka','ink',118,-2),TX('KULÜP','Cinzel','ink',26,-10),TX('EST. 2026','Manrope',TC,12,20)]},
+{c:'Meslek ve ekip',n:'Kahve ekibi',items:[TX('ÖNCE','Kanit','ink',26,-50),TX('KAHVE','Lilita One',BR,48,-8),TX('sonra iş','Sacramento','ink',30,40)]},
+{c:'Meslek ve ekip',n:'Hemşire',items:[CL('kalp',RD,40,-46),TX('HEMŞİRE','Rubik','ink',30,4),TX('şifa ellerde','Kaushan Script',TC,20,40)]},
+{c:'Meslek ve ekip',n:'Yazılımcı',items:[TX('</>','Chakra Petch',TC,52,-38),TX('KOD YAZAR','Chakra Petch','ink',24,12),TX('KAHVE İÇER','Rajdhani','ink',18,42)]},
+{c:'Minimal',n:'Tek kelime',items:[TX('özgür','Cormorant Garamond','ink',40,0)]},
+{c:'Minimal',n:'Koordinat',items:[TX('38.42° K','Manrope','ink',18,-12),TX('27.14° D','Manrope','ink',18,14),TX('İZMİR','Manrope',TC,10,40)]},
+{c:'Minimal',n:'İnce çizgi',items:[CL('cizgiler','ink',60,-18),TX('WOLFLANO','Cinzel','ink',18,18)]},
+{c:'Yazı ve söz',n:'Sabır ve adalet',items:[TX('Sabır','Cormorant Garamond','ink',38,-30),TX('ve','Sacramento',TC,30,4),TX('Adalet','Cormorant Garamond','ink',38,36)]},
+{c:'Yazı ve söz',n:'Vazgeçme',items:[TX('VAZGEÇME','Bungee','ink',26,-14,0,0,{w:'arc',a:40}),TX('asla','Kaushan Script',RD,34,32)]},
+{c:'Aşk ve aile',n:'Aile bağı',items:[CL('kalp',RD,40,-40),TX('AİLE','Lilita One','ink',40,10),TX('her şeydir','Sacramento',TC,26,48)]},
+{c:'Doğa ve macera',n:'Dağ çağırıyor',items:[CL('dag','ink',110,-30),CL('gunes',OR,30,-62,30),TX('DAĞLAR','Russo One','ink',28,36),TX('çağırıyor','Kaushan Script',TC,24,68)]},
+{c:'Türkiye',n:'Ege',items:[CL('dalga',BL,110,-30),TX('EGE','Cinzel','ink',46,22),TX('mavisi','Sacramento',BL,26,58)]}
 ];
 
 

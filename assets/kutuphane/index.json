@@ -56,6 +56,121 @@
   {
    "dosya": "kurt-yildiz.svg",
    "ad": "Kurt ve yıldız"
+  },
+  {
+   "dosya": "voleybol.svg",
+   "ad": "Voleybol topu",
+   "kategori": "Spor"
+  },
+  {
+   "dosya": "madalya.svg",
+   "ad": "Madalya",
+   "kategori": "Spor"
+  },
+  {
+   "dosya": "duduk.svg",
+   "ad": "Düdük",
+   "kategori": "Spor"
+  },
+  {
+   "dosya": "raket.svg",
+   "ad": "Tenis raketi",
+   "kategori": "Spor"
+  },
+  {
+   "dosya": "bisiklet.svg",
+   "ad": "Bisiklet",
+   "kategori": "Spor"
+  },
+  {
+   "dosya": "dambil.svg",
+   "ad": "Dambıl",
+   "kategori": "Spor"
+  },
+  {
+   "dosya": "nota.svg",
+   "ad": "Nota",
+   "kategori": "Semboller"
+  },
+  {
+   "dosya": "kahve.svg",
+   "ad": "Kahve fincanı",
+   "kategori": "Semboller"
+  },
+  {
+   "dosya": "sonsuz.svg",
+   "ad": "Sonsuzluk",
+   "kategori": "Semboller"
+  },
+  {
+   "dosya": "capa.svg",
+   "ad": "Çapa",
+   "kategori": "Semboller"
+  },
+  {
+   "dosya": "pusula.svg",
+   "ad": "Pusula",
+   "kategori": "Semboller"
+  },
+  {
+   "dosya": "nazar.svg",
+   "ad": "Nazar boncuğu",
+   "kategori": "Semboller"
+  },
+  {
+   "dosya": "cay.svg",
+   "ad": "Çay bardağı",
+   "kategori": "Semboller"
+  },
+  {
+   "dosya": "simit.svg",
+   "ad": "Simit",
+   "kategori": "Semboller"
+  },
+  {
+   "dosya": "patlama.svg",
+   "ad": "Patlama",
+   "kategori": "Şekiller"
+  },
+  {
+   "dosya": "sekizgen.svg",
+   "ad": "Sekizgen",
+   "kategori": "Şekiller"
+  },
+  {
+   "dosya": "selcuklu-yildizi.svg",
+   "ad": "Selçuklu yıldızı",
+   "kategori": "Şekiller"
+  },
+  {
+   "dosya": "afis.svg",
+   "ad": "Afiş şeridi",
+   "kategori": "Şekiller"
+  },
+  {
+   "dosya": "kalp-cizgi.svg",
+   "ad": "Kalp çizgisi",
+   "kategori": "Şekiller"
+  },
+  {
+   "dosya": "agac.svg",
+   "ad": "Ağaç",
+   "kategori": "Doğa"
+  },
+  {
+   "dosya": "kar.svg",
+   "ad": "Kar tanesi",
+   "kategori": "Doğa"
+  },
+  {
+   "dosya": "zeytin.svg",
+   "ad": "Zeytin dalı",
+   "kategori": "Doğa"
+  },
+  {
+   "dosya": "dalga2.svg",
+   "ad": "Büyük dalga",
+   "kategori": "Doğa"
   }
  ]
 }
