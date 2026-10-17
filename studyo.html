@@ -91,6 +91,14 @@ svg.i{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stro
 #gridHost svg{position:absolute;left:0;top:0;overflow:visible}
 #gridHost line{stroke:rgba(16,26,20,.07);stroke-width:1;vector-effect:non-scaling-stroke}
 #gridHost line.g5{stroke:rgba(16,26,20,.035)}
+#askSz{position:fixed;inset:0;z-index:70;background:rgba(0,0,0,.45);display:flex;align-items:flex-end;justify-content:center}
+#askSz[hidden]{display:none}
+#askSz .as-card{width:100%;max-width:520px;background:var(--panel,#fff);border-radius:18px 18px 0 0;padding:18px 16px calc(18px + env(safe-area-inset-bottom,0px));display:grid;gap:6px}
+#askSz .as-card>b{font:700 18px var(--ui)}
+#askSz .as-card>small{color:var(--muted);font:500 13px var(--ui);margin-bottom:6px}
+#askSz .as-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+#askSz .as-grid button{display:grid;gap:2px;justify-items:center;padding:10px 4px;border:1px solid var(--line2,#ccc);border-radius:12px;background:var(--bg);font:700 16px var(--ui);color:var(--ink)}
+#askSz .as-grid small{font:500 11px var(--ui);color:var(--muted)}
 #rulerHost{position:absolute;inset:0;pointer-events:none}
 #rulerHost svg{position:absolute;left:0;top:0;overflow:visible}
 #rulerHost text{font:600 calc(10px*var(--inv)) var(--ui);fill:#3d4a43}
@@ -203,7 +211,8 @@ svg.i{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stro
 .tabs button{border:0;background:none;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:3px;padding:9px 0 8px;font:600 12px var(--ui)}
 .tabs button.on{color:var(--accent)}
 
-#order,#prodPage,#checkout,#wolfPage{position:fixed;inset:0;z-index:50;background:var(--bg);display:flex;flex-direction:column;padding-top:env(safe-area-inset-top,0px)}
+#order,#prodPage,#cpBody #cartSec>h3{display:none}
+#cartPage,#checkout,#wolfPage{position:fixed;inset:0;z-index:50;background:var(--bg);display:flex;flex-direction:column;padding-top:env(safe-area-inset-top,0px)}
 .o-head{display:flex;align-items:center;gap:10px;padding:10px 16px;background:var(--panel);border-bottom:1px solid var(--line)}
 .o-head h2{font:700 20px var(--disp);letter-spacing:.08em;text-transform:uppercase;margin:0}
 .o-body{flex:1;min-height:0;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:22px}
@@ -358,7 +367,7 @@ svg.i{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stro
   </section>
 
   <nav class="tabs" id="tabs">
-    <button data-tab="tee"><svg class="i" viewBox="0 0 24 24"><path d="M8 3l-5 3 2 4 3-1v11h8V9l3 1 2-4-5-3a4 4 0 0 1-8 0z"/></svg>Ürün</button>
+    <button data-tab="tee"><svg class="i" viewBox="0 0 24 24" stroke-linejoin="round" stroke-linecap="round"><path d="M9 3.6c.7 1.3 1.7 1.9 3 1.9s2.3-.6 3-1.9l4.6 2 1.7 4.3-3 1.3-1.1-1.8V20.5H6.8V9.4l-1.1 1.8-3-1.3 1.7-4.3z"/><path d="M9 3.6c.4 2.2 1.4 3.2 3 3.2s2.6-1 3-3.2"/></svg>Ürün</button>
     <button data-tab="text"><svg class="i" viewBox="0 0 24 24"><path d="M5 6V4h14v2M12 4v16M9 20h6"/></svg>Yazı</button>
     <button data-tab="clip"><svg class="i" viewBox="0 0 24 24"><path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z"/></svg>Şekil</button>
     <button data-tab="image"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2"/><path d="M21 16l-5-5-8 9"/></svg>Görsel</button>
@@ -407,7 +416,7 @@ svg.i{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stro
   </div>
   <div class="o-foot">
     <div><small>Bu tasarım</small><b id="totalOut">0 ₺</b></div>
-    <button class="ghost" id="goPay" style="height:46px" hidden>Ödeme <span class="cnt" id="payN"></span></button><button class="primary" id="addCart" style="height:46px">Sepete ekle</button>
+    <button class="ghost" id="goPay" style="height:46px" hidden>Sepet <span class="cnt" id="payN"></span></button><button class="primary" id="addCart" style="height:46px">Sepete ekle</button>
   </div>
 </div>
 
@@ -419,9 +428,15 @@ svg.i{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stro
     <p class="ad-warn" id="adW" hidden></p>
     <button class="primary ad-b" id="adNew">Yeni tasarıma başla</button>
     <button class="ghost ad-b" id="adSame">Bu tasarımı başka ürüne de ekle</button>
-    <button class="ghost ad-b" id="adPay">Ödemeye geç</button>
+    <button class="ghost ad-b" id="adPay">Sepete git</button>
     <button class="ad-link" data-adx>Bu tasarıma geri dön</button>
   </div>
+</div>
+
+<div id="cartPage" hidden>
+  <div class="o-head"><button class="ib" id="cpClose" aria-label="Geri"><svg class="i" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button><h2>Sepetim</h2></div>
+  <div class="o-body" id="cpBody"><p class="note" id="cpEmpty" hidden>Sepetin boş. Bir tasarım yapıp sepete ekle.</p></div>
+  <div class="o-foot"><div><small>Sepet toplamı</small><b id="cpTot">0 ₺</b></div><button class="primary" id="cpPay" type="button">Ödemeye geç</button></div>
 </div>
 
 <div id="checkout" hidden>
@@ -789,7 +804,7 @@ var PH={site:null,media:'',cal:{},want:'',teesBase:null};
 function phSrc(t){if(!t)return '';if(/^(https?:|data:|blob:)/.test(t))return t;if(PH.media==='sb'&&/^(img|vid)\//.test(t))return 'https://wgovwmeirlzwalelazfj.supabase.co/storage/v1/object/public/site/'+t;return t;}
 function phBlank(product,cut){var l=(PH.site&&PH.site.blanks)||[];var m=l.filter(function(b){return b.show!==false&&(b.p||b.id)===product&&(!b.cut||b.cut===cut);});return m.filter(function(b){return b.cut===cut;})[0]||m[0]||null;}
 function phColors(b){return ((b&&b.colors)||[]).filter(function(c){return c&&(c.front||c.back)&&/^#[0-9a-f]{6}$/i.test(c.hex||'');});}
-function phSize(){var l=sizeList(),best=null,mx=0;if(PH.want&&(state.sizes[PH.want]||0)>0)return PH.want;l.forEach(function(z){if((state.sizes[z]||0)>mx){mx=state.sizes[z];best=z;}});return best||PH.want||l[1]||l[0];}
+function phSize(){var l=sizeList(),best=null,mx=0;if(PH.want&&l.indexOf(PH.want)>=0&&(state.sizes[PH.want]||0)>0)return PH.want;l.forEach(function(z){if((state.sizes[z]||0)>mx){mx=state.sizes[z];best=z;}});return best||(l.indexOf(PH.want)>=0?PH.want:'')||l[1]||l[0];}
 function phDims(product,cut){var m=(SZM[product]||{})[cut];if(!m)return null;var z=phSize();return m[z]||m.M||m['7-8']||null;}
 function phCalib(u){
   if(PH.cal[u])return PH.cal[u];
@@ -1028,15 +1043,16 @@ var RULER=true;try{RULER=localStorage.getItem('wf_ruler')!=='0';}catch(_){}
    Yeşil bant baskı alanının cetveldeki yeri; kırmızı çizgi seçilen bedenin boyu (ürünün etek ucu). */
 function renderRuler(){
   var h=$('#rulerHost');if(!h)return;var bt=$('#rulerBtn');if(bt){bt.classList.toggle('on',RULER);bt.setAttribute('aria-pressed',RULER?'true':'false');bt.setAttribute('aria-label',RULER?'Cetveli gizle':'Cetveli göster');}
-  var gh=$('#gridHost');if(gh){if(!RULER||P().draw){gh.innerHTML='';}else{var gy=NECK_Y[view.side],g='',i;for(i=-30;i<=30;i++){var gx=300+i*5*PPC;g+='<line'+(i%2?' class="g5"':'')+' x1="'+gx+'" x2="'+gx+'" y1="-2000" y2="2600"/>';}for(i=-30;i<=40;i++){var yy=gy+i*5*PPC;g+='<line'+(i%2?' class="g5"':'')+' x1="-2000" x2="2600" y1="'+yy+'" y2="'+yy+'"/>';}gh.innerHTML='<svg width="'+STAGE_W+'" height="'+STAGE_H+'" viewBox="0 0 '+STAGE_W+' '+STAGE_H+'">'+g+'</svg>';}}
+  var gh=$('#gridHost');if(gh){if(!RULER||P().draw){gh.innerHTML='';}else{var gy=NECK_Y[view.side]-NECK_DROP[view.side],g='',i;for(i=-30;i<=30;i++){var gx=300+i*5*PPC;g+='<line'+(i%2?' class="g5"':'')+' x1="'+gx+'" x2="'+gx+'" y1="-2000" y2="2600"/>';}for(i=-30;i<=40;i++){var yy=gy+i*5*PPC;g+='<line'+(i%2?' class="g5"':'')+' x1="-2000" x2="2600" y1="'+yy+'" y2="'+yy+'"/>';}gh.innerHTML='<svg width="'+STAGE_W+'" height="'+STAGE_H+'" viewBox="0 0 '+STAGE_W+' '+STAGE_H+'">'+g+'</svg>';}}
   if(!RULER||P().draw){h.innerHTML='';return;}
   var A=areaBox(view.side,cur().area),ny=NECK_Y[view.side],gt=ny-NECK_DROP[view.side],o='',k,y,x,len,ty=Math.max(0,gt-30);
   var sc=view.s||1,vl=0,vt=0,vb2=STAGE_H,vr=STAGE_W;if(view.W){vl=-(view.W/2-view.cx*sc+(view.px||0))/sc;vt=-(view.H/2-view.cy*sc+(view.py||0))/sc;vb2=vt+view.H/sc;vr=vl+view.W/sc;}
-  var RW=28/sc,RH=24/sc;ty=Math.max(ty,vt);
-  /* Sol cetvel: 0 = boğaz (yaka) çizgisi; ekranın görünen sol kenarına yapışır */
+  var RW=28/sc,RH=24/sc;ty=Math.max(gt-RH-18/sc,vt);
+  /* Sol cetvel: 0 = omuz dikişi (beden tablosundaki boy buradan ölçülür); ekranın görünen sol kenarına yapışır */
+  ny=gt;
   o+='<g transform="translate('+vl+' 0)"><rect class="rb" x="0" y="'+ny+'" width="'+RW+'" height="'+(vb2-ny)+'"/><rect class="ra" x="0" y="'+A.t+'" width="'+RW+'" height="'+A.h+'"/>';
   for(k=0;ny+k*PPC<=vb2;k++){y=ny+k*PPC;len=(k%10===0?.45:(k%5===0?.3:.16))*RW;o+='<line class="rt" x1="'+(RW-len)+'" x2="'+RW+'" y1="'+y+'" y2="'+y+'"/>';if(k%10===0&&k)o+='<text x="'+(3/sc)+'" y="'+(y+3.5/sc)+'">'+k+'</text>';}
-  o+='<text x="2" y="'+(ny-4/sc)+'">0 · yaka</text>';
+  o+='<text x="2" y="'+(ny-4/sc)+'">0 · omuz</text>';
   var top=(A.t-ny)/PPC;
   o+='<text x="'+(RW+4/sc)+'" y="'+(A.t+10/sc)+'" style="fill:#30703f">baskı '+String(Math.round(top*10)/10).replace('.',',')+' cm</text>';
   try{if(phOn()){var d=phDims(state.product,state.cut);if(d){var yb=gt+d[1]*PPC;if(yb<vb2-2)o+='<line class="rg" x1="0" x2="'+(RW*1.6)+'" y1="'+yb+'" y2="'+yb+'"/><text class="rgt" x="'+(RW+4/sc)+'" y="'+(yb-4/sc)+'">'+phSize()+' · boy '+d[1]+' cm</text>';}}}catch(_){}
@@ -1336,12 +1352,19 @@ function doProduct(p){
     remap(c,olds[s].box,areaBox(s,c.area));
   });
 }
+function askSize(){
+  var l=sizeList(),m=(SZM[state.product]||{})[state.cut]||{},h='';
+  l.forEach(function(z){var d=m[z];h+='<button type="button" data-asz="'+z+'"><b>'+z+'</b>'+(d?'<small>en '+d[0]+' · boy '+d[1]+'</small>':'')+'</button>';});
+  var w=document.getElementById('askSz');if(!w){w=document.createElement('div');w.id='askSz';document.body.appendChild(w);
+    w.addEventListener('click',function(e){var b=e.target.closest('[data-asz]');if(!b)return;var z=b.dataset.asz;state.sizes={};state.sizes[z]=1;PH.want=z;w.hidden=true;try{renderSizes();}catch(_){}try{renderPrice();}catch(_){}renderShirt();layout();pushHist();toast(productLabel()+' · '+z+' beden');});}
+  w.innerHTML='<div class="as-card" role="dialog" aria-modal="true" aria-label="Beden seç"><b>Bedenini seç</b><small>'+String(productLabel()).replace(/[<>&]/g,'')+' · ölçüler cm</small><div class="as-grid">'+h+'</div></div>';w.hidden=false;
+}
 function ensureSizes(){var l=sizeList(),tot=l.reduce(function(a,s){return a+(state.sizes[s]||0);},0);if(!tot)state.sizes[l[1]||l[0]]=1;}
 /* Ürün sayfasından seçim: ürün ve kesim uygulanır, sayfa kapanır, ürün yakınlaştırılmadan bütün olarak gösterilir. */
 function chooseProduct(p,c){
   var ch=state.product!==p||state.cut!==c;
   if(state.product!==p)doProduct(p);
-  if(state.cut!==c)state.cut=c;
+  if(state.cut!==c){var oldL=sizeList();state.cut=c;var nl=sizeList();Object.keys(state.sizes).forEach(function(z){if(nl.indexOf(z)<0)delete state.sizes[z];});}
   try{if(PH.site)phApplyColors();}catch(_){}
   ensureSizes();
   if(!P().sides[view.side])view.side='front';
@@ -1653,7 +1676,7 @@ $('#wfGrid').addEventListener('click',function(e){
   toast('Tasarım baskı alanına yerleşti. Boyu üstten seçebilirsin.');
 });
 $('#pgColors').addEventListener('click',function(e){var b=e.target.closest('[data-tee]');if(!b)return;state.tee=b.dataset.tee;renderShirt();renderProdPage();pushHist();});
-$('#pgList').addEventListener('click',function(e){var b=e.target.closest('[data-p]');if(b)chooseProduct(b.dataset.p,b.dataset.c);});
+$('#pgList').addEventListener('click',function(e){var b=e.target.closest('[data-p]');if(!b)return;var ch=state.product!==b.dataset.p||state.cut!==b.dataset.c;chooseProduct(b.dataset.p,b.dataset.c);if(ch&&!P().draw)askSize();});
 $('#addText').addEventListener('click',function(){addText();});
 $('#fontGrid').addEventListener('click',function(e){
   var b=e.target.closest('[data-f]');if(!b)return;
@@ -1965,6 +1988,7 @@ function renderCart(){
     h+='<div class="cl2"><div class="cl2h"><img alt="" src="'+it.thumb+'"><div><b>'+it.label+'</b><small>'+q+' adet'+(q?' · '+fmt(it.unit)+' / adet':' · adet seç')+'</small></div><div style="text-align:right"><b>'+fmt(itTotal(it))+'</b><button data-rm="'+i+'">Kaldır</button></div></div><div class="size-grid">'+g+'</div></div>';
   });
   $('#cartList').innerHTML=h;$('#cartTot').textContent=fmt(cartSub());$('#cartSec').hidden=!cartItems.length;
+  var cpt=$('#cpTot');if(cpt){cpt.textContent=fmt(cartSub());$('#cpEmpty').hidden=!!cartItems.length;$('#cpPay').disabled=!cartItems.length;}
   var b=$('#addCart');if(b)b.textContent=cartItems.some(function(x){return x.sig===designSig();})?'Sepette ✓':'Sepete ekle';
   saveCart();syncCartUI();
 }
@@ -2003,8 +2027,14 @@ $('#adSame').addEventListener('click',function(){
   hideAdded();leaveOrder();closeOrder();renderAll();
   openProdPage();toast('Tasarımın duruyor. Ekleyeceğin ürünü seç.');
 });
-$('#adPay').addEventListener('click',function(){hideAdded();openCheckout();});
-$('#cartBtn').addEventListener('click',function(){coFrom='studio';openCheckout();});
+var cpFrom='studio';
+function openCartPage(from){cpFrom=from||'studio';var sec=$('#cartSec');if(sec&&sec.parentNode!==$('#cpBody'))$('#cpBody').appendChild(sec);
+  renderCart();var n=cartItems.length;$('#cpEmpty').hidden=!!n;if(sec)sec.hidden=!n;$('#cpTot').textContent=fmt(cartSub());$('#cpPay').disabled=!n;
+  closeOrder();$('#cartPage').hidden=false;$('#cpBody').scrollTop=0;}
+$('#cpClose').addEventListener('click',function(){$('#cartPage').hidden=true;if(cpFrom==='order')$('#order').hidden=false;});
+$('#cpPay').addEventListener('click',function(){var live=cartItems.filter(function(it){return itQty(it)>0;});if(!live.length){toast('Sepetteki tasarımlar için beden ve adet seç');return;}$('#cartPage').hidden=true;coFrom='cart';openCheckout();});
+$('#adPay').addEventListener('click',function(){hideAdded();openCartPage('order');});
+$('#cartBtn').addEventListener('click',function(){openCartPage('studio');});
 syncCartUI();
 $('#cartList').addEventListener('click',function(e){
   var c=e.target.closest('[data-cs]');
@@ -2091,10 +2121,10 @@ $('#goPay').addEventListener('click',async function(){
   var has=sidesOf().some(function(sd){return state[sd].objs.length;});
   if(has&&priceInfo().qty){var pw=issueText();if(pw)longToast(pw);}
   if(has&&priceInfo().qty&&!cartItems.some(function(x){return x.sig===designSig();}))await addToCart(true);
-  coFrom='order';openCheckout();
+  openCartPage('order');
 });
 var coFrom='order';
-$('#coClose').addEventListener('click',function(){$('#checkout').hidden=true;if(coFrom==='order')$('#order').hidden=false;});
+$('#coClose').addEventListener('click',function(){$('#checkout').hidden=true;if(coFrom==='cart')openCartPage(cpFrom);else if(coFrom==='order')$('#order').hidden=false;});
 $('#coForm').addEventListener('submit',async function(e){
   e.preventDefault();
   var m=$('#coMsg'),T=coTotals(),sh=T.sh,yo=(document.querySelector('input[name=cY]:checked')||{}).value,special=null;
