@@ -2731,7 +2731,7 @@ async function adSaveSB(){
   var t=await sbToken();if(!t||!sbAdmin()){A.msg='Oturum süresi doldu, yeniden giriş yap.';toast(A.msg);adRender();return;}
   var d=A.draft,used=usedTokens(d),k,wasSB=D.media==='sb';
   var sb=$('.sbar .btn:not(.soft)');if(sb){sb.disabled=true;sb.textContent='Kaydediliyor…';}
-  async function up(key,blob){var r=await fetch(SB.url+'/storage/v1/object/site/'+key,{method:'POST',headers:{apikey:SB.key,Authorization:'Bearer '+t,'Content-Type':blob.type||'application/octet-stream','x-upsert':'true','cache-control':'31536000'},body:blob});if(!r.ok)throw {code:r.status===413?'too_large':(r.status===401||r.status===403?'not_writer':'upload')};}
+  async function up(key,blob){var fd=new FormData();fd.append('cacheControl','31536000');fd.append('',blob,key.split('/').pop());var r;try{r=await fetch(SB.url+'/storage/v1/object/site/'+key,{method:'POST',headers:{apikey:SB.key,Authorization:'Bearer '+t,'x-upsert':'true'},body:fd});}catch(_){throw {code:'upload'};}if(!r.ok){var bt='';try{bt=await r.text();}catch(_){}console.warn('site upload',r.status,bt);throw {code:r.status===413||/too large|size/i.test(bt)?'too_large':(r.status===401||r.status===403?'not_writer':(/mime/i.test(bt)?'bad_type':'upload'))};}}
   try{
     for(k in used){
       if(pend[k]&&!pend[k].saved){await up(k,pend[k].blob);pend[k].saved=true;}
@@ -2744,7 +2744,7 @@ async function adSaveSB(){
     if(wasSB&&gone.length){fetch(SB.url+'/storage/v1/object/site',{method:'DELETE',headers:{apikey:SB.key,Authorization:'Bearer '+t,'Content-Type':'application/json'},body:JSON.stringify({prefixes:gone})}).catch(function(){});}
     SAVEDTOK=used;D=clone(d);applyData();A.dirty=false;A.msg='Kaydedildi. Diğer ziyaretçiler sayfayı yenileyince görür.';toast('Kaydedildi');adRender();
   }catch(e){
-    var m={not_writer:'Düzenleme yetkin yok, yeniden giriş yap.',too_large:'Dosya çok büyük, küçültüp tekrar dene.',upload:'Görsel veya video yüklenemedi, tekrar dene.'}[e&&e.code]||'Kaydedilemedi, tekrar dene.';
+    var m={not_writer:'Düzenleme yetkin yok, yeniden giriş yap.',too_large:'Dosya çok büyük, küçültüp tekrar dene.',upload:'Görsel veya video yüklenemedi, tekrar dene.',bad_type:'Bu dosya türü desteklenmiyor. JPG, PNG, WEBP, MP4 kullan.'}[e&&e.code]||'Kaydedilemedi, tekrar dene.';
     A.msg=m;toast(m);adRender();
   }
 }
