@@ -1031,19 +1031,19 @@ function renderRuler(){
   var gh=$('#gridHost');if(gh){if(!RULER||P().draw){gh.innerHTML='';}else{var gy=NECK_Y[view.side],g='',i;for(i=-30;i<=30;i++){var gx=300+i*5*PPC;g+='<line'+(i%2?' class="g5"':'')+' x1="'+gx+'" x2="'+gx+'" y1="-2000" y2="2600"/>';}for(i=-30;i<=40;i++){var yy=gy+i*5*PPC;g+='<line'+(i%2?' class="g5"':'')+' x1="-2000" x2="2600" y1="'+yy+'" y2="'+yy+'"/>';}gh.innerHTML='<svg width="'+STAGE_W+'" height="'+STAGE_H+'" viewBox="0 0 '+STAGE_W+' '+STAGE_H+'">'+g+'</svg>';}}
   if(!RULER||P().draw){h.innerHTML='';return;}
   var A=areaBox(view.side,cur().area),ny=NECK_Y[view.side],gt=ny-NECK_DROP[view.side],o='',k,y,x,len,ty=Math.max(0,gt-30);
-  var sc=view.s||1,vl=0,vt=0;if(view.W){vl=Math.max(0,-(view.W/2-view.cx*sc+(view.px||0))/sc);vt=Math.max(0,-(view.H/2-view.cy*sc+(view.py||0))/sc);}
+  var sc=view.s||1,vl=0,vt=0,vb2=STAGE_H,vr=STAGE_W;if(view.W){vl=-(view.W/2-view.cx*sc+(view.px||0))/sc;vt=-(view.H/2-view.cy*sc+(view.py||0))/sc;vb2=vt+view.H/sc;vr=vl+view.W/sc;}
   var RW=28/sc,RH=24/sc;ty=Math.max(ty,vt);
   /* Sol cetvel: 0 = boğaz (yaka) çizgisi; ekranın görünen sol kenarına yapışır */
-  o+='<g transform="translate('+vl+' 0)"><rect class="rb" x="0" y="'+ny+'" width="'+RW+'" height="'+(STAGE_H-ny)+'"/><rect class="ra" x="0" y="'+A.t+'" width="'+RW+'" height="'+A.h+'"/>';
-  for(k=0;ny+k*PPC<=STAGE_H;k++){y=ny+k*PPC;len=(k%10===0?.45:(k%5===0?.3:.16))*RW;o+='<line class="rt" x1="'+(RW-len)+'" x2="'+RW+'" y1="'+y+'" y2="'+y+'"/>';if(k%10===0&&k)o+='<text x="'+(3/sc)+'" y="'+(y+3.5/sc)+'">'+k+'</text>';}
+  o+='<g transform="translate('+vl+' 0)"><rect class="rb" x="0" y="'+ny+'" width="'+RW+'" height="'+(vb2-ny)+'"/><rect class="ra" x="0" y="'+A.t+'" width="'+RW+'" height="'+A.h+'"/>';
+  for(k=0;ny+k*PPC<=vb2;k++){y=ny+k*PPC;len=(k%10===0?.45:(k%5===0?.3:.16))*RW;o+='<line class="rt" x1="'+(RW-len)+'" x2="'+RW+'" y1="'+y+'" y2="'+y+'"/>';if(k%10===0&&k)o+='<text x="'+(3/sc)+'" y="'+(y+3.5/sc)+'">'+k+'</text>';}
   o+='<text x="2" y="'+(ny-4/sc)+'">0 · yaka</text>';
   var top=(A.t-ny)/PPC;
   o+='<text x="'+(RW+4/sc)+'" y="'+(A.t+10/sc)+'" style="fill:#30703f">baskı '+String(Math.round(top*10)/10).replace('.',',')+' cm</text>';
-  try{if(phOn()){var d=phDims(state.product,state.cut);if(d){var yb=gt+d[1]*PPC;if(yb<STAGE_H-2)o+='<line class="rg" x1="0" x2="'+(RW*1.6)+'" y1="'+yb+'" y2="'+yb+'"/><text class="rgt" x="'+(RW+4/sc)+'" y="'+(yb-4/sc)+'">'+phSize()+' · boy '+d[1]+' cm</text>';}}}catch(_){}
+  try{if(phOn()){var d=phDims(state.product,state.cut);if(d){var yb=gt+d[1]*PPC;if(yb<vb2-2)o+='<line class="rg" x1="0" x2="'+(RW*1.6)+'" y1="'+yb+'" y2="'+yb+'"/><text class="rgt" x="'+(RW+4/sc)+'" y="'+(yb-4/sc)+'">'+phSize()+' · boy '+d[1]+' cm</text>';}}}catch(_){}
   o+='</g>';
   /* Üst cetvel: 0 = ürünün ortası */
-  o+='<rect class="rb" x="0" y="'+ty+'" width="'+STAGE_W+'" height="'+RH+'"/><rect class="ra" x="'+A.l+'" y="'+ty+'" width="'+A.w+'" height="'+RH+'"/>';
-  for(k=-45;k<=45;k++){x=300+k*PPC;if(x<0||x>STAGE_W)continue;len=(k%10===0?.42:(k%5===0?.28:.15))*RH;o+='<line class="rt" x1="'+x+'" x2="'+x+'" y1="'+(ty+RH-len)+'" y2="'+(ty+RH)+'"/>';if(k%10===0&&Math.abs(x-vl)>RW*1.4)o+='<text x="'+x+'" y="'+(ty+RH*.5)+'" text-anchor="middle">'+Math.abs(k)+'</text>';}
+  o+='<rect class="rb" x="'+vl+'" y="'+ty+'" width="'+(vr-vl)+'" height="'+RH+'"/><rect class="ra" x="'+A.l+'" y="'+ty+'" width="'+A.w+'" height="'+RH+'"/>';
+  for(k=-90;k<=90;k++){x=300+k*PPC;if(x<vl||x>vr)continue;len=(k%10===0?.42:(k%5===0?.28:.15))*RH;o+='<line class="rt" x1="'+x+'" x2="'+x+'" y1="'+(ty+RH-len)+'" y2="'+(ty+RH)+'"/>';if(k%10===0&&Math.abs(x-vl)>RW*1.4)o+='<text x="'+x+'" y="'+(ty+RH*.5)+'" text-anchor="middle">'+Math.abs(k)+'</text>';}
   h.innerHTML='<svg width="'+STAGE_W+'" height="'+STAGE_H+'" viewBox="0 0 '+STAGE_W+' '+STAGE_H+'">'+o+'</svg>';
 }
 function updateArea(){
@@ -1058,7 +1058,7 @@ function layout(){
   if(!W||!H)return;
   var k=CUT_K[state.cut]||CUT_K.erkek,ay=NECK_Y[view.side],vb=P().vb,base,s,cx=STAGE_W/2,cy;
   if(vb){base=Math.min(W/vb.w,H/vb.h)*0.97;cx=vb.cx;cy=vb.cy;}
-  else{var fb=fitBox(view.side),fh=fb.bot-fb.top;base=Math.min(W/(fb.w*1.06),H/(fh*1.1+40));cy=(fb.top+fb.bot)/2-8;}
+  else{var fb=fitBox(view.side),fh=fb.bot-fb.top;var mob=W<700,gx=mob?0.9:0.86;base=Math.min((W-64)*gx/fb.w,(H-60)*gx/fh);cy=(fb.top+fb.bot)/2-4;}
   s=base;
   if(view.fit==='area'){
     var A=areaBox(view.side,cur().area);
