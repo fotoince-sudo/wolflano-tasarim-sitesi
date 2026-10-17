@@ -391,6 +391,16 @@ body.chk #nav,body.chk .menu-btn,body.chk .lang,body.chk #cartBtn,body.chk #ann{
 .cobar .tt b{font:700 17px var(--ui)}
 .cobar .btn{flex:1;max-width:420px;justify-content:center;padding:13px 14px;border-radius:999px;font:600 14px var(--ui);border:1px solid #000;margin:0}
 .cobar .btn.off{opacity:.45}
+/* Ürün sayfası düzeni */
+@media (max-width:639px){.pd{gap:12px}}
+.info .szs{width:100%;margin:0}
+.info .szs>div{flex-wrap:nowrap;gap:6px}
+.info .sz{flex:1 1 0;min-width:0;height:38px;padding:0 4px;font-size:13px}
+.ptop{display:grid;gap:2px}
+.ptop h1{margin:0}
+.pbig{display:flex;align-items:baseline;flex-wrap:wrap;gap:4px 10px}
+.pbig .old{font:500 18px var(--ui);color:var(--muted)}
+.pbig .pct{font:600 12px var(--ui);font-style:normal;color:var(--green);border:1px solid var(--green);border-radius:999px;padding:2px 8px;align-self:center}
 /* Beden seçimi */
 .szs{display:grid;gap:8px;margin:4px 0}
 .szs p{margin:0;font:500 13px var(--ui);color:var(--muted)}
@@ -1456,6 +1466,7 @@ function applyData(){autoSub(D);if(!D.vat)D.vat={mode:'excl',ready:20,blank:20,p
  CATS=(D.cats||[]).filter(function(c){return c.show!==false;}).map(function(c){return [c.id,c.name||'Adsız'];});if(CATS.length&&!CATS.some(function(c){return c[0]===catSel;})){catSel=CATS[0][0];subSel='';}
  BLANKS=D.blanks.filter(function(b){return b.show!==false;}).map(function(b){return Object.assign({},b,{price:vp(b.price,'blank'),old:vp(b.old,'blank'),a4:vp(b.a4,'print'),logo:vp(b.logo,'print'),hat:vp(b.hat,'print')});});
  A3_KAT=+D.a3||2;TIERS=D.tiers;setTimeout(function(){if(window.seoUpdate)seoUpdate();},0);PRICE_NOTE=(D.note||[]).concat(['Tüm fiyatlara KDV dahildir.']);CONTACT=D.contact;applyLogo();bzMerge();}
+function prBig(x){if(x.old&&x.old>x.price){var pc=Math.round((1-x.price/x.old)*100);return '<s class="old">'+tl(x.old)+'</s><span class="now">'+tl(x.price)+'</span>'+(pc>0?'<em class="pct">%'+pc+' indirim</em>':'');}return '<span class="now">'+tl(x.price)+'</span>';}
 function pr(x){return (x.old&&x.old>x.price?'<s class="old">'+tl(x.old)+'</s>':'')+tl(x.price);}
 function hasStock(x){return x.stock!==null&&x.stock!==undefined&&x.stock!=='';}
 function stk(x){if(!hasStock(x))return '';return +x.stock<=0?'<span class="stk out">Tükendi</span>':'';}
@@ -1810,7 +1821,7 @@ odeme:function(){
   var p=PRODUCTS.filter(function(x){return x.id===id;})[0];szPick='';
   if(!p)return '<div class="wrap page"><a class="link back" href="#hazir">← Koleksiyon</a><p class="empty">Ürün bulunamadı.</p></div>';
   gv=0;
-  return '<div class="wrap page"><a class="link back" href="#hazir">← Koleksiyon</a><div class="pd"><div class="gal" id="gal">'+galHTML(p)+'</div><div class="info"><small>'+p.type+'</small><h1>'+esc(p.name)+'</h1><button class="btn soft sm" data-fav="'+p.id+'" style="gap:8px">'+(favs[p.id]?'♥ Favorilerde':'♡ Favorilere ekle')+'</button><div class="pbig">'+pr(p)+'</div>'+stk(p)+(p.desc?'<p style="margin:0;color:var(--muted)">'+esc(p.desc)+'</p>':'')+(function(){var pn=String(p.pnote||'').trim();if(pn==='-')return '';if(!pn){if(/kupa/i.test((p.type||'')+' '+(p.name||'')))return '';pn=TX('pnote');}return pn?'<div class="pnote"><b>'+esc(TX('pnoteTitle'))+'</b><p>'+esc(pn)+'</p></div>':'';})()+''+(function(){var zs=pSizes(p);if(!zs.length||soldOut(p))return '';return '<div class="szs"><p>Beden: <b id="szT">Seç</b></p><div role="radiogroup" aria-label="Beden">'+zs.map(function(z){return '<button type="button" class="sz" role="radio" aria-checked="false" data-sz="'+esc(z)+'">'+esc(z)+'</button>';}).join('')+'</div></div>';})()+(soldOut(p)?'<button class="btn" disabled>Tükendi</button>':'<button class="btn" data-add="'+p.id+'">Sepete ekle</button>')+'<ul><li>Siparişler 2-4 iş gününde hazırlanır</li><li>Hediye paketi her siparişte ücretsiz</li></ul></div></div></div>';
+  return '<div class="wrap page"><a class="link back" href="#hazir">← Koleksiyon</a><div class="pd"><div class="gal" id="gal">'+galHTML(p)+'</div><div class="info">'+(function(){var zs=pSizes(p);if(!zs.length||soldOut(p))return '';return '<div class="szs"><p>Beden: <b id="szT">Seç</b></p><div role="radiogroup" aria-label="Beden">'+zs.map(function(z){return '<button type="button" class="sz" role="radio" aria-checked="false" data-sz="'+esc(z)+'">'+esc(z)+'</button>';}).join('')+'</div></div>';})()+'<div class="ptop"><small>'+esc(p.type||'')+'</small>'+(String(p.name||'').trim().toLocaleLowerCase('tr')===String(p.type||'').trim().toLocaleLowerCase('tr')?'':'<h1>'+esc(p.name)+'</h1>')+'<div class="pbig">'+prBig(p)+'</div></div>'+stk(p)+(soldOut(p)?'<button class="btn" disabled>Tükendi</button>':'<button class="btn" data-add="'+p.id+'">Sepete ekle</button>')+'<button class="btn soft sm" data-fav="'+p.id+'" style="gap:8px">'+(favs[p.id]?'♥ Favorilerde':'♡ Favorilere ekle')+'</button>'+(p.desc?'<p style="margin:0;color:var(--muted)">'+esc(p.desc)+'</p>':'')+(function(){var pn=String(p.pnote||'').trim();if(pn==='-')return '';if(!pn){if(/kupa/i.test((p.type||'')+' '+(p.name||'')))return '';pn=TX('pnote');}return pn?'<div class="pnote"><b>'+esc(TX('pnoteTitle'))+'</b><p>'+esc(pn)+'</p></div>':'';})()+'<ul><li>Siparişler 2-4 iş gününde hazırlanır</li><li>Hediye paketi her siparişte ücretsiz</li></ul></div></div></div>';
  },
  baski:function(){return VIEWS.tasarla();},
  tasarla:function(){
