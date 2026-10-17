@@ -1,0 +1,22 @@
+name: Canli kontrol
+on:
+  push:
+    branches: [kontrol-yayin]
+permissions:
+  contents: write
+jobs:
+  k:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          UA="Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 Mobile/15E148 Safari/604.1"
+          for f in studyo.html index.html; do
+            curl -sS -A "$UA" -H "Cache-Control: no-cache" "https://wolflano.com.tr/$f?t=$(date +%s)" -o live-$f
+            curl -sS "https://raw.githubusercontent.com/${{ github.repository }}/yayin/$f" -o yayin-$f
+            curl -sS "https://raw.githubusercontent.com/${{ github.repository }}/main/$f" -o main-$f
+            echo "$f live=$(wc -c < live-$f) yayin=$(wc -c < yayin-$f) main=$(wc -c < main-$f) live==yayin:$(cmp -s live-$f yayin-$f && echo EVET || echo HAYIR) live==main:$(cmp -s live-$f main-$f && echo EVET || echo HAYIR) yorum:$(grep -c 'Kenar yumuşaklığı' live-$f)" >> rapor.txt
+          done
+          cat rapor.txt
+          git config user.name k; git config user.email k@k
+          git add rapor.txt; git commit -qm rapor; git push -q origin HEAD:kontrol-yayin
