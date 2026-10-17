@@ -146,7 +146,13 @@ main{min-height:60vh}
 .kcard .ki svg{width:100%!important;height:100%!important;fill:initial!important;stroke:none!important}
 .kcard h3{margin:0 0 4px!important}
 /* Kurumsal düğmeler: kibar, orantılı, aynı yeşil */
-.kcta{display:grid!important;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px!important}
+.kcta{display:grid!important;grid-template-columns:1fr;gap:10px;margin-top:14px!important}
+.kur .kgift{margin-top:10px}
+.ksteps{gap:8px!important;margin-top:12px!important}
+.ksteps div{display:grid!important;grid-template-columns:30px 1fr;column-gap:12px;align-items:start;padding:12px 14px!important}
+.ksteps div:before{margin:0!important;grid-row:span 2;width:28px!important;height:28px!important;font-size:13px}
+.ksteps b{margin:2px 0 2px!important}
+.ksteps span{font-size:13.5px!important}
 .kcta .btn{width:100%;justify-content:center;gap:8px;padding:11px 14px;border-radius:999px;font:600 14px var(--ui);margin:0}
 .kcta .btn .i,.kcta .btn svg{width:17px;height:17px}
 .kcta .btn.soft{background:transparent;border:1px solid var(--green);color:var(--green)}
@@ -2010,9 +2016,9 @@ function kurHTML(full){
   '<div class="kq"><span class="ki">'+KI.kal+'</span><div><b>Kalite bizim için değişmez kural</b><small>Ekonomik seride de, kulüp formasında da, tek tişörtte de bin tişörtte de aynı özen ve aynı kalite kontrolü.</small></div></div>'+
   '<p class="kgift">Okul siparişlerinde her 100 adete 10 adet, ihtiyaç sahibi öğrencilere ücretsiz.</p>';
   if(full){
-    h+='<h3 class="h2" style="font-size:28px;margin-top:36px">Nasıl çalışır?</h3><div class="ksteps"><div><b>Logonu ve renklerini gönder</b><span>WhatsApp veya e-posta ile logo, renk ve adet bilgisini ilet.</span></div><div><b>Önizleme ve teklif</b><span>Tasarımı ürün üzerinde gösterir, adede göre fiyat veririz.</span></div><div><b>Onay</b><span>Bedenleri ve isim-numara listesini onaylarsın.</span></div><div><b>Baskı ve teslim</b><span>Basıp paketleriz, kurumuna toplu göndeririz.</span></div></div>';
+    h+='<h3 class="h2" style="font-size:26px;margin-top:22px">Nasıl çalışır?</h3><div class="ksteps"><div><b>Logonu ve renklerini gönder</b><span>WhatsApp veya e-posta ile logo, renk ve adet bilgisini ilet.</span></div><div><b>Önizleme ve teklif</b><span>Tasarımı ürün üzerinde gösterir, adede göre fiyat veririz.</span></div><div><b>Onay</b><span>Bedenleri ve isim-numara listesini onaylarsın.</span></div><div><b>Baskı ve teslim</b><span>Basıp paketleriz, kurumuna toplu göndeririz.</span></div></div>';
   }
-  h+='<div class="kcta"><a class="btn" target="_blank" rel="noopener" href="'+kurWa('Merhaba Wolflano, kurumumuz için toplu baskı teklifi almak istiyorum.\nKurum adı: \nÜrün (tişört / sweatshirt / forma / eşofman): \nAdet: \nRenk: \nTarih: ')+'">Teklif iste '+IC.arrow+'</a>'+(full?'<a class="btn soft" href="#tasarla">Kendin tasarla</a>':'<a class="btn soft" href="#kurumsal">Detaylar</a>')+'</div></section>';
+  h+='<div class="kcta">'+(full?'<a class="btn" href="#tasarla">Kendin tasarla</a>':'<a class="btn" href="#kurumsal">Detaylar '+IC.arrow+'</a>')+'</div></section>';
   return h;
 }
 var tsSel='',bcSel=0;
