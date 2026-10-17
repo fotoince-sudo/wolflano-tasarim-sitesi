@@ -305,6 +305,9 @@ th{font-size:13px;letter-spacing:.05em;text-transform:uppercase;color:var(--mute
 .arow img{width:56px;height:56px;object-fit:cover;border-radius:10px;background:var(--mint)}
 .arow b{display:block}.arow small{color:var(--muted)}
 .alist{display:grid;gap:10px;max-width:760px}
+.legal{max-width:760px}.legal h2{font:700 17px var(--ui);margin:22px 0 6px}.legal p{line-height:1.6;margin:0 0 8px}
+img{-webkit-touch-callout:none;-webkit-user-drag:none;user-drag:none}
+
 /* Sade yönetim paneli */
 .pn-top{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin-bottom:18px}
 .pn-out{border:1px solid var(--line);background:var(--card);border-radius:999px;padding:8px 14px;font:600 13px var(--ui);color:var(--muted)}
@@ -639,7 +642,7 @@ body.cko #nav,body.cko .menu-btn,body.cko .lang,body.cko #cartBtn,body.cko #ann{
 <footer><div class="wrap">
   <div class="fbrand"><a class="brand" href="#ana"><img data-logo alt=""><span class="word">WOLF<b>LANO</b></span></a></div>
   <div class="fmin" id="fdyn"></div>
-  <div class="copy"><span>© 2026 WOLFLANO. Tüm hakları saklıdır.</span><a href="#yonetim">Yönetim</a></div>
+  <div class="copy"><span>© 2026 WOLFLANO. Tüm hakları saklıdır.</span><a href="#sartlar">Kullanım şartları</a><a href="#yonetim">Yönetim</a></div>
 </div></footer>
 
 <div id="layer"></div>
@@ -1935,6 +1938,8 @@ function cpBody(t){var h='',ul=false,para=[];function flush(){if(para.length){h+
   flush();if(ul)h+='</ul>';return h;}
 function cpHTML(x){var im=(x.imgs||[])[0];return '<div class="wrap page cpg">'+(x.eyebrow?'<p class="eyebrow">'+esc(x.eyebrow)+'</p>':'')+'<h1 class="h2">'+esc(x.title||'')+'</h1>'+(im?'<img class="cpim" src="'+src(im)+'" alt="'+esc(x.title||'')+'">':'')+cpBody(x.body)+'</div>';}
 function socURL(v,base){v=String(v||'').trim();if(!v)return '';if(/^https?:\/\//i.test(v))return v;return base+v.replace(/^@/,'').replace(/^(www\.)?(instagram|tiktok)\.com\/@?/i,'');}
+document.addEventListener('contextmenu',function(e){var t=e.target;if(t&&t.tagName==='IMG'&&!(t.closest&&t.closest('.ad')))e.preventDefault();});
+document.addEventListener('dragstart',function(e){var t=e.target;if(t&&t.tagName==='IMG')e.preventDefault();});
 function footRender(){var f=$('#fdyn');if(!f)return;var C=CONTACT||{},h='';
   if(C.tel)h+='<a class="ftel" href="tel:'+telNo(C.tel,0)+'">'+esc(C.tel)+'</a>';
   var ig=socURL(C.instagram,'https://www.instagram.com/'),tt=socURL(C.tiktok,'https://www.tiktok.com/@'),so='';
@@ -2119,7 +2124,15 @@ odeme:function(){
  atolye:function(){
   return '<div class="wrap page">'+atolyeIntro(false)+atolyePair()+kurHTML(false)+'</div>'+howHTML();
  },
- hakkimizda:function(){return aboutHTML();},
+ sartlar:function(){var M=(CONTACT&&CONTACT.mail)||'info@wolflano.com.tr';return '<div class="wrap page legal"><p class="eyebrow">Wolflano</p><h1 class="h2">Kullanım şartları ve fikri mülkiyet</h1>'+
+  '<p class="lead">Bu sitedeki her şey Wolflano\'nun emeğidir ve yasalarla korunur.</p>'+
+  '<h2>1. Marka</h2><p>"Wolflano" adı, kurt logosu, "LİDER • BAĞIMSIZ • KORKUSUZ" ifadesi ve markaya ait diğer işaretler Wolflano\'ya aittir. İzinsiz kullanılamaz, benzeri üretilemez, alan adı veya sosyal medya hesabında kullanılamaz.</p>'+
+  '<h2>2. Site, yazılım ve tasarım stüdyosu</h2><p>Sitenin tasarımı, görünümü, metinleri, kodu, tasarım stüdyosu ve tüm işleyişi 5846 sayılı Fikir ve Sanat Eserleri Kanunu kapsamında korunur. Tamamının veya bir bölümünün kopyalanması, taklit edilmesi, başka bir sitede kullanılması, otomatik araçlarla toplanması yasaktır.</p>'+
+  '<h2>3. Hazır tasarımlar, şablonlar ve görseller</h2><p>Wolf tasarımları, şablonlar, ikonlar, ürün fotoğrafları ve görseller yalnız bu sitede Wolflano ürünlerine baskı yaptırmak için kullanılabilir. İndirilip başka bir yerde basılamaz, satılamaz, paylaşılamaz.</p>'+
+  '<h2>4. Müşterinin kendi tasarımı</h2><p>Kendi yüklediğin fotoğraf, logo ve yazıların hakları sende kalır. Yüklediğin içeriğin başkasının haklarını ihlal etmediğini kabul edersin. Wolflano, siparişini üretmek dışında içeriğini kullanmaz.</p>'+
+  '<h2>5. İhlal</h2><p>İzinsiz kullanım fark edildiğinde yasal yollara başvurulur ve doğan zararlar talep edilir. Bildirim ve izin talepleri için: <a href="mailto:'+esc(M)+'">'+esc(M)+'</a></p>'+
+  '<p class="note">Son güncelleme: Ekim 2026</p></div>';},
+hakkimizda:function(){return aboutHTML();},
  sepet:function(){return sepetView();},
  cp:function(id){var x=(D.cpages||[]).filter(function(y){return y.id===id;})[0];if(!x||x.show===false)return '<div class="wrap page"><p class="empty">Sayfa bulunamadı.</p></div>';return cpHTML(x);},
  hazir:function(){

@@ -1,0 +1,49 @@
+# main'e her gönderimde: siteyi küçült ve okunması zor hâle getir, tarayıcıda dene,
+# hatasızsa "yayin" dalına koy ve TurkHosting'e (Plesk) haber ver.
+# TurkHosting'in Git ayarı "yayin" dalını çekecek şekilde ayarlanınca ziyaretçiler yalnız küçültülmüş sürümü görür.
+name: Yayın paketi
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: yayin
+  cancel-in-progress: true
+
+jobs:
+  derle:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Araçları kur
+        run: |
+          npm init -y >/dev/null
+          npm i --no-audit --no-fund html-minifier-terser@7 playwright@1.48.2
+          npx playwright install --with-deps chromium
+      - name: Küçült
+        run: node .github/derle.mjs
+      - name: Tarayıcıda dene
+        run: node .github/dene.mjs
+      - name: yayin dalına koy
+        run: |
+          cd dist
+          git init -q -b yayin
+          git config user.name "fotoince-sudo"
+          git config user.email "fotoince@gmail.com"
+          git add -A
+          git commit -q -m "Yayın: ${GITHUB_SHA::7}"
+          git push -q -f "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" yayin
+      - name: Plesk'e haber ver
+        run: |
+          curl -fsS -X POST --retry 3 --max-time 60 \
+            "https://static-159-253-45-63.sunucuhub.com:8443/modules/git/public/web-hook.php?uuid=3b8aaa1b-6ef8-9e45-f026-c2b39e444f9a" \
+            -H "Content-Type: application/json" -H "X-GitHub-Event: push" \
+            -d '{"ref":"refs/heads/yayin"}' || true

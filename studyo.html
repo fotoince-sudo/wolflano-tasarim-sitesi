@@ -379,6 +379,8 @@ svg.i{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stro
 .wolfin textarea{flex:1;border:0;background:none;resize:none;outline:none;font:500 16px/1.35 var(--ui);color:var(--ink);padding:6px 0;min-height:44px;max-height:120px}
 .wolfin #wolfGo{flex:none;width:42px;height:42px;padding:0;border-radius:12px;display:grid;place-items:center}
 .wolfadm #wolfAdmOpen{height:36px;padding:0 12px}
+
+img{-webkit-touch-callout:none;-webkit-user-drag:none}
 </style>
 
 <div id="app">
@@ -2490,6 +2492,7 @@ $('#coForm').addEventListener('submit',async function(e){
   });
 });
 
+document.addEventListener('contextmenu',function(e){var t=e.target;if(t&&(t.tagName==='IMG'||t.tagName==='svg'||(t.closest&&t.closest('#stage,.tpl,.atpl,.clipb,.wcard'))))e.preventDefault();});
 /* ---------- Başlangıç: örnek bir tasarımla açılır ---------- */
 buildPanels();
 libLoad();
