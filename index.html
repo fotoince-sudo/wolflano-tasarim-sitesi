@@ -391,18 +391,19 @@ body.cko #nav,body.cko .menu-btn,body.cko .lang,body.cko #cartBtn,body.cko #ann{
 .cobar .tt b{font:700 17px var(--ui)}
 .cobar .btn{flex:1;max-width:420px;justify-content:center;padding:13px 14px;border-radius:999px;font:600 14px var(--ui);border:1px solid #000;margin:0}
 .cobar .btn.off{opacity:.45}
-/* Baskı Atölyesi ürün seçimi */
-.tsp .lead{margin-bottom:18px}
-.tsp .wolfban{margin-bottom:18px}
-.tsp .tsc{margin:0 0 14px;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;max-width:none}
-.tsp .tsc button{flex:1;min-width:0;padding:9px 6px;border:1px solid var(--green);background:transparent;color:var(--ink)}
+/* Baskı Atölyesi ürün seçimi: mağaza kartlarıyla aynı */
+.tsp .tsc{grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;max-width:none}
+.tsp .tsc button{min-width:0;border:1px solid var(--green);background:transparent;color:var(--ink)}
 .tsp .tsc button.on{background:var(--green);border-color:#000;color:#fff}
-.tsg .meta{gap:2px}
-.tsg .meta h3{font-size:16px;font-weight:600;line-height:1.25;margin:0;white-space:normal}
-.tsg .tpr{margin:0;display:flex;align-items:baseline;gap:6px}
-.tsg .tpr .price{font:600 15px var(--ui)}
-.tsg .tpr small{font:500 12px var(--ui)!important;color:var(--muted);text-transform:none!important;letter-spacing:0!important}
-.tsg .add{justify-content:center}
+.tsph{display:block;width:100%;padding:0;border:0;background:none;cursor:pointer}
+.tsp .card .row{align-items:flex-start}
+.tsp .card .row small{white-space:nowrap;min-width:0;letter-spacing:.01em!important;font-size:clamp(10.5px,3vw,12.5px)!important;overflow:hidden;text-overflow:ellipsis}
+.tsp .card .row .price{white-space:nowrap}
+.tsp .wolfban{margin-top:28px}
+.bud{width:100%;margin:6px 0 0;display:grid;gap:12px;border-top:1px solid var(--line);padding-top:14px}
+.bud dt{font:600 13px var(--ui);letter-spacing:.04em;color:var(--ink)}
+.bud dd{margin:4px 0 0;color:var(--muted);font-size:14px;line-height:1.55}
+.bud ul{margin:0;padding-left:18px}
 /* Kategori menüsü ürünlerin üstünde açılır, dışarı dokununca ya da kaydırınca kapanır */
 .catbar{position:relative}
 .catbar .catmenu{position:absolute;left:0;right:0;top:100%;margin:6px 0 0;z-index:15;box-shadow:0 14px 34px rgba(16,26,20,.18);animation:cmIn .15s ease-out}
@@ -1758,8 +1759,9 @@ function galHTML(p){
   return h+'</div>';
 }
 var ZL=[1,1.8,2.6,3.6],zl=0;
+function anyP(id){return PRODUCTS.filter(function(x){return x.id===id;})[0]||BLANKS.filter(function(x){return x.id===id;})[0];}
 function openLB(id){
-  var p=PRODUCTS.filter(function(x){return x.id===id;})[0];zl=0;
+  var p=anyP(id);zl=0;
   $('#layer').innerHTML='<div class="lb" role="dialog" aria-modal="true" aria-label="Büyük görsel"><button class="ib lbx" data-close aria-label="Kapat">'+IC.x+'</button><div class="lbs" id="lbs"><img id="lbi" src="'+imgSrcAt(p)+'" alt="'+esc(p.name)+'" style="width:100%;max-width:min(100%,720px)"></div><div class="lbc"><button data-lz="-1" aria-label="Uzaklaştır">−</button><span id="lbz">100%</span><button data-lz="1" aria-label="Yakınlaştır">+</button></div></div>';
 }
 function setLZ(d){
@@ -1858,11 +1860,15 @@ odeme:function(){
  baski:function(){return VIEWS.tasarla();},
  tasarla:function(){
   var all=BLANKS,list=all.filter(function(b){return !tsSel||bGen(b).indexOf(tsSel)>=0;});
-  return '<div class="wrap page tsp"><p class="eyebrow">Baskı Atölyesi · 1. adım</p><h1 class="h2">Kendi duruşunu tasarla</h1><p class="lead">Ürününü seç, tasarım stüdyosu onunla açılsın. Fiyatlar baskısız ürün fiyatıdır; baskı ücreti tasarım sırasında eklenir.</p>'+
-  wolfBan()+
+  return '<div class="wrap page kolp tsp"><h1 class="h2 kolh">Baskıya uygun ürünler</h1>'+
   '<div class="chips tsc" role="tablist">'+[['','Tümü'],['kadin','Kadın'],['erkek','Erkek'],['cocuk','Çocuk']].map(function(c){var on=tsSel===c[0];return '<button role="tab" data-ts="'+c[0]+'"'+(on?' class="on" aria-selected="true"':'')+'>'+c[1]+'</button>';}).join('')+'</div>'+
-  (list.length?'<div class="grid tsg">'+list.map(function(b){var i=all.indexOf(b);return '<article class="card"><button class="blank" data-blank="'+i+'" aria-label="'+esc(b.name)+' ürün bilgisi">'+(b.imgs&&b.imgs.length?'<img src="'+src(b.imgs[0])+'" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:16px;position:absolute;inset:0">':'<svg viewBox="0 0 120 100" fill="var(--green)" fill-opacity=".85" stroke="var(--green)" stroke-width="1.5" stroke-linejoin="round">'+b.svg+'</svg>')+'<span class="more">Bilgi</span></button><div class="meta"><h3>'+esc(b.name)+'</h3><p class="tpr"><span class="price">'+pr(b)+'</span><small>+ baskı</small></p>'+stk(b)+'</div>'+(soldOut(b)?'<button class="btn soft sm add" disabled>Tükendi</button>':'<a class="btn sm add" href="'+studioURL(b.p||b.id,b.cut)+'">Tasarla</a>')+'</article>';}).join('')+'</div>':'<p class="empty">Bu grupta henüz baskıya uygun ürün yok.</p>')+
-  printQuality()+priceSection()+'</div>';
+  (list.length?'<div class="grid">'+list.map(function(b){var i=all.indexOf(b);return '<article class="card"><div class="phw"><a class="ph" href="#bu-'+b.id+'" aria-label="'+esc(b.name)+' detay">'+(b.imgs&&b.imgs.length?'<img src="'+src(b.imgs[0])+'" alt="'+esc(b.name)+'" loading="lazy">':'<svg viewBox="0 0 120 100" fill="var(--green)" fill-opacity=".85" stroke="var(--green)" stroke-width="1.5" stroke-linejoin="round">'+b.svg+'</svg>')+'</a></div>'+
+    '<div class="meta"><div class="row"><small>'+esc(String(b.name||'').toLocaleUpperCase('tr').replace(/SWEATSHİRT/g,'SWEATSHIRT'))+'</small><span class="price">'+pr(b)+'</span></div>'+stk(b)+'</div>'+
+    (soldOut(b)?'<button class="btn sm add" disabled>Tükendi</button>':'<a class="btn sm add" href="'+studioURL(b.p||b.id,b.cut)+'">Tasarla</a>')+'</article>';}).join('')+'</div>':'<p class="empty">Bu grupta henüz baskıya uygun ürün yok.</p>')+
+  wolfBan()+printQuality()+priceSection()+'</div>';
+ },
+ bu:function(id){var b=BLANKS.filter(function(x){return x.id===id;})[0];if(!b)return '<div class="wrap page"><a class="link back" href="#tasarla">← Baskıya uygun ürünler</a><p class="empty">Ürün bulunamadı.</p></div>';gv=0;
+  return '<div class="wrap page bup"><a class="link back" href="#tasarla">← Baskıya uygun ürünler</a><div class="pd"><div class="gal" id="gal">'+galHTML(b)+'</div><div class="info"><small class="ptype">'+esc(String(b.name||'').toLocaleUpperCase('tr').replace(/SWEATSHİRT/g,'SWEATSHIRT'))+'</small><div class="ptop"><div class="pbig">'+prBig(b)+'</div><small class="pcode">Baskısız fiyat · baskı ücreti tasarımda eklenir</small></div>'+stk(b)+(soldOut(b)?'<button class="btn" disabled>Tükendi</button>':'<a class="btn" href="'+studioURL(b.p||b.id,b.cut)+'">Tasarla</a>')+blankInfo(b)+'</div></div></div>';
  },
  biz:function(){return bizGate()?gateHTML():bzView();},
  kurumsal:function(){return '<div class="wrap page">'+kurHTML(true).replace('<section class="kur">','<section class="kur" style="margin-top:0">')+'</div>';},
@@ -1919,20 +1925,22 @@ var tsSel='';
 function bGen(b){if(b.cut)return [b.cut];var c=String(b.cuts||'').toLocaleLowerCase('tr'),r=[];if(/erkek/.test(c))r.push('erkek');if(/kadın|kadin/.test(c))r.push('kadin');if(/çocuk|cocuk/.test(c))r.push('cocuk');if(r.length)return r;var n=String(b.name||'').toLocaleLowerCase('tr');if(/kadın|kadin/.test(n))return ['kadin'];if(/çocuk|cocuk/.test(n))return ['cocuk'];if(/kupa|bardak|termos|çanta|canta/.test(n))return ['erkek','kadin','cocuk'];return ['erkek'];}
 document.addEventListener('click',function(e){var t=e.target;if(!t.closest)return;var b=t.closest('[data-ts]');if(!b)return;tsSel=b.dataset.ts;var y=window.scrollY;$('#main').innerHTML=VIEWS.tasarla();window.scrollTo(0,y);});
 function wolfBan(){return '<a class="wolfban" href="studyo.html?vitrin=wolf"><span class="wic"><img src="'+src(D.logo||'builtin:logo')+'" alt="Wolflano"></span><span class="wtx"><b>Wolf tasarımları</b><small>Wolflano\'ya özel kurt temalı hazır tasarımlar. Beğendiğini seç, baskı alanına yerleşsin. A4 dikey, A4 yatay veya A3.</small></span><span class="wgo">'+IC.arrow+'</span></a>';}
-var rPrev='',hzY=0;
+var rPrev='',hzY=0,tsY=0;
 function route(){
-  var h=(location.hash||'#ana').slice(1),pid=null;if(rPrev==='hazir')hzY=window.scrollY;
+  var h=(location.hash||'#ana').slice(1),pid=null;if(rPrev==='hazir')hzY=window.scrollY;if(rPrev==='tasarla')tsY=window.scrollY;
   if(h.indexOf('urun-')===0){pid=h.slice(5);h='urun';}
   else if(h.indexOf('p-')===0){pid=h.slice(2);h='cp';}
+  else if(h.indexOf('bu-')===0){pid=h.slice(3);h='bu';}
   if(h==='baski')h='tasarla';if(!VIEWS[h])h='ana';
-  var fromUrun=rPrev==='urun';if(h!=='hazir'){catOpen='';grpOpen='';}
-  var act=h==='urun'?'hazir':h==='cp'?'p-'+pid:(/^(tasarla|biz|kurumsal)$/.test(h)?'atolye':h);cur=act;
+  var fromUrun=rPrev==='urun',fromBu=rPrev==='bu';if(h!=='hazir'){catOpen='';grpOpen='';}
+  var act=h==='urun'?'hazir':h==='bu'?'atolye':h==='cp'?'p-'+pid:(/^(tasarla|biz|kurumsal)$/.test(h)?'atolye':h);cur=act;
   $('#main').innerHTML=VIEWS[h](pid);
   if(h==='tasarla')calc('p');if(h!=='hesabim')accMode='login';if(h==='yonetim'){if(!A||!A.dirty)A=newA();}
   var links=pagesNow().map(function(p){return '<a href="#'+p[0]+'"'+(p[0]===act?' class="on" aria-current="page"':'')+'>'+p[1]+'</a>';}).join('');
   document.body.classList.toggle('cko',/^(sepet|odeme)$/.test(h));if(h==='odeme')setTimeout(function(){try{coInit();}catch(_){}},60);
-  $('#nav').innerHTML=links;try{footRender();}catch(_){}try{kbStart();}catch(_){}try{shipRender();}catch(_){}var backY=(h==='hazir'&&fromUrun)?hzY:0;rPrev=h;window.scrollTo(0,backY);if(backY)setTimeout(function(){window.scrollTo(0,backY);},120);closeLayer();
+  $('#nav').innerHTML=links;try{footRender();}catch(_){}try{kbStart();}catch(_){}try{shipRender();}catch(_){}var backY=(h==='hazir'&&fromUrun)?hzY:(h==='tasarla'&&fromBu)?tsY:0;rPrev=h;window.scrollTo(0,backY);if(backY)setTimeout(function(){window.scrollTo(0,backY);},120);closeLayer();
 }
+function blankInfo(b){return '<dl class="bud"><div><dt>Baskı ücreti (üste eklenir)</dt><dd><ul>'+(b.hat!=null?'<li>'+(b.fixname||'Şapka ön baskı')+': +'+tl(b.hat)+'</li>':'<li>A4 baskı: +'+tl(b.a4)+'</li><li>A3 baskı: +'+tl(b.a4*A3_KAT)+'</li><li>Sol göğüs logo: +'+tl(b.logo)+'</li>')+'</ul></dd></div>'+((b.areas||[]).length?'<div><dt>Baskı alanları</dt><dd><ul>'+(b.areas||[]).map(function(a){return '<li>'+esc(a)+'</li>';}).join('')+'</ul></dd></div>':'')+(b.cuts?'<div><dt>Kesim</dt><dd>'+esc(b.cuts)+'</dd></div>':'')+'<div><dt>Renkler</dt><dd>Beyaz, siyah, gri, yeşil, mavi, lacivert, kahve, kiremit</dd></div>'+(b.hat==null?'<div><dt>Not</dt><dd>A4 ve A3 baskı, boğazdan (arkada enseden) 8 cm aşağıda başlar. Logo her üründe sol göğüste, 8 × 8 cm.</dd></div>':'')+'</dl>';}
 function openBlank(i){
   var b=BLANKS[i];
   $('#layer').innerHTML='<div class="scrim" data-close></div><div class="pop" role="dialog" aria-modal="true" aria-label="'+b.name+'"><div class="top2"><h2>'+b.name+'</h2><button class="ib" data-close aria-label="Kapat">'+IC.x+'</button></div>'+
@@ -2006,7 +2014,7 @@ document.addEventListener('click',function(e){
   var lz=t.closest('[data-lz]');if(lz){setLZ(+lz.dataset.lz);return;}
   var li=t.closest('#lbi');if(li){setLZ(zl>0?-zl:2);return;}
   var lb=t.closest('[data-lb]');if(lb){openLB(lb.dataset.lb);return;}
-  var vw=t.closest('[data-view]');if(vw){gv=+vw.dataset.view;var pp=PRODUCTS.filter(function(x){return x.id===vw.dataset.pid;})[0];$('#gal').innerHTML=galHTML(pp);return;}
+  var vw=t.closest('[data-view]');if(vw){gv=+vw.dataset.view;var pp=anyP(vw.dataset.pid);$('#gal').innerHTML=galHTML(pp);return;}
   var bl=t.closest('[data-blank]');if(bl){openBlank(+bl.dataset.blank);return;}
   var a=t.closest('[data-add]');if(a){var ap=ALLP.filter(function(x){return x.id===a.dataset.add;})[0];if(ap&&hasStock(ap)&&cartQtyOf(ap.id)>=+ap.stock){toast('Stok sınırına ulaşıldı');return;}var zs0=pSizes(ap);if(zs0.length&&zs0.indexOf(szPick)<0){toast('Önce bedenini seç');var sb=document.querySelector('.szs');if(sb){sb.classList.remove('need');void sb.offsetWidth;sb.classList.add('need');sb.scrollIntoView({block:'center',behavior:'smooth'});}return;}var ak=ckKey(a.dataset.add,zs0.length?szPick:'');cart[ak]=(cart[ak]||0)+1;syncCart();if(ap)addedSheet(ap,ak);else toast('Sepete eklendi');return;}
   var zb=t.closest('[data-sz]');if(zb){szPick=zb.dataset.sz;document.querySelectorAll('[data-sz]').forEach(function(x){var on=x.dataset.sz===szPick;x.classList.toggle('on',on);x.setAttribute('aria-checked',on?'true':'false');});var zt=document.getElementById('szT');if(zt)zt.textContent=szPick;var sb2=document.querySelector('.szs');if(sb2)sb2.classList.remove('need');return;}
