@@ -121,6 +121,11 @@ main{min-height:60vh}
 .kq{margin-top:16px;border-radius:18px;background:#101a14;color:#fff;padding:20px;display:flex;gap:14px;align-items:center}
 .kq b{display:block;font:700 clamp(13px,3.9vw,17px) var(--ui);white-space:nowrap;letter-spacing:-.01em}
 .kq>div{min-width:0}
+/* Kurumsal kartlar: görsel çizimler */
+.kcard{align-items:center!important;padding:14px!important;gap:14px!important}
+.kcard .ki{width:84px!important;height:84px!important;border-radius:16px!important;background:linear-gradient(160deg,#f3f8f5,#e4efe8)!important;padding:6px;flex:none}
+.kcard .ki svg{width:100%!important;height:100%!important;fill:initial!important;stroke:none!important}
+.kcard h3{margin:0 0 4px!important}
 /* Kurumsal düğmeler: kibar, orantılı, aynı yeşil */
 .kcta{display:grid!important;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px!important}
 .kcta .btn{width:100%;justify-content:center;gap:8px;padding:11px 14px;border-radius:999px;font:600 14px var(--ui);margin:0}
@@ -1949,12 +1954,13 @@ async function coSubmit(){var miss=coMiss();if(miss){coFocus(miss);return;}{var 
     });
 }
 /* ---------- Okullar, şirketler, kulüpler ve gruplar ---------- */
+function kTee(x,y,k,f,st,extra){return '<g transform="translate('+x+' '+y+') scale('+k+')"><path d="M14 4l10-4q8 6 16 0l10 4 14 10-7 12-7-4v44H14V22l-7 4L0 14z" fill="'+f+'" stroke="'+(st||'rgba(0,0,0,.28)')+'" stroke-width="1.6" stroke-linejoin="round"/><path d="M24 0q8 6 16 0" fill="none" stroke="rgba(0,0,0,.25)" stroke-width="1.4"/>'+(extra||'')+'</g>';}
 var KI={
- renk:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="8.5" cy="10" r="1.3"/><circle cx="12" cy="7.5" r="1.3"/><circle cx="15.5" cy="10" r="1.3"/><path d="M12 21a3 3 0 0 1 0-6h2"/></svg>',
- logo:'<svg viewBox="0 0 24 24"><path d="M8 3L3 6l2 4 3-1v12h8V9l3 1 2-4-5-3a4 4 0 0 1-8 0z"/><path d="M10 13h4v3h-4z"/></svg>',
- spor:'<svg viewBox="0 0 24 24"><path d="M8 3L3 6l2 4 3-1v12h8V9l3 1 2-4-5-3a4 4 0 0 1-8 0z"/><path d="M11 12h2.5l-2 5"/></svg>',
- grup:'<svg viewBox="0 0 24 24"><circle cx="8" cy="8" r="3"/><circle cx="16" cy="8" r="3"/><path d="M2.5 20a5.5 5.5 0 0 1 11 0M10.5 20a5.5 5.5 0 0 1 11 0"/></svg>',
- gun:'<svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/><path d="M9 15l2 2 4-4"/></svg>',
+ renk:'<svg viewBox="0 0 96 96">'+kTee(4,22,.62,'#1f2a44')+kTee(52,22,.62,'#c0392b')+kTee(24,14,.78,'#30703f')+'<circle cx="30" cy="88" r="4" fill="#1f2a44"/><circle cx="42" cy="88" r="4" fill="#30703f"/><circle cx="54" cy="88" r="4" fill="#c0392b"/><circle cx="66" cy="88" r="4" fill="#e9c341"/></svg>',
+ logo:'<svg viewBox="0 0 96 96">'+kTee(2,20,.66,'#ffffff','#9aa5a0','<circle cx="21" cy="20" r="4.5" fill="#30703f"/>')+kTee(50,20,.66,'#111','#111','<rect x="18" y="16" width="28" height="22" rx="3" fill="#30703f"/><path d="M24 33l5-8 4 5 3-3 4 6z" fill="#fff"/>')+'<text x="23" y="90" text-anchor="middle" font-family="Manrope,system-ui,sans-serif" font-size="9" font-weight="700" fill="#596760">ÖN</text><text x="71" y="90" text-anchor="middle" font-family="Manrope,system-ui,sans-serif" font-size="9" font-weight="700" fill="#596760">ARKA</text></svg>',
+ spor:'<svg viewBox="0 0 96 96">'+kTee(13,8,1.1,'#c0392b','#8e2a20','<text x="32" y="30" text-anchor="middle" font-family="Manrope,system-ui,sans-serif" font-size="9" font-weight="800" fill="#fff" letter-spacing="1">ALİ</text><text x="32" y="56" text-anchor="middle" font-family="Manrope,system-ui,sans-serif" font-size="24" font-weight="800" fill="#fff">10</text>')+'</svg>',
+ grup:'<svg viewBox="0 0 96 96">'+kTee(2,38,.46,'#30703f',0,'<circle cx="32" cy="24" r="6" fill="#fff"/>')+kTee(30,26,.56,'#30703f',0,'<circle cx="32" cy="24" r="6" fill="#fff"/>')+kTee(60,16,.62,'#30703f',0,'<circle cx="32" cy="24" r="6" fill="#fff"/>')+'<g font-family="Manrope,system-ui,sans-serif" font-size="9" font-weight="700" fill="#596760" text-anchor="middle"><text x="17" y="90">S</text><text x="48" y="90">M</text><text x="80" y="90">L</text></g></svg>',
+ gun:'<svg viewBox="0 0 96 96"><rect x="44" y="8" width="46" height="44" rx="7" fill="#fff" stroke="#9aa5a0" stroke-width="1.6"/><rect x="44" y="8" width="46" height="13" rx="7" fill="#c0392b"/><rect x="44" y="15" width="46" height="6" fill="#c0392b"/><text x="67" y="44" text-anchor="middle" font-family="Manrope,system-ui,sans-serif" font-size="18" font-weight="800" fill="#101a14">1</text>'+kTee(4,30,.82,'#e9c341','#b8932a','<path d="M32 22l3.2 6.6 7.2 1-5.2 5 1.3 7.2L32 38.4l-6.5 3.4 1.3-7.2-5.2-5 7.2-1z" fill="#fff"/>')+'<g transform="translate(66 62)"><rect width="26" height="16" rx="8" fill="#30703f"/><text x="13" y="11.5" text-anchor="middle" font-family="Manrope,system-ui,sans-serif" font-size="9" font-weight="800" fill="#fff">₺</text></g></svg>',
  kal:'<svg viewBox="0 0 24 24"><path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6z"/><path d="M9 12l2 2 4-4"/></svg>'
 };
 var KCARDS=[
