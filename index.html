@@ -1674,7 +1674,7 @@ odeme:function(){
  ana:function(){
   return '<section class="hero"><img src="'+src(D.hero)+'" alt="Wolflano"><div class="strip">'+esc(D.strip.a)+' <em>'+esc(D.strip.b)+'</em></div></section>'+
   '<div class="hcta"><a class="btn" href="#hazir">'+esc(TX('heroCta'))+' '+IC.arrow+'</a></div><section class="wrap hw"><h1>'+esc(TX('heroTitle'))+'</h1>'+(TX('heroSub')?'<p>'+esc(TX('heroSub'))+'</p>':'')+(TX('heroTag')?'<p class="hwt">'+esc(TX('heroTag'))+'</p>':'')+'</section>'+
-  (TX('showCats')!==false?homeCats():'')+homeReady()+(TX('showWhy')!==false?homeWhy():'')+(TX('showAtolye')!==false?homeAtolye():'');
+  (TX('showCats')!==false?homeCats():'')+homeReady()+(TX('showAtolye')!==false?homeAtolye():'')+(TX('showWhy')!==false?homeWhy():'');
  },
  atolye:function(){
   return '<div class="wrap page">'+atolyeIntro(false)+atolyePair()+wolfBan()+kurHTML(false)+'</div>'+howHTML();
