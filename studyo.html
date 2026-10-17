@@ -87,6 +87,10 @@ svg.i{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stro
 .obj.warp svg{width:auto;height:auto;overflow:visible}
 .obj svg,.obj img{display:block;width:100%;height:100%;pointer-events:none}
 .obj img{object-fit:contain}
+#gridHost{position:absolute;inset:0;pointer-events:none}
+#gridHost svg{position:absolute;left:0;top:0;overflow:visible}
+#gridHost line{stroke:rgba(16,26,20,.07);stroke-width:1;vector-effect:non-scaling-stroke}
+#gridHost line.g5{stroke:rgba(16,26,20,.035)}
 #rulerHost{position:absolute;inset:0;pointer-events:none}
 #rulerHost svg{position:absolute;left:0;top:0;overflow:visible}
 #rulerHost text{font:600 calc(10px*var(--inv)) var(--ui);fill:#3d4a43}
@@ -277,6 +281,7 @@ svg.i{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stro
 
   <main class="stagewrap" id="wrap">
     <div id="stage">
+      <div id="gridHost" aria-hidden="true"></div>
       <div id="shirtHost"></div>
       <div id="clipLayer"><div id="objLayer"></div></div>
       <div id="shadeHost" aria-hidden="true"></div>
@@ -796,7 +801,7 @@ function phCalib(u){
     var frac=cnt/N;
     if(!hasA&&(frac<.12||frac>.88)){rec.url=u;rec.W=W;rec.H=H;rec.top=Math.round(H*.08);rec.bot=Math.round(H*.92);rec.l=0;rec.r=W-1;rec.raw=true;}
     else{if(!hasA){for(i=0;i<N;i++)if(!m[i])p[i*4+3]=0;x.putImageData(D,0,0);}rec.url=c.toDataURL('image/png');rec.W=W;rec.H=H;rec.top=top;rec.bot=bot;rec.l=l;rec.r=r2;}
-    rec.ready=true;try{renderShirt();}catch(_){}
+    rec.ready=true;try{renderShirt();layout();}catch(_){}
   }catch(er){rec.fail=true;}};
   im.onerror=function(){rec.fail=true;};
   im.src=u;return rec;
@@ -811,6 +816,14 @@ function phSVG(side,tee,product,cut){
   var sc=d[1]*PPC/Math.max(1,cal.bot-cal.top+1),w=cal.W*sc,h=cal.H*sc,topY=NECK_Y[side]-NECK_DROP[side],cx=(cal.l+cal.r)/2*sc;
   var X=300-cx,Y=topY-cal.top*sc;
   return '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 600 640" width="600" height="640"><image href="'+cal.url+'" xlink:href="'+cal.url+'" x="'+X.toFixed(1)+'" y="'+Y.toFixed(1)+'" width="'+w.toFixed(1)+'" height="'+h.toFixed(1)+'" preserveAspectRatio="none"/></svg>';
+}
+/* Ekran ölçeği: ürünün EN BÜYÜK bedeni ekranı doldurur, ölçek bütün bedenlerde aynı kalır (bedenler arası gerçek fark görünür) */
+function fitBox(side){
+  var gt=NECK_Y[side]-NECK_DROP[side];
+  try{if(phOn()){var b=phBlank(state.product,state.cut),cs=phColors(b),co=cs.filter(function(c){return String(c.hex).toLowerCase()===String(state.tee).toLowerCase();})[0]||cs[0];
+    var u=phSrc(side==='back'?(co.back||co.front):(co.front||co.back)),cal=u&&PH.cal[u],m=(SZM[state.product]||{})[state.cut];
+    if(cal&&cal.ready&&m){var mx=null;Object.keys(m).forEach(function(z){if(!mx||m[z][1]>mx[1])mx=m[z];});var hp=mx[1]*PPC,sc=hp/Math.max(1,cal.bot-cal.top+1);return {w:(cal.r-cal.l+1)*sc,top:gt,bot:gt+hp};}}}catch(_){}
+  var k=CUT_K[state.cut]||CUT_K.erkek,ay=NECK_Y[side];return {w:556*k[0],top:ay+(62-ay)*k[1],bot:ay+(618-ay)*k[1]};
 }
 function phOn(){return !!(PH.site&&!P().draw&&phColors(phBlank(state.product,state.cut)).length);}
 function phApplyColors(){
@@ -1000,6 +1013,7 @@ var RULER=true;try{RULER=localStorage.getItem('wf_ruler')!=='0';}catch(_){}
    Yeşil bant baskı alanının cetveldeki yeri; kırmızı çizgi seçilen bedenin boyu (ürünün etek ucu). */
 function renderRuler(){
   var h=$('#rulerHost');if(!h)return;var bt=$('#rulerBtn');if(bt){bt.classList.toggle('on',RULER);bt.setAttribute('aria-pressed',RULER?'true':'false');bt.setAttribute('aria-label',RULER?'Cetveli gizle':'Cetveli göster');}
+  var gh=$('#gridHost');if(gh){if(!RULER||P().draw){gh.innerHTML='';}else{var gy=NECK_Y[view.side],g='',i;for(i=-30;i<=30;i++){var gx=300+i*5*PPC;g+='<line'+(i%2?' class="g5"':'')+' x1="'+gx+'" x2="'+gx+'" y1="-2000" y2="2600"/>';}for(i=-30;i<=40;i++){var yy=gy+i*5*PPC;g+='<line'+(i%2?' class="g5"':'')+' x1="-2000" x2="2600" y1="'+yy+'" y2="'+yy+'"/>';}gh.innerHTML='<svg width="'+STAGE_W+'" height="'+STAGE_H+'" viewBox="0 0 '+STAGE_W+' '+STAGE_H+'">'+g+'</svg>';}}
   if(!RULER||P().draw){h.innerHTML='';return;}
   var A=areaBox(view.side,cur().area),ny=NECK_Y[view.side],gt=ny-NECK_DROP[view.side],o='',k,y,x,len,ty=Math.max(0,gt-30);
   var sc=view.s||1,vl=0,vt=0;if(view.W){vl=Math.max(0,-(view.W/2-view.cx*sc+(view.px||0))/sc);vt=Math.max(0,-(view.H/2-view.cy*sc+(view.py||0))/sc);}
@@ -1029,7 +1043,7 @@ function layout(){
   if(!W||!H)return;
   var k=CUT_K[state.cut]||CUT_K.erkek,ay=NECK_Y[view.side],vb=P().vb,base,s,cx=STAGE_W/2,cy;
   if(vb){base=Math.min(W/vb.w,H/vb.h)*0.97;cx=vb.cx;cy=vb.cy;}
-  else{base=Math.min(W/(STAGE_W*Math.max(k[0],.8)),H/(STAGE_H*Math.max(k[1],.8)))*0.97;cy=ay+(338-ay)*k[1];}
+  else{var fb=fitBox(view.side),fh=fb.bot-fb.top;base=Math.min(W/(fb.w*1.06),H/(fh*1.1+40));cy=(fb.top+fb.bot)/2-8;}
   s=base;
   if(view.fit==='area'){
     var A=areaBox(view.side,cur().area);
