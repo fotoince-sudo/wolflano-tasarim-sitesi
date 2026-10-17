@@ -364,6 +364,16 @@ svg.i{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stro
 .v3-load{position:absolute;inset:0;display:grid;place-items:center;color:#555;font:600 15px var(--ui);pointer-events:none}
 .v3-load[hidden]{display:none}
 .v3o{width:100%;margin-top:10px;height:42px}
+
+/* Fotoğraf tarzı ve kenar */
+.fxp{display:grid;gap:6px;width:100%}
+.fxp>b{font:700 11px var(--ui);letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.fxc{display:flex;flex-wrap:wrap;gap:5px}
+.fxc button{border:1px solid var(--line2);background:var(--panel2);border-radius:999px;padding:6px 10px;font:600 12px var(--ui);color:var(--ink)}
+.fxc button.on{background:var(--accent);border-color:var(--accent);color:var(--accent-ink,#fff)}
+.fxc button:disabled{opacity:.5}
+.fxr{display:grid;gap:2px;font:600 11px var(--ui);color:var(--muted)}
+.fxr input{width:100%;accent-color:var(--accent)}
 </style>
 
 <div id="app">
@@ -413,6 +423,7 @@ svg.i{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stro
       <button data-c="font" data-t="text"><svg class="i" viewBox="0 0 24 24"><path d="M5 6V4h14v2M12 4v16M9 20h6"/></svg>Yazı tipi</button>
       <button data-c="color" data-t="text clip"><i class="dot" id="ctxDot"></i>Renk</button>
       <button data-c="stroke" data-t="text"><svg class="i" viewBox="0 0 24 24"><rect x="5" y="5" width="14" height="14" rx="3" stroke-dasharray="3 2.4"/></svg>Kontur</button>
+      <button data-c="fx" data-t="image"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8" stroke-dasharray="3 2.5"/><path d="M9 14l2-3 2 2 2-3"/></svg>Tarz ve kenar</button>
       <button data-c="nobg" data-t="image" id="nobgBtn"><svg class="i" viewBox="0 0 24 24"><path d="M4 20l10-10"/><path d="M15 3l1 2 2 1-2 1-1 2-1-2-2-1 2-1z"/><path d="M19 11l.6 1.4L21 13l-1.4.6L19 15l-.6-1.4L17 13l1.4-.6z"/></svg>Arka planı sil</button>
       <span class="pill" id="qPill" data-t="image"></span>
       <span class="pill mid" id="ovPill" data-t="text clip image" hidden>Taşan kısım basılmaz</span>
@@ -1436,6 +1447,123 @@ async function removeBg(){
   im.onerror=function(){bgBusy=false;syncCtx();toast('Arka plan silinemedi. Tekrar dene.');};
   im.src=url;
 }
+
+/* ---------- Fotoğraf tarzı ve kenar (ücretsiz, cihazda çalışır) ----------
+   Tarz: Gerçek, Karikatür, Kalem, İllüstrasyon, Kanvas, Pop art. Kenar: Düz, Yumuşak, Oval, Daire, Bulut.
+   Sonuç yeni bir görsel olarak üretilir; ekranda ve baskı dosyasında aynısı kullanılır. Asıl fotoğraf saklanır, istenince geri dönülür. */
+var PHS=[['none','Gerçek'],['cartoon','Karikatür'],['sketch','Kalem'],['illus','İllüstrasyon'],['canvas','Kanvas'],['pop','Pop art']];
+var PHE=[['none','Düz'],['soft','Yumuşak'],['oval','Oval'],['circle','Daire'],['cloud','Bulut']];
+var fxBusy=false,fxCache={};
+function fxBlur(src,W,H,r,ch){ /* ayrılabilir kutu bulanıklığı, 3 geçiş; ch: kanal sayısı (1 veya 3) */
+  if(r<1)return src;var a=new Float32Array(src),b=new Float32Array(src.length),pass,x,y,c,i;
+  for(pass=0;pass<3;pass++){
+    for(c=0;c<ch;c++){for(y=0;y<H;y++){var s=0,row=y*W;for(x=-r;x<=r;x++)s+=a[(row+Math.min(W-1,Math.max(0,x)))*ch+c];
+      for(x=0;x<W;x++){b[(row+x)*ch+c]=s/(2*r+1);s+=a[(row+Math.min(W-1,x+r+1))*ch+c]-a[(row+Math.max(0,x-r))*ch+c];}}}
+    for(c=0;c<ch;c++){for(x=0;x<W;x++){var t=0;for(y=-r;y<=r;y++)t+=b[(Math.min(H-1,Math.max(0,y))*W+x)*ch+c];
+      for(y=0;y<H;y++){a[(y*W+x)*ch+c]=t/(2*r+1);t+=b[(Math.min(H-1,y+r+1)*W+x)*ch+c]-b[(Math.max(0,y-r)*W+x)*ch+c];}}}
+  }
+  return a;
+}
+function fxStyle(d,W,H,st){
+  var p=d.data,N=W*H,i,k=Math.max(1,Math.round(Math.max(W,H)/600));
+  if(st==='none')return;
+  var rgb=new Float32Array(N*3),g=new Float32Array(N);
+  for(i=0;i<N;i++){rgb[i*3]=p[i*4];rgb[i*3+1]=p[i*4+1];rgb[i*3+2]=p[i*4+2];g[i]=0.299*p[i*4]+0.587*p[i*4+1]+0.114*p[i*4+2];}
+  function edges(gb,th){var e=new Uint8Array(N),x,y;for(y=1;y<H-1;y++)for(x=1;x<W-1;x++){var q=y*W+x,
+    gx=-gb[q-W-1]-2*gb[q-1]-gb[q+W-1]+gb[q-W+1]+2*gb[q+1]+gb[q+W+1],gy=-gb[q-W-1]-2*gb[q-W]-gb[q-W+1]+gb[q+W-1]+2*gb[q+W]+gb[q+W+1];e[q]=Math.min(255,Math.sqrt(gx*gx+gy*gy)*th);}return e;}
+  if(st==='sketch'){
+    var inv=new Float32Array(N);for(i=0;i<N;i++)inv[i]=255-g[i];var bl=fxBlur(inv,W,H,4*k,1);
+    for(i=0;i<N;i++){var v=bl[i]>=255?255:Math.min(255,g[i]*255/(255-bl[i]));v=255-(255-v)*1.35;v=Math.max(0,Math.min(255,v));p[i*4]=p[i*4+1]=p[i*4+2]=v;}
+    return;
+  }
+  if(st==='cartoon'||st==='illus'){
+    var sm=fxBlur(rgb,W,H,(st==='cartoon'?2:3)*k,3),gb=fxBlur(g,W,H,k,1),e=edges(gb,st==='cartoon'?0.9:0.55),L=st==='cartoon'?6:5;
+    for(i=0;i<N;i++){var r=sm[i*3],gg=sm[i*3+1],b=sm[i*3+2],l=0.299*r+0.587*gg+0.114*b;
+      /* yalnız parlaklık basamaklanır, renk tonu korunur */
+      var ql=(Math.floor(l/255*L)+0.5)/L*255,f=l>1?ql/l:1,sat=st==='illus'?1.18:1.1;
+      r=ql+(r*f-ql)*sat;gg=ql+(gg*f-ql)*sat;b=ql+(b*f-ql)*sat;
+      if(st==='illus'){r=r*0.94+14;gg=gg*0.95+9;b=b*0.92+4;}
+      var ed=e[i],line=st==='cartoon'?(ed>70?1:ed/70*0.6):(ed>90?0.75:ed/90*0.35);
+      p[i*4]=Math.max(0,Math.min(255,r*(1-line)+12*line));p[i*4+1]=Math.max(0,Math.min(255,gg*(1-line)+12*line));p[i*4+2]=Math.max(0,Math.min(255,b*(1-line)+16*line));}
+    return;
+  }
+  if(st==='pop'){
+    var pal=[[24,24,40],[230,57,70],[255,210,63],[255,250,240]],gs=fxBlur(g,W,H,k,1),e2=edges(gs,0.8);
+    var lo=255,hi=0;for(i=0;i<N;i+=7){if(gs[i]<lo)lo=gs[i];if(gs[i]>hi)hi=gs[i];}var rg=Math.max(30,hi-lo);
+    for(i=0;i<N;i++){var t=(gs[i]-lo)/rg,c=pal[Math.max(0,Math.min(3,Math.floor(t*4)))];var ln=e2[i]>110?1:0;
+      p[i*4]=ln?20:c[0];p[i*4+1]=ln?20:c[1];p[i*4+2]=ln?32:c[2];}
+    /* nokta tramı: açık tonlarda küçük noktalar */
+    var cell=Math.max(6,Math.round(Math.max(W,H)/110)),x,y;for(y=0;y<H;y++)for(x=0;x<W;x++){var q=y*W+x;if(p[q*4]>200&&p[q*4+1]>190){var cx=(x%cell)-cell/2,cy=(y%cell)-cell/2;if(cx*cx+cy*cy<cell*cell*0.06){p[q*4]=255;p[q*4+1]=150;p[q*4+2]=170;}}}
+    return;
+  }
+  if(st==='canvas'){
+    /* yağlı boya: küçük ölçekte yoğunluk kovaları, sonra kumaş dokusu */
+    var R2=Math.max(2,k*2),out=new Uint8ClampedArray(p.length),x2,y2,a,b2;
+    var cnt=new Int32Array(10),sr=new Float32Array(10),sg=new Float32Array(10),sb=new Float32Array(10);
+    for(y2=0;y2<H;y2+=1)for(x2=0;x2<W;x2+=1){cnt.fill(0);sr.fill(0);sg.fill(0);sb.fill(0);var best=0;
+      for(a=-R2;a<=R2;a+=k)for(b2=-R2;b2<=R2;b2+=k){var yy=Math.min(H-1,Math.max(0,y2+a)),xx=Math.min(W-1,Math.max(0,x2+b2)),q2=yy*W+xx,bin=Math.min(9,(g[q2]/25.6)|0);
+        cnt[bin]++;sr[bin]+=p[q2*4];sg[bin]+=p[q2*4+1];sb[bin]+=p[q2*4+2];if(cnt[bin]>cnt[best])best=bin;}
+      var o2=(y2*W+x2)*4,n2=cnt[best];out[o2]=sr[best]/n2;out[o2+1]=sg[best]/n2;out[o2+2]=sb[best]/n2;out[o2+3]=p[o2+3];}
+    for(i=0;i<N;i++){var xx2=i%W,yy2=(i/W)|0,wv=((xx2>>1)%2===((yy2>>1)%2)?1:0)*10-5+(Math.random()*8-4);
+      p[i*4]=Math.max(0,Math.min(255,out[i*4]*1.05+wv));p[i*4+1]=Math.max(0,Math.min(255,out[i*4+1]*1.03+wv));p[i*4+2]=Math.max(0,Math.min(255,out[i*4+2]*0.97+wv));}
+    return;
+  }
+}
+function fxMask(W,H,edge,soft){
+  if(edge==='none')return null;
+  var m=document.createElement('canvas');m.width=W;m.height=H;var x=m.getContext('2d'),mn=Math.min(W,H);
+  var f=Math.round(mn*(0.02+0.22*soft)),ins=f;x.fillStyle='#fff';
+  if(edge==='soft'){x.fillRect(ins,ins,W-2*ins,H-2*ins);}
+  else if(edge==='oval'){x.beginPath();x.ellipse(W/2,H/2,Math.max(2,W/2-ins),Math.max(2,H/2-ins),0,0,Math.PI*2);x.fill();}
+  else if(edge==='circle'){x.beginPath();x.arc(W/2,H/2,Math.max(2,mn/2-ins),0,Math.PI*2);x.fill();}
+  else if(edge==='cloud'){
+    var rx=W/2-ins*0.6,ry=H/2-ins*0.6,cx=W/2,cy=H/2,n=14,j,seed=7;function rnd(){seed=(seed*16807)%2147483647;return seed/2147483647;}
+    x.beginPath();x.ellipse(cx,cy,rx*0.78,ry*0.78,0,0,Math.PI*2);x.fill();
+    for(j=0;j<n;j++){var ang=j/n*Math.PI*2+rnd()*0.15,pr=mn*(0.1+rnd()*0.05);x.beginPath();x.arc(cx+Math.cos(ang)*(rx-pr*0.6),cy+Math.sin(ang)*(ry-pr*0.6),pr,0,Math.PI*2);x.fill();}
+  }
+  var d=x.getImageData(0,0,W,H),al=new Float32Array(W*H),i;for(i=0;i<W*H;i++)al[i]=d.data[i*4+3];
+  var bl=fxBlur(al,W,H,Math.max(1,Math.round(f*(edge==='cloud'?0.22:0.55))),1);
+  return bl;
+}
+async function fxProcess(baseId,st,edge,soft){
+  var key=baseId+'|'+st+'|'+edge+'|'+soft.toFixed(2);if(fxCache[key]&&assets[fxCache[key]])return fxCache[key];
+  var a=assets[baseId],im=await loadImg(a.url),sc=Math.min(1,1800/Math.max(im.naturalWidth,im.naturalHeight));
+  var W=Math.max(2,Math.round(im.naturalWidth*sc)),H=Math.max(2,Math.round(im.naturalHeight*sc));
+  var c=document.createElement('canvas');c.width=W;c.height=H;var x=c.getContext('2d');x.drawImage(im,0,0,W,H);
+  var d=x.getImageData(0,0,W,H);
+  if(st!=='none'){if(st==='canvas'&&Math.max(W,H)>900){ /* yağlı boya ağır: küçük ölçekte yap, büyüt */
+      var s2=900/Math.max(W,H),w2=Math.round(W*s2),h2=Math.round(H*s2),c2=document.createElement('canvas');c2.width=w2;c2.height=h2;var x2=c2.getContext('2d');x2.drawImage(c,0,0,w2,h2);
+      var d2=x2.getImageData(0,0,w2,h2);fxStyle(d2,w2,h2,st);x2.putImageData(d2,0,0);x.clearRect(0,0,W,H);x.imageSmoothingQuality='high';x.drawImage(c2,0,0,W,H);d=x.getImageData(0,0,W,H);}
+    else fxStyle(d,W,H,st);}
+  var mk=fxMask(W,H,edge,soft);if(mk){for(var i=0;i<W*H;i++)d.data[i*4+3]=d.data[i*4+3]*Math.min(1,mk[i]/255);}
+  x.putImageData(d,0,0);
+  var blob=await new Promise(function(r){c.toBlob(r,'image/png');}),url=URL.createObjectURL(blob);
+  var id='a'+(++assetN);assets[id]={url:url,w:W,h:H,up:a.up,nobg:a.nobg||edge!=='none',fx:1};fxCache[key]=id;return id;
+}
+async function applyFx(st,edge,soft){
+  var o=selObj();if(!o||o.type!=='image'||fxBusy)return;
+  if(!o.base||!assets[o.base])o.base=o.assetId;
+  st=st||o.phs||'none';edge=edge||o.phe||'none';soft=soft==null?(o.phf==null?0.5:o.phf):soft;
+  if(st==='none'&&edge==='none'){o.assetId=o.base;o.phs='none';o.phe='none';renderObjects();syncCtx();pushHist();fxPop();return;}
+  fxBusy=true;bgToast('Uygulanıyor…');
+  try{var id=await fxProcess(o.base,st,edge,soft);var na=assets[id],ratio=na.w/na.h,cw=o.w;o.assetId=id;o.phs=st;o.phe=edge;o.phf=soft;o.h=cw/ratio;
+    renderObjects();updateSel();syncCtx();pushHist();var t=$('#toast');if(t)t.hidden=true;}
+  catch(_){toast('Uygulanamadı, tekrar dene.');}
+  fxBusy=false;fxPop();
+}
+function fxPop(){
+  var o=selObj(),pop=$('#colorPop');if(!o||o.type!=='image'||view.pop!=='fx')return;
+  var st=o.phs||'none',ed=o.phe||'none',sf=o.phf==null?0.5:o.phf;
+  pop.innerHTML='<div class="fxp"><b>Tarz</b><div class="fxc">'+PHS.map(function(s){return '<button type="button" data-phs="'+s[0]+'"'+(s[0]===st?' class="on"':'')+(fxBusy?' disabled':'')+'>'+s[1]+'</button>';}).join('')+'</div>'+
+    '<b>Kenar</b><div class="fxc">'+PHE.map(function(s){return '<button type="button" data-phe="'+s[0]+'"'+(s[0]===ed?' class="on"':'')+(fxBusy?' disabled':'')+'>'+s[1]+'</button>';}).join('')+'</div>'+
+    (ed!=='none'?'<label class="fxr"><span>Kenar yumuşaklığı</span><input type="range" min="0" max="100" value="'+Math.round(sf*100)+'" data-phf="1"'+(fxBusy?' disabled':'')+'></label>':'')+'</div>';
+  pop.hidden=false;
+}
+function showFx(){var o=selObj();if(!o)return;if(view.pop==='fx'){view.pop=null;$('#colorPop').hidden=true;return;}view.pop='fx';fxPop();}
+document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('[data-phs],[data-phe]');if(!b||!$('#colorPop').contains(b))return;e.preventDefault();e.stopPropagation();
+  if(b.dataset.phs)applyFx(b.dataset.phs,null,null);else applyFx(null,b.dataset.phe,null);},true);
+document.addEventListener('change',function(e){var t=e.target;if(t&&t.dataset&&t.dataset.phf)applyFx(null,null,(+t.value)/100);});
+
 /* Kilitli öğe taşınmaz, büyümez, silinmez; şablon değiştirince de yerinde kalır (ör. okul/kulüp logosu). */
 function toggleLock(){
   var o=selObj();if(!o)return;
@@ -1895,6 +2023,7 @@ $('#ctxBar').addEventListener('click',function(e){
   else if(c==='dup')dupSel();
   else if(c==='center'){var co=selObj();if(co){var CA=areaBox(view.side,cur().area);co.x=CA.cx;co.y=CA.cy;place(els[co.id],co);updateSel();var ab=$('#areaBox');ab.classList.add('onV','onH');setTimeout(centerOff,900);pushHist();toast('Baskı alanına ortalandı');}}
   else if(c==='nobg')removeBg();
+  else if(c==='fx')showFx();
   else if(c==='del')deleteSel();
 });
 $('#colorPop').addEventListener('click',function(e){var b=e.target.closest('[data-col]');if(!b)return;applyColor(b.dataset.col||null);pushHist();});
