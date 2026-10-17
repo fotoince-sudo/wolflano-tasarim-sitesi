@@ -1,0 +1,2 @@
+studyo.html live=206437 yayin=206437 main=252460 live==yayin:EVET live==main:HAYIR yorum:1
+index.html live=624234 yayin=624234 main=673118 live==yayin:EVET live==main:HAYIR yorum:0
