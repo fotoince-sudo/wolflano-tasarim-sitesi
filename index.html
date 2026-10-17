@@ -391,6 +391,18 @@ body.cko #nav,body.cko .menu-btn,body.cko .lang,body.cko #cartBtn,body.cko #ann{
 .cobar .tt b{font:700 17px var(--ui)}
 .cobar .btn{flex:1;max-width:420px;justify-content:center;padding:13px 14px;border-radius:999px;font:600 14px var(--ui);border:1px solid #000;margin:0}
 .cobar .btn.off{opacity:.45}
+/* Baskı Atölyesi ürün seçimi */
+.tsp .lead{margin-bottom:18px}
+.tsp .wolfban{margin-bottom:18px}
+.tsp .tsc{margin:0 0 14px;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;max-width:none}
+.tsp .tsc button{flex:1;min-width:0;padding:9px 6px;border:1px solid var(--green);background:transparent;color:var(--ink)}
+.tsp .tsc button.on{background:var(--green);border-color:#000;color:#fff}
+.tsg .meta{gap:2px}
+.tsg .meta h3{font-size:16px;font-weight:600;line-height:1.25;margin:0;white-space:normal}
+.tsg .tpr{margin:0;display:flex;align-items:baseline;gap:6px}
+.tsg .tpr .price{font:600 15px var(--ui)}
+.tsg .tpr small{font:500 12px var(--ui)!important;color:var(--muted);text-transform:none!important;letter-spacing:0!important}
+.tsg .add{justify-content:center}
 /* Kategori menüsü ürünlerin üstünde açılır, dışarı dokununca ya da kaydırınca kapanır */
 .catbar{position:relative}
 .catbar .catmenu{position:absolute;left:0;right:0;top:100%;margin:6px 0 0;z-index:15;box-shadow:0 14px 34px rgba(16,26,20,.18);animation:cmIn .15s ease-out}
@@ -1845,10 +1857,12 @@ odeme:function(){
  },
  baski:function(){return VIEWS.tasarla();},
  tasarla:function(){
-  return '<div class="wrap page"><p class="eyebrow">Kendin tasarla · 1. adım</p><h1 class="h2">Önce ürününü seç</h1><p class="lead">Tasarlamak istediğin ürünü seç, tasarım stüdyosu o ürünle açılsın. Fiyatlar boş ürün fiyatıdır, baskı ücreti tasarımda eklenir.</p>'+
+  var all=BLANKS,list=all.filter(function(b){return !tsSel||bGen(b).indexOf(tsSel)>=0;});
+  return '<div class="wrap page tsp"><p class="eyebrow">Baskı Atölyesi · 1. adım</p><h1 class="h2">Kendi duruşunu tasarla</h1><p class="lead">Ürününü seç, tasarım stüdyosu onunla açılsın. Fiyatlar baskısız ürün fiyatıdır; baskı ücreti tasarım sırasında eklenir.</p>'+
   wolfBan()+
-  '<div style="height:28px"></div><div class="grid">'+
-  BLANKS.map(function(b){return '<article class="card"><button class="blank" data-blank="'+BLANKS.indexOf(b)+'" aria-label="'+b.name+' ürün bilgisi">'+(b.imgs&&b.imgs.length?'<img src="'+src(b.imgs[0])+'" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:16px;position:absolute;inset:0">':'<svg viewBox="0 0 120 100" fill="var(--green)" fill-opacity=".85" stroke="var(--green)" stroke-width="1.5" stroke-linejoin="round">'+b.svg+'</svg>')+'<span class="more">Bilgi</span></button><div class="meta"><small>Baskıya uygun</small><div class="row"><h3>'+b.name+'</h3><span class="price">'+pr(b)+'</span></div>'+stk(b)+'<span class="note">'+b.note+'</span><span class="pl">'+fl(b)+'</span></div>'+(soldOut(b)?'<button class="btn soft sm add" disabled>Tükendi</button>':'<a class="btn sm add" href="'+studioURL(b.p||b.id,b.cut)+'">Bu ürünü tasarla</a>')+'</article>';}).join('')+'</div>'+printQuality()+priceSection()+'</div>';
+  '<div class="chips tsc" role="tablist">'+[['','Tümü'],['kadin','Kadın'],['erkek','Erkek'],['cocuk','Çocuk']].map(function(c){var on=tsSel===c[0];return '<button role="tab" data-ts="'+c[0]+'"'+(on?' class="on" aria-selected="true"':'')+'>'+c[1]+'</button>';}).join('')+'</div>'+
+  (list.length?'<div class="grid tsg">'+list.map(function(b){var i=all.indexOf(b);return '<article class="card"><button class="blank" data-blank="'+i+'" aria-label="'+esc(b.name)+' ürün bilgisi">'+(b.imgs&&b.imgs.length?'<img src="'+src(b.imgs[0])+'" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:16px;position:absolute;inset:0">':'<svg viewBox="0 0 120 100" fill="var(--green)" fill-opacity=".85" stroke="var(--green)" stroke-width="1.5" stroke-linejoin="round">'+b.svg+'</svg>')+'<span class="more">Bilgi</span></button><div class="meta"><h3>'+esc(b.name)+'</h3><p class="tpr"><span class="price">'+pr(b)+'</span><small>+ baskı</small></p>'+stk(b)+'</div>'+(soldOut(b)?'<button class="btn soft sm add" disabled>Tükendi</button>':'<a class="btn sm add" href="'+studioURL(b.p||b.id,b.cut)+'">Tasarla</a>')+'</article>';}).join('')+'</div>':'<p class="empty">Bu grupta henüz baskıya uygun ürün yok.</p>')+
+  printQuality()+priceSection()+'</div>';
  },
  biz:function(){return bizGate()?gateHTML():bzView();},
  kurumsal:function(){return '<div class="wrap page">'+kurHTML(true).replace('<section class="kur">','<section class="kur" style="margin-top:0">')+'</div>';},
@@ -1901,6 +1915,9 @@ function kurHTML(full){
   h+='<div class="kcta"><a class="btn" target="_blank" rel="noopener" href="'+kurWa('Merhaba Wolflano, kurumumuz için toplu baskı teklifi almak istiyorum.\nKurum adı: \nÜrün (tişört / sweatshirt / forma / eşofman): \nAdet: \nRenk: \nTarih: ')+'">Teklif iste '+IC.arrow+'</a>'+(full?'<a class="btn soft" href="#tasarla">Kendin tasarla</a>':'<a class="btn soft" href="#kurumsal">Detaylar</a>')+'</div></section>';
   return h;
 }
+var tsSel='';
+function bGen(b){if(b.cut)return [b.cut];var c=String(b.cuts||'').toLocaleLowerCase('tr'),r=[];if(/erkek/.test(c))r.push('erkek');if(/kadın|kadin/.test(c))r.push('kadin');if(/çocuk|cocuk/.test(c))r.push('cocuk');if(r.length)return r;var n=String(b.name||'').toLocaleLowerCase('tr');if(/kadın|kadin/.test(n))return ['kadin'];if(/çocuk|cocuk/.test(n))return ['cocuk'];if(/kupa|bardak|termos|çanta|canta/.test(n))return ['erkek','kadin','cocuk'];return ['erkek'];}
+document.addEventListener('click',function(e){var t=e.target;if(!t.closest)return;var b=t.closest('[data-ts]');if(!b)return;tsSel=b.dataset.ts;var y=window.scrollY;$('#main').innerHTML=VIEWS.tasarla();window.scrollTo(0,y);});
 function wolfBan(){return '<a class="wolfban" href="studyo.html?vitrin=wolf"><span class="wic"><img src="'+src(D.logo||'builtin:logo')+'" alt="Wolflano"></span><span class="wtx"><b>Wolf tasarımları</b><small>Wolflano\'ya özel kurt temalı hazır tasarımlar. Beğendiğini seç, baskı alanına yerleşsin. A4 dikey, A4 yatay veya A3.</small></span><span class="wgo">'+IC.arrow+'</span></a>';}
 var rPrev='',hzY=0;
 function route(){
