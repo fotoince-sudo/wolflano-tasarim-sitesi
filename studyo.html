@@ -191,7 +191,15 @@ svg.i{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stro
 .wcard b{font:700 14px var(--ui)}
 .wcard small{font:500 12px var(--ui);color:var(--muted);margin-top:-6px}
 .wcard:active{transform:scale(.98)}
-.tabs{display:grid;grid-template-columns:repeat(5,1fr);background:var(--panel);border-top:1px solid var(--line)}
+.tabs{display:grid;grid-template-columns:repeat(6,1fr);background:var(--panel);border-top:1px solid var(--line)}
+.tabs button.wolfai{color:var(--accent,#159b91)}
+.tabs button.wolfai .i{stroke:currentColor}
+.wolfp{display:grid;gap:10px;padding:4px 2px}
+.wolfp b{font:700 16px var(--ui)}
+.wolfp p{margin:0;color:var(--muted);font-size:13.5px;line-height:1.45}
+.wolfp textarea{width:100%;border:1px solid var(--line);border-radius:12px;padding:10px 12px;font:500 15px var(--ui);resize:vertical}
+.wolfp .primary{border:1px solid #000;background:#30703f;color:#fff;border-radius:999px;padding:12px;font:600 15px var(--ui)}
+.wolfp .note{font-size:12.5px}
 .tabs button{border:0;background:none;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:3px;padding:9px 0 8px;font:600 12px var(--ui)}
 .tabs button.on{color:var(--accent)}
 
@@ -335,6 +343,12 @@ svg.i{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stro
       <p class="note" id="imgNote">PNG, JPG veya WebP yükle. Net baskı için fotoğrafı büyük boyutta yükle. Fotoğrafın arkasındaki duvarı, odayı silmek için fotoğrafı seçip <b>Arka planı sil</b>'e dokun.</p>
       <div class="thumb-grid" id="upGrid"></div>
     </div>
+    <div class="panel" data-p="wolf" hidden>
+      <div class="wolfp"><b>Wolf tasarlasın</b><p>Ne istediğini bir cümleyle yaz. Wolf, ürününe ve baskı alanına uygun tasarımı hazırlar.</p>
+      <textarea id="wolfIn" rows="3" placeholder="Örn. ay ışığında uluyan kurt, altında takımımızın adı"></textarea>
+      <button class="primary" id="wolfGo" type="button">Wolf tasarlasın</button>
+      <p class="note" id="wolfNote">Wolf çok yakında burada kendisi tasarlayacak. Şimdilik fikrini gönder, tasarımını Wolflano ekibi hazırlayıp sana iletsin.</p></div>
+    </div>
     <div class="panel" data-p="tpl" hidden>
       <label class="search" for="tplQ"><svg class="i" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6"/><path d="M20 20l-4.2-4.2"/></svg><input id="tplQ" type="search" placeholder="Şablon ara: kurt, anne, spor, İzmir…" autocomplete="off" enterkeyhint="search"><button type="button" id="tplQx" aria-label="Aramayı temizle" hidden>×</button></label>
       <div class="chips scroll" id="tplCats"></div>
@@ -348,6 +362,7 @@ svg.i{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stro
     <button data-tab="text"><svg class="i" viewBox="0 0 24 24"><path d="M5 6V4h14v2M12 4v16M9 20h6"/></svg>Yazı</button>
     <button data-tab="clip"><svg class="i" viewBox="0 0 24 24"><path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z"/></svg>Şekil</button>
     <button data-tab="image"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2"/><path d="M21 16l-5-5-8 9"/></svg>Görsel</button>
+    <button data-tab="wolf" class="wolfai"><svg class="i" viewBox="0 0 24 24"><path d="M10 4l1.8 4.7L16.5 10.5l-4.7 1.8L10 17l-1.8-4.7L3.5 10.5l4.7-1.8z"/><path d="M18 3v4M16 5h4M19 15v3M17.5 16.5h3"/></svg>Wolf</button>
     <button data-tab="tpl"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="3" width="8" height="8" rx="1.5"/><rect x="13" y="3" width="8" height="8" rx="1.5"/><rect x="3" y="13" width="8" height="8" rx="1.5"/><rect x="13" y="13" width="8" height="8" rx="1.5"/></svg>Şablon</button>
   </nav>
 </div>
@@ -1620,6 +1635,9 @@ $('#tabs').addEventListener('click',function(e){var b=e.target.closest('[data-ta
 $('#sheetX').addEventListener('click',closeTab);
 $('#undoBtn').addEventListener('click',undo);
 $('#redoBtn').addEventListener('click',redo);
+$('#wolfGo').addEventListener('click',function(){var t=($('#wolfIn').value||'').trim();if(t.length<4){toast('Önce ne istediğini kısaca yaz');$('#wolfIn').focus();return;}
+  var m='Merhaba Wolflano, Wolf tasarlasın ile tasarım istiyorum.\nÜrün: '+productLabel()+'\nBaskı: '+areaTitle(view.side)+' ('+SIDE_NAME[view.side]+')\nFikrim: '+t;
+  window.open('https://wa.me/905307641717?text='+encodeURIComponent(m),'_blank');});
 $('#rulerBtn').addEventListener('click',function(){RULER=!RULER;try{localStorage.setItem('wf_ruler',RULER?'1':'0');}catch(_){}renderRuler();toast(RULER?'Cetvel açık: yeşil bant baskı alanı, ölçüler cm':'Cetvel gizlendi');});
 $('#fitBtn').addEventListener('click',function(){view.fit=view.fit==='area'?'shirt':'area';resetZoom();syncFitBtn();layout();});
 $('#sideF').addEventListener('click',function(){switchSide('front');});
