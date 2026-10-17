@@ -380,6 +380,7 @@ var DEF={v:1,
   {id:'mug',name:'Kupa',price:149,old:null,stock:null,hat:50,fixname:'Kupa baskı',fixcm:'8 × 8 cm, kulpun iki yanı',note:'Kulpun iki yanına 8 × 8 cm baskı',cuts:'Standart beyaz kupa',areas:['Ön: 8 × 8 cm','Arka: 8 × 8 cm (kulpun öbür yanı)'],imgs:['urunler/kupa.jpg'],svg:'<path d="M38 26h40v52a6 6 0 0 1-6 6H44a6 6 0 0 1-6-6z"/><path d="M78 38c12 0 14 8 14 13s-2 13-14 13" fill="none" stroke="currentColor" stroke-width="5"/>'}
  ],
   biz:{requireAccount:true},
+ txt:{"menuHazir": "Koleksiyon", "menuAtolye": "Baskı Atölyesi", "menuAbout": "Hakkımızda", "heroCta": "Koleksiyonu Keşfet", "heroTitle": "Gücünü Sessizliğinden Alanlar İçin.", "heroSub": "İtalyan estetiği, minimalist çizgiler ve kırılmaz bir irade. Wolflano yeni koleksiyonuyla zırhını keşfet.", "heroTag": "MARKA OLMAK PAHALI OLMAK DEĞİL.", "showCats": true, "featN": 4, "showWhy": true, "showAtolye": true, "whyTitle": "Neden Wolflano?", "whyQuote": "Wolflano, gürültüyle değil, duruşuyla konuşanlar için doğdu.", "whyText": "Bir kurt gibi yalnız ama korkusuz. İtalyan estetiği kadar zarif, bir zırh kadar kararlı.", "whyLink": "Hikayemiz", "atolyeTitle": "Wolflano Baskı Atölyesi", "atolyeLead": "Kendi tasarımın, bizim tasarımımız ya da kurumuna özel toplu baskı.", "atolyePageLead": "Kendi tasarımın, bizim tasarımımız ya da kurumuna özel toplu baskı. Önizlemede gördüğün gibi basıp kapına gönderiyoruz.", "kolTitle": "Wolflano Koleksiyonu", "aboutTitle": "Zafere Giden Yolda Bir Zırh", "aboutLead": "Wolflano, sadece kumaşı ve dikişi mükemmelleştirilmiş giysiler sunmaz; her parçasında bir duruş, bir karakter ve bir hikaye taşır. Adını ve ilhamını, doğanın en bağımsız, en sabırlı ve pes etmeyen liderinden—kurt ruhundan—alır.", "aboutPhilTitle": "Felsefemiz: Sabır ve Mükemmellik", "aboutPhil": "Gerçek güç, zorluklar karşısında sesini yükseltmek değil; kaliteni, duruşunu ve adalete olan inancını en üst seviyeye çıkarmaktır. Hayatın acı tecrübelerinden süzülüp gelen bu vizyon, her detayında İtalyan tasarım anlayışının inceliğini ve zamansız stilini barındırır.", "aboutPromTitle": "Sözümüz", "aboutProm": "Sözü uzatmayız. Şov yapmayız. Ürettiğimiz her parçada en üst segment kumaşları, kusursuz kesimleri ve rafine detayları bir araya getirerek; kendi hayatının kahramanı olan insanlara hak ettikleri asaleti sunarız.", "mfTitle": "Sessizliğin Gücü. Asil Bir Zafer.", "mfText": ["Hayat, herkesi aynı fırtınayla sınamaz. Bazıları için yol; engellerle, hak edilenin geç teslim edilişiyle ve sessizce verilen mücadelelerle doludur.", "Wolflano, gürültüyle değil, duruşuyla konuşanlar için doğdu.", "Biz; intikamın ve hak arayışının öfkeyle değil; sabır, strateji, sarsılmaz bir kalite ve şaşmaz bir adaletle kazanılacağına inanıyoruz. Yaşadığı her darbeden daha güçlü kalkan, kendi yolunu kendi çizen ve duruşundan asla taviz vermeyen modern kahramanların zırhıyız.", "Bir kurt gibi yalnız ama korkusuz. İtalyan estetiği kadar zarif, bir zırh kadar kararlı."], "mfSign": "Wolflano. Karakterini Üzerinde Taşı.", "mfWords": "LİDER • BAĞIMSIZ • KORKUSUZ", "pnoteTitle": "Kumaş & Duruş Notu", "pnote": "Bu parça, yoğun gramajlı üst kalite kumaşı ve zamansız kesimiyle sadece günlük şıklığınızı değil, dış dünyaya karşı sarsılmaz duruşunuzu temsil etmek üzere tasarlandı."},
  seo:{domain:'https://wolflano.com.tr',gsc:'',ga:'',keywords:'tişört baskı, kişiye özel tişört, sweatshirt baskı, polo tişört, şapka baskı, erkek giyim, online tasarım',
   pages:{
    ana:{t:'Wolflano | Premium Erkek Giyim ve Kişiye Özel Tişört Baskı',d:'Premium kalite, İtalyan estetiği, Wolflano karakteri. Hazır tişört ve sweatshirt koleksiyonu, online tasarla kendin tasarla ile kişiye özel baskı. Yıllarca solmayan, sağlığa uygun baskı.'},
@@ -864,7 +865,7 @@ function ffReturns(){
      '<span class="note" style="margin:0">'+esc(r.customer||'')+(r.items?' · '+esc(r.items):'')+'</span><span class="note" style="margin:0">Sebep: '+esc(r.reason||'')+(r.provider?' · '+esc(ffProvName(r.provider)||r.provider):'')+(r.note?' · '+esc(r.note):'')+'</span>'+
      '<div class="two">'+'<label for="frs-'+k+'">Durum<select id="frs-'+k+'" data-ffc="rst" data-id="'+esc(k)+'">'+ffOpts(RTST,r.status)+'</select></label>'+
      '<label for="frt-'+k+'">Dönüş kargo takip no<input id="frt-'+k+'" value="'+esc(r.tracking_no||'')+'" data-ffc="rtr" data-id="'+esc(k)+'"></label></div>'+
-     (r.status==='stok'?'<span class="note" style="margin:0">Ürün stoğa alındı. Stok sayısını Hazır giyim sekmesinden artırmayı unutma.</span>':'')+'</div>';}).join('');
+     (r.status==='stok'?'<span class="note" style="margin:0">Ürün stoğa alındı. Stok sayısını Koleksiyon sekmesinden artırmayı unutma.</span>':'')+'</div>';}).join('');
 }
 async function ffAddReturn(){
   var oid=ffV('frO'),o=(C.orders||[]).filter(function(x){return x.id===oid;})[0];
@@ -906,7 +907,7 @@ function mkView(d){
   if(!sbAdmin())return '';
   if(C.orders===null)crmLoad();
   if(FF.kv===null){ffLoad();return '<div class="aed" style="max-width:760px"><p class="note" style="margin:0">Pazaryeri takibi yükleniyor…</p></div>';}
-  var mk=FF.kv.market||{},h='<div class="aed" style="max-width:760px"><b>Pazaryeri ürün takibi</b><p class="note" style="margin:0">Her ürünün pazaryerindeki durumunu ve pazaryerinin verdiği ürün numarasını buradan takip et. Bir ürünü kanala eklemek için Hazır giyim sekmesinde o ürünün Satış kanalları kutusunu işaretle.</p>';
+  var mk=FF.kv.market||{},h='<div class="aed" style="max-width:760px"><b>Pazaryeri ürün takibi</b><p class="note" style="margin:0">Her ürünün pazaryerindeki durumunu ve pazaryerinin verdiği ürün numarasını buradan takip et. Bir ürünü kanala eklemek için Koleksiyon sekmesinde o ürünün Satış kanalları kutusunu işaretle.</p>';
   var any=false;
   CHANNELS.forEach(function(c){var ps=chProducts(d,c[0]);if(!ps.length)return;any=true;var cm=mk[c[0]]||{};
     var yay=ps.filter(function(p){return (cm[p.id]||{}).s==='Yayında';}).length;
@@ -1381,6 +1382,7 @@ function soldOut(x){return hasStock(x)&&+x.stock<=0;}
 function usedTokens(d){var o={};function add(s){if(s&&(s.indexOf('img/')===0||s.indexOf('vid/')===0))o[s]=1;}d.products.forEach(function(p){(p.imgs||[]).forEach(add);add(p.video);});d.blanks.forEach(function(p){(p.imgs||[]).forEach(add);add(p.video);});add(d.hero);add(d.logo);['clipCats','tplCats'].forEach(function(k){((d.studio||{})[k]||[]).forEach(function(c){(c.items||[]).forEach(function(it){add(it.img);});});});return o;}
 applyData();
 var PAGES=[['ana','Ana Sayfa'],['hazir','Koleksiyon'],['atolye','Baskı Atölyesi'],['hakkimizda','Hakkımızda'],['iletisim','İletişim']];
+function pagesNow(){return PAGES.map(function(p){var m={hazir:'menuHazir',atolye:'menuAtolye',hakkimizda:'menuAbout'}[p[0]];return [p[0],m?TX(m):p[1]];});}
 var CATS=[['kadin','Kadın'],['erkek','Erkek'],['cocuk','Çocuk']],subSel='',sub2Sel='',catOpen='';
 var SIDES={tee:{front:['a4','a3','logo'],back:['a4','a3']},sweat:{front:['a4','a3','logo'],back:['a4','a3']},polo:{front:['logo'],back:['a4','a3']},hat:{front:['hat'],back:[]}};
 var PNAME={a4:'A4 baskı',a3:'A3 baskı',logo:'Sol göğüs logo',hat:'Şapka ön baskı'};
@@ -1487,33 +1489,29 @@ function esc(s){return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp
 function toast(m){var t=$('#toast');t.textContent=m;t.hidden=false;clearTimeout(toast.t);toast.t=setTimeout(function(){t.hidden=true;},2200);}
 function favBtn(id){return '<button class="fav'+(favs[id]?' on':'')+'" data-fav="'+id+'" aria-label="Favorilere ekle" aria-pressed="'+(favs[id]?'true':'false')+'"><svg class="i" viewBox="0 0 24 24"><path d="M12 20s-7-4.5-8.5-9A4.7 4.7 0 0 1 12 7.3 4.7 4.7 0 0 1 20.5 11C19 15.5 12 20 12 20z"/></svg></button>';}
 /* Ana sayfa: hero'nun hemen altında hazır giyim vitrini. Mobilde 2, tablette 3, bilgisayarda 4-5 ürün yan yana; en fazla 10 ürün. */
-function homeReady(){var l=PRODUCTS.slice(0,4);if(!l.length)return '';
+function homeReady(){var n=+TX('featN');if(!(n>=0))n=4;var l=PRODUCTS.slice(0,Math.min(n,20));if(!l.length)return '';
   return '<div class="wrap feat hsec"><div class="sec-head" style="margin-bottom:12px"><h2 class="h2" style="font-size:26px">Öne çıkanlar</h2><a class="link" href="#hazir">Tümünü gör '+IC.arrow+'</a></div><div class="grid">'+l.map(card).join('')+'</div></div>';}
-function atolyeIntro(home){return '<section class="intro" style="margin-top:0;padding-top:8px"><h1 class="h2">Wolflano Baskı Atölyesi</h1><p>Kendi tasarımın, bizim tasarımımız ya da kurumuna özel toplu baskı. Önizlemede gördüğün gibi basıp kapına gönderiyoruz.</p>'+
+function atolyeIntro(home){return '<section class="intro" style="margin-top:0;padding-top:8px"><h1 class="h2">'+esc(TX('atolyeTitle'))+'</h1><p>'+esc(TX('atolyePageLead'))+'</p>'+
   '<div class="cta-row"><a class="btn" href="#tasarla">Tasarlamaya başla '+IC.arrow+'</a><a class="btn soft" href="#kurumsal">Okul ve kurumsal</a></div></section>';}
 function homeWelcome(){var b=D.brand||{};return '<section class="wrap welc"><p class="wq">Sessiz güç, sade duruş.</p>'+(b.slogan?'<p class="ws">'+esc(b.slogan)+'</p>':'')+'<div class="wbtn"><a class="btn" href="#hazir">Koleksiyonu keşfet '+IC.arrow+'</a><a class="btn soft" href="#atolye">Baskı Atölyesi</a></div></section>';}
 function homeCats(){if(!CATS.length)return '';return '<section class="wrap hsec" style="padding-top:14px"><p class="eyebrow">Kategoriler</p><div class="hcats">'+CATS.map(function(c){return '<a class="hcat" href="#hazir" data-hcat="'+c[0]+'"><span>'+esc(c[1])+'</span><i>'+IC.arrow+'</i></a>';}).join('')+'</div></section>';}
-function homeWhy(){return '<section class="band why"><div class="wrap"><p class="eyebrow">Neden Wolflano?</p><p class="wq">Wolflano, gürültüyle değil, duruşuyla konuşanlar için doğdu.</p><p class="lead">Bir kurt gibi yalnız ama korkusuz. İtalyan estetiği kadar zarif, bir zırh kadar kararlı.</p><a class="link" href="#hakkimizda">Hikayemiz '+IC.arrow+'</a></div></section>';}
-function homeAtolye(){var T=[['#tasarla','Kendin tasarla','g'],['#biz','Biz tasarlarız','d'],['studyo.html?vitrin=wolf','Wolf tasarımları',''],['#kurumsal','Okul ve kurumsal','']];
-  return '<section class="wrap hsec" style="padding-bottom:36px"><p class="eyebrow">Wolflano Baskı Atölyesi</p><p class="lead" style="margin:0 0 12px">Kendi tasarımın, bizim tasarımımız ya da kurumuna özel toplu baskı.</p><div class="hatl">'+T.map(function(x){return '<a class="'+x[2]+'" href="'+x[0]+'">'+x[1]+'<span>'+IC.arrow+'</span></a>';}).join('')+'</div><a class="link" href="#atolye" style="margin-top:16px;display:inline-flex">Baskı Atölyesine git '+IC.arrow+'</a></section>';}
+function homeWhy(){return '<section class="band why"><div class="wrap"><p class="eyebrow">'+esc(TX('whyTitle'))+'</p><p class="wq">'+esc(TX('whyQuote'))+'</p>'+(TX('whyText')?'<p class="lead">'+esc(TX('whyText'))+'</p>':'')+'<a class="link" href="#hakkimizda">'+esc(TX('whyLink'))+' '+IC.arrow+'</a></div></section>';}
+function homeAtolye(){var L=[['#tasarla','Kendin tasarla','g'],['#biz','Biz tasarlarız','d'],['studyo.html?vitrin=wolf','Wolf tasarımları',''],['#kurumsal','Okul ve kurumsal','']];
+  return '<section class="wrap hsec" style="padding-bottom:36px"><p class="eyebrow">'+esc(TX('atolyeTitle'))+'</p><p class="lead" style="margin:0 0 12px">'+esc(TX('atolyeLead'))+'</p><div class="hatl">'+L.map(function(x){return '<a class="'+x[2]+'" href="'+x[0]+'">'+x[1]+'<span>'+IC.arrow+'</span></a>';}).join('')+'</div><a class="link" href="#atolye" style="margin-top:16px;display:inline-flex">Baskı Atölyesine git '+IC.arrow+'</a></section>';}
 function atolyePair(){return '<section class="pair"><div class="big g">'+IC.pal+'<h2>Kendin tasarla</h2><p>Ürünü seç, yazını yaz, görselini yükle. Önizlemede gördüğün gibi basalım.</p><a class="btn onG" href="#tasarla">Tasarlamaya başla '+IC.arrow+'</a></div>'+
   '<div class="big b">'+IC.spark+'<h2>Biz tasarlarız</h2><p>Fikrini bir cümleyle anlat, yapay zeka üç tasarım önerisi hazırlasın.</p><a class="btn" href="#biz">Yapay zekaya tasarlat '+IC.arrow+'</a></div></section>';}
 function howHTML(){return '<section class="how"><div class="wrap"><h2>Nasıl çalışır?</h2><div class="steps">'+
   '<div class="step"><span class="dot">'+IC.up+'</span><div><h3>1. Ürünü seç ve tasarla</h3><p>Tişört veya kupa seç, yazı ve görsel ekle ya da fikrini anlat.</p></div></div>'+
   '<div class="step"><span class="dot">'+IC.eye+'</span><div><h3>2. Önizlemede gör</h3><p>Tasarımını ürünün üzerinde anında gör, istediğin kadar değiştir.</p></div></div>'+
   '<div class="step"><span class="dot">'+IC.box+'</span><div><h3>3. Biz basıp gönderelim</h3><p>Onayladığın tasarım basılır, özenle paketlenir ve kapına gelir.</p></div></div></div></div></section>';}
-function aboutHTML(){
-  return '<div class="wrap page about"><p class="eyebrow">Hakkımızda</p><h1 class="h2">Zafere Giden Yolda Bir Zırh</h1>'+
-  '<p class="lead">Wolflano, sadece kumaşı ve dikişi mükemmelleştirilmiş giysiler sunmaz; her parçasında bir duruş, bir karakter ve bir hikaye taşır. Adını ve ilhamını, doğanın en bağımsız, en sabırlı ve pes etmeyen liderinden—kurt ruhundan—alır.</p>'+
-  '<section class="ab"><h2 class="h2">Felsefemiz: Sabır ve Mükemmellik</h2><p class="lead">Gerçek güç, zorluklar karşısında sesini yükseltmek değil; kaliteni, duruşunu ve adalete olan inancını en üst seviyeye çıkarmaktır. Hayatın acı tecrübelerinden süzülüp gelen bu vizyon, her detayında İtalyan tasarım anlayışının inceliğini ve zamansız stilini barındırır.</p></section>'+
-  '<section class="ab"><h2 class="h2">Sözümüz</h2><p class="lead">Sözü uzatmayız. Şov yapmayız. Ürettiğimiz her parçada en üst segment kumaşları, kusursuz kesimleri ve rafine detayları bir araya getirerek; kendi hayatının kahramanı olan insanlara hak ettikleri asaleti sunarız.</p></section>'+
-  '<section class="mf"><p class="eyebrow">Manifesto</p><h2 class="q">Sessizliğin Gücü. Asil Bir Zafer.</h2>'+
-  '<p>Hayat, herkesi aynı fırtınayla sınamaz. Bazıları için yol; engellerle, hak edilenin geç teslim edilişiyle ve sessizce verilen mücadelelerle doludur.</p>'+
-  '<p>Wolflano, gürültüyle değil, duruşuyla konuşanlar için doğdu.</p>'+
-  '<p>Biz; intikamın ve hak arayışının öfkeyle değil; sabır, strateji, sarsılmaz bir kalite ve şaşmaz bir adaletle kazanılacağına inanıyoruz. Yaşadığı her darbeden daha güçlü kalkan, kendi yolunu kendi çizen ve duruşundan asla taviz vermeyen modern kahramanların zırhıyız.</p>'+
-  '<p>Bir kurt gibi yalnız ama korkusuz. İtalyan estetiği kadar zarif, bir zırh kadar kararlı.</p>'+
-  '<p class="sig">Wolflano. Karakterini Üzerinde Taşı.</p><p class="w">LİDER • BAĞIMSIZ • KORKUSUZ</p></section>'+
-  '<div class="cta-row" style="margin-top:28px"><a class="btn" href="#hazir">Koleksiyonu Keşfet '+IC.arrow+'</a><a class="btn soft" href="#atolye">Baskı Atölyesi</a></div></div>';}
+function aboutHTML(){var mt=TX('mfText');if(typeof mt==='string')mt=mt.split('\n');
+  return '<div class="wrap page about"><p class="eyebrow">'+esc(TX('menuAbout'))+'</p><h1 class="h2">'+esc(TX('aboutTitle'))+'</h1>'+(TX('aboutLead')?'<p class="lead">'+esc(TX('aboutLead'))+'</p>':'')+
+  (TX('aboutPhil')?'<section class="ab"><h2 class="h2">'+esc(TX('aboutPhilTitle'))+'</h2><p class="lead">'+esc(TX('aboutPhil'))+'</p></section>':'')+
+  (TX('aboutProm')?'<section class="ab"><h2 class="h2">'+esc(TX('aboutPromTitle'))+'</h2><p class="lead">'+esc(TX('aboutProm'))+'</p></section>':'')+
+  '<section class="mf"><p class="eyebrow">Manifesto</p><h2 class="q">'+esc(TX('mfTitle'))+'</h2>'+(mt||[]).filter(function(x){return String(x).trim();}).map(function(x){return '<p>'+esc(x)+'</p>';}).join('')+
+  (TX('mfSign')?'<p class="sig">'+esc(TX('mfSign'))+'</p>':'')+(TX('mfWords')?'<p class="w">'+esc(TX('mfWords'))+'</p>':'')+'</section>'+
+  '<div class="cta-row" style="margin-top:28px"><a class="btn" href="#hazir">'+esc(TX('heroCta'))+' '+IC.arrow+'</a><a class="btn soft" href="#atolye">'+esc(TX('menuAtolye'))+'</a></div></div>';}
+function TX(k){var t=D.txt||{},v=t[k];return (v===undefined||v===null)?DEF.txt[k]:v;}
 function card(p){
   return '<article class="card"><div class="phw"><a class="ph" href="#urun-'+p.id+'" aria-label="'+esc(p.name)+' detay"><img src="'+IMG(p)+'" alt="'+esc(p.name)+'" loading="lazy">'+(p.tag&&!/çok\s*satan/i.test(p.tag)?'<span class="tag">'+p.tag+'</span>':'')+'</a>'+favBtn(p.id)+'</div>'+
   '<div class="meta"><div class="row"><small>'+p.type+'</small><span class="price">'+pr(p)+'</span></div>'+stk(p)+'</div>'+
@@ -1652,7 +1650,8 @@ odeme:function(){
  },
  ana:function(){
   return '<section class="hero"><img src="'+src(D.hero)+'" alt="Wolflano"><div class="strip">'+esc(D.strip.a)+' <em>'+esc(D.strip.b)+'</em></div></section>'+
-  '<div class="hcta"><a class="btn" href="#hazir">Koleksiyonu Keşfet '+IC.arrow+'</a></div><section class="wrap hw"><h1>Gücünü Sessizliğinden Alanlar İçin.</h1><p>İtalyan estetiği, minimalist çizgiler ve kırılmaz bir irade. Wolflano yeni koleksiyonuyla zırhını keşfet.</p><p class="hwt">MARKA OLMAK PAHALI OLMAK DEĞİL.</p></section>'+homeCats()+homeReady()+homeWhy()+homeAtolye();
+  '<div class="hcta"><a class="btn" href="#hazir">'+esc(TX('heroCta'))+' '+IC.arrow+'</a></div><section class="wrap hw"><h1>'+esc(TX('heroTitle'))+'</h1>'+(TX('heroSub')?'<p>'+esc(TX('heroSub'))+'</p>':'')+(TX('heroTag')?'<p class="hwt">'+esc(TX('heroTag'))+'</p>':'')+'</section>'+
+  (TX('showCats')!==false?homeCats():'')+homeReady()+(TX('showWhy')!==false?homeWhy():'')+(TX('showAtolye')!==false?homeAtolye():'');
  },
  atolye:function(){
   return '<div class="wrap page">'+atolyeIntro(false)+atolyePair()+wolfBan()+kurHTML(false)+'</div>'+howHTML();
@@ -1662,7 +1661,7 @@ odeme:function(){
   var cobj=(D.cats||[]).filter(function(c){return c.id===catSel;})[0]||{subs:[]},subs=cobj.subs||[];if(subSel&&!subs.some(function(x){return x.id===subSel;}))subSel='';
   var sobj=subs.filter(function(x){return x.id===subSel;})[0]||{},subs2=sobj.subs||[];if(sub2Sel&&!subs2.some(function(x){return x.id===sub2Sel;}))sub2Sel='';
   var list=PRODUCTS.filter(function(p){var ps=p.sub||[];return (p.cat||[]).indexOf(catSel)>=0&&(!subSel||ps.indexOf(subSel)>=0||(sobj.subs||[]).some(function(y){return ps.indexOf(y.id)>=0;}))&&(!sub2Sel||ps.indexOf(sub2Sel)>=0);});
-  return '<div class="wrap page"><h1 class="h2" style="margin-bottom:20px">Wolflano Koleksiyonu</h1>'+
+  return '<div class="wrap page"><h1 class="h2" style="margin-bottom:20px">'+esc(TX('kolTitle'))+'</h1>'+
   '<div class="chips" role="tablist">'+CATS.map(function(c){var co=(D.cats||[]).filter(function(x){return x.id===c[0];})[0]||{},hs=(co.subs||[]).length,cl=(c[0]===catSel?'on':'')+(catOpen===c[0]?' open':'');return '<button role="tab" data-cat="'+c[0]+'"'+(cl?' class="'+cl.trim()+'"':'')+(c[0]===catSel?' aria-selected="true"':'')+(hs?' aria-expanded="'+(catOpen===c[0])+'"':'')+'>'+esc(c[1])+(hs?'<span class="cv">▾</span>':'')+'</button>';}).join('')+'</div>'+
   (catOpen===catSel&&subs.length?'<div class="catmenu">'+(subs.some(function(x){return (x.subs||[]).length;})?
      '<div class="its"><button data-pick="" data-p2="" class="'+(!subSel?'on':'')+'">Tümü</button></div>'+subs.map(function(x){return '<div class="grp">'+esc(x.name||'')+'</div><div class="its"><button data-pick="'+x.id+'" data-p2=""'+(subSel===x.id&&!sub2Sel?' class="on"':'')+'>Tümü</button>'+(x.subs||[]).map(function(y){return '<button data-pick="'+x.id+'" data-p2="'+y.id+'"'+(sub2Sel===y.id?' class="on"':'')+'>'+esc(y.name||'Adsız')+'</button>';}).join('')+'</div>';}).join(''):
@@ -1674,7 +1673,7 @@ odeme:function(){
   var p=PRODUCTS.filter(function(x){return x.id===id;})[0];
   if(!p)return '<div class="wrap page"><a class="link back" href="#hazir">← Koleksiyon</a><p class="empty">Ürün bulunamadı.</p></div>';
   gv=0;
-  return '<div class="wrap page"><a class="link back" href="#hazir">← Koleksiyon</a><div class="pd"><div class="gal" id="gal">'+galHTML(p)+'</div><div class="info"><small>'+p.type+'</small><h1>'+esc(p.name)+'</h1><button class="btn soft sm" data-fav="'+p.id+'" style="gap:8px">'+(favs[p.id]?'♥ Favorilerde':'♡ Favorilere ekle')+'</button><div class="pbig">'+pr(p)+'</div>'+stk(p)+(p.desc?'<p style="margin:0;color:var(--muted)">'+esc(p.desc)+'</p>':'')+(/kupa/i.test((p.type||'')+' '+(p.name||''))?'':'<div class="pnote"><b>Kumaş &amp; Duruş Notu</b><p>Bu parça, yoğun gramajlı üst kalite kumaşı ve zamansız kesimiyle sadece günlük şıklığınızı değil, dış dünyaya karşı sarsılmaz duruşunuzu temsil etmek üzere tasarlandı.</p></div>')+''+(soldOut(p)?'<button class="btn" disabled>Tükendi</button>':'<button class="btn" data-add="'+p.id+'">Sepete ekle</button>')+'<ul><li>Siparişler 2-4 iş gününde hazırlanır</li><li>Hediye paketi her siparişte ücretsiz</li></ul></div></div></div>';
+  return '<div class="wrap page"><a class="link back" href="#hazir">← Koleksiyon</a><div class="pd"><div class="gal" id="gal">'+galHTML(p)+'</div><div class="info"><small>'+p.type+'</small><h1>'+esc(p.name)+'</h1><button class="btn soft sm" data-fav="'+p.id+'" style="gap:8px">'+(favs[p.id]?'♥ Favorilerde':'♡ Favorilere ekle')+'</button><div class="pbig">'+pr(p)+'</div>'+stk(p)+(p.desc?'<p style="margin:0;color:var(--muted)">'+esc(p.desc)+'</p>':'')+(function(){var pn=String(p.pnote||'').trim();if(pn==='-')return '';if(!pn){if(/kupa/i.test((p.type||'')+' '+(p.name||'')))return '';pn=TX('pnote');}return pn?'<div class="pnote"><b>'+esc(TX('pnoteTitle'))+'</b><p>'+esc(pn)+'</p></div>':'';})()+''+(soldOut(p)?'<button class="btn" disabled>Tükendi</button>':'<button class="btn" data-add="'+p.id+'">Sepete ekle</button>')+'<ul><li>Siparişler 2-4 iş gününde hazırlanır</li><li>Hediye paketi her siparişte ücretsiz</li></ul></div></div></div>';
  },
  baski:function(){return VIEWS.tasarla();},
  tasarla:function(){
@@ -1742,7 +1741,7 @@ function route(){
   var act=h==='urun'?'hazir':(/^(tasarla|biz|kurumsal)$/.test(h)?'atolye':h);cur=act;
   $('#main').innerHTML=VIEWS[h](pid);
   if(h==='tasarla')calc('p');if(h!=='hesabim')accMode='login';if(h==='yonetim'){if(!A||!A.dirty)A=newA();}
-  var links=PAGES.map(function(p){return '<a href="#'+p[0]+'"'+(p[0]===act?' class="on" aria-current="page"':'')+'>'+p[1]+'</a>';}).join('');
+  var links=pagesNow().map(function(p){return '<a href="#'+p[0]+'"'+(p[0]===act?' class="on" aria-current="page"':'')+'>'+p[1]+'</a>';}).join('');
   $('#nav').innerHTML=links;window.scrollTo(0,0);closeLayer();
 }
 function openBlank(i){
@@ -1757,7 +1756,7 @@ function openBlank(i){
 function closeLayer(){$('#layer').innerHTML='';}
 function openMenu(){
   $('#layer').innerHTML='<div class="scrim" data-close></div><nav class="drawer" aria-label="Menü"><div class="hd"><span class="word">WOLF<b>LANO</b></span><button class="ib" data-close aria-label="Kapat">'+IC.x+'</button></div>'+
-  PAGES.map(function(p){return '<a href="#'+p[0]+'"'+(p[0]===cur?' class="on"':'')+'>'+p[1]+'</a>';}).join('')+'</nav>';
+  pagesNow().map(function(p){return '<a href="#'+p[0]+'"'+(p[0]===cur?' class="on"':'')+'>'+esc(p[1])+'</a>';}).join('')+'</nav>';
 }
 function cartCount(){var n=0;for(var k in cart)n+=cart[k];return n;}
 function syncCart(){var n=cartCount(),b=$('#cartN');b.hidden=!n;b.textContent=n;var fn=Object.keys(favs).filter(function(k){return favs[k];}).length,fb=$('#favN');fb.hidden=!fn;fb.textContent=fn;saveLS();}
@@ -1836,7 +1835,7 @@ function adminView(){
   if(!ready)return '<div class="wrap page"><p class="eyebrow">Wolflano</p><h1 class="h2">Yönetim</h1><p class="lead">Yükleniyor…</p></div>';
   if(!admOk())return admGate();
   if(!A)A=newA();
-  var tabs=[['crm','Siparişler ve müşteriler'],['depo','Depo ve gönderim'],['urun','Hazır giyim'],['kategori','Kategoriler'],['baski','Baskıya uygun'],['studyo','Tasarım stüdyosu'],['fiyat','Fiyatlandırma'],['kanal','Satış kanalları'],['tedarik','Tedarikçiler'],['site','Site ve iletişim'],['muhasebe','Muhasebe'],['tasarim','Tasarımlar'],['seo','SEO'],['yedek','Yedek']];
+  var tabs=[['crm','Siparişler ve müşteriler'],['depo','Depo ve gönderim'],['metin','Sayfa metinleri'],['urun','Koleksiyon'],['kategori','Kategoriler'],['baski','Baskıya uygun'],['studyo','Tasarım stüdyosu'],['fiyat','Fiyatlandırma'],['kanal','Satış kanalları'],['tedarik','Tedarikçiler'],['site','Site ve iletişim'],['muhasebe','Muhasebe'],['tasarim','Tasarımlar'],['seo','SEO'],['yedek','Yedek']];
   var h='<div class="wrap page ad"><p class="eyebrow">Wolflano</p><h1 class="h2">Yönetim paneli</h1><p><button class="btn soft sm" data-ad="logout">Çıkış yap</button></p><div class="tabs">'+tabs.map(function(x){return '<button data-ad="tab" data-v="'+x[0]+'"'+(A.tab===x[0]?' class="on"':'')+'>'+x[1]+'</button>';}).join('')+'</div>';
   var d=A.draft;
   if(A.tab==='urun'){
@@ -1847,7 +1846,7 @@ function adminView(){
       if(open){
         h+='<div class="aed">'+fld('Ürün adı',pa+'.name')+'<div class="two">'+fld('Tür (ör. TİŞÖRT)',pa+'.type')+fld('Etiket (ör. Yeni)',pa+'.tag')+'</div>'+
         '<div class="three">'+fld('Fiyat (₺)',pa+'.price','n')+fld('Eski fiyat (₺)',pa+'.old','n','boş = yok')+fld('Stok (adet)',pa+'.stock','n','boş = takip yok')+'</div>'+
-        '<label for="'+aid(pa+'.desc')+'">Açıklama<textarea id="'+aid(pa+'.desc')+'" data-bind="'+pa+'.desc" data-t="s">'+esc(p.desc||'')+'</textarea></label>'+
+        '<label for="'+aid(pa+'.desc')+'">Açıklama<textarea id="'+aid(pa+'.desc')+'" data-bind="'+pa+'.desc" data-t="s">'+esc(p.desc||'')+'</textarea></label>'+'<label for="'+aid(pa+'.pnote')+'">Kumaş &amp; Duruş Notu (boş = genel not, - = hiç gösterme)<textarea id="'+aid(pa+'.pnote')+'" data-bind="'+pa+'.pnote" data-t="s" style="min-height:70px">'+esc(p.pnote||'')+'</textarea></label>'+
         '<div><b style="font-size:14px">Kategoriler</b><div class="chk" style="margin-top:6px">'+(d.cats||[]).map(function(c){return '<label><input type="checkbox" data-cat="'+i+'" data-c="'+c.id+'"'+((p.cat||[]).indexOf(c.id)>=0?' checked':'')+'>'+esc(c.name||'Adsız')+'</label>';}).join('')+'<label><input type="checkbox" data-bind="'+pa+'.show" data-t="b"'+(p.show!==false?' checked':'')+'>Sitede göster</label></div>'+
         subPick(d,p,i)+'</div>'+
         '<div class="three">'+fld('SKU / stok kodu',pa+'.sku')+fld('Barkod',pa+'.barcode')+fld('Marka',pa+'.brand','s','Wolflano')+'</div><div class="two"><label for="'+aid(pa+'.supplier')+'">Tedarikçi<select id="'+aid(pa+'.supplier')+'" data-bind="'+pa+'.supplier" data-t="s"><option value="">Kendi üretimimiz / yok</option>'+(d.suppliers||[]).map(function(s){return '<option value="'+s.id+'"'+(p.supplier===s.id?' selected':'')+'>'+esc(s.name||'Adsız')+'</option>';}).join('')+'</select></label>'+fld('Tedarikçi ürün kodu',pa+'.supSku')+'</div>'+
@@ -1871,7 +1870,7 @@ function adminView(){
     });
     h+='</div><p><button class="btn soft" data-ad="addb">+ Yeni baskıya uygun ürün</button></p>';
   }else if(A.tab==='fiyat'){
-    h+='<div class="aed" style="max-width:760px"><b>KDV</b><p class="note" style="margin:0">Sitede tüm fiyatlar KDV dahil gösterilir. Aşağıdaki fiyat alanlarına girdiğin tutarlar KDV hariç ise oran eklenerek gösterilir, KDV dahil ise olduğu gibi gösterilir.</p><label for="f-vat-mode">Girdiğim fiyatlar<select id="f-vat-mode" data-bind="vat.mode" data-t="s"><option value="excl"'+((d.vat||{}).mode!=='incl'?' selected':'')+'>KDV hariç (site oranı ekler)</option><option value="incl"'+((d.vat||{}).mode==='incl'?' selected':'')+'>KDV dahil (olduğu gibi gösterilir)</option></select></label><div class="three">'+fld('Hazır giyim KDV %','vat.ready','n')+fld('Boş ürünler KDV %','vat.blank','n')+fld('Baskı ücreti KDV %','vat.print','n')+'</div></div>';
+    h+='<div class="aed" style="max-width:760px"><b>KDV</b><p class="note" style="margin:0">Sitede tüm fiyatlar KDV dahil gösterilir. Aşağıdaki fiyat alanlarına girdiğin tutarlar KDV hariç ise oran eklenerek gösterilir, KDV dahil ise olduğu gibi gösterilir.</p><label for="f-vat-mode">Girdiğim fiyatlar<select id="f-vat-mode" data-bind="vat.mode" data-t="s"><option value="excl"'+((d.vat||{}).mode!=='incl'?' selected':'')+'>KDV hariç (site oranı ekler)</option><option value="incl"'+((d.vat||{}).mode==='incl'?' selected':'')+'>KDV dahil (olduğu gibi gösterilir)</option></select></label><div class="three">'+fld('Koleksiyon KDV %','vat.ready','n')+fld('Boş ürünler KDV %','vat.blank','n')+fld('Baskı ücreti KDV %','vat.print','n')+'</div></div>';
     h+='<div class="aed" style="max-width:760px">'+fld('A3 baskı katsayısı (A4 ücreti ile çarpılır)','a3','n')+
     '<div class="two">'+fld('Kargo ücreti (₺)','ship.fee','n')+fld('Ücretsiz kargo limiti (₺, 0 = yok)','ship.free','n')+'</div><div class="three">'+d.tiers.map(function(t,i){return fld((i+1)+'. indirim: adet','tiers.'+i+'.0','n')+fld('İndirim %','tiers.'+i+'.1','n');}).join('')+'</div>'+
     '<label for="f-note">Fiyatlandırma açıklaması (her satır bir paragraf)<textarea id="f-note" data-bind="note" data-t="lines" style="min-height:200px">'+esc((d.note||[]).join('\n'))+'</textarea></label></div>';
@@ -1900,11 +1899,24 @@ function adminView(){
     CHANNELS.map(function(c){var cc=chs(d,c[0]);return '<div class="arow" style="grid-template-columns:1fr auto"><div><b>'+c[1]+'</b><small>'+(MARKET.adapters[c[0]]?'Bağlı':'Bağlı değil')+' · '+PRODS_CH(d,c[0])+' ürün seçili</small></div><div class="chk"><label><input type="checkbox" data-bind="channels.'+c[0]+'.on" data-t="b"'+(cc.on?' checked':'')+'>Aktif</label></div></div><div class="two" style="margin:-4px 0 4px">'+fld('Fiyat farkı % ('+c[1]+')','channels.'+c[0]+'.markup','n','0')+'<div style="display:flex;align-items:end"><button class="btn soft sm" data-ad="msync" data-ch="'+c[0]+'">Stok ve fiyatı eşitle</button></div></div>';}).join('')+
     '<label for="kSel">Ürün dosyası için kanal<select id="kSel">'+CHANNELS.map(function(c){return '<option value="'+c[0]+'"'+(A.kch===c[0]?' selected':'')+'>'+c[1]+'</option>';}).join('')+'</select></label>'+
     '<textarea class="code" id="f-kan" readonly>'+esc(channelCSV(d,A.kch))+'</textarea><div><button class="btn soft sm" data-ad="kcopy">Kopyala</button></div></div>'+mkView(d);
+  }else if(A.tab==='metin'){
+    var tx=d.txt=d.txt||clone(DEF.txt);Object.keys(DEF.txt).forEach(function(k){if(tx[k]===undefined)tx[k]=clone(DEF.txt[k]);});
+    var ta=function(lb,k,h){return '<label for="'+aid('txt.'+k)+'">'+lb+'<textarea id="'+aid('txt.'+k)+'" data-bind="txt.'+k+'" data-t="s" style="min-height:'+(h||80)+'px">'+esc(tx[k]||'')+'</textarea></label>';};
+    var cb=function(lb,k){return '<label><input type="checkbox" data-bind="txt.'+k+'" data-t="b"'+(tx[k]!==false?' checked':'')+'>'+lb+'</label>';};
+    h+='<div class="aed" style="max-width:760px"><b>Menü adları</b><div class="three">'+fld('Koleksiyon','txt.menuHazir')+fld('Baskı Atölyesi','txt.menuAtolye')+fld('Hakkımızda','txt.menuAbout')+'</div></div>';
+    h+='<div class="aed" style="max-width:760px"><b>Ana sayfa · görselin altı</b>'+fld('Düğme yazısı','txt.heroCta')+fld('Manşet','txt.heroTitle')+ta('Alt başlık','heroSub')+fld('Büyük harfli imza satırı (boş = gizli)','txt.heroTag')+'</div>';
+    h+='<div class="aed" style="max-width:760px"><b>Ana sayfa · bölümler</b><div class="chk">'+cb('Kategori düğmelerini göster','showCats')+cb('“Neden Wolflano?” bandını göster','showWhy')+cb('Baskı Atölyesi bölümünü göster','showAtolye')+'</div>'+fld('Öne çıkan ürün sayısı (0 = gizli)','txt.featN','n')+
+      '<b>“Neden Wolflano?” bandı</b>'+fld('Başlık','txt.whyTitle')+ta('Büyük cümle','whyQuote',60)+ta('Açıklama','whyText',60)+fld('Bağlantı yazısı','txt.whyLink')+
+      '<b>Baskı Atölyesi</b>'+fld('Başlık','txt.atolyeTitle')+ta('Ana sayfadaki kısa yazı','atolyeLead',60)+ta('Baskı Atölyesi sayfasındaki yazı','atolyePageLead',70)+fld('Koleksiyon sayfası başlığı','txt.kolTitle')+'</div>';
+    h+='<div class="aed" style="max-width:760px"><b>Hakkımızda</b>'+fld('Başlık','txt.aboutTitle')+ta('Giriş','aboutLead',110)+fld('Felsefe başlığı','txt.aboutPhilTitle')+ta('Felsefe metni','aboutPhil',110)+fld('Söz başlığı','txt.aboutPromTitle')+ta('Söz metni','aboutProm',100)+'</div>';
+    h+='<div class="aed" style="max-width:760px"><b>Manifesto (Hakkımızda sayfasının sonu)</b>'+fld('Başlık','txt.mfTitle')+'<label for="f-mft">Paragraflar (her satır bir paragraf)<textarea id="f-mft" data-bind="txt.mfText" data-t="lines" style="min-height:180px">'+esc((Array.isArray(tx.mfText)?tx.mfText:String(tx.mfText||'').split('\n')).join('\n'))+'</textarea></label>'+fld('İmza cümlesi','txt.mfSign')+fld('Üç kelime','txt.mfWords')+'</div>';
+    h+='<div class="aed" style="max-width:760px"><b>Ürün sayfası notu</b>'+fld('Not başlığı','txt.pnoteTitle')+ta('Genel not (her ürünün altında; kupada çıkmaz)','pnote',90)+'<span class="note">Bir ürüne özel not yazmak ya da notu gizlemek için Koleksiyon sekmesinde o ürünü aç.</span></div>';
+    h+='<div class="aed" style="max-width:760px"><b>Varsayılana dön</b><span class="note">Bu sekmedeki tüm metinleri ilk haline döndürür. Kaydet’e basana kadar sitede değişmez.</span><div><button class="btn soft sm" data-ad="txtreset">Metinleri sıfırla</button></div></div>';
   }else if(A.tab==='site'){
     h+='<div class="aed" style="max-width:760px"><b>Biz tasarlarız</b><div class="chk"><label><input type="checkbox" data-bind="biz.requireAccount" data-t="b"'+((d.biz||{}).requireAccount!==false?' checked':'')+'>Kullanmak için üyelik girişi zorunlu olsun</label></div><span class="note">Açıkken yalnızca giriş yapmış müşteriler kullanır. Üyelik sistemi bağlanana kadar bu bölüm ziyaretçilere kapalı görünür; sen yönetici olarak her zaman görebilirsin.</span></div>';
     h+='<div class="aed" style="max-width:760px"><b>Logo</b><div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap"><img src="'+src(d.logo||'builtin:logo')+'" alt="" id="logoPrev" style="width:88px;height:88px;object-fit:contain;background:#fff;border-radius:14px;border:1px solid var(--line)"><div><label class="btn soft sm" for="up-logo" style="display:inline-flex">Logo ekle / değiştir</label><input class="sr" id="up-logo" type="file" accept="image/*" data-uplogo="1"></div></div><span class="note">Yüklediğin logo otomatik olarak kare, beyaz zeminli ve köşeleri hafif yuvarlak bir alana, kenarlardan küçültülüp ortalanarak yerleştirilir.</span></div>';
     h+='<div class="aed" style="max-width:760px"><b>Ana sayfa</b><div class="im" style="width:200px"><img src="'+src(d.hero)+'" alt="" style="width:200px;height:90px"></div><div><label class="btn soft sm" for="up-hero" style="display:inline-flex">Ana görseli değiştir</label><input class="sr" id="up-hero" type="file" accept="image/*" data-up="hero"></div>'+
-    '<div class="two">'+fld('Bant yazısı','strip.a')+fld('Kırmızı kelime','strip.b')+'</div><b>Marka sloganı ve kalite metinleri</b>'+fld('Slogan (Hazır giyim)','brand.slogan')+'<label for="f-brt">Hazır giyim açıklaması<textarea id="f-brt" data-bind="brand.readyText" data-t="s">'+esc((d.brand||{}).readyText||'')+'</textarea></label>'+fld('Baskı bölümü başlığı','brand.printTitle')+fld('Baskı bölümü giriş cümlesi','brand.printLead')+'<label for="f-bri">Baskı özellikleri (her satır: Başlık | açıklama)<textarea id="f-bri" data-bind="brand.printItems" data-t="lines" style="min-height:150px">'+esc(((d.brand||{}).printItems||[]).join('\n'))+'</textarea></label>'+fld('Belge ve sertifika bilgisi (isteğe bağlı)','brand.docs','s','Örn. belge adı ve numarası')+'<b>İletişim</b>'+fld('Telefon','contact.tel')+fld('WhatsApp','contact.whatsapp')+fld('E-posta','contact.mail')+fld('Adres','contact.adres')+fld('Instagram','contact.instagram')+'</div>';
+    '<div class="two">'+fld('Bant yazısı','strip.a')+fld('Kırmızı kelime','strip.b')+'</div><span class="note">Ana sayfa, Hakkımızda ve ürün notu metinleri “Sayfa metinleri” sekmesinde.</span><b>Baskı kalitesi metinleri</b>'+fld('Baskı bölümü başlığı','brand.printTitle')+fld('Baskı bölümü giriş cümlesi','brand.printLead')+'<label for="f-bri">Baskı özellikleri (her satır: Başlık | açıklama)<textarea id="f-bri" data-bind="brand.printItems" data-t="lines" style="min-height:150px">'+esc(((d.brand||{}).printItems||[]).join('\n'))+'</textarea></label>'+fld('Belge ve sertifika bilgisi (isteğe bağlı)','brand.docs','s','Örn. belge adı ve numarası')+'<b>İletişim</b>'+fld('Telefon','contact.tel')+fld('WhatsApp','contact.whatsapp')+fld('E-posta','contact.mail')+fld('Adres','contact.adres')+fld('Instagram','contact.instagram')+'</div>';
   }else{
     h+='<div class="aed" style="max-width:760px"><b>Veri yedeği</b><p class="note">Kaydetme çalışmazsa bu metni kopyalayıp bana gönder, ben siteye işlerim. Görseller bu metne dahil değildir.</p><textarea class="code" id="f-bak" readonly>'+esc(JSON.stringify(stripD(A.draft),null,1))+'</textarea><div><button class="btn soft sm" data-ad="bcopy">Kopyala</button></div></div>';
   }
@@ -1926,7 +1938,7 @@ function delBtn(act,id,label,extra){return '<button class="btn soft sm" data-ad=
 function mvBtns(act,i,extra){return '<button data-ad="'+act+'" data-i="'+i+'" data-d="-1"'+(extra||'')+' aria-label="Yukarı">▲</button><button data-ad="'+act+'" data-i="'+i+'" data-d="1"'+(extra||'')+' aria-label="Aşağı">▼</button>';}
 function catAdmin(d){
   d.cats=d.cats||[];
-  var h='<div class="alist"><p class="note" style="margin:0">Hazır giyim sayfasındaki kategoriler ve alt kategoriler. Ürünleri kategoriye “Hazır giyim” sekmesinde, ürünün düzenleme ekranından bağlarsın. Değişiklikler Kaydet ile yayına alınır.</p>';
+  var h='<div class="alist"><p class="note" style="margin:0">Koleksiyon sayfasındaki kategoriler ve alt kategoriler. Ürünleri kategoriye “Koleksiyon” sekmesinde, ürünün düzenleme ekranından bağlarsın. Değişiklikler Kaydet ile yayına alınır.</p>';
   d.cats.forEach(function(c,i){
     var cp='cats.'+i,open=A.open===c.id,n=d.products.filter(function(p){return (p.cat||[]).indexOf(c.id)>=0;}).length;
     h+='<div class="arow" style="grid-template-columns:1fr auto"><div><b>'+esc(c.name||'Adsız')+(c.show===false?' (gizli)':'')+'</b><small>'+(c.subs||[]).length+' alt kategori · '+n+' ürün</small></div><div class="mini">'+mvBtns('mvc',i)+'<button data-ad="open" data-id="'+c.id+'" aria-label="Düzenle">'+(open?'−':'✎')+'</button></div></div>';
@@ -2422,6 +2434,7 @@ document.addEventListener('click',function(e){
   else if(a==='iml'||a==='imr'||a==='imx'){var l=getp(d,b.dataset.p+'.imgs'),j2=+b.dataset.j;
     if(a==='imx')l.splice(j2,1);else{var k2=j2+(a==='iml'?-1:1);if(k2>=0&&k2<l.length){var y=l[j2];l[j2]=l[k2];l[k2]=y;}}dirty();adRender();}
   else if(a==='vidx'){setp(d,b.dataset.p+'.video','');dirty();adRender();}
+  else if(a==='txtreset'){if(confirm('Sayfa metinleri ilk haline dönsün mü?')){d.txt=clone(DEF.txt);dirty();adRender();}}
   else if(a==='addb'){var bid=nid('b');d.blanks.push({id:bid,name:'Yeni ürün',price:0,old:null,stock:null,a4:0,logo:0,note:'',cuts:'',areas:[],imgs:[],show:true,svg:DEF.blanks[0].svg});A.open=bid;dirty();adRender();}
   else if(a==='delb'){if(A.del===b.dataset.id){d.blanks=d.blanks.filter(function(x){return x.id!==b.dataset.id;});A.del=null;A.open=null;dirty();}else A.del=b.dataset.id;adRender();}
   else if(a==='mvb'){if(swapArr(d.blanks,+b.dataset.i,+b.dataset.d)){dirty();adRender();}}
