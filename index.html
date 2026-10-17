@@ -327,6 +327,9 @@ footer a{text-decoration:none}footer a:hover{color:var(--green)}
 
 /* MARKA KURALI: çerçeveli (dolgusuz) düğmelerin çizgisi yeşil; içi yeşil dolgulu düğmelerin çizgisi siyah. */
 .btn{border:1px solid #000}.btn.soft,.btn.onG{border:1px solid var(--green)}.chips button,.crumb button,.crmtabs button:not(.btn),.hcat{border-color:var(--green)}.chips button.on{border-color:#000}.hatl a{border-color:var(--green)}.hatl a.g{border-color:#000}
+
+/* Ürün kartı ritmi */
+.grid{row-gap:26px}.card .meta{padding-top:8px}.card .meta .row{gap:12px}.card .add{margin-top:8px;align-self:stretch;justify-content:center;padding:9px 12px;font:600 14px var(--ui);background:var(--green);color:#fff;border:1px solid #000;border-radius:999px}.card .add:disabled{background:var(--muted);color:#fff}.feat{padding-block:28px 8px}.page{padding-bottom:28px}
 </style>
 
 <header class="top"><div class="wrap">
@@ -1378,7 +1381,7 @@ function applyData(){autoSub(D);if(!D.vat)D.vat={mode:'excl',ready:20,blank:20,p
  A3_KAT=+D.a3||2;TIERS=D.tiers;setTimeout(function(){if(window.seoUpdate)seoUpdate();},0);PRICE_NOTE=(D.note||[]).concat(['Tüm fiyatlara KDV dahildir.']);CONTACT=D.contact;applyLogo();bzMerge();}
 function pr(x){return (x.old&&x.old>x.price?'<s class="old">'+tl(x.old)+'</s>':'')+tl(x.price);}
 function hasStock(x){return x.stock!==null&&x.stock!==undefined&&x.stock!=='';}
-function stk(x){if(!hasStock(x))return '';var n=+x.stock;return n<=0?'<span class="stk out">Tükendi</span>':n<=5?'<span class="stk low">Son '+n+' adet</span>':'<span class="stk">Stokta '+n+' adet</span>';}
+function stk(x){if(!hasStock(x))return '';return +x.stock<=0?'<span class="stk out">Tükendi</span>':'';}
 function soldOut(x){return hasStock(x)&&+x.stock<=0;}
 function usedTokens(d){var o={};function add(s){if(s&&(s.indexOf('img/')===0||s.indexOf('vid/')===0))o[s]=1;}d.products.forEach(function(p){(p.imgs||[]).forEach(add);add(p.video);});d.blanks.forEach(function(p){(p.imgs||[]).forEach(add);add(p.video);});add(d.hero);add(d.logo);(d.cpages||[]).forEach(function(p){(p.imgs||[]).forEach(add);});['clipCats','tplCats'].forEach(function(k){((d.studio||{})[k]||[]).forEach(function(c){(c.items||[]).forEach(function(it){add(it.img);});});});return o;}
 applyData();
@@ -1534,7 +1537,7 @@ function footRender(){var f=$('#fdyn');if(!f)return;var C=CONTACT||{};
 function card(p){
   return '<article class="card"><div class="phw"><a class="ph" href="#urun-'+p.id+'" aria-label="'+esc(p.name)+' detay"><img src="'+IMG(p)+'" alt="'+esc(p.name)+'" loading="lazy">'+(p.tag&&!/çok\s*satan/i.test(p.tag)?'<span class="tag">'+p.tag+'</span>':'')+'</a>'+favBtn(p.id)+'</div>'+
   '<div class="meta"><div class="row"><small>'+p.type+'</small><span class="price">'+pr(p)+'</span></div>'+stk(p)+'</div>'+
-  (soldOut(p)?'<button class="btn soft sm add" disabled>Tükendi</button>':'<button class="btn soft sm add" data-add="'+p.id+'">Sepete ekle</button>')+'</article>';
+  (soldOut(p)?'<button class="btn sm add" disabled>Tükendi</button>':'<button class="btn sm add" data-add="'+p.id+'">Sepete ekle</button>')+'</article>';
 }
 var gv=0,accMode='login';
 function brandBand(){var b=D.brand||{};return '<section class="band"><div class="wrap" style="display:grid;gap:28px"><div class="claim"><p class="eyebrow">Wolflano Koleksiyonu</p><p class="sl">'+esc(b.slogan||'')+'</p><p class="lead" style="margin:0">'+esc(b.readyText||'')+'</p><a class="link" href="#hazir" style="margin-top:14px;display:inline-flex">Ürünleri gör '+IC.arrow+'</a></div><div><p class="eyebrow">'+esc(b.printTitle||'')+'</p><div class="qs" style="margin-top:8px">'+qItems()+'</div></div></div></section>';}
