@@ -343,6 +343,7 @@ footer a{text-decoration:none}footer a:hover{color:var(--green)}
 body.guide .top .wrap{position:relative}body.guide .top .wrap::after{content:'';position:absolute;left:0;right:0;top:calc(50% + 8.25px);height:1px;background:#e5393a;pointer-events:none;z-index:50}
 /* Hesabım: sade ve kibar */
 .acct{padding-top:18px}.acct .h2{font-size:26px}.acct .lead{font-size:14px;margin:4px 0 0}.acct .panel{border-radius:16px;padding:16px;gap:10px;margin-top:14px!important}.acct .panel h3{font-size:16px!important;letter-spacing:.02em}.acct form label{display:grid;gap:4px;font:500 12.5px var(--ui);color:var(--muted);border:0;padding:0}.acct input,.acct textarea{font-size:16px;padding:8px 12px;border-radius:10px}.acct .panel .btn{justify-content:center;padding:10px 14px;font:600 14px var(--ui);border-radius:999px;margin-top:4px}.acct .acts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:14px;max-width:460px}.acct .acts .btn{justify-content:center;padding:9px 6px;font:600 13px var(--ui);border-radius:999px;background:transparent;border:1px solid var(--green);color:var(--ink);white-space:nowrap}.acct .seg2{margin-top:14px!important}
+.acth{display:flex;align-items:center;justify-content:space-between;gap:10px;max-width:460px;margin-bottom:6px}.outsm{background:none;border:1px solid var(--green);color:var(--muted);font:600 12px var(--ui);padding:5px 12px;border-radius:999px;cursor:pointer}.ann .r{transition:opacity .35s}.ann .r.on{transition:opacity .35s .35s}
 </style>
 
 <header class="top"><div class="wrap">
@@ -1281,7 +1282,7 @@ var EN={
 "Örnek: Gün batımında bir kurt silueti, altında WOLFLANO yazısı":"Example: a wolf silhouette at sunset, with WOLFLANO written below",
 "Talep bu sayfadan otomatik gönderilmez. Kopyalayıp WhatsApp veya e-posta ile Wolflano'ya ilet.":"The request isn't sent automatically from this page. Copy it and send it to Wolflano via WhatsApp or e-mail.",
 "Sipariş, baskı ve toplu sipariş için bize ulaş.":"Reach out to us for orders, printing and bulk orders.","Web sitesi":"Website","E-posta":"E-mail","Adres":"Address","WhatsApp":"WhatsApp","İzmir, Türkiye":"Izmir, Türkiye",
-"← Hazır giyim":"← Ready-to-wear","Büyüt":"Enlarge","Büyük görsel":"Large image","Uzaklaştır":"Zoom out","Yakınlaştır":"Zoom in","Favorilerim":"My favorites",
+"← Hazır giyim":"← Ready-to-wear","Büyüt":"Enlarge","Büyük görsel":"Large image","Uzaklaştır":"Zoom out","Yakınlaştır":"Zoom in","Favorilerim":"My favorites","Sepetim":"My cart",
 "Henüz favori ürünün yok. Ürünlerdeki kalbe dokunarak buraya ekleyebilirsin.":"You have no favorites yet. Tap the heart on a product to add it here.","Alışverişe devam et":"Continue shopping","Alışverişe başla":"Start shopping",
 "Giriş yap":"Log in","Üye ol":"Sign up","Şifre":"Password","Şifremi unuttum":"Forgot my password","Şifreyi göster":"Show password","Şifreyi gizle":"Hide password","Ad soyad":"Full name","Sıfırlama bağlantısı gönder":"Send reset link",
 "E-posta adresini yaz, şifre sıfırlama bağlantısı gönderilsin.":"Enter your e-mail address and we'll send a password reset link.",
@@ -1470,9 +1471,9 @@ ACCOUNT.saveProfile=async function(x){
 ACCOUNT.logout=async function(){try{var t=SBS&&SBS.access;if(t)sbReq('/auth/v1/logout',{method:'POST',token:t});}catch(_){}sbStore(null);ACCOUNT.user=null;ACCOUNT.prof=null;};
 function acctHome(){
   var u=ACCOUNT.user,p=ACCOUNT.prof||{},f=function(id,l,v,ex){return '<label for="'+id+'">'+l+(ex||'<input id="'+id+'" value="'+esc(v||'')+'">')+'</label>';};
-  return '<div class="wrap page acct"><p class="eyebrow">Hesabım</p><h1 class="h2">Merhaba'+((p.ad||u.name)?', '+esc((p.ad||u.name).split(' ')[0]):'')+'</h1><p class="lead">'+esc(u.email)+'</p>'+
-  '<form class="panel" id="profForm" style="max-width:460px;margin-top:20px"><h3 style="font-size:22px">Bilgilerim</h3>'+f('pAd','Ad soyad',p.ad||u.name)+f('pTel','Cep telefonu',p.tel,'<input id="pTel" type="tel" inputmode="tel" placeholder="05xx xxx xx xx" value="'+esc(p.tel||'')+'">')+f('pAdr','Adres',p.adres)+'<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">'+f('pIl','İl',p.il)+f('pIlce','İlçe',p.ilce)+'</div><button class="btn" type="submit">Kaydet</button><div class="msg" id="profMsg" hidden></div></form>'+
-  '<div class="acts"><a class="btn soft" href="#siparis">Son siparişim</a><a class="btn soft" href="#favoriler">Favorilerim</a><button class="btn soft" type="button" id="outBtn">Çıkış yap</button></div></div>';
+  return '<div class="wrap page acct"><div class="acth"><p class="eyebrow" style="margin:0">Hesabım</p><button class="outsm" type="button" id="outBtn">Çıkış yap</button></div><h1 class="h2">Merhaba'+((p.ad||u.name)?', '+esc((p.ad||u.name).split(' ')[0]):'')+'</h1><p class="lead">'+esc(u.email)+'</p>'+
+  '<form class="panel" id="profForm" style="max-width:460px;margin-top:20px">'+f('pAd','Ad soyad',p.ad||u.name)+f('pTel','Cep telefonu',p.tel,'<input id="pTel" type="tel" inputmode="tel" placeholder="05xx xxx xx xx" value="'+esc(p.tel||'')+'">')+f('pAdr','Adres',p.adres)+'<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">'+f('pIl','İl',p.il)+f('pIlce','İlçe',p.ilce)+'</div><button class="btn" type="submit">Kaydet</button><div class="msg" id="profMsg" hidden></div></form>'+
+  '<div class="acts"><a class="btn soft" href="#siparis">Son siparişim</a><a class="btn soft" href="#favoriler">Favorilerim</a><button class="btn soft" type="button" onclick="var c=document.getElementById('cartBtn');if(c)c.click();">Sepetim</button></div></div>';
 }
 document.addEventListener('submit',async function(e){
   if(!e.target||e.target.id!=='profForm')return;e.preventDefault();var g=function(i){return document.getElementById(i).value.trim();},m=document.getElementById('profMsg');
