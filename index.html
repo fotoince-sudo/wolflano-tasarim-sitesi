@@ -121,6 +121,8 @@ main{min-height:60vh}
 .kq{margin-top:16px;border-radius:18px;background:#101a14;color:#fff;padding:20px;display:flex;gap:14px;align-items:center}
 .kq b{display:block;font:700 clamp(13px,3.9vw,17px) var(--ui);white-space:nowrap;letter-spacing:-.01em}
 .kq>div{min-width:0}
+.gal img[src*="renk/"]{object-fit:contain!important;background:linear-gradient(160deg,#f3f6f4,#e3e9e5)}
+.mainv img[src*="renk/"]{padding:5%}
 .bcs{width:100%;display:grid;gap:8px}
 .bcs p{margin:0;text-align:center;font:500 13px var(--ui);color:var(--muted)}
 .bcs p b{color:var(--ink)}
@@ -1941,7 +1943,7 @@ odeme:function(){
   '</div>';
  },
  bu:function(id){var b=BLANKS.filter(function(x){return x.id===id;})[0];szPick='';bcSel=0;if(!b)return '<div class="wrap page"><a class="link back" href="#tasarla">← Baskıya uygun ürünler</a><p class="empty">Ürün bulunamadı.</p></div>';gv=0;
-  return '<div class="wrap page bup"><a class="link back" href="#tasarla">← Baskıya uygun ürünler</a><div class="pd"><div class="gal" id="gal">'+galHTML(b)+'</div><div class="info"><small class="ptype">'+esc(String(b.name||'').toLocaleUpperCase('tr').replace(/SWEATSHİRT/g,'SWEATSHIRT'))+'</small>'+bcBlock(b)+(function(){var zs=bSizes(b);if(!zs.length||soldOut(b))return '';return szBlock(zs,szTable({tee:'tee',sweat:'sweat',polo:'polo'}[b.p||b.id]||szKind(b.name),bCut(b),zs));})()+'<div class="ptop"><div class="pbig">'+prBig(b)+'</div><small class="pcode">Baskısız fiyat · baskı ücreti tasarımda eklenir</small></div>'+stk(b)+(soldOut(b)?'<button class="btn" disabled>Tükendi</button>':'<a class="btn" data-tasarla="'+b.id+'" href="'+studioURL(b.p||b.id,b.cut)+'">Tasarla</a>')+blankInfo(b)+'</div></div></div>';
+  return '<div class="wrap page bup"><a class="link back" href="#tasarla">← Baskıya uygun ürünler</a><div class="pd"><div class="gal" id="gal">'+galHTML(bColors(b).length?Object.assign({},b,{imgs:[bColors(b)[0].front||bColors(b)[0].back].concat((b.imgs||[]).slice(0,4))}):b)+'</div><div class="info"><small class="ptype">'+esc(String(b.name||'').toLocaleUpperCase('tr').replace(/SWEATSHİRT/g,'SWEATSHIRT'))+'</small>'+bcBlock(b)+(function(){var zs=bSizes(b);if(!zs.length||soldOut(b))return '';return szBlock(zs,szTable({tee:'tee',sweat:'sweat',polo:'polo'}[b.p||b.id]||szKind(b.name),bCut(b),zs));})()+'<div class="ptop"><div class="pbig">'+prBig(b)+'</div><small class="pcode">Baskısız fiyat · baskı ücreti tasarımda eklenir</small></div>'+stk(b)+(soldOut(b)?'<button class="btn" disabled>Tükendi</button>':'<a class="btn" data-tasarla="'+b.id+'" href="'+studioURL(b.p||b.id,b.cut)+'">Tasarla</a>')+blankInfo(b)+'</div></div></div>';
  },
  biz:function(){return bizGate()?gateHTML():bzView();},
  kurumsal:function(){return '<div class="wrap page">'+kurHTML(true).replace('<section class="kur">','<section class="kur" style="margin-top:0">')+'</div>';},
