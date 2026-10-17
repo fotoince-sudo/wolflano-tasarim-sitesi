@@ -647,6 +647,27 @@ var CLIP_CATS=['Kurtlar','Şekiller','Doğa','Semboller','Spor','Yaşam'];
 function clipInner(key){for(var i=0;i<CLIPS.length;i++){if(CLIPS[i][0]===key)return CLIPS[i][3];}return '';}
 function clipSVG(key){return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="currentColor">'+clipInner(key)+'</svg>';}
 
+/* ---------- Kurt kütüphanesi: sunucudaki assets/kutuphane klasöründen gelir ----------
+   Yeni ikon eklemek için klasöre 100×100 viewBox'lı, tek renkli (fill="currentColor") bir SVG koy ve index.json'a satır ekle.
+   İkonlar "Şekil" panelinde ilk sırada çıkar; dokununca tuvale eklenir, rengi değiştirilebilir. */
+var LIB_DIR='assets/kutuphane/',LIB_CAT='Kurt kütüphanesi',LIB_READY=false;
+function libEnsureCat(){if(LIB_READY&&CLIP_CATS.indexOf(LIB_CAT)<0)CLIP_CATS.unshift(LIB_CAT);}
+function libInner(txt){var m=/<svg[^>]*>([\s\S]*)<\/svg>/i.exec(txt||'');if(!m)return '';return m[1].replace(/<script[\s\S]*?<\/script>/gi,'').replace(/\son\w+="[^"]*"/gi,'').replace(/fill="#(?:000|000000|111|111111)"/gi,'fill="currentColor"');}
+function libLoad(){
+  fetch(LIB_DIR+'index.json',{cache:'no-cache'}).then(function(r){return r.ok?r.json():null;}).then(function(m){
+    var l=(m&&(m.ikonlar||m.icons))||[];if(!l.length)return;
+    return Promise.all(l.map(function(it){var f=String(it.dosya||it.file||'');if(!/^[\w.-]+\.svg$/i.test(f))return null;
+      return fetch(LIB_DIR+f).then(function(r){return r.ok?r.text():'';}).then(function(t){var inn=libInner(t);return inn?['lib-'+f.replace(/\.svg$/i,''),it.ad||it.name||f,LIB_CAT,inn]:null;}).catch(function(){return null;});}))
+    .then(function(rows){
+      rows=rows.filter(Boolean);if(!rows.length)return;
+      CLIPS=CLIPS.filter(function(c){return c[2]!==LIB_CAT;}).concat(rows);LIB_READY=true;libEnsureCat();
+      if(!view.clipCat||view.clipCat===CLIP_CATS[1])view.clipCat=LIB_CAT;
+      try{buildPanels();}catch(_){}
+    });
+  }).catch(function(){});
+}
+var _libBuild=buildPanels;buildPanels=function(){libEnsureCat();return _libBuild.apply(this,arguments);};
+
 /* ---------- Hazır şablonlar (A4 alanına göre; diğer alanlara ölçeklenir) ---------- */
 function TX(v,f,c,z,dy,dx,r,fx){return {t:'text',v:v,f:f,c:c,z:z,dx:dx||0,dy:dy,r:r||0,fx:fx||null};}
 function CL(k,c,w,dy,dx,r){return {t:'clip',k:k,c:c,w:w,dx:dx||0,dy:dy,r:r||0};}
@@ -2239,6 +2260,7 @@ $('#coForm').addEventListener('submit',async function(e){
 
 /* ---------- Başlangıç: örnek bir tasarımla açılır ---------- */
 buildPanels();
+libLoad();
 applyTemplate(TPLS[0],true);
 (function(){try{var q=new URLSearchParams(location.search),u=q.get('urun'),k=q.get('kesim'),bd=q.get('beden');if(u&&PRODUCTS[u]){var cs=PRODUCTS[u].cuts;chooseProduct(u,cs.indexOf(k)>=0?k:cs[0]);if(bd&&sizeList().indexOf(bd)>=0){state.sizes={};state.sizes[bd]=1;renderAll();}if(PRODUCTS[u].vb){['front','back'].forEach(function(sd){if(state[sd]&&state[sd].objs)state[sd].objs=[];});view.sel=null;renderAll();}}
   if(q.get('vitrin')==='wolf'){if(!u&&PRODUCTS.tee)chooseProduct('tee',PRODUCTS.tee.cuts[0]);openWolf();}}catch(_){}})();
