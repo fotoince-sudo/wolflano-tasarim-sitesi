@@ -400,6 +400,14 @@ body.cko #nav,body.cko .menu-btn,body.cko .lang,body.cko #cartBtn,body.cko #ann{
 .tsp .card .row small{white-space:nowrap;min-width:0;letter-spacing:.01em!important;font-size:clamp(10.5px,3vw,12.5px)!important;overflow:hidden;text-overflow:ellipsis}
 .tsp .card .row .price{white-space:nowrap}
 .tsp .wolfban{margin-top:28px}
+.szm{font-weight:500;color:var(--muted)}
+.szt{width:100%;margin-top:2px}
+.szt summary{cursor:pointer;font:600 13px var(--ui);color:var(--green);text-align:center;list-style:none;text-decoration:underline;text-underline-offset:3px}
+.szt summary::-webkit-details-marker{display:none}
+.szt table{width:100%;min-width:0!important;margin-top:10px;border-collapse:collapse;font:500 14px var(--ui);text-align:center}
+.szt th{font:600 12px var(--ui);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);padding:6px 4px;border-bottom:1px solid var(--line)}
+.szt td{padding:7px 4px;border-bottom:1px solid var(--line)}
+.szt .note{margin:8px 0 0;font-size:12px;text-align:left}
 .prnote{display:block}
 .prnote .prn{margin:0}
 .bud{width:100%;margin:6px 0 0;display:grid;gap:12px;border-top:1px solid var(--line);padding-top:14px}
@@ -411,7 +419,8 @@ body.cko #nav,body.cko .menu-btn,body.cko .lang,body.cko #cartBtn,body.cko #ann{
 .catbar .catmenu{position:absolute;left:0;right:0;top:100%;margin:6px 0 0;z-index:15;box-shadow:0 14px 34px rgba(16,26,20,.18);animation:cmIn .15s ease-out}
 @keyframes cmIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
 /* Ürün sayfası düzeni */
-@media (max-width:639px){.pd{gap:12px}}
+@media (max-width:639px){.pd{gap:12px;grid-template-columns:minmax(0,1fr)}}
+.pd>.info{min-width:0}
 .info .szs{width:100%;margin:0}
 .info .szs>div{flex-wrap:nowrap;gap:6px}
 .info .sz{flex:1 1 0;min-width:0;height:38px;padding:0 4px;font-size:13px}
@@ -428,7 +437,7 @@ body.cko #nav,body.cko .menu-btn,body.cko .lang,body.cko #cartBtn,body.cko #ann{
 .pbig .old{font:500 15px var(--ui);color:var(--muted)}
 .pbig .pct{font:600 12px var(--ui);font-style:normal;color:var(--green);border:1px solid var(--green);border-radius:999px;padding:2px 8px;align-self:center}
 /* Beden seçimi */
-.szs{display:grid;gap:8px;margin:4px 0}
+.szs{display:grid;grid-template-columns:minmax(0,1fr);gap:8px;margin:4px 0}
 .szs p{margin:0;font:500 13px var(--ui);color:var(--muted)}
 .szs p b{color:var(--ink)}
 .szs>div{display:flex;flex-wrap:wrap;gap:8px}
@@ -1521,6 +1530,22 @@ function ckKey(id,sz){return sz?id+'~'+sz:id;}
 function cartQtyOf(id){var n=0;for(var k in cart){if(ckId(k)===id)n+=cart[k]||0;}return n;}
 function szLbl(k){var z=ckSz(k);return z?' · Beden: '+z:'';}
 var szPick='';
+/* ---------- Beden ölçüleri (cm) ----------
+   Avrupa standart kalıplarına göre: en = koltuk altından koltuk altına düz göğüs genişliği, boy = omuz dikişinden etek ucuna.
+   Değerler [en, boy]. Üretimde ±1-2 cm fark olabilir. */
+var SZM={
+ tee:{erkek:{XS:[47,68],S:[50,70],M:[53,72],L:[56,74],XL:[59,76],XXL:[62,78],'2XL':[62,78],'3XL':[65,80]},
+      kadin:{XS:[42,60],S:[44,62],M:[47,64],L:[50,66],XL:[53,68],XXL:[56,70],'2XL':[56,70]},
+      cocuk:{'3-4':[32,44],'5-6':[35,48],'7-8':[38,52],'9-10':[41,56],'11-12':[44,60],'13-14':[47,64]}},
+ sweat:{erkek:{XS:[50,66],S:[53,68],M:[56,70],L:[59,72],XL:[62,74],XXL:[65,76],'2XL':[65,76],'3XL':[68,78]},
+      kadin:{XS:[45,60],S:[48,62],M:[51,64],L:[54,66],XL:[57,68],XXL:[60,70],'2XL':[60,70]},
+      cocuk:{'3-4':[34,44],'5-6':[37,48],'7-8':[40,52],'9-10':[43,56],'11-12':[46,60],'13-14':[49,63]}}
+};
+SZM.polo=SZM.tee;
+function szKind(t){t=String(t||'').toLocaleLowerCase('tr');if(/sweat|kapüşon|hoodie|eşofman üst/.test(t))return 'sweat';if(/polo/.test(t))return 'polo';if(/tişört|tisort|t-shirt|tshirt|^tee$/.test(t))return 'tee';return '';}
+function szTable(kind,cut,sizes){var m=(SZM[kind]||{})[cut];if(!m)return null;var r={};(sizes||[]).forEach(function(z){var k=String(z).replace(/\s*yaş$/,'');if(m[k])r[z]=m[k];});return Object.keys(r).length?r:null;}
+function pCut(p){var c=(p.cat||[]).map(function(x){return String(x).toLocaleLowerCase('tr');});if(c.indexOf('erkek')>=0)return 'erkek';if(c.indexOf('kadin')>=0)return 'kadin';if(c.some(function(x){return /cocuk|çocuk/.test(x);}))return 'cocuk';return 'erkek';}
+function szBlock(zs,ch){if(!zs.length)return '';return '<div class="szs" data-ch="'+esc(JSON.stringify(ch||{}))+'"><p>Beden: <b id="szT">Seç</b><span id="szM" class="szm"></span></p><div role="radiogroup" aria-label="Beden">'+zs.map(function(z){return '<button type="button" class="sz" role="radio" aria-checked="false" data-sz="'+esc(z)+'">'+esc(z)+'</button>';}).join('')+'</div>'+(ch?'<details class="szt"><summary>Beden tablosu (cm)</summary><table><thead><tr><th>Beden</th><th>En</th><th>Boy</th></tr></thead><tbody>'+Object.keys(ch).map(function(z){return '<tr><td>'+esc(z)+'</td><td>'+ch[z][0]+'</td><td>'+ch[z][1]+'</td></tr>';}).join('')+'</tbody></table><p class="note">En: koltuk altından koltuk altına düz ölçülen göğüs genişliği. Boy: omuz dikişinden etek ucuna. Avrupa standart kalıp; ±1-2 cm fark olabilir.</p></details>':'')+'</div>';}
 function usedTokens(d){var o={};function add(s){if(s&&(s.indexOf('img/')===0||s.indexOf('vid/')===0))o[s]=1;}d.products.forEach(function(p){(p.imgs||[]).forEach(add);add(p.video);});d.blanks.forEach(function(p){(p.imgs||[]).forEach(add);add(p.video);});add(d.hero);add(d.logo);(d.cpages||[]).forEach(function(p){(p.imgs||[]).forEach(add);});((d.kolban||{}).imgs||[]).forEach(add);['clipCats','tplCats'].forEach(function(k){((d.studio||{})[k]||[]).forEach(function(c){(c.items||[]).forEach(function(it){add(it.img);});});});return o;}
 applyData();
 var PAGES=[['ana','Ana Sayfa'],['hazir','Koleksiyon'],['atolye','Baskı Atölyesi'],['hakkimizda','Hakkımızda'],['iletisim','İletişim']];
@@ -1852,7 +1877,7 @@ odeme:function(){
   var p=PRODUCTS.filter(function(x){return x.id===id;})[0];szPick='';
   if(!p)return '<div class="wrap page"><a class="link back" href="#hazir">← Koleksiyon</a><p class="empty">Ürün bulunamadı.</p></div>';
   gv=0;
-  return '<div class="wrap page"><a class="link back" href="#hazir">← Koleksiyon</a><div class="pd"><div class="gal" id="gal">'+galHTML(p)+'</div><div class="info"><small class="ptype">'+pTypeColor(p)+'</small>'+(function(){var zs=pSizes(p);if(!zs.length||soldOut(p))return '';return '<div class="szs"><p>Beden: <b id="szT">Seç</b></p><div role="radiogroup" aria-label="Beden">'+zs.map(function(z){return '<button type="button" class="sz" role="radio" aria-checked="false" data-sz="'+esc(z)+'">'+esc(z)+'</button>';}).join('')+'</div></div>';})()+'<div class="ptop">'+(String(p.name||'').trim().toLocaleLowerCase('tr')===String(p.type||'').trim().toLocaleLowerCase('tr')?'':'<h1>'+esc(p.name)+'</h1>')+'<div class="pbig">'+prBig(p)+'</div><small class="pcode">Ürün kodu: '+pCode(p)+'</small></div>'+stk(p)+(soldOut(p)?'<button class="btn" disabled>Tükendi</button>':'<button class="btn" data-add="'+p.id+'">Sepete ekle</button>')+'<button class="btn soft sm" data-fav="'+p.id+'" style="gap:8px">'+(favs[p.id]?'♥ Favorilerde':'♡ Favorilere ekle')+'</button>'+(p.desc?'<p style="margin:0;color:var(--muted)">'+esc(p.desc)+'</p>':'')+(function(){var pn=String(p.pnote||'').trim();if(pn==='-')return '';if(!pn){if(/kupa/i.test((p.type||'')+' '+(p.name||'')))return '';pn=TX('pnote');}return pn?'<div class="pnote"><b>'+esc(TX('pnoteTitle'))+'</b><p>'+esc(pn)+'</p></div>':'';})()+'<ul><li>Siparişler 2-4 iş gününde hazırlanır</li><li>Hediye paketi her siparişte ücretsiz</li></ul></div></div></div>';
+  return '<div class="wrap page"><a class="link back" href="#hazir">← Koleksiyon</a><div class="pd"><div class="gal" id="gal">'+galHTML(p)+'</div><div class="info"><small class="ptype">'+pTypeColor(p)+'</small>'+(function(){var zs=pSizes(p);if(!zs.length||soldOut(p))return '';return szBlock(zs,szTable(szKind((p.type||'')+' '+(p.name||'')),pCut(p),zs));})()+'<div class="ptop">'+(String(p.name||'').trim().toLocaleLowerCase('tr')===String(p.type||'').trim().toLocaleLowerCase('tr')?'':'<h1>'+esc(p.name)+'</h1>')+'<div class="pbig">'+prBig(p)+'</div><small class="pcode">Ürün kodu: '+pCode(p)+'</small></div>'+stk(p)+(soldOut(p)?'<button class="btn" disabled>Tükendi</button>':'<button class="btn" data-add="'+p.id+'">Sepete ekle</button>')+'<button class="btn soft sm" data-fav="'+p.id+'" style="gap:8px">'+(favs[p.id]?'♥ Favorilerde':'♡ Favorilere ekle')+'</button>'+(p.desc?'<p style="margin:0;color:var(--muted)">'+esc(p.desc)+'</p>':'')+(function(){var pn=String(p.pnote||'').trim();if(pn==='-')return '';if(!pn){if(/kupa/i.test((p.type||'')+' '+(p.name||'')))return '';pn=TX('pnote');}return pn?'<div class="pnote"><b>'+esc(TX('pnoteTitle'))+'</b><p>'+esc(pn)+'</p></div>':'';})()+'<ul><li>Siparişler 2-4 iş gününde hazırlanır</li><li>Hediye paketi her siparişte ücretsiz</li></ul></div></div></div>';
  },
  baski:function(){return VIEWS.tasarla();},
  tasarla:function(){
@@ -1864,8 +1889,8 @@ odeme:function(){
     (soldOut(b)?'<button class="btn sm add" disabled>Tükendi</button>':'<a class="btn sm add" href="'+studioURL(b.p||b.id,b.cut)+'">Tasarla</a>')+'</article>';}).join('')+'</div>':'<p class="empty">Bu grupta henüz baskıya uygun ürün yok.</p>')+
   wolfBan()+printQuality()+priceSection()+'</div>';
  },
- bu:function(id){var b=BLANKS.filter(function(x){return x.id===id;})[0];if(!b)return '<div class="wrap page"><a class="link back" href="#tasarla">← Baskıya uygun ürünler</a><p class="empty">Ürün bulunamadı.</p></div>';gv=0;
-  return '<div class="wrap page bup"><a class="link back" href="#tasarla">← Baskıya uygun ürünler</a><div class="pd"><div class="gal" id="gal">'+galHTML(b)+'</div><div class="info"><small class="ptype">'+esc(String(b.name||'').toLocaleUpperCase('tr').replace(/SWEATSHİRT/g,'SWEATSHIRT'))+'</small><div class="ptop"><div class="pbig">'+prBig(b)+'</div><small class="pcode">Baskısız fiyat · baskı ücreti tasarımda eklenir</small></div>'+stk(b)+(soldOut(b)?'<button class="btn" disabled>Tükendi</button>':'<a class="btn" href="'+studioURL(b.p||b.id,b.cut)+'">Tasarla</a>')+blankInfo(b)+'</div></div></div>';
+ bu:function(id){var b=BLANKS.filter(function(x){return x.id===id;})[0];szPick='';if(!b)return '<div class="wrap page"><a class="link back" href="#tasarla">← Baskıya uygun ürünler</a><p class="empty">Ürün bulunamadı.</p></div>';gv=0;
+  return '<div class="wrap page bup"><a class="link back" href="#tasarla">← Baskıya uygun ürünler</a><div class="pd"><div class="gal" id="gal">'+galHTML(b)+'</div><div class="info"><small class="ptype">'+esc(String(b.name||'').toLocaleUpperCase('tr').replace(/SWEATSHİRT/g,'SWEATSHIRT'))+'</small>'+(function(){var zs=bSizes(b);if(!zs.length||soldOut(b))return '';return szBlock(zs,szTable({tee:'tee',sweat:'sweat',polo:'polo'}[b.p||b.id]||szKind(b.name),bCut(b),zs));})()+'<div class="ptop"><div class="pbig">'+prBig(b)+'</div><small class="pcode">Baskısız fiyat · baskı ücreti tasarımda eklenir</small></div>'+stk(b)+(soldOut(b)?'<button class="btn" disabled>Tükendi</button>':'<a class="btn" data-tasarla="'+b.id+'" href="'+studioURL(b.p||b.id,b.cut)+'">Tasarla</a>')+blankInfo(b)+'</div></div></div>';
  },
  biz:function(){return bizGate()?gateHTML():bzView();},
  kurumsal:function(){return '<div class="wrap page">'+kurHTML(true).replace('<section class="kur">','<section class="kur" style="margin-top:0">')+'</div>';},
@@ -1919,6 +1944,10 @@ function kurHTML(full){
   return h;
 }
 var tsSel='';
+var BSZ={erkek:['S','M','L','XL','2XL','3XL'],kadin:['XS','S','M','L','XL','2XL'],cocuk:['3-4','5-6','7-8','9-10','11-12','13-14']};
+function bCut(b){return b.cut||'erkek';}
+function bSizes(b){if(b.hat!=null||/kupa|bardak|termos/i.test(b.name||''))return [];var s=String(b.sizes==null?'':b.sizes).trim();if(s==='-')return [];if(s)return s.split(',').map(function(x){return x.trim();}).filter(Boolean);return BSZ[bCut(b)]||[];}
+document.addEventListener('click',function(e){var t=e.target;if(!t.closest)return;var a=t.closest('[data-tasarla]');if(!a)return;var b=BLANKS.filter(function(x){return x.id===a.dataset.tasarla;})[0];if(!b)return;var zs=bSizes(b);if(!zs.length)return;e.preventDefault();if(zs.indexOf(szPick)<0){toast('Önce bedenini seç');var sb=document.querySelector('.szs');if(sb){sb.classList.remove('need');void sb.offsetWidth;sb.classList.add('need');sb.scrollIntoView({block:'center',behavior:'smooth'});}return;}location.href=studioURL(b.p||b.id,b.cut)+'&beden='+encodeURIComponent(szPick);},true);
 function bGen(b){if(b.cut)return [b.cut];var c=String(b.cuts||'').toLocaleLowerCase('tr'),r=[];if(/erkek/.test(c))r.push('erkek');if(/kadın|kadin/.test(c))r.push('kadin');if(/çocuk|cocuk/.test(c))r.push('cocuk');if(r.length)return r;var n=String(b.name||'').toLocaleLowerCase('tr');if(/kadın|kadin/.test(n))return ['kadin'];if(/çocuk|cocuk/.test(n))return ['cocuk'];if(/kupa|bardak|termos|çanta|canta/.test(n))return ['erkek','kadin','cocuk'];return ['erkek'];}
 document.addEventListener('click',function(e){var t=e.target;if(!t.closest)return;var b=t.closest('[data-ts]');if(!b)return;tsSel=b.dataset.ts;var y=window.scrollY;$('#main').innerHTML=VIEWS.tasarla();window.scrollTo(0,y);});
 function wolfBan(){return '<a class="wolfban" href="studyo.html?vitrin=wolf"><span class="wic"><img src="'+src(D.logo||'builtin:logo')+'" alt="Wolflano"></span><span class="wtx"><b>Wolf tasarımları</b><small>Wolflano\'ya özel kurt temalı hazır tasarımlar. Beğendiğini seç, baskı alanına yerleşsin. A4 dikey, A4 yatay veya A3.</small></span><span class="wgo">'+IC.arrow+'</span></a>';}
@@ -1937,7 +1966,7 @@ function route(){
   document.body.classList.toggle('cko',/^(sepet|odeme)$/.test(h));if(h==='odeme')setTimeout(function(){try{coInit();}catch(_){}},60);
   $('#nav').innerHTML=links;try{footRender();}catch(_){}try{kbStart();}catch(_){}try{shipRender();}catch(_){}var backY=(h==='hazir'&&fromUrun)?hzY:(h==='tasarla'&&fromBu)?tsY:0;rPrev=h;window.scrollTo(0,backY);if(backY)setTimeout(function(){window.scrollTo(0,backY);},120);closeLayer();
 }
-function blankInfo(b){return '<dl class="bud"><div><dt>Baskı ücreti (üste eklenir)</dt><dd><ul>'+(b.hat!=null?'<li>'+(b.fixname||'Şapka ön baskı')+': +'+tl(b.hat)+'</li>':'<li>A4 baskı: +'+tl(b.a4)+'</li><li>A3 baskı: +'+tl(b.a4*A3_KAT)+'</li><li>Sol göğüs logo: +'+tl(b.logo)+'</li>')+'</ul></dd></div>'+((b.areas||[]).length?'<div><dt>Baskı alanları</dt><dd><ul>'+(b.areas||[]).map(function(a){return '<li>'+esc(a)+'</li>';}).join('')+'</ul></dd></div>':'')+(b.cuts?'<div><dt>Kesim</dt><dd>'+esc(b.cuts)+'</dd></div>':'')+'<div><dt>Renkler</dt><dd>Beyaz, siyah, gri, yeşil, mavi, lacivert, kahve, kiremit</dd></div>'+(b.hat==null?'<div><dt>Not</dt><dd>A4 ve A3 baskı, boğazdan (arkada enseden) 8 cm aşağıda başlar. Logo her üründe sol göğüste, 8 × 8 cm.</dd></div>':'')+'</dl>';}
+function blankInfo(b){return '<dl class="bud">'+((b.areas||[]).length?'<div><dt>Baskı alanları</dt><dd><ul>'+(b.areas||[]).map(function(a){return '<li>'+esc(a)+'</li>';}).join('')+'</ul></dd></div>':'')+(b.cuts?'<div><dt>Kesim</dt><dd>'+esc(b.cuts)+'</dd></div>':'')+'<div><dt>Renkler</dt><dd>Beyaz, siyah, gri, yeşil, mavi, lacivert, kahve, kiremit</dd></div>'+(b.hat==null?'<div><dt>Not</dt><dd>A4 ve A3 baskı, boğazdan (arkada enseden) 8 cm aşağıda başlar. Logo her üründe sol göğüste, 8 × 8 cm.</dd></div>':'')+'</dl>';}
 function openBlank(i){
   var b=BLANKS[i];
   $('#layer').innerHTML='<div class="scrim" data-close></div><div class="pop" role="dialog" aria-modal="true" aria-label="'+b.name+'"><div class="top2"><h2>'+b.name+'</h2><button class="ib" data-close aria-label="Kapat">'+IC.x+'</button></div>'+
@@ -2014,7 +2043,7 @@ document.addEventListener('click',function(e){
   var vw=t.closest('[data-view]');if(vw){gv=+vw.dataset.view;var pp=anyP(vw.dataset.pid);$('#gal').innerHTML=galHTML(pp);return;}
   var bl=t.closest('[data-blank]');if(bl){openBlank(+bl.dataset.blank);return;}
   var a=t.closest('[data-add]');if(a){var ap=ALLP.filter(function(x){return x.id===a.dataset.add;})[0];if(ap&&hasStock(ap)&&cartQtyOf(ap.id)>=+ap.stock){toast('Stok sınırına ulaşıldı');return;}var zs0=pSizes(ap);if(zs0.length&&zs0.indexOf(szPick)<0){toast('Önce bedenini seç');var sb=document.querySelector('.szs');if(sb){sb.classList.remove('need');void sb.offsetWidth;sb.classList.add('need');sb.scrollIntoView({block:'center',behavior:'smooth'});}return;}var ak=ckKey(a.dataset.add,zs0.length?szPick:'');cart[ak]=(cart[ak]||0)+1;syncCart();if(ap)addedSheet(ap,ak);else toast('Sepete eklendi');return;}
-  var zb=t.closest('[data-sz]');if(zb){szPick=zb.dataset.sz;document.querySelectorAll('[data-sz]').forEach(function(x){var on=x.dataset.sz===szPick;x.classList.toggle('on',on);x.setAttribute('aria-checked',on?'true':'false');});var zt=document.getElementById('szT');if(zt)zt.textContent=szPick;var sb2=document.querySelector('.szs');if(sb2)sb2.classList.remove('need');return;}
+  var zb=t.closest('[data-sz]');if(zb){szPick=zb.dataset.sz;document.querySelectorAll('[data-sz]').forEach(function(x){var on=x.dataset.sz===szPick;x.classList.toggle('on',on);x.setAttribute('aria-checked',on?'true':'false');});var zt=document.getElementById('szT');if(zt)zt.textContent=szPick;var zm=document.getElementById('szM'),zw=zb.closest('.szs');if(zm&&zw){var cj={};try{cj=JSON.parse(zw.dataset.ch||'{}');}catch(_){}var mm=cj[szPick];zm.textContent=mm?' · en '+mm[0]+' cm, boy '+mm[1]+' cm':'';}var sb2=document.querySelector('.szs');if(sb2)sb2.classList.remove('need');return;}
   var q=t.closest('[data-q]');if(q){var qp=ALLP.filter(function(x){return x.id===ckId(q.dataset.q);})[0],nq=Math.max(0,(cart[q.dataset.q]||0)+(+q.dataset.d));if(nq===0)delete cart[q.dataset.q];if(qp&&hasStock(qp)&&nq>(cart[q.dataset.q]||0)&&cartQtyOf(qp.id)-(cart[q.dataset.q]||0)+nq>+qp.stock){toast('Stok sınırına ulaşıldı');return;}cart[q.dataset.q]=nq;syncCart();openCart();return;}
   var hc=t.closest('[data-hcat]');if(hc){catSel=hc.dataset.hcat;subSel='';sub2Sel='';catOpen='';}
   var c=t.closest('[data-cat]');if(c&&!c.closest('.ad')){if(catSel===c.dataset.cat){catOpen=catOpen===catSel?'':catSel;}else{catSel=c.dataset.cat;subSel='';sub2Sel='';catOpen=catSel;}var yc=window.scrollY;$('#main').innerHTML=VIEWS.hazir();window.scrollTo(0,yc);return;}

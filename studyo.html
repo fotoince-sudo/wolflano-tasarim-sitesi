@@ -1996,7 +1996,7 @@ $('#coForm').addEventListener('submit',async function(e){
 /* ---------- Başlangıç: örnek bir tasarımla açılır ---------- */
 buildPanels();
 applyTemplate(TPLS[0],true);
-(function(){try{var q=new URLSearchParams(location.search),u=q.get('urun'),k=q.get('kesim');if(u&&PRODUCTS[u]){var cs=PRODUCTS[u].cuts;chooseProduct(u,cs.indexOf(k)>=0?k:cs[0]);if(PRODUCTS[u].vb){['front','back'].forEach(function(sd){if(state[sd]&&state[sd].objs)state[sd].objs=[];});view.sel=null;renderAll();}}
+(function(){try{var q=new URLSearchParams(location.search),u=q.get('urun'),k=q.get('kesim'),bd=q.get('beden');if(u&&PRODUCTS[u]){var cs=PRODUCTS[u].cuts;chooseProduct(u,cs.indexOf(k)>=0?k:cs[0]);if(bd&&sizeList().indexOf(bd)>=0){state.sizes={};state.sizes[bd]=1;renderAll();}if(PRODUCTS[u].vb){['front','back'].forEach(function(sd){if(state[sd]&&state[sd].objs)state[sd].objs=[];});view.sel=null;renderAll();}}
   if(q.get('vitrin')==='wolf'){if(!u&&PRODUCTS.tee)chooseProduct('tee',PRODUCTS.tee.cuts[0]);openWolf();}}catch(_){}})();
 syncUndo();
 /* ===== Yönetim panelinden gelen stüdyo düğmeleri (Supabase site_content.studio) ===== */
