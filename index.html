@@ -391,6 +391,10 @@ body.cko #nav,body.cko .menu-btn,body.cko .lang,body.cko #cartBtn,body.cko #ann{
 .cobar .tt b{font:700 17px var(--ui)}
 .cobar .btn{flex:1;max-width:420px;justify-content:center;padding:13px 14px;border-radius:999px;font:600 14px var(--ui);border:1px solid #000;margin:0}
 .cobar .btn.off{opacity:.45}
+/* Kategori menüsü ürünlerin üstünde açılır, dışarı dokununca ya da kaydırınca kapanır */
+.catbar{position:relative}
+.catbar .catmenu{position:absolute;left:0;right:0;top:100%;margin:6px 0 0;z-index:15;box-shadow:0 14px 34px rgba(16,26,20,.18);animation:cmIn .15s ease-out}
+@keyframes cmIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
 /* Ürün sayfası düzeni */
 @media (max-width:639px){.pd{gap:12px}}
 .info .szs{width:100%;margin:0}
@@ -1826,10 +1830,10 @@ odeme:function(){
   var sobj=subs.filter(function(x){return x.id===subSel;})[0]||{},subs2=sobj.subs||[];if(sub2Sel&&!subs2.some(function(x){return x.id===sub2Sel;}))sub2Sel='';
   var list=PRODUCTS.filter(function(p){var ps=p.sub||[];return (p.cat||[]).indexOf(catSel)>=0&&(!subSel||ps.indexOf(subSel)>=0||(sobj.subs||[]).some(function(y){return ps.indexOf(y.id)>=0;}))&&(!sub2Sel||ps.indexOf(sub2Sel)>=0);});
   return '<div class="wrap page kolp"><h1 class="h2 kolh">'+esc(TX('kolTitle'))+'</h1>'+kolBan()+
-  '<div class="chips" role="tablist">'+CATS.map(function(c){var co=(D.cats||[]).filter(function(x){return x.id===c[0];})[0]||{},hs=(co.subs||[]).length,cl=(c[0]===catSel?'on':'')+(catOpen===c[0]?' open':'');return '<button role="tab" data-cat="'+c[0]+'"'+(cl?' class="'+cl.trim()+'"':'')+(c[0]===catSel?' aria-selected="true"':'')+(hs?' aria-expanded="'+(catOpen===c[0])+'"':'')+'>'+esc(c[1])+(hs?'<span class="cv"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></span>':'')+'</button>';}).join('')+'</div>'+
+  '<div class="catbar"><div class="chips" role="tablist">'+CATS.map(function(c){var co=(D.cats||[]).filter(function(x){return x.id===c[0];})[0]||{},hs=(co.subs||[]).length,cl=(c[0]===catSel?'on':'')+(catOpen===c[0]?' open':'');return '<button role="tab" data-cat="'+c[0]+'"'+(cl?' class="'+cl.trim()+'"':'')+(c[0]===catSel?' aria-selected="true"':'')+(hs?' aria-expanded="'+(catOpen===c[0])+'"':'')+'>'+esc(c[1])+(hs?'<span class="cv"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></span>':'')+'</button>';}).join('')+'</div>'+
   (catOpen===catSel&&subs.length?'<div class="catmenu">'+(subs.some(function(x){return (x.subs||[]).length;})?
      '<div class="cgrid">'+subs.map(function(x){var go=grpOpen===x.id;return '<div class="cg"><button class="gt'+(go?' open':'')+(subSel===x.id?' on':'')+'" data-gtog="'+x.id+'" aria-expanded="'+go+'">'+esc(x.name||'')+'<span class="cv"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></span></button>'+(go?'<div class="its1">'+(x.subs||[]).map(function(y){return '<button data-pick="'+x.id+'" data-p2="'+y.id+'"'+(sub2Sel===y.id?' class="on"':'')+'>'+esc(y.name||'Adsız')+'</button>';}).join('')+'</div>':'')+'</div>';}).join('')+'</div>':
-     '<div class="its">'+subs.map(function(x){return '<button data-pick="'+x.id+'" data-p2=""'+(x.id===subSel?' class="on"':'')+'>'+esc(x.name||'Adsız')+'</button>';}).join('')+'</div>')+'</div>':'')+
+     '<div class="its">'+subs.map(function(x){return '<button data-pick="'+x.id+'" data-p2=""'+(x.id===subSel?' class="on"':'')+'>'+esc(x.name||'Adsız')+'</button>';}).join('')+'</div>')+'</div>':'')+'</div>'+
   (subSel&&catOpen!==catSel?'<div class="crumb">'+esc(cobj.name||'')+' › <b>'+esc((sobj.name||'')+(sub2Sel?' › '+(((sobj.subs||[]).filter(function(y){return y.id===sub2Sel;})[0]||{}).name||''):''))+'</b><button data-pick="" data-p2="">✕ Temizle</button></div>':'')+
   (list.length?'<div class="grid">'+list.map(card).join('')+'</div>':'<p class="empty">Bu kategoride henüz ürün yok.</p>')+'</div>';
  },
@@ -1921,6 +1925,9 @@ function openBlank(i){
   (b.hat==null?'<div><dt>Not</dt><dd>A4 ve A3 baskı, boğazdan (arkada enseden) 8 cm aşağıda başlar. Logo her üründe sol göğüste, 8 × 8 cm.</dd></div>':'')+'</dl>'+
   '<a class="btn" style="margin-top:16px" href="'+studioURL(b.p||b.id,b.cut)+'">Tasarlamaya başla '+IC.arrow+'</a></div>';
 }
+function catClose(){if(!catOpen&&!grpOpen)return;catOpen='';grpOpen='';if(cur!=='hazir'||(location.hash||'').indexOf('#urun-')===0)return;var y=window.scrollY;$('#main').innerHTML=VIEWS.hazir();window.scrollTo(0,y);}
+document.addEventListener('click',function(e){var t=e.target;if(!catOpen||!t.closest||t.closest('.catbar')||t.closest('a[href]'))return;catClose();});
+var cmY=null;window.addEventListener('scroll',function(){if(!catOpen){cmY=null;return;}if(cmY===null){cmY=window.scrollY;return;}if(Math.abs(window.scrollY-cmY)>60){cmY=null;catClose();}},{passive:true});
 function closeLayer(){$('#layer').innerHTML='';}
 function addedSheet(p,k){$('#layer').innerHTML='<div class="scrim" data-close></div><div class="ats" role="dialog" aria-label="Ürün sepetine eklendi"><div class="hd"><b><i>✓</i>Ürün sepetine eklendi</b><button class="ib" data-close aria-label="Kapat">'+IC.x+'</button></div><div class="it"><img src="'+IMG(p)+'" alt=""><div><small class="ty">'+pTypeColor(p)+'</small><b>'+esc(p.name)+'</b>'+(k&&ckSz(k)?'<span class="asz">Beden: '+esc(ckSz(k))+'</span>':'')+'<span class="pz">'+tl(p.price)+'</span></div></div><div class="acts"><a class="btn" href="#sepet" data-close>Sepeti gör ('+cartCount()+')</a><button class="btn soft" type="button" data-close>Alışverişe devam et</button></div></div>';}
 function openMenu(){
