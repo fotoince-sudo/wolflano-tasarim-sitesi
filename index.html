@@ -1910,9 +1910,9 @@ function atolyeIntro(home){return '<section class="intro aint"><h1 class="h2">'+
 function homeWelcome(){var b=D.brand||{};return '<section class="wrap welc"><p class="wq">Sessiz güç, sade duruş.</p>'+(b.slogan?'<p class="ws">'+esc(b.slogan)+'</p>':'')+'<div class="wbtn"><a class="btn" href="#hazir">Koleksiyonu keşfet '+IC.arrow+'</a><a class="btn soft" href="#atolye">Baskı Atölyesi</a></div></section>';}
 function homeCats(){if(!CATS.length)return '';return '<section class="wrap hsec" style="padding-top:14px"><p class="eyebrow">Kategoriler</p><div class="hcats">'+CATS.map(function(c){return '<a class="hcat" href="#hazir" data-hcat="'+c[0]+'"><span>'+esc(c[1])+'</span><i>'+IC.arrow+'</i></a>';}).join('')+'</div></section>';}
 function homeWhy(){return '<section class="hcol why"><p class="eyebrow">'+esc(TX('whyTitle'))+'</p><p class="wq">'+esc(TX('whyQuote'))+'</p>'+(TX('whyText')?'<p class="lead">'+esc(TX('whyText'))+'</p>':'')+'<a class="link" href="#hakkimizda">'+esc(TX('whyLink'))+' '+IC.arrow+'</a></section>';}
-function homeAtolye(){var L=[['#tasarla','Kendin tasarla','g'],['#biz','Biz tasarlarız','d']];
+function homeAtolye(){var L=[['#tasarla','Kendin tasarla','g'],['studyo.html?wolf=1','Wolf tasarlasın','d']];
   return '<section class="hcol hatol"><p class="eyebrow">'+esc(TX('atolyeTitle'))+'</p><p class="lead" style="margin:0 0 12px">'+esc(TX('atolyeLead'))+'</p><div class="hatl">'+L.map(function(x){return '<a class="'+x[2]+'" href="'+x[0]+'">'+x[1]+'<span>'+IC.arrow+'</span></a>';}).join('')+'</div><a class="link" href="#atolye" style="margin-top:14px;display:inline-flex">Baskı Atölyesine git '+IC.arrow+'</a></section>';}
-function atolyePair(){return '<a class="wolfban bizban" href="#biz"><span class="wic">'+IC.spark+'</span><span class="wtx"><b>Biz tasarlarız</b><small>Fikrini bir cümleyle anlat, yapay zekâ senin için üç tasarım önerisi hazırlasın.</small></span><span class="wgo">'+IC.arrow+'</span></a>';}
+function atolyePair(){return '<a class="wolfban bizban" href="studyo.html?wolf=1"><span class="wic">'+IC.spark+'</span><span class="wtx"><b>Wolf tasarlasın</b><small>Fikrini stüdyoda bir cümleyle yaz, tasarımını Wolflano ekibi senin için hazırlasın.</small></span><span class="wgo">'+IC.arrow+'</span></a>';}
 function howHTML(){return '<section class="how"><div class="wrap"><h2>Nasıl çalışır?</h2><div class="steps">'+
   '<div class="step"><span class="dot">'+IC.up+'</span><div><h3>1. Ürünü seç ve tasarla</h3><p>Tişört veya kupa seç, yazı ve görsel ekle ya da fikrini anlat.</p></div></div>'+
   '<div class="step"><span class="dot">'+IC.eye+'</span><div><h3>2. Önizlemede gör</h3><p>Tasarımını ürünün üzerinde anında gör, istediğin kadar değiştir.</p></div></div>'+
@@ -2224,6 +2224,7 @@ function route(){
   if(h.indexOf('urun-')===0){pid=h.slice(5);h='urun';}
   else if(h.indexOf('p-')===0){pid=h.slice(2);h='cp';}
   else if(h.indexOf('bu-')===0){pid=h.slice(3);h='bu';}
+  if(h==='biz'){location.replace('studyo.html?wolf=1');return;}
   if(h==='baski')h='tasarla';if(!VIEWS[h])h='ana';
   var fromUrun=rPrev==='urun',fromBu=rPrev==='bu';if(h!=='hazir'){catOpen='';grpOpen='';}
   var act=h==='urun'?'hazir':h==='bu'?'atolye':h==='cp'?'p-'+pid:(/^(tasarla|biz|kurumsal)$/.test(h)?'atolye':h);cur=act;
@@ -2924,7 +2925,7 @@ function seoSitemap(d){
 }
 function seoRobots(d){var dom=((d.seo||{}).domain||'').replace(/\/+$/,'');return 'User-agent: *\nAllow: /\nDisallow: /yonetim\nDisallow: /odeme\nDisallow: /hesabim\nDisallow: /favoriler\n\nSitemap: '+dom+'/sitemap.xml';}
 function seoAdmin(){
-  var d=A.draft,pg=[['ana','Ana sayfa'],['hazir','Koleksiyon'],['atolye','Baskı Atölyesi'],['hakkimizda','Hakkımızda'],['baski','Baskıya uygun ürünler'],['tasarla','Kendin tasarla'],['biz','Biz tasarlarız'],['iletisim','İletişim']];
+  var d=A.draft,pg=[['ana','Ana sayfa'],['hazir','Koleksiyon'],['atolye','Baskı Atölyesi'],['hakkimizda','Hakkımızda'],['baski','Baskıya uygun ürünler'],['tasarla','Kendin tasarla'],['iletisim','İletişim']];
   var h='<div class="aed" style="max-width:760px"><b>Arama motoru (SEO)</b><p class="note" style="margin:0">Her sayfa için Google başlığı ve açıklaması burada belirlenir. Ürün sayfaları ürün adı, açıklama ve fiyattan otomatik üretilir. Başlık 60, açıklama 155 karakteri geçmemeli.</p>'+
    fld('Site adresi (alan adı)','seo.domain','s','https://wolflano.com.tr')+fld('Anahtar kelimeler (virgülle)','seo.keywords')+
    '<div class="two">'+fld('Google Search Console doğrulama kodu','seo.gsc','s','içerik kodu')+fld('Google Analytics ölçüm kimliği','seo.ga','s','G-XXXXXXXXXX')+'</div></div>';

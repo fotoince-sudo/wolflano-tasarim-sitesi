@@ -374,6 +374,11 @@ svg.i{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stro
 .fxc button:disabled{opacity:.5}
 .fxr{display:grid;gap:2px;font:600 11px var(--ui);color:var(--muted)}
 .fxr input{width:100%;accent-color:var(--accent)}
+
+.wolfin{position:relative;display:flex;align-items:flex-end;gap:6px;border:1px solid var(--line2);background:var(--panel2);border-radius:14px;padding:4px 4px 4px 10px;margin:8px 0}
+.wolfin textarea{flex:1;border:0;background:none;resize:none;outline:none;font:500 16px/1.35 var(--ui);color:var(--ink);padding:6px 0;min-height:44px;max-height:120px}
+.wolfin #wolfGo{flex:none;width:42px;height:42px;padding:0;border-radius:12px;display:grid;place-items:center}
+.wolfadm #wolfAdmOpen{height:36px;padding:0 12px}
 </style>
 
 <div id="app">
@@ -459,8 +464,7 @@ svg.i{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stro
     </div>
     <div class="panel" data-p="wolf" hidden>
       <div class="wolfp"><b>Wolf tasarlasın</b><p>Ne istediğini bir cümleyle yaz. Wolf, ürününe ve baskı alanına uygun tasarımı hazırlar.</p>
-      <textarea id="wolfIn" rows="3" placeholder="Örn. ay ışığında uluyan kurt, altında takımımızın adı"></textarea>
-      <button class="primary" id="wolfGo" type="button">Wolf tasarlasın</button>
+      <div class="wolfin"><textarea id="wolfIn" rows="2" enterkeyhint="send" placeholder="Örn. ay ışığında uluyan kurt, altında takımımızın adı"></textarea><button class="primary" id="wolfGo" type="button" aria-label="Gönder"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h13M13 6l6 6-6 6"/></svg></button></div>
       <p class="note" id="wolfNote">Wolf çok yakında burada kendisi tasarlayacak. Şimdilik fikrini gönder, tasarımını Wolflano ekibi hazırlayıp sana iletsin.</p></div>
     </div>
     <div class="panel" data-p="tpl" hidden>
@@ -1276,8 +1280,10 @@ function buildSel(){
 function updateSel(){
   var b=$('.selbox',selLayer),o=selObj();
   if(!b||!o)return;
-  b.style.width=o.w+'px';b.style.height=o.h+'px';
-  b.style.transform='translate('+o.x+'px,'+o.y+'px) translate(-50%,-50%) rotate('+o.rot+'deg)';
+  var ik=inkOf(o),gp=Math.max(4,Math.min(10,Math.min(o.w,o.h)*0.06)),cc=inkCenter(o);if(!ik)inkEnsure(o);
+  var bw=ik?ik.w+gp*2:o.w,bh=ik?ik.h+gp*2:o.h;
+  b.style.width=bw+'px';b.style.height=bh+'px';
+  b.style.transform='translate('+cc.x+'px,'+cc.y+'px) translate(-50%,-50%) rotate('+o.rot+'deg)';
   b.style.setProperty('--rot',o.rot+'deg');
   liveWarn(o);
 }
@@ -1775,6 +1781,25 @@ function onDown(e){
 }
 /* Tasarım baskı alanının dışına taşabilir (dışı görünmez, baskı dosyasında kırpılır).
    Merkez, tasarımın bir kısmı alanda kalacak kadar sınırlanır ki tamamen kaybolmasın. */
+
+/* ---------- Gerçek (mürekkep) sınırları ----------
+   Yazının harf boşlukları ve görselin saydam kenarları hesaba katılmaz: seçim çerçevesi içeriği dört yandan eşit boşlukla sarar,
+   ortalama da içeriğin gerçek ortasına göre yapılır. */
+var INK={},INKQ={};
+function inkSig(o){return JSON.stringify([o.type,o.value,o.font,o.size,o.look,o.stroke,o.warp,o.wamt,o.key,o.assetId,o.type==='text'?0:Math.round(o.w),o.type==='text'?0:Math.round(o.h)]);}
+function inkOf(o){var r=INK[o.id];return r&&r.sig===inkSig(o)?r:null;}
+async function inkCompute(o){
+  var sig=inkSig(o),k=2,pad=40,W=Math.ceil((o.w*1.6+pad)*k),H=Math.ceil((o.h*1.6+pad)*k);if(W*H>16e6)return;
+  var c=document.createElement('canvas');c.width=W;c.height=H;var x=c.getContext('2d');
+  var t=JSON.parse(JSON.stringify(o));t.rot=0;t.x=0;t.y=0;
+  await drawObj(x,t,k,-W/2/k,-H/2/k);
+  var d=x.getImageData(0,0,W,H).data,x0=W,x1=-1,y0=H,y1=-1,i,j;
+  for(j=0;j<H;j++)for(i=0;i<W;i++){if(d[(j*W+i)*4+3]>24){if(i<x0)x0=i;if(i>x1)x1=i;if(j<y0)y0=j;if(j>y1)y1=j;}}
+  if(x1<0){INK[o.id]={sig:sig,dx:0,dy:0,w:o.w,h:o.h};return;}
+  INK[o.id]={sig:sig,dx:((x0+x1+1)/2-W/2)/k,dy:((y0+y1+1)/2-H/2)/k,w:(x1-x0+1)/k,h:(y1-y0+1)/k};
+}
+function inkEnsure(o){if(!o||inkOf(o)||INKQ[o.id])return;INKQ[o.id]=1;inkCompute(o).catch(function(){}).then(function(){delete INKQ[o.id];var so=selObj();if(so&&so.id===o.id)updateSel();});}
+function inkCenter(o){var r=inkOf(o);if(!r)return {x:o.x,y:o.y};var a=o.rot*PI/180,c=Math.cos(a),s2=Math.sin(a);return {x:o.x+r.dx*c-r.dy*s2,y:o.y+r.dx*s2+r.dy*c};}
 function moveBounds(o,A){var m=Math.min(o.w,o.h)*0.45;return {l:A.l-m,r:A.r+m,t:A.t-m,b:A.b+m};}
 function startMove(id,p){
   var o=objById(id);if(!o)return;
@@ -1805,8 +1830,8 @@ function onMove(e){
 }
 /* Ortalama: tasarım baskı alanının yatay/dikey ortasına yaklaşınca oraya oturur, pembe çizgi ortada olduğunu gösterir. */
 function centerSnap(o){
-  var A=areaBox(view.side,cur().area),t=9/(view.s||1),ab=$('#areaBox'),v=Math.abs(o.x-A.cx)<t,h=Math.abs(o.y-A.cy)<t;
-  if(v)o.x=A.cx;if(h)o.y=A.cy;
+  var A=areaBox(view.side,cur().area),t=9/(view.s||1),ab=$('#areaBox'),ic=inkCenter(o),v=Math.abs(ic.x-A.cx)<t,h=Math.abs(ic.y-A.cy)<t;
+  if(v)o.x+=A.cx-ic.x;if(h)o.y+=A.cy-ic.y;
   ab.classList.toggle('onV',v);ab.classList.toggle('onH',h);
   if((v||h)&&!centerSnap.was&&navigator.vibrate){try{navigator.vibrate(8);}catch(_){}}
   centerSnap.was=v||h;
@@ -1953,6 +1978,7 @@ $('#tabs').addEventListener('click',function(e){var b=e.target.closest('[data-ta
 $('#sheetX').addEventListener('click',closeTab);
 $('#undoBtn').addEventListener('click',undo);
 $('#redoBtn').addEventListener('click',redo);
+$('#wolfIn').addEventListener('keydown',function(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();$('#wolfGo').click();}});
 $('#wolfGo').addEventListener('click',function(){var t=($('#wolfIn').value||'').trim();if(t.length<4){toast('Önce ne istediğini kısaca yaz');$('#wolfIn').focus();return;}
   var m='Merhaba Wolflano, Wolf tasarlasın ile tasarım istiyorum.\nÜrün: '+productLabel()+'\nBaskı: '+areaTitle(view.side)+' ('+SIDE_NAME[view.side]+')\nFikrim: '+t;
   window.open('https://wa.me/905307641717?text='+encodeURIComponent(m),'_blank');});
@@ -2021,7 +2047,7 @@ $('#ctxBar').addEventListener('click',function(e){
   else if(c==='fwd')moveZ(1);
   else if(c==='bwd')moveZ(-1);
   else if(c==='dup')dupSel();
-  else if(c==='center'){var co=selObj();if(co){var CA=areaBox(view.side,cur().area);co.x=CA.cx;co.y=CA.cy;place(els[co.id],co);updateSel();var ab=$('#areaBox');ab.classList.add('onV','onH');setTimeout(centerOff,900);pushHist();toast('Baskı alanına ortalandı');}}
+  else if(c==='center'){var co=selObj();if(co){var CA=areaBox(view.side,cur().area),ci=inkCenter(co);co.x+=CA.cx-ci.x;co.y+=CA.cy-ci.y;place(els[co.id],co);updateSel();var ab=$('#areaBox');ab.classList.add('onV','onH');setTimeout(centerOff,900);pushHist();toast('Baskı alanına ortalandı');}}
   else if(c==='nobg')removeBg();
   else if(c==='fx')showFx();
   else if(c==='del')deleteSel();
@@ -2467,6 +2493,7 @@ $('#coForm').addEventListener('submit',async function(e){
 /* ---------- Başlangıç: örnek bir tasarımla açılır ---------- */
 buildPanels();
 libLoad();
+try{if(new URLSearchParams(location.search).get('wolf')){setTimeout(function(){if(!$('#prodPage').hidden)closeProdPage();openTab('wolf');setTimeout(function(){var w=$('#wolfIn');if(w)w.focus();},250);},400);}}catch(_){}
 applyTemplate(TPLS[0],true);
 (function(){try{var q=new URLSearchParams(location.search),u=q.get('urun'),k=q.get('kesim'),bd=q.get('beden');if(u&&PRODUCTS[u]){var cs=PRODUCTS[u].cuts;chooseProduct(u,cs.indexOf(k)>=0?k:cs[0]);if(bd&&sizeList().indexOf(bd)>=0){state.sizes={};state.sizes[bd]=1;renderAll();}if(PRODUCTS[u].vb){['front','back'].forEach(function(sd){if(state[sd]&&state[sd].objs)state[sd].objs=[];});view.sel=null;renderAll();}}
   if(q.get('vitrin')==='wolf'){if(!u&&PRODUCTS.tee)chooseProduct('tee',PRODUCTS.tee.cuts[0]);openWolf();}}catch(_){}})();
@@ -2560,13 +2587,31 @@ syncUndo();
       if(gx<W-1)w=Math.min(w,D[i+1]+3);if(gy<H-1){w=Math.min(w,D[i+W]+3);if(gx<W-1)w=Math.min(w,D[i+W+1]+4);if(gx>0)w=Math.min(w,D[i+W-1]+4);}D[i]=w;}
     var x0=W,x1=0,y0=H,y1=0;for(gy=0;gy<H;gy++)for(gx=0;gx<W;gx++)if(m[gy*W+gx]){if(gx<x0)x0=gx;if(gx>x1)x1=gx;if(gy<y0)y0=gy;if(gy>y1)y1=gy;}
     if(x1<=x0)return null;
-    var cx=(x0+x1+1)/2*S,cy=(y0+y1+1)/2*S,R=78,DM=46;
+    var cx=(x0+x1+1)/2*S,cy=(y0+y1+1)/2*S;
     var Z=new Float32Array(W*H),BX=new Float32Array(W*H),BY=new Float32Array(W*H),edge=new Uint8Array(W*H),k2;
+    /* Gövde: oval kesitli silindir (giyilmiş tişört gibi), etek açık; kollar: yuvarlak tüp; omuz ve yaka üstte birleşir */
+    var rowL=new Int32Array(H).fill(-1),rowR=new Int32Array(H).fill(-1);
+    for(gy=0;gy<H;gy++)for(gx=0;gx<W;gx++)if(m[gy*W+gx]){if(rowL[gy]<0)rowL[gy]=gx;rowR[gy]=gx;}
+    var hw=[],hc=[],hy0=y0+Math.round((y1-y0)*0.78);
+    for(gy=hy0;gy<=y1-2;gy++)if(rowL[gy]>=0){hw.push((rowR[gy]-rowL[gy]+1)/2);hc.push((rowL[gy]+rowR[gy]+1)/2);}
+    hw.sort(function(a,b){return a-b;});hc.sort(function(a,b){return a-b;});
+    var A0=hw.length?hw[hw.length>>1]:(x1-x0)/4,CX=hc.length?hc[hc.length>>1]:(x0+x1+1)/2,BD=A0*S*0.6,RT=BD*0.55,RS=34;
+    /* satır kenarlarını yumuşat: yan dikişte basamak (testere dişi) olmasın */
+    var sL=new Float32Array(H),sR=new Float32Array(H);
+    for(gy=0;gy<H;gy++){if(rowL[gy]<0)continue;var sl=0,sr2=0,nn=0;for(var w2=-4;w2<=4;w2++){var yy=gy+w2;if(yy<0||yy>=H||rowL[yy]<0)continue;if(Math.abs((rowR[yy]-rowL[yy])-(rowR[gy]-rowL[gy]))>6)continue;sl+=rowL[yy];sr2+=rowR[yy];nn++;}sL[gy]=sl/nn;sR[gy]=sr2/nn;}
+    var topD=new Float32Array(W*H);
+    for(gx=0;gx<W;gx++){var run=0;for(gy=0;gy<H;gy++){var kk=gy*W+gx;if(m[kk]){run++;topD[kk]=run*S;}else run=0;}}
     for(gy=0;gy<H;gy++)for(gx=0;gx<W;gx++){k2=gy*W+gx;BX[k2]=gx*S+S/2;BY[k2]=gy*S+S/2;if(!m[k2])continue;
-      var ed=gx===0||gy===0||gx===W-1||gy===H-1||!m[k2-1]||!m[k2+1]||!m[k2-W]||!m[k2+W];edge[k2]=ed?1:0;
-      var d=D[k2]/3*S;if(ed){Z[k2]=0;}else{var t=Math.min(d/R,1);Z[k2]=DM*Math.sqrt(1-(1-t)*(1-t));}}
+      var ed=gx===0||gy===0||gx===W-1||gy===H-1||!m[k2-1]||!m[k2+1]||!m[k2-W]||!m[k2+W];
+      var hemEdge=ed&&m[k2-W]&&!m[k2+W]&&m[k2-1]&&m[k2+1];
+      edge[k2]=ed&&!hemEdge?1:0;
+      var rh=(sR[gy]-sL[gy]+1)/2,torsoRow=rh<=A0*1.08,u=torsoRow?(gx+0.5-(sL[gy]+sR[gy]+1)/2)/rh:(gx+0.5-CX)/A0,tz=Math.abs(u)<1?BD*Math.sqrt(1-u*u):0;
+      if(torsoRow&&ed){if(gx===rowL[gy])BX[k2]=sL[gy]*S;else if(gx===rowR[gy])BX[k2]=(sR[gy]+1)*S;}
+      var tt=Math.min(1,topD[k2]/RT);tz*=Math.sqrt(1-(1-tt)*(1-tt));
+      var sz2=0;if(Math.abs(u)>0.8){var dd=D[k2]/3*S,ts=Math.min(dd/RS,1);sz2=RS*Math.sqrt(1-(1-ts)*(1-ts));}
+      Z[k2]=edge[k2]?0:Math.max(tz,sz2);}
     /* yükseklik alanını iki kez yumuşat (kenar sıfırda kalır) */
-    for(var pass=0;pass<3;pass++){var Z2=Z.slice();for(gy=1;gy<H-1;gy++)for(gx=1;gx<W-1;gx++){k2=gy*W+gx;if(!m[k2]||edge[k2])continue;var sm=0,cn=0;
+    for(var pass=0;pass<5;pass++){var Z2=Z.slice();for(gy=1;gy<H-1;gy++)for(gx=1;gx<W-1;gx++){k2=gy*W+gx;if(!m[k2]||edge[k2])continue;var sm=0,cn=0;
       for(var a=-1;a<=1;a++)for(var bb=-1;bb<=1;bb++){var q=k2+a*W+bb;if(m[q]){sm+=Z[q];cn++;}}Z2[k2]=sm/cn;}Z=Z2;}
     /* kenar basamaklarını yumuşat: kenar noktaları komşu kenar noktalarının ortasına çekilir */
     for(var it=0;it<5;it++){var NX=BX.slice(),NY=BY.slice();for(gy=1;gy<H-1;gy++)for(gx=1;gx<W-1;gx++){k2=gy*W+gx;if(!edge[k2])continue;var sx=0,sy=0,c2=0;
@@ -2864,18 +2909,23 @@ syncUndo();
   }
   function wolfBox(){
     var p=$('.panel[data-p="wolf"] .wolfp');if(!p||$('#wolfAdm'))return;
-    p.insertAdjacentHTML('beforeend','<div id="wolfAdm" class="wolfadm"><b>Yönetici: Wolf\'a yaptır</b><p class="note" style="margin:4px 0 8px">Örn. <i>şablon olarak kaydet "Gece Kurdu"</i> · <i>ürün yap erkek 449 tl</i> · <i>baskıya gönder 10 M 5 L</i></p><textarea id="wolfAdmIn" rows="2" placeholder="Wolf\'a görev yaz"></textarea><div class="wolfadm-b"><button type="button" class="primary" id="wolfAdmGo">Wolf yapsın</button><button type="button" class="ghost" id="wolfAdmOpen">Seçeneklerle yap</button></div></div>');
+    p.insertAdjacentHTML('beforeend','<div id="wolfAdm" class="wolfadm"><b>Yönetici: aynı kutuya görev yaz</b><p class="note" style="margin:4px 0 6px">Örn. <i>şablon olarak kaydet "Gece Kurdu"</i> · <i>ürün yap erkek 449 tl</i> · <i>baskıya gönder 10 M 5 L</i> · <i>taslak kaydet</i></p><button type="button" class="ghost" id="wolfAdmOpen">Seçeneklerle yap</button></div>');
+    var inp=$('#wolfIn');if(inp)inp.placeholder='Görev yaz: şablon kaydet, ürün yap 449 tl, baskıya gönder 10 M…';
     $('#wolfAdmOpen').addEventListener('click',openAdm);
-    $('#wolfAdmGo').addEventListener('click',function(){
-      var t=($('#wolfAdmIn').value||'').trim(),g=this;if(t.length<3){toast('Wolf\'a ne yapacağını yaz');return;}
-      var r=wolfParse(t),title=r.title||(productLabel()+' · Wolf');
-      if(!r.kind){longToast('Wolf anlamadı. "şablon", "ürün yap", "baskıya gönder" veya "taslak" kelimelerinden birini kullan.');return;}
-      if(r.kind==='sablon')run(function(){return doTemplate(title,true);},g);
-      else if(r.kind==='taslak')run(function(){return doDraft(title,true);},g);
-      else if(r.kind==='urun'){var cat=r.cat||(((ADM.site&&ADM.site.cats)||[])[0]||{}).id;var pr=r.price||defPrice();run(function(){return doProd(title,cat,pr,true);},g);}
-      else if(r.kind==='baski'){if(!Object.keys(r.sizes).length){longToast('Wolf için adet ve beden yaz. Örn. "baskıya gönder 10 M 5 L"');return;}run(function(){return doPrint(title,r.sizes,true);},g);}
-    });
+    /* Gönder: yönetici görevi tanınırsa Wolf yapar; tanınmazsa normal tasarım isteği olarak gider */
+    $('#wolfGo').addEventListener('click',function(e){
+      var t=($('#wolfIn').value||'').trim();if(t.length<3)return;
+      var r=wolfParse(t);if(!r.kind)return;
+      e.stopImmediatePropagation();var g=this,title=r.title||(productLabel()+' · Wolf');
+      var done=function(){$('#wolfIn').value='';};
+      if(r.kind==='sablon')run(function(){return doTemplate(title,true).then(function(m){done();return m;});},null);
+      else if(r.kind==='taslak')run(function(){return doDraft(title,true).then(function(m){done();return m;});},null);
+      else if(r.kind==='urun'){var cat=r.cat||(((ADM.site&&ADM.site.cats)||[])[0]||{}).id;var pr=r.price||defPrice();run(function(){return doProd(title,cat,pr,true).then(function(m){done();return m;});},null);}
+      else if(r.kind==='baski'){if(!Object.keys(r.sizes).length){longToast('Wolf için adet ve beden yaz. Örn. "baskıya gönder 10 M 5 L"');return;}run(function(){return doPrint(title,r.sizes,true).then(function(m){done();return m;});},null);}
+      bgToastW('Wolf çalışıyor…');
+    },true);
   }
+  function bgToastW(m){try{bgToast(m);}catch(_){toast(m);}}
 
   /* ---- Yayındaki yönetici şablonları (herkese görünür) ---- */
   async function loadTpls(){
