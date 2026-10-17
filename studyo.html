@@ -211,8 +211,8 @@ svg.i{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stro
 .tabs button{border:0;background:none;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:3px;padding:9px 0 8px;font:600 12px var(--ui)}
 .tabs button.on{color:var(--accent)}
 
-#order,#prodPage,#cpBody #cartSec>h3{display:none}
-#cartPage,#checkout,#wolfPage{position:fixed;inset:0;z-index:50;background:var(--bg);display:flex;flex-direction:column;padding-top:env(safe-area-inset-top,0px)}
+#cpBody #cartSec>h3{display:none}
+#order,#prodPage,#cartPage,#checkout,#wolfPage{position:fixed;inset:0;z-index:50;background:var(--bg);display:flex;flex-direction:column;padding-top:env(safe-area-inset-top,0px)}
 .o-head{display:flex;align-items:center;gap:10px;padding:10px 16px;background:var(--panel);border-bottom:1px solid var(--line)}
 .o-head h2{font:700 20px var(--disp);letter-spacing:.08em;text-transform:uppercase;margin:0}
 .o-body{flex:1;min-height:0;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:22px}
@@ -436,7 +436,7 @@ svg.i{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stro
 <div id="cartPage" hidden>
   <div class="o-head"><button class="ib" id="cpClose" aria-label="Geri"><svg class="i" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button><h2>Sepetim</h2></div>
   <div class="o-body" id="cpBody"><p class="note" id="cpEmpty" hidden>Sepetin boş. Bir tasarım yapıp sepete ekle.</p></div>
-  <div class="o-foot"><div><small>Sepet toplamı</small><b id="cpTot">0 ₺</b></div><button class="primary" id="cpPay" type="button">Ödemeye geç</button></div>
+  <div class="o-foot"><div><small>Sepet toplamı</small><b id="cpTot">0 ₺</b></div><button class="primary" id="cpPay" type="button">Sepete dön</button></div>
 </div>
 
 <div id="checkout" hidden>
@@ -1950,7 +1950,7 @@ var cartItems=[];
 try{var cs0=JSON.parse(localStorage.getItem('wf_studio_cart')||'[]');if(Array.isArray(cs0))cartItems=cs0;}catch(_){}
 function saveCart(){try{localStorage.setItem('wf_studio_cart',JSON.stringify(cartItems));}catch(_){}}
 function syncCartUI(){
-  var n=cartItems.length;$('#cartBtn').hidden=!n;$('#cartN').textContent=n;
+  var n=cartItems.length,rc=0;try{var rcs=JSON.parse(localStorage.getItem('wf_cart')||'{}');for(var rk in rcs)rc+=+rcs[rk]||0;}catch(_){}var tn=n+rc;$('#cartBtn').hidden=!tn;$('#cartN').textContent=tn;
   $('#goPay').hidden=!n;$('#payN').textContent=n;
 }
 /* ÖDEME ALTYAPISI: sağlayıcı (iyzico, PayTR vb.) bağlanınca pay doldurulur. pay(order) güvenli ödeme sayfasının adresini döndürür. */
@@ -2032,9 +2032,11 @@ function openCartPage(from){cpFrom=from||'studio';var sec=$('#cartSec');if(sec&&
   renderCart();var n=cartItems.length;$('#cpEmpty').hidden=!!n;if(sec)sec.hidden=!n;$('#cpTot').textContent=fmt(cartSub());$('#cpPay').disabled=!n;
   closeOrder();$('#cartPage').hidden=false;$('#cpBody').scrollTop=0;}
 $('#cpClose').addEventListener('click',function(){$('#cartPage').hidden=true;if(cpFrom==='order')$('#order').hidden=false;});
-$('#cpPay').addEventListener('click',function(){var live=cartItems.filter(function(it){return itQty(it)>0;});if(!live.length){toast('Sepetteki tasarımlar için beden ve adet seç');return;}$('#cartPage').hidden=true;coFrom='cart';openCheckout();});
-$('#adPay').addEventListener('click',function(){hideAdded();openCartPage('order');});
-$('#cartBtn').addEventListener('click',function(){openCartPage('studio');});
+$('#cpPay').addEventListener('click',function(){var live=cartItems.filter(function(it){return itQty(it)>0;});if(!live.length){toast('Sepetteki tasarımlar için beden ve adet seç');return;}goSepet();});
+function goSepet(){saveCart();location.href='index.html#sepet';}
+$('#adPay').addEventListener('click',function(){hideAdded();goSepet();});
+$('#cartBtn').addEventListener('click',goSepet);
+if(location.hash==='#sepet')setTimeout(function(){openCartPage('studio');},300);
 syncCartUI();
 $('#cartList').addEventListener('click',function(e){
   var c=e.target.closest('[data-cs]');
@@ -2121,7 +2123,7 @@ $('#goPay').addEventListener('click',async function(){
   var has=sidesOf().some(function(sd){return state[sd].objs.length;});
   if(has&&priceInfo().qty){var pw=issueText();if(pw)longToast(pw);}
   if(has&&priceInfo().qty&&!cartItems.some(function(x){return x.sig===designSig();}))await addToCart(true);
-  openCartPage('order');
+  goSepet();
 });
 var coFrom='order';
 $('#coClose').addEventListener('click',function(){$('#checkout').hidden=true;if(coFrom==='cart')openCartPage(cpFrom);else if(coFrom==='order')$('#order').hidden=false;});
