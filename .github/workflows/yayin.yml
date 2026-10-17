@@ -13,6 +13,6 @@ jobs:
       - name: Plesk'e çek-dağıt haberi gönder
         run: |
           curl -fsS -X POST --retry 3 --max-time 60 \
-            "https://static-159-253-45-63.sunucuhub.com:8443/modules/git/public/web-hook.php?uuid=87ba83a3-c255-4c42-4b2b-e90d390a8871" \
+            "https://static-159-253-45-63.sunucuhub.com:8443/modules/git/public/web-hook.php?uuid=3b8aaa1b-6ef8-9e45-f026-c2b39e444f9a" \
             -H "Content-Type: application/json" -H "X-GitHub-Event: push" \
             -d '{"ref":"refs/heads/main"}'
