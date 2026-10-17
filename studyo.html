@@ -345,6 +345,25 @@ svg.i{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stro
 .wolfadm{margin-top:14px;padding-top:12px;border-top:1px dashed var(--line2)}
 .wolfadm textarea{width:100%;box-sizing:border-box;border-radius:10px;border:1px solid var(--line2);background:var(--panel2);color:var(--ink);padding:8px 10px;font:500 15px var(--ui)}
 .wolfadm-b{display:flex;gap:6px;margin-top:6px}.wolfadm-b button{height:38px;padding:0 12px}
+
+/* 3D görünüm */
+.v3db{position:fixed;right:12px;bottom:calc(84px + env(safe-area-inset-bottom,0px));z-index:40;display:inline-flex;align-items:center;gap:5px;height:34px;padding:0 12px;border-radius:999px;border:1px solid var(--accent);background:var(--panel);color:var(--accent);font:700 13px var(--ui);box-shadow:0 2px 8px rgba(0,0,0,.12)}
+.v3db[hidden]{display:none}
+#v3d{position:fixed;inset:0;z-index:90;background:#f1f3f2;display:flex;flex-direction:column}
+#v3d[hidden]{display:none}
+.v3-h{display:flex;align-items:center;gap:10px;padding:calc(10px + env(safe-area-inset-top,0px)) 12px 6px}
+.v3-h b{font:700 17px var(--ui);color:#111}
+#v3dC{flex:1;width:100%;min-height:0;touch-action:none;display:block}
+.v3-hint{margin:0;text-align:center;color:#666;font:500 12px var(--ui)}
+.v3-f{display:flex;gap:8px;padding:10px 12px calc(12px + env(safe-area-inset-bottom,0px))}
+.v3-f button{flex:1;height:44px}
+.v3-rec{position:absolute;top:calc(60px + env(safe-area-inset-top,0px));left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:8px;background:#111;color:#fff;border-radius:999px;padding:8px 14px;font:600 13px var(--ui)}
+.v3-rec[hidden]{display:none}
+.v3-rec .dot{width:10px;height:10px;border-radius:50%;background:#e5383b;animation:v3p 1s infinite}
+@keyframes v3p{50%{opacity:.3}}
+.v3-load{position:absolute;inset:0;display:grid;place-items:center;color:#555;font:600 15px var(--ui);pointer-events:none}
+.v3-load[hidden]{display:none}
+.v3o{width:100%;margin-top:10px;height:42px}
 </style>
 
 <div id="app">
@@ -2373,6 +2392,174 @@ syncUndo();
     .then(function(r){return r.ok?r.json():null;})
     .then(function(a){var d=a&&a[0]&&a[0].data;if(!d)return;MEDIA=d.media||'';if(d.studio){try{apply(d.studio);if(!$('#wolfPage').hidden)renderWolf();}catch(er){}}try{if(window.phSite)window.phSite(d);}catch(er){}})
     .catch(function(){});
+})();
+
+/* ================= 3D GÖRÜNÜM VE DÖNEN VİDEO =================
+   Dış kütüphane yok: tişörtün siluetinden yumuşak, dolgun bir 3D gövde üretilir (kenarlarda incelir, ortada dolgunlaşır).
+   Ön ve arka yüze stüdyodaki görüntünün aynısı (ürün + tasarım + gölgeler + marka işareti) doku olarak giydirilir.
+   Tek parmak: çevir. İki parmak: yakınlaştır. "Video kaydet" bir tam turu kaydeder ve telefonun paylaş menüsünü açar. */
+(function(){
+  var V={gl:null,prog:null,meshes:[],rx:0.06,ry:0,dist:1,auto:true,rec:null,raf:0,ptr:{},pinch:null,last:0,idleAt:0};
+  function m4persp(f,a,n,fa){var t=1/Math.tan(f/2),r=1/(n-fa);return [t/a,0,0,0,0,t,0,0,0,0,(n+fa)*r,-1,0,0,2*n*fa*r,0];}
+  function m4mul(a,b){var o=new Array(16),i,j,k;for(i=0;i<4;i++)for(j=0;j<4;j++){var s=0;for(k=0;k<4;k++)s+=a[k*4+j]*b[i*4+k];o[i*4+j]=s;}return o;}
+  function m4rotY(t){var c=Math.cos(t),s=Math.sin(t);return [c,0,-s,0,0,1,0,0,s,0,c,0,0,0,0,1];}
+  function m4rotX(t){var c=Math.cos(t),s=Math.sin(t);return [1,0,0,0,0,c,s,0,0,-s,c,0,0,0,0,1];}
+  function m4tr(x,y,z){return [1,0,0,0,0,1,0,0,0,0,1,0,x,y,z,1];}
+  var VS='attribute vec3 p;attribute vec3 n;attribute vec2 uv;uniform mat4 mvp;uniform mat4 mdl;varying vec2 vUv;varying vec3 vN;void main(){vUv=uv;vN=mat3(mdl)*n;gl_Position=mvp*vec4(p,1.0);}';
+  var FS='precision mediump float;varying vec2 vUv;varying vec3 vN;uniform sampler2D tex;void main(){vec4 c=texture2D(tex,vUv);vec3 N=normalize(vN);vec3 L=normalize(vec3(-0.45,0.55,0.85));float d=max(dot(N,L),0.0);float rim=pow(1.0-max(N.z,0.0),3.0);vec3 col=c.rgb*(0.62+0.48*d)-rim*0.10;gl_FragColor=vec4(col,1.0);}';
+  function sh(gl,t,src){var s=gl.createShader(t);gl.shaderSource(s,src);gl.compileShader(s);return s;}
+  function initGL(cv){
+    var gl=cv.getContext('webgl',{antialias:true,preserveDrawingBuffer:true,alpha:false});if(!gl)return null;
+    var pr=gl.createProgram();gl.attachShader(pr,sh(gl,gl.VERTEX_SHADER,VS));gl.attachShader(pr,sh(gl,gl.FRAGMENT_SHADER,FS));gl.linkProgram(pr);
+    if(!gl.getProgramParameter(pr,gl.LINK_STATUS))return null;
+    V.gl=gl;V.prog=pr;V.u32=!!gl.getExtension('OES_element_index_uint');gl.enable(gl.DEPTH_TEST);return gl;
+  }
+  /* Siluetten gövde: maske -> kenara uzaklık -> yükseklik. Ön ve arka yüz kenarda birleşir. */
+  async function buildGeometry(){
+    var S=3,W=Math.ceil(STAGE_W/S),H=Math.ceil(STAGE_H/S);
+    var c=document.createElement('canvas');c.width=W;c.height=H;var x=c.getContext('2d');
+    x.drawImage(await loadImg(svgUrl(productSVG('front',state.tee,state.product,state.cut))),0,0,W,H);
+    var px=x.getImageData(0,0,W,H).data,m=new Uint8Array(W*H),i,gx,gy;
+    for(i=0;i<W*H;i++)m[i]=px[i*4+3]>140?1:0;
+    /* küçük pürüzleri yumuşat */
+    var m2=new Uint8Array(W*H);for(gy=1;gy<H-1;gy++)for(gx=1;gx<W-1;gx++){var s=0,a,b;for(a=-1;a<=1;a++)for(b=-1;b<=1;b++)s+=m[(gy+a)*W+gx+b];m2[gy*W+gx]=s>=5?1:0;}m=m2;
+    /* uzaklık dönüşümü (chamfer 3-4) */
+    var INF=1e9,D=new Float32Array(W*H);for(i=0;i<W*H;i++)D[i]=m[i]?INF:0;
+    for(gy=0;gy<H;gy++)for(gx=0;gx<W;gx++){i=gy*W+gx;if(!D[i])continue;var v=D[i];
+      if(gx>0)v=Math.min(v,D[i-1]+3);if(gy>0){v=Math.min(v,D[i-W]+3);if(gx>0)v=Math.min(v,D[i-W-1]+4);if(gx<W-1)v=Math.min(v,D[i-W+1]+4);}D[i]=v;}
+    for(gy=H-1;gy>=0;gy--)for(gx=W-1;gx>=0;gx--){i=gy*W+gx;if(!D[i])continue;var w=D[i];
+      if(gx<W-1)w=Math.min(w,D[i+1]+3);if(gy<H-1){w=Math.min(w,D[i+W]+3);if(gx<W-1)w=Math.min(w,D[i+W+1]+4);if(gx>0)w=Math.min(w,D[i+W-1]+4);}D[i]=w;}
+    var x0=W,x1=0,y0=H,y1=0;for(gy=0;gy<H;gy++)for(gx=0;gx<W;gx++)if(m[gy*W+gx]){if(gx<x0)x0=gx;if(gx>x1)x1=gx;if(gy<y0)y0=gy;if(gy>y1)y1=gy;}
+    if(x1<=x0)return null;
+    var cx=(x0+x1+1)/2*S,cy=(y0+y1+1)/2*S,R=78,DM=46;
+    var Z=new Float32Array(W*H),BX=new Float32Array(W*H),BY=new Float32Array(W*H),edge=new Uint8Array(W*H),k2;
+    for(gy=0;gy<H;gy++)for(gx=0;gx<W;gx++){k2=gy*W+gx;BX[k2]=gx*S+S/2;BY[k2]=gy*S+S/2;if(!m[k2])continue;
+      var ed=gx===0||gy===0||gx===W-1||gy===H-1||!m[k2-1]||!m[k2+1]||!m[k2-W]||!m[k2+W];edge[k2]=ed?1:0;
+      var d=D[k2]/3*S;if(ed){Z[k2]=0;}else{var t=Math.min(d/R,1);Z[k2]=DM*Math.sqrt(1-(1-t)*(1-t));}}
+    /* yükseklik alanını iki kez yumuşat (kenar sıfırda kalır) */
+    for(var pass=0;pass<3;pass++){var Z2=Z.slice();for(gy=1;gy<H-1;gy++)for(gx=1;gx<W-1;gx++){k2=gy*W+gx;if(!m[k2]||edge[k2])continue;var sm=0,cn=0;
+      for(var a=-1;a<=1;a++)for(var bb=-1;bb<=1;bb++){var q=k2+a*W+bb;if(m[q]){sm+=Z[q];cn++;}}Z2[k2]=sm/cn;}Z=Z2;}
+    /* kenar basamaklarını yumuşat: kenar noktaları komşu kenar noktalarının ortasına çekilir */
+    for(var it=0;it<5;it++){var NX=BX.slice(),NY=BY.slice();for(gy=1;gy<H-1;gy++)for(gx=1;gx<W-1;gx++){k2=gy*W+gx;if(!edge[k2])continue;var sx=0,sy=0,c2=0;
+      for(var a2=-1;a2<=1;a2++)for(var b2=-1;b2<=1;b2++){if(!a2&&!b2)continue;var q2=k2+a2*W+b2;if(edge[q2]){sx+=BX[q2];sy+=BY[q2];c2++;}}
+      if(c2>=2){NX[k2]=BX[k2]*0.4+sx/c2*0.6;NY[k2]=BY[k2]*0.4+sy/c2*0.6;}}BX=NX;BY=NY;}
+    function depth(k){return Z[k];}
+    function side(sign){
+      var idx=new Int32Array(W*H).fill(-1),P=[],U=[],I=[];
+      for(gy=0;gy<H;gy++)for(gx=0;gx<W;gx++){var k=gy*W+gx;if(!m[k])continue;idx[k]=P.length/3;var sx=BX[k],sy=BY[k];
+        P.push(sx-cx,-(sy-cy),sign*depth(k));U.push(sign>0?sx/STAGE_W:(STAGE_W-sx)/STAGE_W,sy/STAGE_H);}
+      for(gy=0;gy<H-1;gy++)for(gx=0;gx<W-1;gx++){var a0=idx[gy*W+gx],a1=idx[gy*W+gx+1],a2=idx[(gy+1)*W+gx],a3=idx[(gy+1)*W+gx+1];
+        if(a0<0||a1<0||a2<0||a3<0)continue;if(sign>0){I.push(a0,a2,a1,a1,a2,a3);}else{I.push(a0,a1,a2,a1,a3,a2);}}
+      var N=new Float32Array(P.length);
+      for(var t=0;t<I.length;t+=3){var ia=I[t]*3,ib=I[t+1]*3,ic=I[t+2]*3,ux=P[ib]-P[ia],uy=P[ib+1]-P[ia+1],uz=P[ib+2]-P[ia+2],vx=P[ic]-P[ia],vy=P[ic+1]-P[ia+1],vz=P[ic+2]-P[ia+2];
+        var nx=uy*vz-uz*vy,ny=uz*vx-ux*vz,nz=ux*vy-uy*vx;[ia,ib,ic].forEach(function(q){N[q]+=nx;N[q+1]+=ny;N[q+2]+=nz;});}
+      for(var q=0;q<N.length;q+=3){var l=Math.hypot(N[q],N[q+1],N[q+2])||1;N[q]/=l;N[q+1]/=l;N[q+2]/=l;}
+      return {P:new Float32Array(P),N:N,U:new Float32Array(U),I:(P.length/3>65535?new Uint32Array(I):new Uint16Array(I)),big:P.length/3>65535};
+    }
+    return {front:side(1),back:side(-1),h:(y1-y0+1)*S,w:(x1-x0+1)*S};
+  }
+  async function texCanvas(sd){
+    var c0=await renderComposite(sd,1),c=document.createElement('canvas');c.width=c0.width;c.height=c0.height;var cx2=c.getContext('2d');cx2.fillStyle=state.tee;cx2.fillRect(0,0,c.width,c.height);cx2.drawImage(c0,0,0);
+    if(sd==='front'){try{var bm=$('#brandMark'),p=brandOn()?brandPos('front'):null;if(p&&bm&&bm.complete&&bm.naturalWidth){var w=BRAND_CM*PPC,h=w*bm.naturalHeight/bm.naturalWidth;c.getContext('2d').drawImage(bm,p.x-w/2,p.y-h/2,w,h);}}catch(_){}}
+    return c;
+  }
+  function upload(gl,g,cv){
+    function buf(t,d){var b=gl.createBuffer();gl.bindBuffer(t,b);gl.bufferData(t,d,gl.STATIC_DRAW);return b;}
+    var tx=gl.createTexture();gl.bindTexture(gl.TEXTURE_2D,tx);gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,cv);
+    gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE);
+    return {p:buf(gl.ARRAY_BUFFER,g.P),n:buf(gl.ARRAY_BUFFER,g.N),u:buf(gl.ARRAY_BUFFER,g.U),i:buf(gl.ELEMENT_ARRAY_BUFFER,g.I),cnt:g.I.length,big:g.big,tex:tx};
+  }
+  function draw(){
+    var gl=V.gl,cv=gl.canvas,pr=V.prog;
+    var w=cv.clientWidth*V.dpr|0,h=cv.clientHeight*V.dpr|0;if(cv.width!==w||cv.height!==h){cv.width=w;cv.height=h;}
+    gl.viewport(0,0,cv.width,cv.height);gl.clearColor(0.945,0.953,0.949,1);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
+    gl.useProgram(pr);
+    var asp=cv.width/Math.max(1,cv.height),fov=0.5,need=Math.max(V.gh/2/Math.tan(fov/2),V.gw/2/Math.tan(fov/2)/asp)*1.18;
+    var model=m4mul(m4rotX(V.rx),m4rotY(V.ry)),view=m4tr(0,0,-need/V.dist),mvp=m4mul(m4persp(fov,asp,10,need*4),m4mul(view,model));
+    gl.uniformMatrix4fv(gl.getUniformLocation(pr,'mvp'),false,mvp);gl.uniformMatrix4fv(gl.getUniformLocation(pr,'mdl'),false,model);
+    var lp=gl.getAttribLocation(pr,'p'),ln=gl.getAttribLocation(pr,'n'),lu=gl.getAttribLocation(pr,'uv');
+    V.meshes.forEach(function(M){
+      gl.bindBuffer(gl.ARRAY_BUFFER,M.p);gl.enableVertexAttribArray(lp);gl.vertexAttribPointer(lp,3,gl.FLOAT,false,0,0);
+      gl.bindBuffer(gl.ARRAY_BUFFER,M.n);gl.enableVertexAttribArray(ln);gl.vertexAttribPointer(ln,3,gl.FLOAT,false,0,0);
+      gl.bindBuffer(gl.ARRAY_BUFFER,M.u);gl.enableVertexAttribArray(lu);gl.vertexAttribPointer(lu,2,gl.FLOAT,false,0,0);
+      gl.activeTexture(gl.TEXTURE0);gl.bindTexture(gl.TEXTURE_2D,M.tex);gl.uniform1i(gl.getUniformLocation(pr,'tex'),0);
+      gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,M.i);gl.drawElements(gl.TRIANGLES,M.cnt,M.big?gl.UNSIGNED_INT:gl.UNSIGNED_SHORT,0);
+    });
+  }
+  function loop(t){
+    var dt=Math.min(0.05,(t-(V.last||t))/1000);V.last=t;
+    if(V.rec){var k=Math.min(1,(t-V.rec.t0)/V.rec.ms);V.ry=V.rec.ry0+k*Math.PI*2;V.rx=0.06;var lb=$('#v3dRecL');if(lb)lb.textContent='Kaydediliyor… '+Math.ceil((1-k)*V.rec.ms/1000)+' sn';if(k>=1&&!V.rec.done){V.rec.done=true;draw();setTimeout(function(){try{V.rec.mr.stop();}catch(_){}} ,120);}}
+    else if(V.auto&&t>V.idleAt)V.ry+=dt*0.7;
+    draw();V.raf=requestAnimationFrame(loop);
+  }
+  function ui(){
+    var w=document.createElement('div');w.id='v3d';w.hidden=true;
+    w.innerHTML='<div class="v3-h"><button class="ib" id="v3dX" aria-label="Kapat"><svg class="i" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button><b>3D görünüm</b><span></span></div>'+
+      '<canvas id="v3dC"></canvas><p class="v3-hint">Parmağınla çevir · İki parmakla yakınlaştır</p>'+
+      '<div class="v3-f"><button type="button" class="ghost" id="v3dSpin">Durdur</button><button type="button" class="ghost" id="v3dFace">Arkayı göster</button><button type="button" class="primary" id="v3dRec">Video kaydet</button></div>'+
+      '<div class="v3-rec" id="v3dRecW" hidden><span class="dot"></span><b id="v3dRecL">Kaydediliyor…</b></div><div class="v3-load" id="v3dLoad">Hazırlanıyor…</div>';
+    document.body.appendChild(w);
+    var cv=$('#v3dC');
+    cv.addEventListener('pointerdown',function(e){cv.setPointerCapture(e.pointerId);V.ptr[e.pointerId]={x:e.clientX,y:e.clientY};V.auto=false;syncSpin();
+      var ks=Object.keys(V.ptr);if(ks.length===2){var a=V.ptr[ks[0]],b=V.ptr[ks[1]];V.pinch={d:Math.hypot(a.x-b.x,a.y-b.y),z:V.dist};}});
+    cv.addEventListener('pointermove',function(e){var p=V.ptr[e.pointerId];if(!p||V.rec)return;var ks=Object.keys(V.ptr);
+      if(ks.length>=2&&V.pinch){p.x=e.clientX;p.y=e.clientY;var a=V.ptr[ks[0]],b=V.ptr[ks[1]];V.dist=Math.max(0.7,Math.min(2.6,V.pinch.z*Math.hypot(a.x-b.x,a.y-b.y)/Math.max(1,V.pinch.d)));return;}
+      V.ry+=(e.clientX-p.x)*0.012;V.rx=Math.max(-0.45,Math.min(0.45,V.rx+(e.clientY-p.y)*0.006));p.x=e.clientX;p.y=e.clientY;});
+    function up(e){delete V.ptr[e.pointerId];if(Object.keys(V.ptr).length<2)V.pinch=null;}
+    cv.addEventListener('pointerup',up);cv.addEventListener('pointercancel',up);
+    $('#v3dX').addEventListener('click',close3d);
+    $('#v3dSpin').addEventListener('click',function(){V.auto=!V.auto;V.idleAt=0;syncSpin();});
+    $('#v3dFace').addEventListener('click',function(){var showBack=Math.cos(V.ry)>0,base=showBack?Math.PI:0,tgt=base+Math.round((V.ry-base)/(2*Math.PI))*2*Math.PI;V.auto=false;syncSpin();var s=V.ry,t0=performance.now();(function an(t){var k=Math.min(1,(t-t0)/550);V.ry=s+(tgt-s)*(1-Math.pow(1-k,3));if(k<1)requestAnimationFrame(an);else syncSpin();})(t0);});
+    $('#v3dRec').addEventListener('click',record);
+  }
+  function syncSpin(){var b=$('#v3dSpin');if(b)b.textContent=V.auto?'Durdur':'Döndür';var f=$('#v3dFace');if(f)f.textContent=Math.cos(V.ry)<0?'Önü göster':'Arkayı göster';}
+  async function open3d(){
+    if(P().draw){toast('3D görünüm şimdilik tişört, sweatshirt ve poloda');return;}
+    closeTab();select(null);
+    if(!$('#v3d'))ui();
+    var w=$('#v3d');w.hidden=false;$('#v3dLoad').hidden=false;
+    try{history.pushState({wf3d:1},'');}catch(_){}
+    var cv=$('#v3dC');V.dpr=Math.min(2,window.devicePixelRatio||1);
+    if(!V.gl&&!initGL(cv)){$('#v3dLoad').textContent='Bu cihaz 3D görünümü desteklemiyor.';return;}
+    try{
+      var g=await buildGeometry();if(!g)throw 0;
+      var tf=await texCanvas('front'),tb=await texCanvas('back');
+      V.meshes=[upload(V.gl,g.front,tf),upload(V.gl,g.back,tb)];V.gw=g.w;V.gh=g.h;
+    }catch(_){$('#v3dLoad').textContent='3D görünüm hazırlanamadı.';return;}
+    V.ry=0;V.rx=0.06;V.dist=1;V.auto=true;V.idleAt=performance.now()+900;V.last=0;syncSpin();
+    $('#v3dLoad').hidden=true;cancelAnimationFrame(V.raf);V.raf=requestAnimationFrame(loop);
+  }
+  function close3d(){var w=$('#v3d');if(w&&!w.hidden){if(V.rec){try{V.rec.mr.stop();}catch(_){}V.rec=null;}w.hidden=true;cancelAnimationFrame(V.raf);
+    if(history.state&&history.state.wf3d){try{history.back();}catch(_){}}}}
+  window.addEventListener('popstate',function(){var w=$('#v3d');if(w&&!w.hidden){V.rec=null;w.hidden=true;cancelAnimationFrame(V.raf);}});
+  function record(){
+    if(V.rec)return;var cv=$('#v3dC');
+    if(!cv.captureStream||typeof MediaRecorder==='undefined'){toast('Bu tarayıcı video kaydetmiyor. Ekran kaydını kullanabilirsin.');return;}
+    var types=['video/mp4;codecs=avc1','video/mp4','video/webm;codecs=vp9','video/webm'],mt='';for(var i=0;i<types.length;i++){try{if(MediaRecorder.isTypeSupported(types[i])){mt=types[i];break;}}catch(_){}}
+    var st=cv.captureStream(30),mr;try{mr=mt?new MediaRecorder(st,{mimeType:mt,videoBitsPerSecond:6e6}):new MediaRecorder(st);}catch(_){toast('Video kaydı başlatılamadı');return;}
+    var ch=[];mr.ondataavailable=function(e){if(e.data&&e.data.size)ch.push(e.data);};
+    mr.onstop=async function(){
+      $('#v3dRecW').hidden=true;$('#v3dRec').disabled=false;V.rec=null;V.auto=false;syncSpin();
+      var type=mr.mimeType||mt||'video/webm',ext=/mp4/.test(type)?'mp4':'webm',blob=new Blob(ch,{type:type.split(';')[0]});
+      var name='wolflano-'+String(productLabel()).toLocaleLowerCase('tr').replace(/[^a-z0-9çğıöşü]+/g,'-')+'-3d.'+ext,file=null;
+      try{file=new File([blob],name,{type:blob.type});}catch(_){}
+      if(file&&navigator.canShare&&navigator.canShare({files:[file]})){try{await navigator.share({files:[file],title:'Wolflano 3D'});toast('Video hazır');return;}catch(er){if(er&&er.name==='AbortError')return;}}
+      var u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(function(){URL.revokeObjectURL(u);},8000);toast('Video indirildi');
+    };
+    V.ptr={};V.pinch=null;V.dist=1;
+    V.rec={mr:mr,t0:performance.now()+150,ms:6000,ry0:Math.round(V.ry/(Math.PI*2))*Math.PI*2,done:false};V.ry=V.rec.ry0;
+    $('#v3dRecW').hidden=false;$('#v3dRec').disabled=true;
+    mr.start(250);
+  }
+  var b=document.createElement('button');b.id='v3dBtn';b.type='button';b.className='v3db';b.setAttribute('aria-label','3D görünüm');
+  b.innerHTML='<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 4.5v9L12 21l-8-4.5v-9z"/><path d="M12 12l8-4.5M12 12v9M12 12L4 7.5"/></svg>3D';
+  document.body.appendChild(b);b.addEventListener('click',open3d);
+  var bp=$('#thumbs');if(bp)bp.insertAdjacentHTML('afterend','<button type="button" class="ghost v3o" id="v3dOrder">3D döndür ve video al</button>');
+  var vo=$('#v3dOrder');if(vo)vo.addEventListener('click',function(){$('#order').hidden=true;open3d().then(function(){});});
+  var syncBtn=function(){var sh=$('#sheet'),cx=$('#ctx'),busy=(sh&&!sh.hidden)||(cx&&!cx.hidden)||!$('#order').hidden||!$('#prodPage').hidden;b.hidden=!!P().draw||busy;if(vo)vo.hidden=!!P().draw;};
+  try{var mo=new MutationObserver(function(){try{syncBtn();}catch(_){}});['#sheet','#ctx','#order','#prodPage'].forEach(function(q){var el=$(q);if(el)mo.observe(el,{attributes:true,attributeFilter:['hidden']});});}catch(_){}
+  var _ra=renderAll;renderAll=function(){var r=_ra.apply(this,arguments);try{syncBtn();}catch(_){}return r;};syncBtn();
 })();
 
 /* ================= YÖNETİCİ TASARIMLARI =================
