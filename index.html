@@ -1898,17 +1898,19 @@ function kurHTML(full){
   return h;
 }
 function wolfBan(){return '<a class="wolfban" href="studyo.html?vitrin=wolf"><span class="wic"><img src="'+src(D.logo||'builtin:logo')+'" alt="Wolflano"></span><span class="wtx"><b>Wolf tasarımları</b><small>Wolflano\'ya özel kurt temalı hazır tasarımlar. Beğendiğini seç, baskı alanına yerleşsin. A4 dikey, A4 yatay veya A3.</small></span><span class="wgo">'+IC.arrow+'</span></a>';}
+var rPrev='',hzY=0;
 function route(){
-  var h=(location.hash||'#ana').slice(1),pid=null;
+  var h=(location.hash||'#ana').slice(1),pid=null;if(rPrev==='hazir')hzY=window.scrollY;
   if(h.indexOf('urun-')===0){pid=h.slice(5);h='urun';}
   else if(h.indexOf('p-')===0){pid=h.slice(2);h='cp';}
   if(h==='baski')h='tasarla';if(!VIEWS[h])h='ana';
+  var fromUrun=rPrev==='urun';if(h!=='hazir'){catOpen='';grpOpen='';}
   var act=h==='urun'?'hazir':h==='cp'?'p-'+pid:(/^(tasarla|biz|kurumsal)$/.test(h)?'atolye':h);cur=act;
   $('#main').innerHTML=VIEWS[h](pid);
   if(h==='tasarla')calc('p');if(h!=='hesabim')accMode='login';if(h==='yonetim'){if(!A||!A.dirty)A=newA();}
   var links=pagesNow().map(function(p){return '<a href="#'+p[0]+'"'+(p[0]===act?' class="on" aria-current="page"':'')+'>'+p[1]+'</a>';}).join('');
   document.body.classList.toggle('cko',/^(sepet|odeme)$/.test(h));if(h==='odeme')setTimeout(function(){try{coInit();}catch(_){}},60);
-  $('#nav').innerHTML=links;try{footRender();}catch(_){}try{kbStart();}catch(_){}try{shipRender();}catch(_){}window.scrollTo(0,0);closeLayer();
+  $('#nav').innerHTML=links;try{footRender();}catch(_){}try{kbStart();}catch(_){}try{shipRender();}catch(_){}var backY=(h==='hazir'&&fromUrun)?hzY:0;rPrev=h;window.scrollTo(0,backY);if(backY)setTimeout(function(){window.scrollTo(0,backY);},120);closeLayer();
 }
 function openBlank(i){
   var b=BLANKS[i];
