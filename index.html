@@ -408,6 +408,13 @@ body.cko #nav,body.cko .menu-btn,body.cko .lang,body.cko #cartBtn,body.cko #ann{
 .tsp .card .row small{white-space:nowrap;min-width:0;letter-spacing:.01em!important;font-size:clamp(10.5px,3vw,12.5px)!important;overflow:hidden;text-overflow:ellipsis}
 .tsp .card .row .price{white-space:nowrap}
 .tsp .wolfban{margin-top:28px}
+/* Baskı Atölyesi giriş: başlık tek satır, sıkı yerleşim */
+.intro.aint{padding-block:14px 0;margin-top:0}
+.intro.aint h1{font-size:clamp(20px,6.3vw,44px);white-space:nowrap;letter-spacing:-.01em;margin:6px 0 10px}
+.intro.aint p{font-size:15px;line-height:1.55;max-width:42ch}
+.intro.aint .cta-row{margin-top:16px}
+.page>.intro.aint:first-child{margin-top:-18px}
+.intro.aint+.pair{margin-top:22px!important;padding-top:0!important}
 .szm{font-weight:500;color:var(--muted)}
 .szt{width:100%;margin-top:2px}
 .szt summary{cursor:pointer;font:600 13px var(--ui);color:var(--green);text-align:center;list-style:none;text-decoration:underline;text-underline-offset:3px}
@@ -1669,14 +1676,14 @@ function favBtn(id){return '<button class="fav'+(favs[id]?' on':'')+'" data-fav=
 /* Ana sayfa: hero'nun hemen altında hazır giyim vitrini. Mobilde 2, tablette 3, bilgisayarda 4-5 ürün yan yana; en fazla 10 ürün. */
 function homeReady(){var n=+TX('featN');if(!(n>=0))n=4;var l=PRODUCTS.slice(0,Math.min(n,20));if(!l.length)return '';
   return '<div class="wrap feat hsec"><div class="sec-head" style="margin-bottom:12px"><h2 class="h2" style="font-size:26px">Öne çıkanlar</h2><a class="link" href="#hazir">Tümünü gör '+IC.arrow+'</a></div><div class="grid">'+l.map(card).join('')+'</div></div>';}
-function atolyeIntro(home){return '<section class="intro" style="margin-top:0;padding-top:8px"><h1 class="h2">'+esc(TX('atolyeTitle'))+'</h1><p>'+esc(TX('atolyePageLead'))+'</p>'+
-  '<div class="cta-row"><a class="btn" href="#tasarla">Tasarlamaya başla '+IC.arrow+'</a><a class="btn soft" href="#kurumsal">Okul ve kurumsal</a></div></section>';}
+function atolyeIntro(home){return '<section class="intro aint"><h1 class="h2">'+esc(TX('atolyeTitle'))+'</h1><p>'+esc(TX('atolyePageLead'))+'</p>'+
+  '<div class="cta-row"><a class="btn" href="#tasarla">Tasarlamaya başla '+IC.arrow+'</a></div></section>';}
 function homeWelcome(){var b=D.brand||{};return '<section class="wrap welc"><p class="wq">Sessiz güç, sade duruş.</p>'+(b.slogan?'<p class="ws">'+esc(b.slogan)+'</p>':'')+'<div class="wbtn"><a class="btn" href="#hazir">Koleksiyonu keşfet '+IC.arrow+'</a><a class="btn soft" href="#atolye">Baskı Atölyesi</a></div></section>';}
 function homeCats(){if(!CATS.length)return '';return '<section class="wrap hsec" style="padding-top:14px"><p class="eyebrow">Kategoriler</p><div class="hcats">'+CATS.map(function(c){return '<a class="hcat" href="#hazir" data-hcat="'+c[0]+'"><span>'+esc(c[1])+'</span><i>'+IC.arrow+'</i></a>';}).join('')+'</div></section>';}
 function homeWhy(){return '<section class="hcol why"><p class="eyebrow">'+esc(TX('whyTitle'))+'</p><p class="wq">'+esc(TX('whyQuote'))+'</p>'+(TX('whyText')?'<p class="lead">'+esc(TX('whyText'))+'</p>':'')+'<a class="link" href="#hakkimizda">'+esc(TX('whyLink'))+' '+IC.arrow+'</a></section>';}
 function homeAtolye(){var L=[['#tasarla','Kendin tasarla','g'],['#biz','Biz tasarlarız','d']];
   return '<section class="hcol hatol"><p class="eyebrow">'+esc(TX('atolyeTitle'))+'</p><p class="lead" style="margin:0 0 12px">'+esc(TX('atolyeLead'))+'</p><div class="hatl">'+L.map(function(x){return '<a class="'+x[2]+'" href="'+x[0]+'">'+x[1]+'<span>'+IC.arrow+'</span></a>';}).join('')+'</div><a class="link" href="#atolye" style="margin-top:14px;display:inline-flex">Baskı Atölyesine git '+IC.arrow+'</a></section>';}
-function atolyePair(){return '<section class="pair"><div class="big g">'+IC.pal+'<h2>Kendin tasarla</h2><p>Ürünü seç, yazını yaz, görselini yükle. Önizlemede gördüğün gibi basalım.</p><a class="btn onG" href="#tasarla">Tasarlamaya başla '+IC.arrow+'</a></div>'+
+function atolyePair(){return '<section class="pair">'+
   '<div class="big b">'+IC.spark+'<h2>Biz tasarlarız</h2><p>Fikrini bir cümleyle anlat, yapay zeka üç tasarım önerisi hazırlasın.</p><a class="btn" href="#biz">Yapay zekaya tasarlat '+IC.arrow+'</a></div></section>';}
 function howHTML(){return '<section class="how"><div class="wrap"><h2>Nasıl çalışır?</h2><div class="steps">'+
   '<div class="step"><span class="dot">'+IC.up+'</span><div><h3>1. Ürünü seç ve tasarla</h3><p>Tişört veya kupa seç, yazı ve görsel ekle ya da fikrini anlat.</p></div></div>'+
