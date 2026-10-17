@@ -400,6 +400,8 @@ body.cko #nav,body.cko .menu-btn,body.cko .lang,body.cko #cartBtn,body.cko #ann{
 .tsp .card .row small{white-space:nowrap;min-width:0;letter-spacing:.01em!important;font-size:clamp(10.5px,3vw,12.5px)!important;overflow:hidden;text-overflow:ellipsis}
 .tsp .card .row .price{white-space:nowrap}
 .tsp .wolfban{margin-top:28px}
+.prnote{display:block}
+.prnote .prn{margin:0}
 .bud{width:100%;margin:6px 0 0;display:grid;gap:12px;border-top:1px solid var(--line);padding-top:14px}
 .bud dt{font:600 13px var(--ui);letter-spacing:.04em;color:var(--ink)}
 .bud dd{margin:4px 0 0;color:var(--muted);font-size:14px;line-height:1.55}
@@ -1774,12 +1776,7 @@ function setLZ(d){
   s.scrollLeft=(s.scrollWidth-s.clientWidth)/2;s.scrollTop=(s.scrollHeight-s.clientHeight)/2;
 }
 function priceSection(){
-  var rows=BLANKS.map(function(b){return '<tr><td>'+b.name+'</td><td>'+tl(b.price)+'</td>'+(b.hat!=null?'<td colspan="3">'+tl(b.hat)+' ('+(b.fixcm||'12 × 8 cm')+')</td>':'<td>'+tl(b.a4)+'</td><td>'+tl(b.a4*A3_KAT)+'</td><td>'+tl(b.logo)+'</td>')+'</tr>';}).join('');
-  return '<section class="pr" id="prices"><div><p class="eyebrow">Fiyatlandırma</p><h2>Baskı türlerine göre fiyat</h2></div><div class="tw"><table><thead><tr><th>Ürün</th><th>Baskısız</th><th>A4 baskı</th><th>A3 baskı</th><th>Logo</th></tr></thead><tbody>'+rows+'</tbody></table></div>'+
-  '<div class="prn">'+PRICE_NOTE.map(function(x){return '<p>'+esc(x)+'</p>';}).join('')+'</div>'+
-  '<div class="panel calc"><h3 style="font-size:24px">Fiyat hesapla</h3><label for="cP">Ürün<select id="cP">'+BLANKS.map(function(b){return '<option value="'+b.id+'">'+b.name+'</option>';}).join('')+'</select></label>'+
-  '<div class="two"><label for="cF">Ön baskı<select id="cF"></select></label><label for="cB">Arka baskı<select id="cB"></select></label></div>'+
-  '<label for="cQ">Adet<input id="cQ" type="number" min="1" max="999" value="1" inputmode="numeric"></label><div class="cres" id="cR"></div></div></section>';
+  return '<section class="pr prnote" id="prices"><div class="prn">'+PRICE_NOTE.map(function(x){return '<p>'+esc(x)+'</p>';}).join('')+'</div></section>';
 }
 function calc(sel){
   var P=$('#cP');if(!P)return;var b=BLANKS.filter(function(x){return x.id===P.value;})[0],sd=SIDES[b.id];
