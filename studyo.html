@@ -87,6 +87,15 @@ svg.i{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stro
 .obj.warp svg{width:auto;height:auto;overflow:visible}
 .obj svg,.obj img{display:block;width:100%;height:100%;pointer-events:none}
 .obj img{object-fit:contain}
+#rulerHost{position:absolute;inset:0;pointer-events:none}
+#rulerHost svg{position:absolute;left:0;top:0;overflow:visible}
+#rulerHost text{font:600 calc(9px*var(--inv)) var(--ui);fill:#3d4a43}
+#rulerHost .rb{fill:rgba(255,255,255,.72)}
+#rulerHost .rt{stroke:#3d4a43;stroke-width:1;vector-effect:non-scaling-stroke}
+#rulerHost .ra{fill:rgba(48,112,63,.28)}
+#rulerHost .rg{stroke:#c0392b;stroke-width:1.5;vector-effect:non-scaling-stroke}
+#rulerHost text.rgt{fill:#c0392b}
+#rulerBtn.on{background:var(--ink,#111);color:#fff}
 #areaBox{position:absolute;pointer-events:none;border:calc(1.5px*var(--inv)) dashed var(--area);opacity:.8}
 #areaLabel{position:absolute;left:0;bottom:100%;margin-bottom:calc(4px*var(--inv));white-space:nowrap;font:600 calc(11px*var(--inv))/1 var(--ui);color:var(--area)}
 #selLayer{position:absolute;inset:0;pointer-events:none}
@@ -261,6 +270,7 @@ svg.i{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stro
     <div class="chips" id="areaChips">
     </div>
     <div class="sub-r">
+      <button class="ib on" id="rulerBtn" aria-label="Cetveli gizle" aria-pressed="true"><svg class="i" viewBox="0 0 24 24"><rect x="2.5" y="8" width="19" height="8" rx="1.5"/><path d="M6 8v3M9.5 8v4.5M13 8v3M16.5 8v4.5"/></svg></button>
       <button class="ib" id="fitBtn" aria-label="Baskı alanına yakınlaş"><svg class="i" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6"/><path d="M20 20l-4.2-4.2"/><path d="M11 8.5v5M8.5 11h5"/></svg></button>
     </div>
   </div>
@@ -271,6 +281,7 @@ svg.i{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stro
       <div id="clipLayer"><div id="objLayer"></div></div>
       <div id="shadeHost" aria-hidden="true"></div>
       <div id="areaBox"><span id="areaLabel"></span></div>
+      <div id="rulerHost" aria-hidden="true"></div>
       <div id="selLayer"></div>
     </div>
     <div class="hint" id="hint">Sürükle: taşı · Köşedeki nokta: büyüt ve döndür · İki parmak: yakınlaştır</div>
@@ -898,7 +909,7 @@ function renderShade(){
   var s=shadeLayers(view.side,state.tee,state.product,state.cut);
   h.innerHTML=s?'<div class="sh-m">'+s.shade+'</div><div class="sh-s">'+s.light+'</div>':'';
 }
-function renderShirt(){$('#shirtHost').innerHTML=productSVG(view.side,state.tee,state.product,state.cut);renderShade();stage.style.setProperty('--area',lum(state.tee)>0.5?'#111':'#fff');}
+function renderShirt(){try{renderRuler();}catch(_){}$('#shirtHost').innerHTML=productSVG(view.side,state.tee,state.product,state.cut);renderShade();stage.style.setProperty('--area',lum(state.tee)>0.5?'#111':'#fff');}
 
 /* ---------- Nesneler ---------- */
 function place(el,o){
@@ -984,11 +995,31 @@ function renderObjects(){
 function remeasure(){cur().objs.forEach(function(o){if(o.type==='text'){if(isWarped(o)&&els[o.id])styleText(els[o.id],o);measureText(o);}});updateSel();if(view.tab==='text')renderFxRows();}
 
 /* ---------- Baskı alanı ve yerleşim ---------- */
+var RULER=true;try{RULER=localStorage.getItem('wf_ruler')!=='0';}catch(_){}
+/* Cetvel: sahne koordinatında (1 cm = PPC). Soldaki cetvel yakanın üstünden (0) aşağı, üstteki cetvel ürünün ortasından (0) sağa ve sola ölçer.
+   Yeşil bant baskı alanının cetveldeki yeri; kırmızı çizgi seçilen bedenin boyu (ürünün etek ucu). */
+function renderRuler(){
+  var h=$('#rulerHost');if(!h)return;var bt=$('#rulerBtn');if(bt){bt.classList.toggle('on',RULER);bt.setAttribute('aria-pressed',RULER?'true':'false');bt.setAttribute('aria-label',RULER?'Cetveli gizle':'Cetveli göster');}
+  if(!RULER||P().draw){h.innerHTML='';return;}
+  var A=areaBox(view.side,cur().area),ny=NECK_Y[view.side],gt=ny-NECK_DROP[view.side],o='',k,y,x,len,ty=Math.max(0,gt-30);
+  /* Sol cetvel: 0 = boğaz (yaka) çizgisi; baskı buradan 8 cm aşağıda başlar */
+  o+='<rect class="rb" x="0" y="'+ny+'" width="24" height="'+(STAGE_H-ny)+'"/><rect class="ra" x="0" y="'+A.t+'" width="24" height="'+A.h+'"/>';
+  for(k=0;ny+k*PPC<=STAGE_H;k++){y=ny+k*PPC;len=k%10===0?14:(k%5===0?9:5);o+='<line class="rt" x1="0" x2="'+len+'" y1="'+y+'" y2="'+y+'"/>';if(k%10===0&&k)o+='<text x="15" y="'+(y+3)+'">'+k+'</text>';}
+  o+='<text x="2" y="'+(ny-4)+'">0 · yaka</text>';
+  /* Üst cetvel: 0 = ürünün ortası */
+  o+='<rect class="rb" x="0" y="'+ty+'" width="'+STAGE_W+'" height="22"/><rect class="ra" x="'+A.l+'" y="'+ty+'" width="'+A.w+'" height="22"/>';
+  for(k=-45;k<=45;k++){x=300+k*PPC;if(x<0||x>STAGE_W)continue;len=k%10===0?14:(k%5===0?9:5);o+='<line class="rt" x1="'+x+'" x2="'+x+'" y1="'+ty+'" y2="'+(ty+len)+'"/>';if(k%10===0)o+='<text x="'+x+'" y="'+(ty+20)+'" text-anchor="middle">'+Math.abs(k)+'</text>';}
+  var top=(A.t-ny)/PPC;
+  o+='<text x="30" y="'+(A.t-3)+'" style="fill:#30703f">baskı '+String(Math.round(top*10)/10).replace('.',',')+' cm\'de başlar</text>';
+  try{if(phOn()){var d=phDims(state.product,state.cut);if(d){var yb=gt+d[1]*PPC;if(yb<STAGE_H-2)o+='<line class="rg" x1="0" x2="40" y1="'+yb+'" y2="'+yb+'"/><text class="rgt" x="27" y="'+(yb-4)+'">'+phSize()+' · boy '+d[1]+' cm</text>';}}}catch(_){}
+  h.innerHTML='<svg width="'+STAGE_W+'" height="'+STAGE_H+'" viewBox="0 0 '+STAGE_W+' '+STAGE_H+'">'+o+'</svg>';
+}
 function updateArea(){
   var A=areaBox(view.side,cur().area),b=$('#areaBox');
   b.style.left=A.l+'px';b.style.top=A.t+'px';b.style.width=A.w+'px';b.style.height=A.h+'px';
   $('#areaLabel').textContent=areaTitle(view.side)+' · '+cmText(cur().area,isLand(view.side));
   $('#clipLayer').style.clipPath='inset('+A.t+'px '+(STAGE_W-A.r)+'px '+(STAGE_H-A.b)+'px '+A.l+'px)';
+  try{renderRuler();}catch(_){}
 }
 function layout(){
   var wr=wrap.getBoundingClientRect(),W=wr.width,H=wr.height;
@@ -1571,6 +1602,7 @@ $('#tabs').addEventListener('click',function(e){var b=e.target.closest('[data-ta
 $('#sheetX').addEventListener('click',closeTab);
 $('#undoBtn').addEventListener('click',undo);
 $('#redoBtn').addEventListener('click',redo);
+$('#rulerBtn').addEventListener('click',function(){RULER=!RULER;try{localStorage.setItem('wf_ruler',RULER?'1':'0');}catch(_){}renderRuler();toast(RULER?'Cetvel açık: yeşil bant baskı alanı, ölçüler cm':'Cetvel gizlendi');});
 $('#fitBtn').addEventListener('click',function(){view.fit=view.fit==='area'?'shirt':'area';resetZoom();syncFitBtn();layout();});
 $('#sideF').addEventListener('click',function(){switchSide('front');});
 $('#sideB').addEventListener('click',function(){switchSide('back');});
