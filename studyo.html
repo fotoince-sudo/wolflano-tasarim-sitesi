@@ -1876,7 +1876,13 @@ async function aiCall(body){
     if(!r.ok||!j.image){longToast(j.message||'Wolf şu an çizemedi. Biraz sonra yeniden dene.');return null;}
     return j.image;}
   catch(e){clearTimeout(tm);aiDone();longToast('Wolf şu an çizemedi. Bağlantını kontrol edip yeniden dene.');return null;}}
-function aiAsset(dataUrl){return new Promise(function(res,rej){var im=new Image();im.onload=function(){var id='a'+(++assetN);assets[id]={url:dataUrl,w:im.naturalWidth,h:im.naturalHeight,up:true,ai:1,nobg:/^data:image\/png/.test(dataUrl)};assetList.push(id);try{renderUploads();}catch(_){}res(id);};im.onerror=rej;im.src=dataUrl;});}
+/* Şeffaf PNG'nin boş kenarlarını kırp: seçim kutusu çizimin kendisine otursun */
+function aiTrim(dataUrl){return new Promise(function(res){if(!/^data:image\/png/.test(dataUrl))return res(dataUrl);var im=new Image();im.onload=function(){try{
+  var W=im.naturalWidth,H=im.naturalHeight,c=document.createElement('canvas');c.width=W;c.height=H;var x=c.getContext('2d');x.drawImage(im,0,0);var d=x.getImageData(0,0,W,H).data,l=W,t=H,r=-1,b=-1,X,Y;
+  for(Y=0;Y<H;Y+=2)for(X=0;X<W;X+=2){if(d[(Y*W+X)*4+3]>12){if(X<l)l=X;if(X>r)r=X;if(Y<t)t=Y;if(Y>b)b=Y;}}
+  if(r<0)return res(dataUrl);var p=Math.round(Math.max(W,H)*0.012);l=Math.max(0,l-p);t=Math.max(0,t-p);r=Math.min(W-1,r+p);b=Math.min(H-1,b+p);
+  if((r-l)>W*0.97&&(b-t)>H*0.97)return res(dataUrl);var o=document.createElement('canvas');o.width=r-l+1;o.height=b-t+1;o.getContext('2d').drawImage(c,l,t,o.width,o.height,0,0,o.width,o.height);res(o.toDataURL('image/png'));}catch(_){res(dataUrl);}};im.onerror=function(){res(dataUrl);};im.src=dataUrl;});}
+function aiAsset(dataUrl0){return aiTrim(dataUrl0).then(function(dataUrl){return new Promise(function(res,rej){var im=new Image();im.onload=function(){var id='a'+(++assetN);assets[id]={url:dataUrl,w:im.naturalWidth,h:im.naturalHeight,up:true,ai:1,nobg:/^data:image\/png/.test(dataUrl)};assetList.push(id);try{renderUploads();}catch(_){}res(id);};im.onerror=rej;im.src=dataUrl;});});}
 var aiTimer=null;
 function aiWait(m){var t=toastEl(),t0=Date.now();t.classList.remove('long');clearTimeout(toastT);clearInterval(aiTimer);
   function up(){var sec=Math.round((Date.now()-t0)/1000);t.innerHTML='<span class="aispin"></span>'+m+' · '+sec+' sn';t.hidden=false;}
