@@ -366,6 +366,9 @@ img{-webkit-touch-callout:none;-webkit-user-drag:none;user-drag:none}
 .pn-back{padding:6px 10px;font-size:12px}
 .pn-new{margin:0 0 8px;padding:10px 14px}
 .pn .alist{gap:6px}
+.mtrow{width:100%;text-align:left;font:inherit;color:inherit;cursor:pointer;min-height:56px}
+.mtrow .mti{width:40px;height:40px;border-radius:10px;background:var(--mint);display:grid;place-items:center;font-size:18px}
+.mtrow b{font-size:15px}.mtrow .mtgo{font-size:22px;color:var(--green);padding-right:6px}
 .pn .arow{padding:6px 8px;gap:10px;grid-template-columns:48px 1fr auto;border-radius:12px}
 .pn .arow img{width:48px;height:48px}
 .pn .arow small{line-height:1.3;font-size:12px}
@@ -2590,7 +2593,7 @@ function adminView(){
     });
     if(!d.cpages.length)h+='<p class="note">Henüz eklenmiş sayfa yok.</p>';
     h+='</div>';
-  }else if(A.tab==='metin'){
+  }else if(A.tab==='metin'){var mt0=h.length;
     var tx=d.txt=d.txt||clone(DEF.txt);Object.keys(DEF.txt).forEach(function(k){if(tx[k]===undefined)tx[k]=clone(DEF.txt[k]);});
     var ta=function(lb,k,h){return '<label for="'+aid('txt.'+k)+'">'+lb+'<textarea id="'+aid('txt.'+k)+'" data-bind="txt.'+k+'" data-t="s" style="min-height:'+(h||80)+'px">'+esc(tx[k]||'')+'</textarea></label>';};
     var cb=function(lb,k){return '<label><input type="checkbox" data-bind="txt.'+k+'" data-t="b"'+(tx[k]!==false?' checked':'')+'>'+lb+'</label>';};
@@ -2600,7 +2603,7 @@ function adminView(){
       '<b>“Neden Wolflano?” bandı</b>'+fld('Başlık','txt.whyTitle')+ta('Büyük cümle','whyQuote',60)+ta('Açıklama','whyText',60)+fld('Bağlantı yazısı','txt.whyLink')+
       '<b>Baskı Atölyesi bölümü (ana sayfa)</b>'+fld('Başlık (Baskı Atölyesi sayfasında da kullanılır)','txt.atolyeTitle')+ta('Ana sayfadaki kısa yazı','atolyeLead',60)+fld('Koleksiyon sayfası başlığı','txt.kolTitle')+'</div>';
     var kv=function(n,a,b){return '<div class="two">'+fld(n+' · başlık','txt.'+a)+fld(n+' · yazı','txt.'+b)+'</div>';};
-    h+='<div class="aed" style="max-width:760px" id="ad-atolye"><b>Baskı Atölyesi sayfası · tüm kutucuklar</b><span class="note">Sayfadaki sırayla. Bir kutucuğun başlığını ve yazısını boşaltırsan o kutucuk sitede gizlenir.</span>'+
+    h+='<div class="aed" style="max-width:760px" id="ad-atolye"><b>Baskı Atölyesi sayfası</b><span class="note">Sayfadaki sırayla. Bir kutucuğun başlığını ve yazısını boşaltırsan o kutucuk sitede gizlenir.</span>'+
       '<b style="font-size:14px">1. Giriş</b>'+ta('Sayfa yazısı','atolyePageLead',70)+fld('Düğme yazısı','txt.atolyeBtn')+
       '<b style="font-size:14px">2. Wolf tasarlasın kutusu</b>'+fld('Başlık','txt.wolfTitle')+ta('Yazı','wolfText',60)+
       '<b style="font-size:14px">3. Kurumsal baskı</b>'+fld('Üst satır','txt.kurEyebrow')+fld('Başlık','txt.kurTitle')+ta('Açıklama','kurLead',70)+
@@ -2615,6 +2618,7 @@ function adminView(){
     h+='<div class="aed" style="max-width:760px"><b>Manifesto (Hakkımızda sayfasının sonu)</b>'+fld('Başlık','txt.mfTitle')+'<label for="f-mft">Paragraflar (her satır bir paragraf)<textarea id="f-mft" data-bind="txt.mfText" data-t="lines" style="min-height:180px">'+esc((Array.isArray(tx.mfText)?tx.mfText:String(tx.mfText||'').split('\n')).join('\n'))+'</textarea></label>'+fld('İmza cümlesi','txt.mfSign')+fld('Üç kelime','txt.mfWords')+'</div>';
     h+='<div class="aed" style="max-width:760px"><b>Ürün sayfası notu</b>'+fld('Not başlığı','txt.pnoteTitle')+ta('Genel not (her ürünün altında; kupada çıkmaz)','pnote',90)+'<span class="note">Bir ürüne özel not yazmak ya da notu gizlemek için Koleksiyon sekmesinde o ürünü aç.</span></div>';
     h+='<div class="aed" style="max-width:760px"><b>Varsayılana dön</b><span class="note">Bu sekmedeki tüm metinleri ilk haline döndürür. Kaydet’e basana kadar sitede değişmez.</span><div><button class="btn soft sm" data-ad="txtreset">Metinleri sıfırla</button></div></div>';
+    h=h.slice(0,mt0)+metinNav(h.slice(mt0));
   }else if(A.tab==='site'){
     h+='<div class="aed" style="max-width:760px"><b>Biz tasarlarız</b><div class="chk"><label><input type="checkbox" data-bind="biz.requireAccount" data-t="b"'+((d.biz||{}).requireAccount!==false?' checked':'')+'>Kullanmak için üyelik girişi zorunlu olsun</label></div><span class="note">Açıkken yalnızca giriş yapmış müşteriler kullanır. Üyelik sistemi bağlanana kadar bu bölüm ziyaretçilere kapalı görünür; sen yönetici olarak her zaman görebilirsin.</span></div>';
     h+='<div class="aed" style="max-width:760px"><b>Logo</b><div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap"><img src="'+src(d.logo||'builtin:logo')+'" alt="" id="logoPrev" style="width:88px;height:88px;object-fit:contain;background:#fff;border-radius:14px;border:1px solid var(--line)"><div><label class="btn soft sm" for="up-logo" style="display:inline-flex">Logo ekle / değiştir</label><input class="sr" id="up-logo" type="file" accept="image/*" data-uplogo="1"></div></div><span class="note">Yüklediğin logo otomatik olarak kare, beyaz zeminli ve köşeleri hafif yuvarlak bir alana, kenarlardan küçültülüp ortalanarak yerleştirilir.</span></div>';
@@ -3044,6 +3048,16 @@ document.addEventListener('click',async function(e){
   else if(b.dataset.ac==='invpdf'){e.preventDefault();var r3=ACC.rows.filter(function(x){return x.id===b.dataset.id;})[0];try{var u3=(r3.invoice&&r3.invoice.pdfUrl)||(await EFATURA.pdf(r3.invoice.no)).url;window.open(u3,'_blank','noopener');}catch(_){toast('Fatura bağlantısı alınamadı');}}
   else if(b.dataset.ac==='copy'){var t=$('#acCsv');if(t){t.select();try{document.execCommand('copy');toast('Kopyalandı');}catch(_){}}}
 });
+/* Sayfa metinleri: uzun liste yerine bölüm başlıkları; dokununca yalnız o bölüm açılır */
+function metinSecs(html){var out=[],re=/<div class="aed"[^>]*>|<div\b[^>]*>|<\/div>/g,m,dep=0,st=-1;
+  while((m=re.exec(html))){if(m[0]==='</div>'){dep--;if(dep===0&&st>=0){out.push(html.slice(st,re.lastIndex));st=-1;}}else{if(dep===0&&m[0].indexOf('class="aed"')>0)st=m.index;if(st>=0||dep>0)dep++;}}
+  return out;}
+var MT_ICO={'Menü':'☰','Ana sayfa':'⌂','Baskı':'✎','Kargo':'⇢','Koleksiyon':'▦','Hakkımızda':'ℹ','Manifesto':'❝','Ürün':'◇','Varsayılan':'↺'};
+function metinNav(html){var S=metinSecs(html);if(!S.length)return html;
+  var T=S.map(function(x){var m=/<b[^>]*>([\s\S]*?)<\/b>/.exec(x);return m?m[1].replace(/<[^>]+>/g,''):'Bölüm';});
+  if(A.mt!=null&&S[A.mt])return '<div style="max-width:760px;margin-bottom:10px"><button class="btn soft sm" data-ad="mt" data-i="">← Tüm bölümler</button></div>'+S[A.mt];
+  return '<p class="note" style="max-width:760px;margin:0 0 10px">Düzenlemek istediğin bölüme dokun.</p><div class="alist">'+T.map(function(t,i){var k=Object.keys(MT_ICO).filter(function(w){return t.indexOf(w)===0;})[0];
+    return '<button type="button" class="arow mtrow" data-ad="mt" data-i="'+i+'"><span class="mti">'+(k?MT_ICO[k]:'•')+'</span><b>'+t+'</b><span class="mtgo">›</span></button>';}).join('')+'</div>';}
 function adRender(){$('#main').innerHTML=adminView();}
 function dirty(){A.dirty=true;A.msg='';var sbx=document.querySelector('.sbar.pn-hide');if(sbx)sbx.classList.remove('pn-hide');var m=$('#sbm');if(m)m.textContent='Kaydedilmemiş değişiklik var';var s=$('.sbar .btn:not(.soft)'),r=$('.sbar .soft');if(s)s.disabled=false;if(r)r.disabled=false;}
 function procImg(file){return new Promise(function(res,rej){var u=URL.createObjectURL(file),im=new Image();im.onload=function(){var s=Math.min(1,1400/Math.max(im.width,im.height)),c=document.createElement('canvas');c.width=Math.max(1,Math.round(im.width*s));c.height=Math.max(1,Math.round(im.height*s));var x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,c.width,c.height);x.drawImage(im,0,0,c.width,c.height);c.toBlob(function(b){URL.revokeObjectURL(u);b?res(b):rej(new Error('blob'));},'image/jpeg',.86);};im.onerror=function(){rej(new Error('img'));};im.src=u;});}
@@ -3135,7 +3149,8 @@ document.addEventListener('click',function(e){
   var a=b.dataset.ad,d=A.draft;
   if(a==='logout'){ADM_OK=false;try{localStorage.removeItem('wf_adm');sessionStorage.removeItem('wf_adm');}catch(_){}e.preventDefault();if(!ART&&sbAdmin()){ACCOUNT.logout().then(adRender);return;}adRender();return;}
   if(a==='admreset'){e.preventDefault();if(confirm('Yönetim şifresi silinsin mi? Sonra yeni şifre tanımlayacaksın.')){(async function(){if(!A)A=newA();delete A.draft.admin;await adSave();if(!D.admin){ADM_OK=false;adRender();}})();}return;}
-  if(a==='tab'){A.tab=b.dataset.v;A.open=null;A.del=null;adRender();}
+  if(a==='tab'){A.tab=b.dataset.v;A.open=null;A.del=null;A.mt=null;adRender();}
+  else if(a==='mt'){A.mt=b.dataset.i===''?null:+b.dataset.i;adRender();window.scrollTo(0,0);}
   else if(a==='open'){A.open=A.open===b.dataset.id?null:b.dataset.id;A.del=null;adRender();}
   else if(a==='mv'){var i=+b.dataset.i,j=i+(+b.dataset.d);if(j>=0&&j<d.products.length){var x=d.products[i];d.products[i]=d.products[j];d.products[j]=x;dirty();adRender();}}
   else if(a==='addp'){var id='n'+Date.now().toString(36);d.products.push({id:id,no:pNums(d.products)+1,name:'Yeni ürün',type:'TİŞÖRT',color:'',price:0,old:null,stock:null,tag:'',cat:['erkek'],imgs:[],desc:'',show:true});A.open=id;dirty();adRender();}
