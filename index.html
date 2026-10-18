@@ -586,6 +586,7 @@ body.cko #nav,body.cko .menu-btn,body.cko .lang,body.cko #cartBtn,body.cko #ann{
 .bfi b{display:block;font:600 14px/1.25 var(--ui)}.bfi small{display:block;color:var(--muted);font:500 12px/1.35 var(--ui);margin-top:2px}
 .bfp{font:600 20px/1 var(--ui);color:var(--green);font-variant-numeric:tabular-nums;letter-spacing:.01em}
 .bfm{color:var(--muted);font:500 11px var(--ui)}
+.bfc.bfw{grid-column:1/-1;grid-template-columns:minmax(0,46%) 1fr;align-items:center;column-gap:14px}.bfc.bfw .bfv{grid-row:span 3;aspect-ratio:auto;padding:6px 0}.bfc.bfw .bfv svg{width:100%}
 .bftiers{margin-top:16px;display:grid;gap:8px}.bftiers b{font:600 14px var(--ui)}
 .bftiers div{display:flex;flex-wrap:wrap;gap:8px}.bftiers span{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--card);border-radius:999px;padding:7px 12px;font:500 13px var(--ui);color:var(--muted)}
 .bftiers em{font-style:normal;font-weight:700;color:var(--ink)}.bftiers i{font-style:normal;font-weight:700;color:var(--onGreen);background:var(--green);border-radius:999px;padding:2px 8px;font-size:12px}
@@ -708,7 +709,7 @@ var DEF={v:1,
   {id:'hat',name:'Şapka',price:129,old:null,stock:null,hat:40,note:'Yalnız ön, 20 × 10 cm sabit alan',cuts:'Tek ebat',areas:['Ön: 20 × 10 cm sabit baskı alanı','Arka: baskı yok'],imgs:['urunler/sapka.jpg'],svg:'<path d="M26 66c-2-26 12-46 34-46s36 20 34 46z"/><path d="M18 68q42-10 84 0 8 8-2 12-40 8-80 0-10-4-2-12z" fill-opacity=".7"/>'},
   {id:'hat-k',p:'hat',name:'Kadın şapka',price:129,old:null,stock:null,hat:40,note:'Yalnız ön, 20 × 10 cm sabit alan',cuts:'Tek ebat',areas:['Ön: 20 × 10 cm sabit baskı alanı','Arka: baskı yok'],imgs:['urunler/kadin-sapka.jpg'],svg:'<path d="M26 66c-2-26 12-46 34-46s36 20 34 46z"/><path d="M18 68q42-10 84 0 8 8-2 12-40 8-80 0-10-4-2-12z" fill-opacity=".7"/>'},
   {id:'hat-c',p:'hat',name:'Çocuk şapka',price:129,old:null,stock:null,hat:40,note:'Yalnız ön, 20 × 10 cm sabit alan',cuts:'Çocuk, tek ebat',areas:['Ön: 20 × 10 cm sabit baskı alanı','Arka: baskı yok'],imgs:['urunler/cocuk-sapka.jpg'],svg:'<path d="M26 66c-2-26 12-46 34-46s36 20 34 46z"/><path d="M18 68q42-10 84 0 8 8-2 12-40 8-80 0-10-4-2-12z" fill-opacity=".7"/>'},
-  {id:'mug',name:'Kupa',price:149,old:null,stock:null,hat:50,fixname:'Kupa baskı',fixcm:'8 × 8 cm, kulpun iki yanı',note:'Kulpun iki yanına 8 × 8 cm baskı',cuts:'Standart beyaz kupa',areas:['Ön: 8 × 8 cm','Arka: 8 × 8 cm (kulpun öbür yanı)'],imgs:['urunler/kupa.jpg'],svg:'<path d="M38 26h40v52a6 6 0 0 1-6 6H44a6 6 0 0 1-6-6z"/><path d="M78 38c12 0 14 8 14 13s-2 13-14 13" fill="none" stroke="currentColor" stroke-width="5"/>'}
+  {id:'mug',name:'Kupa',price:149,old:null,stock:null,hat:50,wrap:75,fixname:'Kupa baskı',fixcm:'8 × 8 cm, kulpun iki yanı',note:'Kulpun iki yanına 8 × 8 cm baskı ya da çevresini saran 20 × 10 cm süblimasyon',cuts:'Standart beyaz kupa',areas:['Ön: 8 × 8 cm','Arka: 8 × 8 cm (kulpun öbür yanı)','Süblimasyon: 20 × 10 cm (kupanın çevresini sarar)'],imgs:['urunler/kupa.jpg'],svg:'<path d="M38 26h40v52a6 6 0 0 1-6 6H44a6 6 0 0 1-6-6z"/><path d="M78 38c12 0 14 8 14 13s-2 13-14 13" fill="none" stroke="currentColor" stroke-width="5"/>'}
  ],
   biz:{requireAccount:true},
  cpages:[],
@@ -1783,7 +1784,7 @@ function applyData(){autoSub(D);if(!D.vat)D.vat={mode:'excl',ready:20,blank:20,p
  pNums(D.products);ALLP=D.products.map(function(p){return Object.assign({},p,{price:vp(p.price,'ready'),old:vp(p.old,'ready')});});
  PRODUCTS=ALLP.filter(function(p){return p.show!==false;});
  CATS=(D.cats||[]).filter(function(c){return c.show!==false;}).map(function(c){return [c.id,c.name||'Adsız'];});if(CATS.length&&!CATS.some(function(c){return c[0]===catSel;})){catSel=CATS[0][0];subSel='';}
- BLANKS=D.blanks.filter(function(b){return b.show!==false;}).map(function(b){return Object.assign({},b,{price:vp(b.price,'blank'),old:vp(b.old,'blank'),a4:vp(b.a4,'print'),logo:vp(b.logo,'print'),hat:vp(b.hat,'print')});});
+ BLANKS=D.blanks.filter(function(b){return b.show!==false;}).map(function(b){return Object.assign({},b,{price:vp(b.price,'blank'),old:vp(b.old,'blank'),a4:vp(b.a4,'print'),logo:vp(b.logo,'print'),hat:vp(b.hat,'print'),wrap:vp(b.wrap!=null?b.wrap:((b.p||b.id)==='mug'?75:null),'print')});});
  A3_KAT=+D.a3||2;TIERS=D.tiers;setTimeout(function(){if(window.seoUpdate)seoUpdate();},0);PRICE_NOTE=(D.note||[]).concat(['Tüm fiyatlara KDV dahildir.']);CONTACT=D.contact;applyLogo();bzMerge();}
 function prBig(x){if(x.old&&x.old>x.price){var pc=Math.round((1-x.price/x.old)*100);return '<s class="old">'+tl(x.old)+'</s><span class="now">'+tl(x.price)+'</span>'+(pc>0?'<em class="pct">%'+pc+' indirim</em>':'');}return '<span class="now">'+tl(x.price)+'</span>';}
 function pr(x){return (x.old&&x.old>x.price?'<s class="old">'+tl(x.old)+'</s>':'')+tl(x.price);}
@@ -1838,7 +1839,7 @@ function pagesNow(){var l=PAGES.map(function(p){var m={hazir:'menuHazir',atolye:
 var CATS=[['kadin','Kadın'],['erkek','Erkek'],['cocuk','Çocuk']],subSel='',sub2Sel='',catOpen='',grpOpen='';
 var SIDES={tee:{front:['a4','a3','logo'],back:['a4','a3']},sweat:{front:['a4','a3','logo'],back:['a4','a3']},polo:{front:['logo'],back:['a4','a3']},hat:{front:['hat'],back:[]}};
 var PNAME={a4:'A4 baskı',a3:'A3 baskı',logo:'Sol göğüs logo',hat:'Şapka ön baskı'};
-function printFee(b,k){if(k==='a4')return b.a4;if(k==='a3')return b.a4*A3_KAT;if(k==='logo')return b.logo;if(k==='hat'||k==='mug')return b.hat;return 0;}
+function printFee(b,k){if(k==='a4')return b.a4;if(k==='a3')return b.a4*A3_KAT;if(k==='logo')return b.logo;if(k==='hat'||k==='mug')return b.hat;if(k==='mugw')return b.wrap||0;return 0;}
 var cart={},catSel='kadin',cur='ana',favs={};
 try{cart=JSON.parse(localStorage.getItem('wf_cart')||'{}')||{};favs=JSON.parse(localStorage.getItem('wf_fav')||'{}')||{};}catch(_){cart={};favs={};}
 function saveLS(){try{localStorage.setItem('wf_cart',JSON.stringify(cart));localStorage.setItem('wf_fav',JSON.stringify(favs));}catch(_){}}
@@ -1965,7 +1966,7 @@ function bfTee(area){var k=1.4,top=21,a='';
   if(area==='logo'){var s=8*k;a='<rect class="bfr" x="67" y="'+(top+6)+'" width="'+s+'" height="'+s+'"/>'+bfArt(67,top+6,s,s);}
   else{var w=(area==='a3'?29.7:21)*k,h=(area==='a3'?42:29.7)*k,x=60-w/2,y=top+8*k*.9;a='<rect class="bfr" x="'+x.toFixed(2)+'" y="'+y.toFixed(2)+'" width="'+w.toFixed(2)+'" height="'+h.toFixed(2)+'"/>'+bfArt(x,y,w,h);}
   return '<path class="bft" d="'+BF_TEE+'"/><path class="bfn" d="M43 9Q60 19 77 9"/>'+a;}
-function bfCard(svg,t,cm,p,note){return '<div class="bfc"><div class="bfv"><svg viewBox="0 0 120 124" aria-hidden="true">'+svg+'</svg></div><div class="bfi"><b>'+t+'</b><small>'+cm+'</small></div><div class="bfp">+'+tl(p)+'</div>'+(note?'<small class="bfm">'+note+'</small>':'')+'</div>';}
+function bfCard(svg,t,cm,p,note,wide){return '<div class="bfc'+(wide?' bfw':'')+'"><div class="bfv"><svg viewBox="0 0 120 124" aria-hidden="true">'+svg+'</svg></div><div class="bfi"><b>'+t+'</b><small>'+cm+'</small></div><div class="bfp">+'+tl(p)+'</div>'+(note?'<small class="bfm">'+note+'</small>':'')+'</div>';}
 function priceHTML(){
   if(TX('showFiyat')===false||!BLANKS)return '';
   var shirt=function(b){return b.a4!=null&&b.hat==null;},a4=bfMin(function(b){return b.a4;},shirt),lo=bfMin(function(b){return b.logo;},shirt),
@@ -1975,7 +1976,9 @@ function priceHTML(){
   if(a4)c+=bfCard(bfTee('a3'),'A3 baskı','29,7 × 42 cm · büyük ve etkileyici',a4*A3_KAT);
   if(hat)c+=bfCard('<path class="bft" d="M24 80C22 44 40 26 60 26C80 26 98 44 96 80Z"/><path class="bft" d="M14 80Q60 68 106 80Q114 88 104 93Q60 103 16 93Q6 88 14 80Z"/><rect class="bfr" x="34" y="44" width="52" height="26"/>'+bfArt(34,44,52,26),'Şapka ön baskı','20 × 10 cm',hat);
   if(mug)c+=bfCard('<path class="bft" d="M30 30H82V100Q82 106 76 106H36Q30 106 30 100Z"/><path class="bft" d="M82 46C98 46 100 54 100 64C100 76 94 84 82 84" fill="none"/><rect class="bfr" x="36" y="44" width="40" height="40"/>'+bfArt(36,44,40,40),'Kupa baskı','8 × 8 cm · kulpun iki yanı',mug);
-  if(a4&&lo)c+=bfCard('<g transform="translate(-2 14) scale(.52)">'+bfTee('logo')+'</g><g transform="translate(60 14) scale(.52)">'+bfTee('a4')+'</g><text x="30" y="88" class="bfl">ÖN</text><text x="91" y="88" class="bfl">ARKA</text>','Örnek: önde logo, arkada A4','En çok tercih edilen ikili',lo+a4,'Ürün fiyatına eklenir');
+  var mw=bfMin(function(b){return b.wrap;},function(b){return (b.p||b.id)==='mug';});
+  if(mw)c+=bfCard('<rect class="bfr" x="6" y="40" width="108" height="54" rx="1"/>'+bfArt(6,40,108,54)+'<path class="bft" d="M40 26H80V104Q80 108 76 108H44Q40 108 40 104Z" opacity=".0"/><path d="M6 100H114" stroke="currentColor" stroke-width=".4" stroke-dasharray="1.4 1.4" fill="none" opacity=".5"/><text x="60" y="110" class="bfl">KUPANIN ÇEVRESİNİ SARAR</text>','Kupa süblimasyon','20 × 10 cm · tam çevre, canlı renk',mw);
+  if(a4&&lo)c+=bfCard('<g transform="translate(-2 14) scale(.52)">'+bfTee('logo')+'</g><g transform="translate(60 14) scale(.52)">'+bfTee('a4')+'</g><text x="30" y="88" class="bfl">ÖN</text><text x="91" y="88" class="bfl">ARKA</text>','Örnek: önde logo, arkada A4','En çok tercih edilen ikili',lo+a4,'Ürün fiyatına eklenir',true);
   var tr=(TIERS||[]).slice().sort(function(x,y){return x[0]-y[0];}).filter(function(t){return t[0]>0&&t[1]>0;});
   return '<section class="bfy" id="bfiyat"><p class="eyebrow">'+esc(TX('fiyatTitle'))+'</p><h2 class="h2">Önce gör, sonra bastır</h2>'+(TX('fiyatLead')?'<p class="lead">'+esc(TX('fiyatLead'))+'</p>':'')+
     '<div class="bfgrid">'+c+'</div>'+
@@ -2609,7 +2612,7 @@ function adminView(){
       h+='<div class="arow"><img src="'+(b.imgs&&b.imgs.length?src(b.imgs[0]):PH)+'" alt=""><div><b>'+esc(b.name||'Adsız')+(b.show===false?' (gizli)':'')+'</b><small>'+(b.old?tl(b.old)+' → ':'')+tl(b.price||0)+' · '+(hasStock(b)?(+b.stock<=0?'Tükendi':'Stok '+b.stock):'Stok girilmedi')+'</small></div><div class="mini"><button data-ad="mvb" data-i="'+i+'" data-d="-1" aria-label="Yukarı">▲</button><button data-ad="mvb" data-i="'+i+'" data-d="1" aria-label="Aşağı">▼</button><button data-ad="open" data-id="'+b.id+'" aria-label="Düzenle">'+(open?'−':'✎')+'</button></div></div>';
       if(open){
         h+='<div class="aed">'+fld('Ürün adı',pa+'.name')+'<div class="three">'+fld('Baskısız fiyat (₺)',pa+'.price','n')+fld('Eski fiyat (₺)',pa+'.old','n','boş = yok')+fld('Stok (adet)',pa+'.stock','n','boş = takip yok')+'</div>'+
-        (b.hat!=null?fld((b.fixname||'Şapka baskı')+' ücreti (₺)',pa+'.hat','n'):'<div class="two">'+fld('A4 baskı ücreti (₺)',pa+'.a4','n')+fld('Logo ücreti (₺)',pa+'.logo','n')+'</div><p class="note">A3 ücreti = A4 ücreti × '+A3_KAT+' (Fiyatlandırma sekmesinden değişir).</p>')+
+        (b.hat!=null?fld((b.fixname||'Şapka baskı')+' ücreti (₺)',pa+'.hat','n')+((b.p||b.id)==='mug'?fld('Süblimasyon 20 × 10 cm ücreti (₺)',pa+'.wrap','n','75'):''):'<div class="two">'+fld('A4 baskı ücreti (₺)',pa+'.a4','n')+fld('Logo ücreti (₺)',pa+'.logo','n')+'</div><p class="note">A3 ücreti = A4 ücreti × '+A3_KAT+' (Fiyatlandırma sekmesinden değişir).</p>')+
         fld('Kısa not',pa+'.note')+fld('Kesim',pa+'.cuts')+'<label for="'+aid(pa+'.areas')+'">Baskı alanları (her satır bir alan)<textarea id="'+aid(pa+'.areas')+'" data-bind="'+pa+'.areas" data-t="lines">'+esc((b.areas||[]).join('\n'))+'</textarea></label>'+
         '<div class="chk"><label><input type="checkbox" data-bind="'+pa+'.show" data-t="b"'+(b.show!==false?' checked':'')+'>Sitede göster</label></div>'+imgEd(pa)+vidEd(pa,b)+colorEd(pa,b)+
         '<div><button class="btn soft sm" data-ad="delb" data-id="'+b.id+'" style="color:var(--red)">'+(A.del===b.id?'Silmek için tekrar dokun':'Ürünü sil')+'</button></div></div>';

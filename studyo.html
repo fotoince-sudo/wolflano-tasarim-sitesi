@@ -664,7 +664,8 @@ var AREAS={
   a3:  {name:'A3 baskı',      chip:'A3',    cm:[29.7,42], rot:false, fee:140},
   logo:{name:'Sol göğüs logo',chip:'Logo',  cm:[8,8],     rot:false, fee:40, at:[372,176]},
   hat: {name:'Şapka ön baskı',chip:'Şapka', cm:[20,10],    rot:false, fee:40, at:[300,285]},
-  mug: {name:'Kupa baskı',    chip:'Kupa',  cm:[8,8],     rot:false, fee:50, at:[296,302]}
+  mug: {name:'Kupa baskı',    chip:'Kupa',  cm:[8,8],     rot:false, fee:50, at:[296,302]},
+  mugw:{name:'Kupa süblimasyon',chip:'Süblimasyon 20×10',cm:[20,10],rot:false, fee:75, at:[296,302]}
 };
 /* Kesin kurallar: A4/A3 boğaz (arkada ense) çizgisinden 8 cm aşağıda başlar. Logo 8×8 cm, sol göğüste (karşıdan bakınca sağ), hiçbir üründe yeri değişmez. */
 var NECK_Y={front:101,back:76}, DROP_CM=8;
@@ -684,8 +685,8 @@ var PRODUCTS={
          sides:{front:['hat']},vb:{cx:300,cy:290,w:440,h:420},
          rule:'Yalnız ön yüz, 20 × 10 cm sabit baskı alanı.',draw:function(side,tee,cut,thumb){return hatSVG(tee,thumb);}},
   mug:  {name:'Kupa',       cuts:['std'],price:{std:149},
-         sides:{front:['mug'],back:['mug']},vb:{cx:306,cy:304,w:150,h:140},
-         rule:'Kulpun iki yanına (ön ve arka) 8 × 8 cm baskı.',draw:function(side,tee,cut,thumb){return mugSVG(side,tee,thumb);}}
+         sides:{front:['mug','mugw'],back:['mug']},vb:{cx:306,cy:304,w:150,h:140},
+         rule:'Kulpun iki yanına (ön ve arka) 8 × 8 cm baskı ya da kupanın çevresini saran 20 × 10 cm süblimasyon.',draw:function(side,tee,cut,thumb){return mugSVG(side,tee,thumb);}}
 };
 var PRODUCT_ORDER=['tee','sweat','polo','hat','mug'];
 var SIDE_NAME={front:'Ön',back:'Arka'};
@@ -695,7 +696,9 @@ var CUT_K={erkek:[1,1],kadin:[.92,.94],cocuk:[.74,.72],std:[1,1]};
 var SIZE_SETS={erkek:['S','M','L','XL','2XL','3XL'],kadin:['XS','S','M','L','XL','2XL'],cocuk:['3-4','5-6','7-8','9-10','11-12','13-14'],std:['Std']};
 var PRICE={tiers:[[50,.15],[25,.10],[10,.05]]};
 function P(){return PRODUCTS[state.product];}
-function sidesOf(){return Object.keys(P().sides);}
+function mugWrap(){return state.product==='mug'&&state.front&&state.front.area==='mugw';}
+/* Süblimasyon kupanın çevresini sarar: arka yüz ayrıca basılmaz */
+function sidesOf(){var k=Object.keys(P().sides);return mugWrap()?['front']:k;}
 function sizeList(){return SIZE_SETS[state.cut];}
 function productLabel(){var q=P();return (q.cuts.length>1?CUT_NAME[state.cut]+' ':'')+q.name;}
 function basePrice(){return P().price[state.cut];}
@@ -1439,6 +1442,7 @@ function layout(){
   var wr=wrap.getBoundingClientRect(),W=wr.width,H=wr.height;
   if(!W||!H)return;
   var k=CUT_K[state.cut]||CUT_K.erkek,ay=NECK_Y[view.side],vb=P().vb,base,s,cx=STAGE_W/2,cy;
+  if(vb&&mugWrap())vb={cx:296,cy:304,w:200,h:140};
   if(vb){base=Math.min(W/vb.w,H/vb.h)*0.97;cx=vb.cx;cy=vb.cy;}
   else{var fb=fitBox(view.side),fh=fb.bot-fb.top;var mob=W<700,gx=mob?0.9:0.86;base=Math.min((W-64)*gx/fb.w,(H-60)*gx/fh);cy=(fb.top+fb.bot)/2-4;}
   s=base;
@@ -2213,7 +2217,7 @@ function syncChips(){
   });
   $('#areaChips').innerHTML=h;
   $('#sideF').classList.toggle('on',view.side==='front');$('#sideB').classList.toggle('on',view.side==='back');
-  $('#sideSeg').hidden=Object.keys(q.sides).length<2;
+  $('#sideSeg').hidden=Object.keys(q.sides).length<2||mugWrap();
 }
 function renderAll(){
   renderShirt();updateArea();renderObjects();buildSel();syncCtx();syncTextInput();syncChips();syncTeeUI();syncProduct();layout();
@@ -2238,7 +2242,7 @@ $('#wolfGo').addEventListener('click',function(){var t=($('#wolfIn').value||'').
 $('#rulerBtn').addEventListener('click',function(){RULER=!RULER;try{localStorage.setItem('wf_ruler',RULER?'1':'0');}catch(_){}renderRuler();toast(RULER?'Cetvel açık: yeşil bant baskı alanı, ölçüler cm':'Cetvel gizlendi');});
 $('#fitBtn').addEventListener('click',function(){view.fit=view.fit==='area'?'shirt':'area';resetZoom();syncFitBtn();layout();});
 $('#sideF').addEventListener('click',function(){switchSide('front');});
-$('#sideB').addEventListener('click',function(){switchSide('back');});
+$('#sideB').addEventListener('click',function(){if(mugWrap()){toast('Süblimasyon kupanın çevresini sarar; arkaya ayrıca baskı gerekmez.');return;}switchSide('back');});
 function switchSide(s){if(view.side===s)return;view.side=s;view.sel=null;view.grp=false;renderAll();}
 $('#areaChips').addEventListener('click',function(e){var b=e.target.closest('[data-a]');if(b)selectArea(b.dataset.a,b.dataset.l==='1');});
 $('#pgClose').addEventListener('click',closeProdPage);
