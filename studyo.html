@@ -437,6 +437,10 @@ svg.i{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stro
 .fxp>b{font:700 11px var(--ui);letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
 .fxc{display:flex;flex-wrap:wrap;gap:5px}
 .fxc button{border:1px solid var(--line2);background:var(--panel2);border-radius:999px;padding:6px 10px;font:600 12px var(--ui);color:var(--ink)}
+.toast.tap{pointer-events:auto}
+.aitag{font:700 9px var(--ui);letter-spacing:.06em;text-transform:none;background:var(--accent);color:#fff;border-radius:999px;padding:2px 6px;margin-left:6px;font-style:normal;vertical-align:1px}
+.fxc.ai button{border-color:var(--accent)}.ainote{font:500 11px var(--ui);color:var(--muted);margin-top:-2px}
+.aispin{display:inline-block;width:12px;height:12px;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;margin-right:8px;vertical-align:-2px;animation:aisp .8s linear infinite}@keyframes aisp{to{transform:rotate(360deg)}}
 .fxc button.on{background:var(--accent);border-color:var(--accent);color:var(--accent-ink,#fff)}
 .fxc button:disabled{opacity:.5}
 .fxr{display:grid;gap:2px;font:600 11px var(--ui);color:var(--muted)}
@@ -549,7 +553,8 @@ img{-webkit-touch-callout:none;-webkit-user-drag:none}
     <div class="panel" data-p="wolf" hidden>
       <div class="wolfp"><b>Wolf tasarlasın</b><p>Ne istediğini bir cümleyle yaz. Wolf, ürününe ve baskı alanına uygun tasarımı hazırlar.</p>
       <div class="wolfin"><textarea id="wolfIn" rows="2" enterkeyhint="send" placeholder="Örn. ay ışığında uluyan kurt, altında takımımızın adı"></textarea><button class="primary" id="wolfGo" type="button" aria-label="Gönder"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h13M13 6l6 6-6 6"/></svg></button></div>
-      <p class="note" id="wolfNote">Wolf çok yakında burada kendisi tasarlayacak. Şimdilik fikrini gönder, tasarımını Wolflano ekibi hazırlayıp sana iletsin.</p></div>
+      <div class="fxc ai" id="wolfSt" style="margin-top:8px"></div>
+      <p class="note" id="wolfNote">Wolf yapay zekâ ile 30-60 saniyede çizer ve tasarımı baskı alanına yerleştirir. Üyelikle günde 6 hak. İstersen <a href="#" id="wolfWa" style="color:var(--accent);font-weight:600">fikrini ekibimize gönder</a>, biz hazırlayalım.</p></div>
     </div>
     <div class="panel" data-p="opt" hidden>
       <div class="mini-title">Ürün rengi <em id="optColorName"></em></div>
@@ -1847,12 +1852,49 @@ async function applyFx(st,edge,soft){
 function fxPop(){
   var o=selObj(),pop=$('#colorPop');if(!o||o.type!=='image'||view.pop!=='fx')return;
   var st=o.phs||'none',ed=o.phe||'none',sf=o.phf==null?0.5:o.phf;
-  pop.innerHTML='<div class="fxp"><b>Tarz</b><div class="fxc">'+PHS.map(function(s){return '<button type="button" data-phs="'+s[0]+'"'+(s[0]===st?' class="on"':'')+(fxBusy?' disabled':'')+'>'+s[1]+'</button>';}).join('')+'</div>'+
+  pop.innerHTML='<div class="fxp"><b>Wolf çizsin <em class="aitag">Yapay zekâ</em></b><div class="fxc ai">'+AI_ST.map(function(s){return '<button type="button" data-ais="'+s[0]+'"'+(st==='ai-'+s[0]?' class="on"':'')+(AI_BUSY||fxBusy?' disabled':'')+'>'+s[1]+'</button>';}).join('')+'</div><small class="ainote">'+(AI_BUSY?'Wolf çiziyor…':'Gerçek çizim gibi sonuç · 30-60 sn · üyelik ile günde 6 hak')+'</small>'+
+    '<b>Hızlı filtre</b><div class="fxc">'+PHS.map(function(s){return '<button type="button" data-phs="'+s[0]+'"'+(s[0]===st?' class="on"':'')+(fxBusy?' disabled':'')+'>'+s[1]+'</button>';}).join('')+'</div>'+
     '<b>Kenar</b><div class="fxc">'+PHE.map(function(s){return '<button type="button" data-phe="'+s[0]+'"'+(s[0]===ed?' class="on"':'')+(fxBusy?' disabled':'')+'>'+s[1]+'</button>';}).join('')+'</div>'+
     (ed!=='none'?'<label class="fxr"><span>Kenar yumuşaklığı</span><input type="range" min="0" max="100" value="'+Math.round(sf*100)+'" data-phf="1"'+(fxBusy?' disabled':'')+'></label>':'')+'</div>';
   pop.hidden=false;
 }
+/* ===== Wolf çizsin: yapay zekâ ile fotoğraf tarzı ve metinden tasarım (sunucu: bz-image) ===== */
+var AI_ST=[['cartoon','Karikatür'],['pencil','Kalem çizim'],['illus','İllüstrasyon'],['canvas','Yağlı boya']];
+var AI_BUSY=false;
+async function aiTok(){try{var s=JSON.parse(localStorage.getItem('wf_sb')||'null');if(!s||!s.access)return null;if(s.exp>Date.now())return s.access;
+  var r=await fetch(SB.url+'/auth/v1/token?grant_type=refresh_token',{method:'POST',headers:{apikey:SB.key,'Content-Type':'application/json'},body:JSON.stringify({refresh_token:s.refresh})});
+  if(!r.ok)return null;var j=await r.json();var n={access:j.access_token,refresh:j.refresh_token,exp:Date.now()+((+j.expires_in||3600)-60)*1000,user:j.user||s.user,adm:s.adm};localStorage.setItem('wf_sb',JSON.stringify(n));return n.access;}catch(_){return null;}}
+function aiLogin(){var t=toastEl();t.classList.add('long','tap');t.innerHTML='Wolf\'un çizmesi için üye girişi gerekiyor. <a href="index.html#hesabim" target="_blank" rel="noopener" style="color:inherit;font-weight:700;text-decoration:underline">Giriş yap / üye ol</a>, sonra buraya dönüp yeniden dokun.';t.hidden=false;clearTimeout(toastT);toastT=setTimeout(function(){t.hidden=true;},9000);}
+async function aiPhotoData(assetId){var a=assets[assetId],im=await loadImg(a.url),M=1536,sc=Math.min(1,M/Math.max(im.naturalWidth,im.naturalHeight));
+  var c=document.createElement('canvas');c.width=Math.round(im.naturalWidth*sc);c.height=Math.round(im.naturalHeight*sc);var x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,c.width,c.height);x.drawImage(im,0,0,c.width,c.height);return c.toDataURL('image/jpeg',0.88);}
+async function aiCall(body){
+  var tk=await aiTok();if(!tk){aiLogin();return null;}
+  var ac=new AbortController(),tm=setTimeout(function(){ac.abort();},170000);
+  try{var r=await fetch(SB.url+'/functions/v1/bz-image',{method:'POST',signal:ac.signal,headers:{'Content-Type':'application/json',apikey:SB.key,Authorization:'Bearer '+tk},body:JSON.stringify(body)});
+    var j=await r.json().catch(function(){return {};});clearTimeout(tm);
+    if(r.status===401){aiLogin();return null;}
+    if(!r.ok||!j.image){longToast(j.message||'Wolf şu an çizemedi. Biraz sonra yeniden dene.');return null;}
+    return j.image;}
+  catch(e){clearTimeout(tm);longToast('Wolf şu an çizemedi. Bağlantını kontrol edip yeniden dene.');return null;}}
+function aiAsset(dataUrl){return new Promise(function(res,rej){var im=new Image();im.onload=function(){var id='a'+(++assetN);assets[id]={url:dataUrl,w:im.naturalWidth,h:im.naturalHeight,up:true,ai:1};assetList.push(id);try{renderUploads();}catch(_){}res(id);};im.onerror=rej;im.src=dataUrl;});}
+function aiWait(m){var t=toastEl();t.classList.remove('long');t.innerHTML='<span class="aispin"></span>'+m;t.hidden=false;clearTimeout(toastT);}
+async function aiStyle(st){
+  var o=selObj();if(!o||o.type!=='image'||AI_BUSY||fxBusy)return;
+  if(!o.base||!assets[o.base])o.base=o.assetId;
+  AI_BUSY=true;fxPop();var nm=(AI_ST.filter(function(x){return x[0]===st;})[0]||[])[1]||'';
+  try{
+    var tk=await aiTok();if(!tk){aiLogin();return;}
+    aiWait('Wolf çiziyor: '+nm+' · 30-60 saniye sürebilir');
+    var src=await aiPhotoData(o.base),a=assets[o.base];
+    var img=await aiCall({style:st,orient:a.w>a.h*1.15?'landscape':'portrait',image:src,prompt:'Head-and-shoulders portrait of the person in the photo, centered, on a plain pure white background, nothing else in the scene.'});
+    if(!img)return;
+    var id=await aiAsset(img),na=assets[id];o.assetId=id;o.phs='ai-'+st;o.phe='none';o.h=o.w*na.h/na.w;
+    renderObjects();updateSel();syncCtx();pushHist();toast('Wolf çizdi. Beğenmezsen tekrar dokun ya da "Gerçek"e dön.');
+  }catch(_){longToast('Wolf şu an çizemedi. Biraz sonra yeniden dene.');}
+  finally{AI_BUSY=false;fxPop();}
+}
 function showFx(){var o=selObj();if(!o)return;if(view.pop==='fx'){view.pop=null;$('#colorPop').hidden=true;return;}view.pop='fx';fxPop();}
+document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('[data-ais]');if(!b||!$('#colorPop').contains(b))return;e.preventDefault();e.stopPropagation();aiStyle(b.dataset.ais);},true);
 document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('[data-phs],[data-phe]');if(!b||!$('#colorPop').contains(b))return;e.preventDefault();e.stopPropagation();
   if(b.dataset.phs)applyFx(b.dataset.phs,null,null);else applyFx(null,b.dataset.phe,null);},true);
 document.addEventListener('change',function(e){var t=e.target;if(t&&t.dataset&&t.dataset.phf)applyFx(null,null,(+t.value)/100);});
@@ -2293,7 +2335,7 @@ function renderAll(){
 var toastT=0;
 /* Sipariş, ödeme veya ürün sayfası açıkken bildirim tasarım alanının arkasında kalmasın diye en üstte gösterilir. */
 function toastEl(){var top=['#order','#checkout','#prodPage','#wolfPage'].some(function(q){var e=$(q);return e&&!e.hidden;});
-  var t=top?$('#toastTop'):$('#toast'),o=top?$('#toast'):$('#toastTop');if(o)o.hidden=true;return t;}
+  var t=top?$('#toastTop'):$('#toast'),o=top?$('#toast'):$('#toastTop');if(o)o.hidden=true;if(t)t.classList.remove('tap');return t;}
 function toast(m){var t=toastEl();t.classList.remove('long');t.textContent=m;t.hidden=false;clearTimeout(toastT);toastT=setTimeout(function(){t.hidden=true;},2400);}
 
 /* ---------- Olaylar ---------- */
@@ -2302,7 +2344,20 @@ $('#sheetX').addEventListener('click',closeTab);
 $('#undoBtn').addEventListener('click',undo);
 $('#redoBtn').addEventListener('click',redo);
 $('#wolfIn').addEventListener('keydown',function(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();$('#wolfGo').click();}});
-$('#wolfGo').addEventListener('click',function(){var t=($('#wolfIn').value||'').trim();if(t.length<4){toast('Önce ne istediğini kısaca yaz');$('#wolfIn').focus();return;}
+var WOLF_ST=[['real','Gerçekçi'],['illus','İllüstrasyon'],['cartoon','Karikatür'],['pencil','Kalem'],['canvas','Yağlı boya']],wolfSt='illus';
+function wolfStRender(){var e=$('#wolfSt');if(e)e.innerHTML=WOLF_ST.map(function(s){return '<button type="button" data-wst="'+s[0]+'"'+(s[0]===wolfSt?' class="on"':'')+'>'+s[1]+'</button>';}).join('');}
+wolfStRender();
+document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('[data-wst]');if(!b)return;wolfSt=b.dataset.wst;wolfStRender();});
+$('#wolfGo').addEventListener('click',async function(){var t=($('#wolfIn').value||'').trim();if(t.length<4){toast('Önce ne istediğini kısaca yaz');$('#wolfIn').focus();return;}
+  if(AI_BUSY)return;AI_BUSY=true;var g=$('#wolfGo');g.disabled=true;
+  try{var tk=await aiTok();if(!tk){aiLogin();return;}
+    var A=areaBox(view.side,cur().area);aiWait('Wolf çiziyor · 30-60 saniye sürebilir');
+    var img=await aiCall({prompt:t+'. Design for '+productLabel()+' print. Isolated artwork on a plain pure white background.',style:wolfSt,orient:A.w>A.h*1.15?'landscape':'portrait'});
+    if(!img)return;var id=await aiAsset(img);addImageObj(id);closeTab();toast('Wolf çizdi. Taşıyabilir, büyütebilirsin. Beyaz zemini "Arka planı sil" ile kaldırabilirsin.');}
+  catch(_){longToast('Wolf şu an çizemedi. Biraz sonra yeniden dene.');}
+  finally{AI_BUSY=false;g.disabled=false;}
+});
+document.addEventListener('click',function(e){var w=e.target.closest&&e.target.closest('#wolfWa');if(!w)return;e.preventDefault();var t=($('#wolfIn').value||'').trim();if(t.length<4){toast('Önce ne istediğini kısaca yaz');$('#wolfIn').focus();return;}
   var m='Merhaba Wolflano, Wolf tasarlasın ile tasarım istiyorum.\nÜrün: '+productLabel()+'\nBaskı: '+areaTitle(view.side)+' ('+SIDE_NAME[view.side]+')\nFikrim: '+t;
   window.open('https://wa.me/905307641717?text='+encodeURIComponent(m),'_blank');});
 $('#rulerBtn').addEventListener('click',function(){RULER=!RULER;try{localStorage.setItem('wf_ruler',RULER?'1':'0');}catch(_){}renderRuler();toast(RULER?'Cetvel açık: yeşil bant baskı alanı, ölçüler cm':'Cetvel gizlendi');});
