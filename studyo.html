@@ -76,6 +76,14 @@ svg.i{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stro
 .sub-r{display:flex;gap:6px}
 .o-body h3 em{font-style:normal;color:var(--ink);letter-spacing:.04em;text-transform:none;font-family:var(--ui);font-weight:600;margin-left:6px}
 .csw-row{display:flex;flex-wrap:wrap;gap:10px}
+.optb{flex:none;display:flex;align-items:center;gap:6px;height:36px;padding:0 10px 0 6px;border-radius:12px;border:1px solid var(--line2);background:var(--panel);color:var(--ink);font:700 13px var(--ui)}
+.optb .dot{width:22px;height:22px;border-radius:50%;box-shadow:inset 0 0 0 1px rgba(0,0,0,.25)}
+.optb.on{border-color:var(--accent);background:var(--accent-soft)}
+.opt-row{flex-wrap:nowrap;overflow-x:auto;padding:4px 2px;scrollbar-width:none}.opt-row::-webkit-scrollbar{display:none}.opt-row .csw{flex:none}
+.mini-title em{font-style:normal;color:var(--muted);font-weight:600;text-transform:none;letter-spacing:0;margin-left:4px}
+.szrow{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding:2px}.szrow::-webkit-scrollbar{display:none}
+.szrow button{flex:none;min-width:46px;height:38px;padding:0 10px;border-radius:999px;border:1px solid var(--line2);background:var(--panel);color:var(--ink);font:700 14px var(--ui)}
+.szrow button.on{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
 .csw{width:30px;height:30px;border-radius:50%;border:2px solid var(--line2);padding:0}
 .csw.on{outline:3px solid var(--accent);outline-offset:2px}
 .pg-list{display:flex;flex-direction:column;gap:22px}
@@ -428,6 +436,7 @@ img{-webkit-touch-callout:none;-webkit-user-drag:none}
   </header>
 
   <div class="sub">
+    <button class="optb" id="optBtn" aria-label="Ürün rengi ve beden"><i class="dot" id="optDot"></i><span id="optSz"></span></button>
     <div class="seg" id="sideSeg"><button id="sideF" class="on">Ön</button><button id="sideB">Arka</button></div>
     <div class="chips" id="areaChips">
     </div>
@@ -510,6 +519,11 @@ img{-webkit-touch-callout:none;-webkit-user-drag:none}
       <div class="wolfp"><b>Wolf tasarlasın</b><p>Ne istediğini bir cümleyle yaz. Wolf, ürününe ve baskı alanına uygun tasarımı hazırlar.</p>
       <div class="wolfin"><textarea id="wolfIn" rows="2" enterkeyhint="send" placeholder="Örn. ay ışığında uluyan kurt, altında takımımızın adı"></textarea><button class="primary" id="wolfGo" type="button" aria-label="Gönder"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h13M13 6l6 6-6 6"/></svg></button></div>
       <p class="note" id="wolfNote">Wolf çok yakında burada kendisi tasarlayacak. Şimdilik fikrini gönder, tasarımını Wolflano ekibi hazırlayıp sana iletsin.</p></div>
+    </div>
+    <div class="panel" data-p="opt" hidden>
+      <div class="mini-title">Ürün rengi <em id="optColorName"></em></div>
+      <div class="csw-row opt-row" id="optColors"></div>
+      <div id="optSizeWrap"><div class="mini-title" style="margin-top:12px">Beden <em id="optSzInfo"></em></div><div class="szrow" id="optSizes"></div></div>
     </div>
     <div class="panel" data-p="tpl" hidden>
       <label class="search" for="tplQ"><svg class="i" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6"/><path d="M20 20l-4.2-4.2"/></svg><input id="tplQ" type="search" placeholder="Şablon ara: kurt, anne, spor, İzmir…" autocomplete="off" enterkeyhint="search"><button type="button" id="tplQx" aria-label="Aramayı temizle" hidden>×</button></label>
@@ -2077,12 +2091,14 @@ function openTab(name,focusInput){
   $$('#tabs button').forEach(function(b){b.classList.toggle('on',b.dataset.tab===name);});
   view.fit='area';resetZoom();syncFitBtn();
   if(name==='tpl')renderTplPreviews();
+  if(name==='opt')renderOpt();
+  syncOpt();
   if(name==='text')renderFxRows();
   if(name==='text'&&focusInput){setTimeout(function(){if(!textIn.disabled){textIn.focus();textIn.select();}},80);}
   layout();
 }
 function closeTab(){
-  view.tab=null;sheet.hidden=true;
+  view.tab=null;sheet.hidden=true;setTimeout(syncOpt,0);
   $$('#tabs button').forEach(function(b){b.classList.remove('on');});
   view.fit='shirt';resetZoom();syncFitBtn();layout();
 }
@@ -2140,7 +2156,18 @@ function renderTplPreviews(){
     tplObjects(t,{cx:REF_W/2,cy:98},1,ink).forEach(function(o){inn.appendChild(makeEl(o));});
   });
 }
-function syncTeeUI(){if(!$('#prodPage').hidden)renderProdPage();}
+function syncTeeUI(){if(!$('#prodPage').hidden)renderProdPage();syncOpt();if(view.tab==='opt')renderOpt();}
+/* Stüdyodan çıkmadan ürün rengi ve beden değişimi (üst satırdaki renk noktası) */
+function curSize(){var l=sizeList()||[];if(!l.length||state.cut==='std')return '';try{var z=phSize();if(z&&l.indexOf(z)>=0)return z;}catch(_){}var best='',mx=0;l.forEach(function(z){if((state.sizes[z]||0)>mx){mx=state.sizes[z];best=z;}});return best||PH.want||'';}
+function syncOpt(){var d=$('#optDot'),z=$('#optSz');if(!d)return;d.style.background=state.tee;var cs=curSize();z.textContent=cs;z.hidden=!cs;$('#optBtn').classList.toggle('on',view.tab==='opt');}
+function renderOpt(){
+  var nm='',sw='';TEES.forEach(function(t){if(t[1]===state.tee)nm=t[0];sw+='<button class="csw'+(t[1]===state.tee?' on':'')+'" data-tee="'+t[1]+'" style="background:'+t[1]+'" aria-label="'+t[0]+'"></button>';});
+  $('#optColors').innerHTML=sw;$('#optColorName').textContent=nm;
+  var l=state.cut==='std'?[]:(sizeList()||[]),cz=curSize();$('#optSizeWrap').hidden=!l.length;
+  $('#optSizes').innerHTML=l.map(function(z){return '<button type="button" data-oz="'+z+'"'+(z===cz?' class="on"':'')+'>'+z+'</button>';}).join('');
+  var dz=null;try{dz=phDims(state.product,state.cut);}catch(_){}
+  $('#optSzInfo').textContent=dz&&cz?'· en '+dz[0]+' cm, boy '+dz[1]+' cm':'';
+}
 function syncChips(){
   var q=P(),al=q.sides[view.side]||[],h='';
   var curLand=isLand(view.side);
@@ -2193,7 +2220,7 @@ $('#wfGrid').addEventListener('click',function(e){
   closeWolf();applyTemplate(TPLS[+b.dataset.tpl],true);
   toast('Tasarım baskı alanına yerleşti. Boyu üstten seçebilirsin.');
 });
-$('#pgColors').addEventListener('click',function(e){var b=e.target.closest('[data-tee]');if(!b)return;state.tee=b.dataset.tee;renderShirt();renderProdPage();pushHist();});
+$('#pgColors').addEventListener('click',function(e){var b=e.target.closest('[data-tee]');if(!b)return;teeSwap(b.dataset.tee);renderObjects();renderShirt();renderProdPage();pushHist();});
 $('#pgList').addEventListener('click',function(e){var b=e.target.closest('[data-p]');if(!b)return;var ch=state.product!==b.dataset.p||state.cut!==b.dataset.c;chooseProduct(b.dataset.p,b.dataset.c);});
 $('#addText').addEventListener('click',function(){addText();});
 $('#fontGrid').addEventListener('click',function(e){
@@ -2455,6 +2482,14 @@ $('#rosterList').addEventListener('input',function(e){
   v[f]=val;renderPrice();
 });
 $('#rosterList').addEventListener('change',function(){pushHist();});
+$('#optBtn').addEventListener('click',function(){openTab('opt');});
+/* Ürün rengi değişince otomatik mürekkep rengindeki parçalar da yeni zemine göre açık/koyu olur */
+function teeSwap(hex){var o0=autoInk();state.tee=hex;var o1=autoInk();if(o0!==o1)['front','back'].forEach(function(sd){(state[sd]&&state[sd].objs||[]).forEach(function(o){if(o.color&&String(o.color).toLowerCase()===String(o0).toLowerCase())o.color=o1;});});}
+$('#optColors').addEventListener('click',function(e){var b=e.target.closest('[data-tee]');if(!b)return;teeSwap(b.dataset.tee);renderShirt();renderObjects();syncOpt();renderOpt();pushHist();});
+$('#optSizes').addEventListener('click',function(e){var b=e.target.closest('[data-oz]');if(!b)return;var z=b.dataset.oz,ks=Object.keys(state.sizes).filter(function(k){return state.sizes[k]>0;});
+  if(ks.length<=1){var q=ks.length?state.sizes[ks[0]]:1;state.sizes={};state.sizes[z]=q;}
+  PH.want=z;renderSizes();renderPrice();renderShirt();layout();syncOpt();renderOpt();pushHist();
+  var dz=null;try{dz=phDims(state.product,state.cut);}catch(_){}if(dz)toast('Beden '+z+': en '+dz[0]+' cm, boy '+dz[1]+' cm');});
 $('#sizeGrid').addEventListener('click',function(e){
   var b=e.target.closest('[data-s]');if(!b)return;
   var s=b.dataset.s,v=(state.sizes[s]||0)+(+b.dataset.d);state.sizes[s]=clamp(v,0,999);
