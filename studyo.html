@@ -1871,32 +1871,37 @@ async function aiCall(body){
   var tk=await aiTok();if(!tk){aiLogin();return null;}
   var ac=new AbortController(),tm=setTimeout(function(){ac.abort();},170000);
   try{var r=await fetch(SB.url+'/functions/v1/bz-image',{method:'POST',signal:ac.signal,headers:{'Content-Type':'application/json',apikey:SB.key,Authorization:'Bearer '+tk},body:JSON.stringify(body)});
-    var j=await r.json().catch(function(){return {};});clearTimeout(tm);
+    var j=await r.json().catch(function(){return {};});clearTimeout(tm);aiDone();
     if(r.status===401){aiLogin();return null;}
     if(!r.ok||!j.image){longToast(j.message||'Wolf şu an çizemedi. Biraz sonra yeniden dene.');return null;}
     return j.image;}
-  catch(e){clearTimeout(tm);longToast('Wolf şu an çizemedi. Bağlantını kontrol edip yeniden dene.');return null;}}
+  catch(e){clearTimeout(tm);aiDone();longToast('Wolf şu an çizemedi. Bağlantını kontrol edip yeniden dene.');return null;}}
 function aiAsset(dataUrl){return new Promise(function(res,rej){var im=new Image();im.onload=function(){var id='a'+(++assetN);assets[id]={url:dataUrl,w:im.naturalWidth,h:im.naturalHeight,up:true,ai:1,nobg:/^data:image\/png/.test(dataUrl)};assetList.push(id);try{renderUploads();}catch(_){}res(id);};im.onerror=rej;im.src=dataUrl;});}
-function aiWait(m){var t=toastEl();t.classList.remove('long');t.innerHTML='<span class="aispin"></span>'+m;t.hidden=false;clearTimeout(toastT);}
+var aiTimer=null;
+function aiWait(m){var t=toastEl(),t0=Date.now();t.classList.remove('long');clearTimeout(toastT);clearInterval(aiTimer);
+  function up(){var sec=Math.round((Date.now()-t0)/1000);t.innerHTML='<span class="aispin"></span>'+m+' · '+sec+' sn';t.hidden=false;}
+  up();aiTimer=setInterval(up,1000);}
+function aiDone(){clearInterval(aiTimer);aiTimer=null;}
+function popClose(){view.pop=null;var p=$('#colorPop');if(p)p.hidden=true;}
 async function aiStyle(st){
   var o=selObj();if(!o||o.type!=='image'||AI_BUSY||fxBusy)return;
   if(!o.base||!assets[o.base])o.base=o.assetId;
-  AI_BUSY=true;fxPop();var nm=(AI_ST.filter(function(x){return x[0]===st;})[0]||[])[1]||'';
+  AI_BUSY=true;popClose();try{closeTab();}catch(_){}var nm=(AI_ST.filter(function(x){return x[0]===st;})[0]||[])[1]||'';
   try{
     var tk=await aiTok();if(!tk){aiLogin();return;}
-    aiWait('Wolf çiziyor: '+nm+' · 30-60 saniye sürebilir');
+    aiWait('Wolf çiziyor: '+nm);
     var src=await aiPhotoData(o.base),a=assets[o.base];
     var img=await aiCall({style:st,orient:a.w>a.h*1.15?'landscape':'portrait',image:src});
     if(!img)return;
     var id=await aiAsset(img),na=assets[id];o.assetId=id;o.phs='ai-'+st;o.phe='none';o.h=o.w*na.h/na.w;
-    renderObjects();updateSel();syncCtx();pushHist();toast('Wolf çizdi. Beğenmezsen tekrar dokun ya da "Gerçek"e dön.');
+    renderObjects();updateSel();syncCtx();pushHist();toast('Wolf çizdi. Beğenmezsen Tarz ve kenar → Gerçek ile asıl fotoğrafa dönersin.');
   }catch(_){longToast('Wolf şu an çizemedi. Biraz sonra yeniden dene.');}
-  finally{AI_BUSY=false;fxPop();}
+  finally{AI_BUSY=false;aiDone();}
 }
 function showFx(){var o=selObj();if(!o)return;if(view.pop==='fx'){view.pop=null;$('#colorPop').hidden=true;return;}view.pop='fx';fxPop();}
 document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('[data-ais]');if(!b||!$('#colorPop').contains(b))return;e.preventDefault();e.stopPropagation();aiStyle(b.dataset.ais);},true);
 document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('[data-phs],[data-phe]');if(!b||!$('#colorPop').contains(b))return;e.preventDefault();e.stopPropagation();
-  if(b.dataset.phs)applyFx(b.dataset.phs,null,null);else applyFx(null,b.dataset.phe,null);},true);
+  popClose();if(b.dataset.phs)applyFx(b.dataset.phs,null,null);else applyFx(null,b.dataset.phe,null);},true);
 document.addEventListener('change',function(e){var t=e.target;if(t&&t.dataset&&t.dataset.phf)applyFx(null,null,(+t.value)/100);});
 
 /* Kilitli öğe taşınmaz, büyümez, silinmez; şablon değiştirince de yerinde kalır (ör. okul/kulüp logosu). */
@@ -2349,16 +2354,22 @@ function wolfStRender(){var e=$('#wolfSt');if(e)e.innerHTML=WOLF_ST.map(function
 wolfStRender();
 document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('[data-wst]');if(!b)return;wolfSt=b.dataset.wst;wolfStRender();});
 $('#wolfGo').addEventListener('click',async function(){var t=($('#wolfIn').value||'').trim();if(t.length<4){toast('Önce ne istediğini kısaca yaz');$('#wolfIn').focus();return;}
-  if(AI_BUSY)return;AI_BUSY=true;var g=$('#wolfGo');g.disabled=true;
+  if(AI_BUSY)return;
+  var so0=selObj();
+  if(/(orijinal|orjinal|asıl|eski hal|ilk hal|geri (getir|al|dön)|gerçek fotoğraf|geri al)/i.test(t)){
+    if(so0&&so0.type==='image'&&so0.base&&assets[so0.base]&&so0.assetId!==so0.base){var ba=assets[so0.base];so0.assetId=so0.base;so0.phs='none';so0.phe='none';so0.h=so0.w*ba.h/ba.w;renderObjects();updateSel();syncCtx();pushHist();$('#wolfIn').value='';closeTab();toast('Asıl fotoğrafa dönüldü');}
+    else toast(so0&&so0.type==='image'?'Bu fotoğraf zaten asıl hâlinde':'Önce fotoğrafa dokunup seç');
+    return;}
+  AI_BUSY=true;var g=$('#wolfGo');g.disabled=true;
   try{var tk=await aiTok();if(!tk){aiLogin();return;}
-    var A=areaBox(view.side,cur().area),so=selObj(),ph=(so&&so.type==='image')?so:null;aiWait('Wolf çiziyor · 30-60 saniye sürebilir');
+    var A=areaBox(view.side,cur().area),so=selObj(),ph=(so&&so.type==='image')?so:null;closeTab();popClose();aiWait('Wolf çiziyor');
     var body={prompt:t,style:wolfSt,orient:A.w>A.h*1.15?'landscape':'portrait'};
     if(ph){if(!ph.base||!assets[ph.base])ph.base=ph.assetId;body.image=await aiPhotoData(ph.base);}
     var img=await aiCall(body);
     if(!img)return;var id=await aiAsset(img);
     if(ph){var na=assets[id];ph.assetId=id;ph.phs='ai-'+wolfSt;ph.phe='none';ph.h=ph.w*na.h/na.w;renderObjects();updateSel();syncCtx();pushHist();}else addImageObj(id);closeTab();toast('Wolf çizdi. Taşıyabilir, büyütebilirsin.');}
   catch(_){longToast('Wolf şu an çizemedi. Biraz sonra yeniden dene.');}
-  finally{AI_BUSY=false;g.disabled=false;}
+  finally{AI_BUSY=false;g.disabled=false;aiDone();}
 });
 document.addEventListener('click',function(e){var w=e.target.closest&&e.target.closest('#wolfWa');if(!w)return;e.preventDefault();var t=($('#wolfIn').value||'').trim();if(t.length<4){toast('Önce ne istediğini kısaca yaz');$('#wolfIn').focus();return;}
   var m='Merhaba Wolflano, Wolf tasarlasın ile tasarım istiyorum.\nÜrün: '+productLabel()+'\nBaskı: '+areaTitle(view.side)+' ('+SIDE_NAME[view.side]+')\nFikrim: '+t;
