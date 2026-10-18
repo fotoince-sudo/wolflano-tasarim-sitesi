@@ -1780,7 +1780,10 @@ function ptOf(p){var t=String((p.type||'')+' '+(p.name||'')).toLocaleLowerCase('
   if(/polo/.test(t))return 'polo';if(/sweat|kapüşon|hoodie/.test(t))return 'sweatshirt';if(/eşofman|esofman|jogger/.test(t))return 'esofman';if(/jean|kot/.test(t))return 'jeans';if(/ayakkab|sneaker/.test(t))return 'ayakkabi';if(/şapka|sapka|kemer|çanta|canta|aksesuar|bere|cüzdan/.test(t))return 'aksesuar';if(/tişört|tisort|t-shirt|tshirt/.test(t))return 'tisort';return '';}
 function autoSub(d){(d.products||[]).forEach(function(p){if(p.sub&&p.sub.length)return;var pt=ptOf(p);if(!pt)return;(p.cat||[]).forEach(function(cid){var c=(d.cats||[]).filter(function(x){return x.id===cid;})[0];if(!c)return;
   (c.subs||[]).forEach(function(sb){if(sb.id.slice(-pt.length-1)==='-'+pt)(p.sub=p.sub||[]).push(sb.id);});});});}
-function applyData(){autoSub(D);if(!D.vat)D.vat={mode:'excl',ready:20,blank:20,print:20};
+/* Yeni hazır ürünler (ör. canvas) kayıtlı veride yoksa bir kez eklenir; yönetimden silinirse geri gelmez */
+function seedBlanks(){D.seeded=D.seeded||{};if(D.seeded.canvas||!Array.isArray(D.blanks))return;var have={};D.blanks.forEach(function(b){have[b.id]=1;});
+  (DEF.blanks||[]).forEach(function(b){if((b.p==='canvas')&&!have[b.id])D.blanks.push(clone(b));});D.seeded.canvas=true;}
+function applyData(){seedBlanks();autoSub(D);if(!D.vat)D.vat={mode:'excl',ready:20,blank:20,print:20};
  pNums(D.products);ALLP=D.products.map(function(p){return Object.assign({},p,{price:vp(p.price,'ready'),old:vp(p.old,'ready')});});
  PRODUCTS=ALLP.filter(function(p){return p.show!==false;});
  CATS=(D.cats||[]).filter(function(c){return c.show!==false;}).map(function(c){return [c.id,c.name||'Adsız'];});if(CATS.length&&!CATS.some(function(c){return c[0]===catSel;})){catSel=CATS[0][0];subSel='';}
