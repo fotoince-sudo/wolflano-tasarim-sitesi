@@ -137,6 +137,9 @@ svg.i{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stro
 #rulerHost text.rgt{fill:#c0392b}
 #rulerBtn.on{background:var(--ink,#111);color:#fff}
 #areaBox{position:absolute;pointer-events:none;border:calc(1.5px*var(--inv)) dashed var(--area);opacity:.8}
+#areaBox.bleed{border-style:solid;border-width:calc(1px*var(--inv));opacity:.55}
+#faceBox{position:absolute;pointer-events:none;border:calc(1.5px*var(--inv)) dashed var(--area)}
+#faceLabel{position:absolute;left:0;top:100%;margin-top:calc(4px*var(--inv));white-space:nowrap;font:600 calc(11px*var(--inv))/1 var(--ui);color:var(--area)}
 .brandopt{display:flex;gap:10px;align-items:flex-start;font:600 14px var(--ui)}
 .brandopt input{width:20px;height:20px;accent-color:var(--accent);margin:1px 0 0;flex:none}
 .brandopt small{display:block;color:var(--muted);font:500 12px/1.35 var(--ui);margin-top:3px}
@@ -472,6 +475,7 @@ img{-webkit-touch-callout:none;-webkit-user-drag:none}
       <div id="clipLayer"><div id="objLayer"></div></div>
       <div id="shadeHost" aria-hidden="true"></div>
       <div id="areaBox"><span id="areaLabel"></span><i class="cg cgV"></i><i class="cg cgH"></i></div>
+      <div id="faceBox" hidden><span id="faceLabel"></span></div>
       <div id="rulerHost" aria-hidden="true"></div>
       <div id="selLayer"></div>
     </div>
@@ -665,6 +669,8 @@ var AREAS={
   logo:{name:'Sol göğüs logo',chip:'Logo',  cm:[8,8],     rot:false, fee:40, at:[372,176]},
   hat: {name:'Şapka ön baskı',chip:'Şapka', cm:[20,10],    rot:false, fee:40, at:[300,285]},
   mug: {name:'Kupa baskı',    chip:'Kupa 8×8',  cm:[8,8],  rot:false, fee:50, at:[296.4,305]},
+  cv3550:{name:'Canvas 35 × 50',chip:'Canvas',cm:[43,58],rot:true,fee:0,at:[300,320]},
+  cv5070:{name:'Canvas 50 × 70',chip:'Canvas',cm:[58,78],rot:true,fee:0,at:[300,320]},
   mugw:{name:'Kupa süblimasyon',chip:'Süblimasyon 20×10',cm:[20,10],rot:false, fee:75, at:[256.8,305]}
 };
 /* Kesin kurallar: A4/A3 boğaz (arkada ense) çizgisinden 8 cm aşağıda başlar. Logo 8×8 cm, sol göğüste (karşıdan bakınca sağ), hiçbir üründe yeri değişmez. */
@@ -686,24 +692,29 @@ var PRODUCTS={
          rule:'Yalnız ön yüz, 20 × 10 cm sabit baskı alanı.',draw:function(side,tee,cut,thumb){return hatSVG(tee,thumb);}},
   mug:  {name:'Kupa',       cuts:['std','sub'],price:{std:149,sub:149},
          sides:{front:['mug','mugw'],back:['mug']},vb:{cx:306,cy:305,w:130,h:118},
-         rule:'Kulpun iki yanına (ön ve arka) 8 × 8 cm baskı ya da kupanın çevresini saran 20 × 10 cm süblimasyon.',draw:function(side,tee,cut,thumb){return mugSVG(side,tee,thumb);}}
+         rule:'Kulpun iki yanına (ön ve arka) 8 × 8 cm baskı ya da kupanın çevresini saran 20 × 10 cm süblimasyon.',draw:function(side,tee,cut,thumb){return mugSVG(side,tee,thumb);}},
+  canvas:{name:'Canvas tablo',cuts:['c3550','c5070'],price:{c3550:450,c5070:650},
+         sides:{front:['cv3550','cv5070']},vb:{cx:300,cy:320,w:420,h:520},
+         rule:'Ön yüz ve her yanda 4 cm kenar (tuvalin yanlarına sarılır). Dikey ya da yatay.',draw:function(side,tee,cut,thumb){return canvasSVG(cut,thumb);}}
 };
-var PRODUCT_ORDER=['tee','sweat','polo','hat','mug'];
+var PRODUCT_ORDER=['tee','sweat','polo','hat','mug','canvas'];
 var SIDE_NAME={front:'Ön',back:'Arka'};
-var CUT_NAME={erkek:'Erkek',kadin:'Kadın',cocuk:'Çocuk',std:'Standart',sub:'Süblimasyon'};
+var CUT_NAME={erkek:'Erkek',kadin:'Kadın',cocuk:'Çocuk',std:'Standart',sub:'Süblimasyon',c3550:'Canvas 35 × 50',c5070:'Canvas 50 × 70'};
 /* Kesim: ürün çizimi boğaz çizgisine sabitlenip ölçeklenir. Böylece 8 cm kuralı ve logo yeri hiçbir kesimde değişmez. [yatay, dikey] oran */
-var CUT_K={erkek:[1,1],kadin:[.92,.94],cocuk:[.74,.72],std:[1,1],sub:[1,1]};
-var SIZE_SETS={erkek:['S','M','L','XL','2XL','3XL'],kadin:['XS','S','M','L','XL','2XL'],cocuk:['3-4','5-6','7-8','9-10','11-12','13-14'],std:['Std'],sub:['Std']};
+var CUT_K={erkek:[1,1],kadin:[.92,.94],cocuk:[.74,.72],std:[1,1],sub:[1,1],c3550:[1,1],c5070:[1,1]};
+var SIZE_SETS={erkek:['S','M','L','XL','2XL','3XL'],kadin:['XS','S','M','L','XL','2XL'],cocuk:['3-4','5-6','7-8','9-10','11-12','13-14'],std:['Std'],sub:['Std'],c3550:['Std'],c5070:['Std']};
 var PRICE={tiers:[[50,.15],[25,.10],[10,.05]]};
 function P(){return PRODUCTS[state.product];}
+/* Canvas: görünüm kutusu seçilen ölçü ve yöne göre */
+function prodVB(){var v=P().vb;if(v&&state.product==='canvas'){var A=areaBox('front',state.front.area);return {cx:A.cx,cy:A.cy,w:A.w*1.14,h:A.h*1.1};}return v;}
 function mugWrap(){return state.product==='mug'&&state.cut==='sub';}
 /* Süblimasyon kupanın çevresini sarar: arka yüz ayrıca basılmaz */
 function sidesOf(){var k=Object.keys(P().sides);return mugWrap()?['front']:k;}
 function sizeList(){return SIZE_SETS[state.cut];}
-function productLabel(){var q=P();return (q.cuts.length>1?CUT_NAME[state.cut]+' ':'')+q.name;}
-function isStd(){return state.cut==='std'||state.cut==='sub';}
+function productLabel(){var q=P();if(state.product==='canvas')return CUT_NAME[state.cut]+' canvas tablo';return (q.cuts.length>1?CUT_NAME[state.cut]+' ':'')+q.name;}
+function isStd(){return state.cut==='std'||state.cut==='sub'||state.product==='canvas';}
 /* Kupada kesim = baskı türü: Standart (8×8, iki yan) ya da Süblimasyon (20×10, çevreyi sarar) */
-function areasFor(side){var l=P().sides[side]||[];if(state.product==='mug')l=l.filter(function(k){return state.cut==='sub'?k==='mugw':k!=='mugw';});return l;}
+function areasFor(side){var l=P().sides[side]||[];if(state.product==='mug')l=l.filter(function(k){return state.cut==='sub'?k==='mugw':k!=='mugw';});if(state.product==='canvas')l=l.filter(function(k){return k==='cv'+state.cut.slice(1);});return l;}
 function basePrice(){return P().price[state.cut];}
 function forcedLand(key){var l=P().land;return !!(l&&l[key]);}
 function dimsOf(key,land){var d=AREAS[key].cm;return (land&&AREAS[key].rot)?[d[1],d[0]]:d;}
@@ -1239,6 +1250,18 @@ function mugSVG(side,tee,thumb){
   '<path d="M272.4 272.6A24.4 2.7 0 0 0 320.4 272.6" fill="none" stroke="#fff" stroke-opacity=".35" stroke-width=".5"/>'+
   '<path d="M278 276V330" stroke="#fff" stroke-opacity=".28" stroke-width="2.2" stroke-linecap="round"/></svg>';
 }
+/* Canvas tablo: beyaz tuval ön yüzü; çevresindeki 4 cm şerit tuvalin yanlarına sarılan kenar payı */
+function canvasSVG(cut,thumb){
+  var f=cut==='c5070'?[50,70]:[35,50],land=!!(state.front&&state.front.land);if(land)f=[f[1],f[0]];
+  var w=f[0]*PPC,h=f[1]*PPC,b=4*PPC,x=300-w/2,y=320-h/2,vb=thumb?((x-b-14)+' '+(y-b-14)+' '+(w+2*b+28)+' '+(h+2*b+28)):'0 0 600 640';
+  var hatch='';for(var i=-h-2*b;i<w+2*b;i+=9)hatch+='<line x1="'+(x-b+i)+'" y1="'+(y-b)+'" x2="'+(x-b+i+h+2*b)+'" y2="'+(y+h+b)+'"/>';
+  return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="'+vb+'" width="600" height="640"><defs><clipPath id="cvk"><path fill-rule="evenodd" d="M'+(x-b)+' '+(y-b)+'h'+(w+2*b)+'v'+(h+2*b)+'h-'+(w+2*b)+'Z M'+x+' '+y+'v'+h+'h'+w+'v-'+h+'Z"/></clipPath>'+
+  '<linearGradient id="cvg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff"/><stop offset="1" stop-color="#eef0ee"/></linearGradient></defs>'+
+  '<rect x="'+(x+6)+'" y="'+(y+10)+'" width="'+w+'" height="'+h+'" rx="2" fill="#000" opacity=".16" style="filter:blur(6px)"/>'+
+  '<rect x="'+(x-b)+'" y="'+(y-b)+'" width="'+(w+2*b)+'" height="'+(h+2*b)+'" fill="#e4e8e5"/>'+
+  '<g clip-path="url(#cvk)" stroke="#000" stroke-opacity=".06" stroke-width="1.2">'+hatch+'</g>'+
+  '<rect x="'+x+'" y="'+y+'" width="'+w+'" height="'+h+'" fill="url(#cvg)"/></svg>';
+}
 function hatSVG(tee,thumb){
   var vb=thumb?'70 75 450 480':'0 0 600 640';
   var crown='M146 384C132 212 214 112 300 112C386 112 468 212 454 384Z';
@@ -1442,13 +1465,16 @@ function updateArea(){
   var A=areaBox(view.side,cur().area),b=$('#areaBox');
   b.style.left=A.l+'px';b.style.top=A.t+'px';b.style.width=A.w+'px';b.style.height=A.h+'px';
   $('#areaLabel').textContent=areaTitle(view.side)+' · '+cmText(cur().area,isLand(view.side));
+  var fb=$('#faceBox'),cv=state.product==='canvas';b.classList.toggle('bleed',cv);fb.hidden=!cv;
+  if(cv){var bp=4*PPC;fb.style.left=(A.l+bp)+'px';fb.style.top=(A.t+bp)+'px';fb.style.width=(A.w-2*bp)+'px';fb.style.height=(A.h-2*bp)+'px';
+    var fd=dimsOf(cur().area,isLand(view.side));$('#areaLabel').textContent='Baskı sınırı · '+(fd[0]+'').replace('.',',')+' × '+(fd[1]+'').replace('.',',')+' cm (her yanda 4 cm kenar)';$('#faceLabel').textContent='Ön yüz · '+(fd[0]-8)+' × '+(fd[1]-8)+' cm';}
   $('#clipLayer').style.clipPath='inset('+A.t+'px '+(STAGE_W-A.r)+'px '+(STAGE_H-A.b)+'px '+A.l+'px)';
   try{renderRuler();}catch(_){}
 }
 function layout(){
   var wr=wrap.getBoundingClientRect(),W=wr.width,H=wr.height;
   if(!W||!H)return;
-  var k=CUT_K[state.cut]||CUT_K.erkek,ay=NECK_Y[view.side],vb=P().vb,base,s,cx=STAGE_W/2,cy;
+  var k=CUT_K[state.cut]||CUT_K.erkek,ay=NECK_Y[view.side],vb=prodVB(),base,s,cx=STAGE_W/2,cy;
   if(vb&&mugWrap())vb={cx:267,cy:305,w:178,h:118};
   if(vb){base=Math.min(W/vb.w,H/vb.h)*0.97;cx=vb.cx;cy=vb.cy;}
   else{var fb=fitBox(view.side),fh=fb.bot-fb.top;var mob=W<700,gx=mob?0.9:0.86;base=Math.min((W-64)*gx/fb.w,(H-60)*gx/fh);cy=(fb.top+fb.bot)/2-4;}
@@ -1887,12 +1913,13 @@ function chooseProduct(p,c){
   if(state.cut!==c){var oldL=sizeList();state.cut=c;var nl=sizeList();Object.keys(state.sizes).forEach(function(z){if(nl.indexOf(z)<0)delete state.sizes[z];});}
   try{if(PH.site)phApplyColors();}catch(_){}
   ensureSizes();
+  if(state.product==='canvas'){var ca='cv'+state.cut.slice(1);if(state.front.area!==ca){remap(state.front,areaBox('front',state.front.area),areaBox('front',ca));state.front.area=ca;}view.side='front';}
   if(state.product==='mug'){var wa=state.cut==='sub'?'mugw':'mug';if(state.front.area!==wa){remap(state.front,areaBox('front',state.front.area),areaBox('front',wa));state.front.area=wa;}if(state.cut==='sub')view.side='front';}
   if(!P().sides[view.side])view.side='front';
   view.sel=null;closeProdPage();
   view.fit='shirt';resetZoom();syncFitBtn();
   renderAll();layout();if(ch)pushHist();
-  toast(productLabel()+': '+(state.product==='mug'?(state.cut==='sub'?'kupanın çevresini saran 20 × 10 cm süblimasyon baskı.':'kulpun iki yanına (ön ve arka) 8 × 8 cm baskı.'):P().rule));
+  toast((state.product==='canvas'?CUT_NAME[state.cut]:productLabel())+': '+(state.product==='mug'?(state.cut==='sub'?'kupanın çevresini saran 20 × 10 cm süblimasyon baskı.':'kulpun iki yanına (ön ve arka) 8 × 8 cm baskı.'):P().rule));
 }
 function syncProduct(){}
 function openProdPage(){closeTab();select(null);renderProdPage();$('#prodPage').hidden=false;$('#pgBody').scrollTop=0;}
@@ -2200,7 +2227,7 @@ function renderTplPreviews(){
 function syncTeeUI(){if(!$('#prodPage').hidden)renderProdPage();syncOpt();if(view.tab==='opt')renderOpt();}
 /* Stüdyodan çıkmadan ürün rengi ve beden değişimi (üst satırdaki renk noktası) */
 function curSize(){var l=sizeList()||[];if(!l.length||isStd())return '';try{var z=phSize();if(z&&l.indexOf(z)>=0)return z;}catch(_){}var best='',mx=0;l.forEach(function(z){if((state.sizes[z]||0)>mx){mx=state.sizes[z];best=z;}});return best||PH.want||'';}
-function syncOpt(){var d=$('#optDot'),z=$('#optSz');if(!d)return;d.style.background=state.tee;var cs=curSize();z.textContent=cs;z.hidden=!cs;$('#optBtn').classList.toggle('on',view.tab==='opt');}
+function syncOpt(){var d=$('#optDot'),z=$('#optSz');if(!d)return;$('#optBtn').hidden=state.product==='canvas';d.style.background=state.tee;var cs=curSize();z.textContent=cs;z.hidden=!cs;$('#optBtn').classList.toggle('on',view.tab==='opt');}
 function renderOpt(){
   var nm='',sw='';TEES.forEach(function(t){if(t[1]===state.tee)nm=t[0];sw+='<button class="csw'+(t[1]===state.tee?' on':'')+'" data-tee="'+t[1]+'" style="background:'+t[1]+'" aria-label="'+t[0]+'"></button>';});
   $('#optColors').innerHTML=sw;$('#optColorName').textContent=nm;
@@ -2393,7 +2420,7 @@ async function printFlat(side,k){
   var x=c.getContext('2d'),objs=state[side].objs;for(var i=0;i<objs.length;i++){await drawObj(x,objs[i],k,A.l,A.t);}return c;
 }
 async function renderPreview(side,scale,flat){
-  var vb=P().vb;if(!vb)return renderComposite(side,scale);
+  var vb=prodVB();if(!vb)return renderComposite(side,scale);
   var out=Math.round(STAGE_W*scale),wrapM=mugWrap()&&side==='front';
   if(wrapM&&flat){var k0=out/((areaBox(side,state[side].area).w)*1.08),fc=await printFlat(side,k0),o=document.createElement('canvas');o.width=out;o.height=Math.round(out*0.62);
     var ox=o.getContext('2d');ox.fillStyle='#ffffff';ox.fillRect(0,0,o.width,o.height);var dx=(o.width-fc.width)/2,dy=(o.height-fc.height)/2;ox.drawImage(fc,dx,dy);
@@ -2496,7 +2523,7 @@ function renderPrice(){
   var p=priceInfo(),h='';
   h+='<div><dt>'+productLabel()+'</dt><dd>'+fmt(basePrice())+'</dd></div>';
   sidesOf().forEach(function(s){
-    var sd=state[s];h+='<div><dt>'+SIDE_NAME[s]+' baskı'+(sd.objs.length?' ('+areaTitle(s)+')':'')+'</dt><dd>'+(sd.objs.length?fmt(AREAS[sd.area].fee):'Yok')+'</dd></div>';
+    var sd=state[s];h+='<div><dt>'+SIDE_NAME[s]+' baskı'+(sd.objs.length?' ('+areaTitle(s)+')':'')+'</dt><dd>'+(sd.objs.length?(AREAS[sd.area].fee?fmt(AREAS[sd.area].fee):'Fiyata dahil'):'Yok')+'</dd></div>';
   });
   h+='<div><dt>Birim fiyat</dt><dd>'+fmt(p.unit)+'</dd></div>';
   if(!needSizesHere()){h+='<div><dt>Beden ve adet</dt><dd>Sepette seçilir</dd></div>';$('#priceList').innerHTML=h;$('#totalOut').textContent=fmt(p.unit)+' / adet';renderCart();$('#sum').value=summaryText();return;}
