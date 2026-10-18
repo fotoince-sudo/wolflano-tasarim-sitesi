@@ -38,6 +38,26 @@ svg.i{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stro
 .top-actions{display:flex;align-items:center;gap:6px}
 .ib{width:40px;height:40px;border-radius:12px;border:1px solid var(--line);background:var(--panel);display:grid;place-items:center}
 .ib:disabled{opacity:.35;cursor:default}
+.gd{position:fixed;inset:0;z-index:90;background:rgba(8,12,11,.55);display:grid;place-items:center;padding:max(16px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) max(16px,env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+.gd-card{width:100%;max-width:380px;max-height:100%;overflow:auto;background:var(--panel);color:var(--ink);border-radius:20px;box-shadow:0 18px 50px rgba(0,0,0,.3);padding:22px 20px 18px;display:grid;gap:14px;touch-action:pan-y}
+.gd-art{height:132px;border-radius:14px;background:var(--accent-soft);display:grid;place-items:center;color:var(--accent)}
+.gd-art svg{width:96px;height:96px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.gd-step{font:700 12px var(--ui);letter-spacing:.12em;text-transform:uppercase;color:var(--accent)}
+.gd-card h2{margin:0;font:700 22px/1.2 var(--ui)}
+.gd-card p{margin:0;color:var(--muted);font:500 15px/1.5 var(--ui)}
+.gd-dots{display:flex;gap:6px;justify-content:center}.gd-dots i{width:7px;height:7px;border-radius:50%;background:var(--line2)}.gd-dots i.on{background:var(--accent);width:20px;border-radius:4px}
+.gd-nav{display:flex;gap:10px;align-items:center;justify-content:space-between}
+.gd-skip{border:0;background:none;color:var(--muted);font:600 14px var(--ui);height:40px;padding:0 6px}
+.gd-help{max-width:440px}
+.gd-help h3{margin:6px 0 0;font:700 15px var(--ui)}
+.gd-list{display:grid;gap:10px;margin:0;padding:0;list-style:none}
+.gd-list li{display:grid;grid-template-columns:28px 1fr;gap:10px;align-items:start;font:500 14px/1.45 var(--ui);color:var(--muted)}
+.gd-list li b{display:block;color:var(--ink);font-weight:700}
+.gd-list .n{width:28px;height:28px;border-radius:50%;background:var(--accent-soft);color:var(--accent);display:grid;place-items:center;font:700 13px var(--ui)}
+.gd-faq details{border-top:1px solid var(--line);padding:10px 0}
+.gd-faq summary{cursor:pointer;font:700 14px var(--ui);color:var(--ink)}
+.gd-faq p{margin-top:6px;font-size:14px}
+.gd-top{display:flex;justify-content:space-between;align-items:center}
 .primary{background:var(--accent);color:var(--accent-ink);border:0;border-radius:12px;padding:0 18px;height:40px;font:700 15px var(--ui)}
 .primary.wide{width:100%;display:flex;align-items:center;justify-content:center;gap:8px}
 .ghost{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:0 14px;height:40px;font:600 14px var(--ui)}
@@ -389,6 +409,7 @@ img{-webkit-touch-callout:none;-webkit-user-drag:none}
   <header class="top">
     <a class="brand" href="index.html#tasarla" style="color:inherit;text-decoration:none" aria-label="Ürünlere dön"><b>WOLFLANO</b><span>← Ürünlere dön</span></a>
     <div class="top-actions">
+      <button class="ib" id="helpBtn" aria-label="Nasıl kullanılır?"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.6 9.3a2.5 2.5 0 0 1 4.8.9c0 1.7-2.4 2.1-2.4 3.6"/><circle cx="12" cy="17.2" r=".6" fill="currentColor"/></svg></button>
       <button class="ib" id="undoBtn" aria-label="Geri al" disabled><svg class="i" viewBox="0 0 24 24"><path d="M9 14L4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 0 12h-3"/></svg></button>
       <button class="ib" id="redoBtn" aria-label="Yinele" disabled><svg class="i" viewBox="0 0 24 24"><path d="M15 14l5-5-5-5"/><path d="M20 9H10a6 6 0 0 0 0 12h3"/></svg></button>
       <button class="ib admb" id="admBtn" aria-label="Yönetici tasarımı" hidden><svg class="i" viewBox="0 0 24 24"><path d="M12 3l7 3v5c0 4.5-3 8.3-7 10-4-1.7-7-5.5-7-10V6z"/><path d="M9 12l2 2 4-4"/></svg></button>
@@ -422,6 +443,7 @@ img{-webkit-touch-callout:none;-webkit-user-drag:none}
     <div class="toast" id="toast" role="status" hidden></div>
   </main>
 
+  <div class="gd" id="guide" hidden role="dialog" aria-modal="true" aria-labelledby="gdTitle"></div>
   <div class="ctxwrap" id="ctx" hidden>
     <div class="pop" id="colorPop" hidden></div>
     <div class="ctxbar" id="ctxBar">
@@ -3048,6 +3070,60 @@ syncUndo();
   $('#admBtn').addEventListener('click',openAdm);
   init();
 })();
+})();
+
+/* ---------- Kullanım rehberi: ilk girişte bir kez 4 kartlık tanıtım; üstteki ? ile kısa rehber ve sık sorulanlar ---------- */
+(function(){
+  var GD=[
+    {t:'Ürününü seç',p:'Alttaki Ürün düğmesinden tişört, sweatshirt, polo, şapka ya da kupa seç, sonra rengini belirle.',
+     a:'<svg viewBox="0 0 64 64"><path d="M22 10l-12 6 4 12 6-2v28h24V26l6 2 4-12-12-6c-1 4-5 7-10 7s-9-3-10-7z"/></svg>'},
+    {t:'Tasarımını kur',p:'Şablon ile hazır bir tasarımla başla ya da Yazı, Şekil ve Görsel ile kendin ekle. İstersen fikrini anlat, Wolf senin için tasarlasın.',
+     a:'<svg viewBox="0 0 64 64"><rect x="8" y="8" width="20" height="20" rx="3"/><rect x="36" y="8" width="20" height="20" rx="3"/><rect x="8" y="36" width="20" height="20" rx="3"/><path d="M46 38v16M38 46h16"/></svg>'},
+    {t:'Yerleştir ve boyutlandır',p:'Tek parmakla sürükle, köşedeki noktayla büyüt ve döndür. Tümünü seç ile bütün tasarımı birlikte boyutlandır. İki parmakla yakınlaştır.',
+     a:'<svg viewBox="0 0 64 64"><rect x="12" y="14" width="34" height="30" rx="2" stroke-dasharray="4 3"/><circle cx="46" cy="44" r="4" fill="currentColor"/><path d="M50 48l6 6M56 46v8h-8"/></svg>'},
+    {t:'Gör ve sepete ekle',p:'Üstten ön ya da arka yüzü ve A4, A3 baskı alanını seç. Bitti\'ye bas, önizlemeyi kontrol et ve sepete ekle.',
+     a:'<svg viewBox="0 0 64 64"><path d="M14 22h36l-3 30H17z"/><path d="M24 22v-4a8 8 0 0 1 16 0v4"/><path d="M25 37l5 5 9-10"/></svg>'}
+  ];
+  var FAQ=[
+    ['Baskı alanı nedir?','Ürünün üzerindeki kesik çizgili kutu baskı yapılacak alandır. Tasarımın dışına taşan kısmı basılmaz; seçim çubuğunda "Taşan kısım basılmaz" uyarısı çıkar.'],
+    ['Fotoğrafım baskıya uygun mu?','Görseli seçince "Baskı kalitesi" etiketi görünür: İyi, Orta ya da Düşük. Düşükse görseli küçült ya da daha büyük bir fotoğraf yükle.'],
+    ['Fotoğrafın arka planını nasıl silerim?','Görsele dokun, alttaki çubukta "Arka planı sil" düğmesine bas.'],
+    ['Hem öne hem arkaya baskı yaptırabilir miyim?','Evet. Üstteki Ön ve Arka düğmeleriyle yüz değiştirip iki tarafa ayrı tasarım koyabilirsin.'],
+    ['Bütün tasarımı birlikte nasıl büyütürüm?','Bir öğeye dokun, "Tümünü seç" düğmesine bas ve köşedeki noktayı çek. Şablon seçtiğinde tasarım zaten bütün halde seçili gelir.'],
+    ['Yanlışlıkla bir şeyi sildim.','Üstteki ↶ düğmesiyle geri alabilirsin.']
+  ];
+  var el=document.getElementById('guide'),i=0,mode='';
+  function seen(){try{localStorage.setItem('wf_studio_guide','1');}catch(_){}}
+  function close(){el.hidden=true;el.innerHTML='';seen();var hb=document.getElementById('helpBtn');if(hb&&mode)try{hb.focus();}catch(_){}mode='';}
+  function tour(n){
+    mode='tour';i=Math.max(0,Math.min(GD.length-1,n||0));var d=GD[i],last=i===GD.length-1;
+    el.innerHTML='<div class="gd-card" id="gdCard"><div class="gd-art" aria-hidden="true">'+d.a+'</div><div class="gd-step">Adım '+(i+1)+' / '+GD.length+'</div><h2 id="gdTitle">'+d.t+'</h2><p>'+d.p+'</p>'+
+      '<div class="gd-dots" aria-hidden="true">'+GD.map(function(_,k){return '<i'+(k===i?' class="on"':'')+'></i>';}).join('')+'</div>'+
+      '<div class="gd-nav"><button type="button" class="gd-skip" data-gd="skip">'+(last?'':'Geç')+'</button><button type="button" class="primary" data-gd="next">'+(last?'Başlayalım':'İleri')+'</button></div></div>';
+    el.hidden=false;var nb=el.querySelector('[data-gd="next"]');if(nb)try{nb.focus();}catch(_){}
+  }
+  function help(){
+    mode='help';
+    el.innerHTML='<div class="gd-card gd-help"><div class="gd-top"><h2 id="gdTitle">Nasıl kullanılır?</h2><button type="button" class="ib" data-gd="skip" aria-label="Kapat"><svg class="i" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>'+
+      '<ol class="gd-list">'+GD.map(function(d,k){return '<li><span class="n">'+(k+1)+'</span><span><b>'+d.t+'</b>'+d.p+'</span></li>';}).join('')+'</ol>'+
+      '<h3>Sık sorulanlar</h3><div class="gd-faq">'+FAQ.map(function(q){return '<details><summary>'+q[0]+'</summary><p>'+q[1]+'</p></details>';}).join('')+'</div>'+
+      '<div class="gd-nav"><button type="button" class="gd-skip" data-gd="tour">Tanıtımı yeniden izle</button><button type="button" class="primary" data-gd="skip">Tamam</button></div></div>';
+    el.hidden=false;
+  }
+  el.addEventListener('click',function(e){
+    if(e.target===el){close();return;}
+    var b=e.target.closest('[data-gd]');if(!b)return;var a=b.dataset.gd;
+    if(a==='skip')close();else if(a==='tour')tour(0);
+    else if(a==='next'){if(i>=GD.length-1)close();else tour(i+1);}
+  });
+  var sx=null;
+  el.addEventListener('touchstart',function(e){if(mode==='tour'&&e.touches.length===1)sx=e.touches[0].clientX;},{passive:true});
+  el.addEventListener('touchend',function(e){if(sx===null||mode!=='tour')return;var dx=e.changedTouches[0].clientX-sx;sx=null;if(Math.abs(dx)<50)return;if(dx<0){if(i<GD.length-1)tour(i+1);}else if(i>0)tour(i-1);},{passive:true});
+  document.addEventListener('keydown',function(e){if(el.hidden)return;if(e.key==='Escape'){e.stopPropagation();close();}else if(mode==='tour'&&e.key==='ArrowRight'&&i<GD.length-1)tour(i+1);else if(mode==='tour'&&e.key==='ArrowLeft'&&i>0)tour(i-1);},true);
+  var hb=document.getElementById('helpBtn');if(hb)hb.addEventListener('click',help);
+  var done=false;try{done=localStorage.getItem('wf_studio_guide')==='1';}catch(_){done=true;}
+  var q='';try{q=location.search;}catch(_){}
+  if(!done&&!/[?&](vitrin|admin)=/.test(q))setTimeout(function(){if(el.hidden)tour(0);},1200);
 })();
 </script>
 
