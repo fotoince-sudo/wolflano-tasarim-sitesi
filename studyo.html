@@ -2385,6 +2385,35 @@ async function drawObj(c,o,S,ox,oy){
   }
   c.restore();
 }
+/* Önizleme: şapka ve kupada ürün kadraja yakından alınır; süblimasyon kupada baskı kupanın üzerine
+   silindir gibi sarılmış gösterilir (önden görünen yarım tur), ayrıca açılmış baskı ayrı gösterilir. */
+var MUG_VB={cx:306,cy:305,w:130,h:118};
+async function printFlat(side,k){
+  var A=areaBox(side,state[side].area),c=document.createElement('canvas');c.width=Math.max(2,Math.round(A.w*k));c.height=Math.max(2,Math.round(A.h*k));
+  var x=c.getContext('2d'),objs=state[side].objs;for(var i=0;i<objs.length;i++){await drawObj(x,objs[i],k,A.l,A.t);}return c;
+}
+async function renderPreview(side,scale,flat){
+  var vb=P().vb;if(!vb)return renderComposite(side,scale);
+  var out=Math.round(STAGE_W*scale),wrapM=mugWrap()&&side==='front';
+  if(wrapM&&flat){var k0=out/((areaBox(side,state[side].area).w)*1.08),fc=await printFlat(side,k0),o=document.createElement('canvas');o.width=out;o.height=Math.round(out*0.62);
+    var ox=o.getContext('2d');ox.fillStyle='#ffffff';ox.fillRect(0,0,o.width,o.height);var dx=(o.width-fc.width)/2,dy=(o.height-fc.height)/2;ox.drawImage(fc,dx,dy);
+    ox.setLineDash([6,4]);ox.strokeStyle='rgba(0,0,0,.35)';ox.lineWidth=1.5;ox.strokeRect(dx,dy,fc.width,fc.height);return o;}
+  var v=wrapM?MUG_VB:vb,k=out/v.w,c=document.createElement('canvas');c.width=out;c.height=Math.round(v.h*k);
+  var x=c.getContext('2d');x.translate(-(v.cx-v.w/2)*k,-(v.cy-v.h/2)*k);
+  x.drawImage(await loadImg(svgUrl(productSVG(side,state.tee,state.product,state.cut))),0,0,STAGE_W*k,STAGE_H*k);
+  if(wrapM){
+    var A=areaBox(side,state[side].area),fc2=await printFlat(side,k),R=26.4,cxm=296.4,top=272,h=66,mid=A.w/2;
+    for(var px=Math.ceil((cxm-R)*k);px<Math.floor((cxm+R)*k);px++){
+      var d=(px+.5)/k-cxm;if(Math.abs(d)>=R)continue;var th=Math.asin(d/R),s1=R*th,s2=R*Math.asin(Math.min(.9999,(d+1/k)/R)),sx=(mid+s1)*k,sw=Math.max(.5,(s2-s1)*k);
+      if(sx<0||sx>=fc2.width)continue;x.drawImage(fc2,sx,0,Math.min(sw,fc2.width-sx),fc2.height,px,top*k,1,h*k);}
+    var sh='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 640" width="600" height="640"><defs><linearGradient id="g" x1="0" x2="1"><stop offset="0" stop-color="#000" stop-opacity=".28"/><stop offset=".3" stop-color="#fff" stop-opacity=".22"/><stop offset=".5" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".3"/></linearGradient></defs><path d="M270 272V333Q270 338 275 338H317.8Q322.8 338 322.8 333V272Z" fill="url(#g)"/><ellipse cx="296.4" cy="272.5" rx="24.4" ry="2.7" fill="#000" fill-opacity=".3"/></svg>';
+    x.drawImage(await loadImg(svgUrl(sh)),0,0,STAGE_W*k,STAGE_H*k);
+  }else{
+    var A2=areaBox(side,state[side].area);x.save();x.beginPath();x.rect(A2.l*k,A2.t*k,A2.w*k,A2.h*k);x.clip();
+    var objs=state[side].objs;for(var i=0;i<objs.length;i++){await drawObj(x,objs[i],k,0,0);}x.restore();
+  }
+  return c;
+}
 async function renderComposite(side,scale){
   var c=document.createElement('canvas');c.width=Math.round(STAGE_W*scale);c.height=Math.round(STAGE_H*scale);
   var x=c.getContext('2d');
@@ -2508,12 +2537,13 @@ async function openOrder(){
   renderSizes();renderPrice();renderFiles();
   var th=$('#thumbs');th.textContent='';
   var sides=sidesOf();
-  for(var i=0;i<sides.length;i++){
+  var views=[];sides.forEach(function(sd){views.push([sd,false]);});if(mugWrap())views.push(['front',true]);
+  for(var i=0;i<views.length;i++){
     try{
-      var c=await renderComposite(sides[i],0.5),f=document.createElement('figure');
-      f.dataset.side=sides[i];f.setAttribute('role','button');f.setAttribute('aria-label',SIDE_NAME[sides[i]]+' tasarımını düzenle');
-      f.appendChild(c);var cap=document.createElement('figcaption');cap.textContent=SIDE_NAME[sides[i]];f.appendChild(cap);
-      if(!state[sides[i]].objs.length){var hn=document.createElement('span');hn.className='sideHint';hn.textContent='+ '+SIDE_NAME[sides[i]]+' baskı ekle';f.appendChild(hn);}
+      var sd0=views[i][0],fl=views[i][1],c=await renderPreview(sd0,0.5,fl),f=document.createElement('figure');
+      f.dataset.side=sd0;f.setAttribute('role','button');f.setAttribute('aria-label',SIDE_NAME[sd0]+' tasarımını düzenle');
+      f.appendChild(c);var cap=document.createElement('figcaption');cap.textContent=mugWrap()?(fl?'Açılmış baskı · 20 × 10 cm':'Kupada'):SIDE_NAME[sd0];f.appendChild(cap);
+      if(!state[sd0].objs.length){var hn=document.createElement('span');hn.className='sideHint';hn.textContent='+ '+SIDE_NAME[sd0]+' baskı ekle';f.appendChild(hn);}
       th.appendChild(f);
     }catch(_){}
   }
@@ -2621,7 +2651,7 @@ async function addToCart(silent){
   var p=priceInfo(),need=needSizesHere();if(need&&!p.qty){toast('Önce adet seç');return false;}
   var b=$('#addCart');b.disabled=true;var ok=false;
   try{
-    var c=await renderComposite(sidesOf()[0],0.35);
+    var c=await renderPreview(sidesOf()[0],0.35);
     var bg=document.createElement('canvas');bg.width=c.width;bg.height=c.height;var bx=bg.getContext('2d');bx.fillStyle='#eef1ef';bx.fillRect(0,0,bg.width,bg.height);bx.drawImage(c,0,0);
     cartItems.push({sig:sig,thumb:bg.toDataURL('image/jpeg',0.8),label:productLabel(),cut:state.cut,unit:p.unit,szList:sizeList(),sizes:need?JSON.parse(JSON.stringify(state.sizes)):{},lines:designLines(),roster:rosterRows()});
     ok=true;
