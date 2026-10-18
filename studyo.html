@@ -475,6 +475,8 @@ img{-webkit-touch-callout:none;-webkit-user-drag:none}
       <button data-c="gcolor" data-g="1"><i class="dot" id="gDot"></i>Renk</button>
       <button data-c="gdel" data-g="1" class="danger" id="gDel"><svg class="i" viewBox="0 0 24 24"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg><span>Sil</span></button>
       <span class="pill gsel" data-g="1">Tüm tasarım seçili</span>
+      <button data-c="all" data-i="1"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" stroke-dasharray="3 2.4"/><rect x="8" y="8" width="8" height="8" rx="1"/></svg>Tümünü seç</button>
+      <span class="pill gsel" data-i="1">ya da düzenlemek istediğin parçaya dokun</span>
       <button data-c="gcenter" data-g="1"><svg class="i" viewBox="0 0 24 24"><path d="M12 3v18M3 12h18"/><rect x="7" y="7" width="10" height="10" rx="2"/></svg>Ortala</button>
       <button data-c="gdone" data-g="1"><svg class="i" viewBox="0 0 24 24"><path d="M5 12l5 5L20 7"/></svg>Bitti</button>
     </div>
@@ -1504,6 +1506,8 @@ function qualityOf(o){
 function syncCtx(){
   var o=selObj();
   $$('#ctxBar [data-g]').forEach(function(b){b.hidden=!view.grp;});
+  var idle=!o&&!view.grp&&grpObjs().length>0;$$('#ctxBar [data-i]').forEach(function(b){b.hidden=!idle;});
+  if(idle){ctx.hidden=false;$('#colorPop').hidden=true;view.pop=null;$$('#ctxBar [data-t]').forEach(function(b){b.hidden=true;});return;}
   if(view.grp){ctx.hidden=false;$('#colorPop').hidden=!view.pop;$$('#ctxBar [data-t]').forEach(function(b){b.hidden=true;});
     var gc=grpObjs().filter(function(q){return q.type!=='image';})[0];$('#gDot').style.background=gc?gc.color:'transparent';
     var gd=$('#gDel span');if(gd)gd.textContent=view.gdel?'Emin misin? Tekrar dokun':'Sil';return;}
@@ -2695,7 +2699,8 @@ document.addEventListener('contextmenu',function(e){var t=e.target;if(t&&(t.tagN
 buildPanels();
 libLoad();
 try{if(new URLSearchParams(location.search).get('wolf')){setTimeout(function(){if(!$('#prodPage').hidden)closeProdPage();openTab('wolf');setTimeout(function(){var w=$('#wolfIn');if(w)w.focus();},250);},400);}}catch(_){}
-applyTemplate(TPLS[0],true);
+/* Açılışta örnek: Wolflano reklamı niteliğindeki Güneş kurdu */
+applyTemplate(TPLS.filter(function(t){return t.n==='Güneş kurdu';})[0]||TPLS[0],true);
 (function(){try{var q=new URLSearchParams(location.search),u=q.get('urun'),k=q.get('kesim'),bd=q.get('beden');if(u&&PRODUCTS[u]){var cs=PRODUCTS[u].cuts;chooseProduct(u,cs.indexOf(k)>=0?k:cs[0]);if(bd&&sizeList().indexOf(bd)>=0){state.sizes={};state.sizes[bd]=1;renderAll();}if(PRODUCTS[u].vb){['front','back'].forEach(function(sd){if(state[sd]&&state[sd].objs)state[sd].objs=[];});view.sel=null;renderAll();}}
   if(q.get('vitrin')==='wolf'){if(!u&&PRODUCTS.tee)chooseProduct('tee',PRODUCTS.tee.cuts[0]);openWolf();}}catch(_){}})();
 syncUndo();

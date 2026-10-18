@@ -141,7 +141,7 @@ main{min-height:60vh}
 .bcs{width:100%;display:grid;gap:8px}
 .bcs p{margin:0;text-align:center;font:500 13px var(--ui);color:var(--muted)}
 .bcs p b{color:var(--ink)}
-.bcs>div{display:flex;justify-content:center;flex-wrap:wrap;gap:10px}
+.bcs>div{display:flex;justify-content:flex-start;flex-wrap:nowrap;gap:clamp(5px,1.8vw,10px);overflow-x:auto;scrollbar-width:none;padding:4px 2px}.bcs>div::-webkit-scrollbar{display:none}.bcs>div>:first-child{margin-left:auto}.bcs>div>:last-child{margin-right:auto}.bcs .bc{flex:none;width:clamp(28px,8.2vw,34px);height:clamp(28px,8.2vw,34px)}
 .bc{width:34px;height:34px;border-radius:50%;border:1px solid rgba(0,0,0,.2);cursor:pointer;box-shadow:inset 0 0 0 3px var(--bg)}
 .bc.on{outline:2px solid var(--green);outline-offset:2px}
 .ced{display:grid;gap:10px;border-top:1px solid var(--line);padding-top:12px}
