@@ -674,6 +674,8 @@ body.cko #nav,body.cko .menu-btn,body.cko .lang,body.cko #cartBtn,body.cko #ann{
 .scf:focus-within{border-color:var(--green);box-shadow:0 0 0 2px rgba(48,112,63,.15)}.scf.need{border-color:#c0392b}.scf.off{opacity:.55}.scf.off:after{display:none}.scf.off b{font:700 16px var(--ui)}
 .scx{flex:none;width:40px;border:1px solid var(--line);border-radius:12px;background:var(--card);font:500 20px/1 var(--ui);color:var(--muted)}.scadd{justify-self:start;background:none;border:0;padding:2px 0;color:var(--green);font:600 13px var(--ui);text-decoration:underline;text-underline-offset:3px}.scg2.need{animation:scNeed .9s ease 2}
 .ci .scm{display:inline;font:600 13px var(--ui);color:var(--ink)}
+.scimg{position:relative;padding:0;border:0;background:none;display:block;cursor:zoom-in}.scimg i{position:absolute;right:4px;bottom:4px;width:24px;height:24px;border-radius:50%;background:rgba(255,255,255,.92);display:grid;place-items:center;color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.2)}.scimg i svg{width:14px;height:14px}
+.lbc .lbt{border:1px solid rgba(255,255,255,.4);border-radius:999px;padding:6px 14px;background:none;color:#fff;font:600 13px var(--ui)}.lbc .lbt.on{background:#fff;color:#111}
 </style>
 
 <header class="top"><div class="wrap">
@@ -1951,6 +1953,7 @@ var IC={
  eye:'<svg class="i" viewBox="0 0 24 24"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>',
  box:'<svg class="i" viewBox="0 0 24 24"><path d="M12 3l8 4v10l-8 4-8-4V7z"/><path d="M4 7l8 4 8-4M12 11v10"/></svg>',
  x:'<svg class="i" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>',
+ zoom:'<svg class="i" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6"/><path d="M20 20l-4.2-4.2M11 8.5v5M8.5 11h5"/></svg>',
  phone:'<svg class="i" viewBox="0 0 24 24"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z"/></svg>',
  mail:'<svg class="i" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg>',
  pin:'<svg class="i" viewBox="0 0 24 24"><path d="M12 21s7-6 7-11a7 7 0 0 0-14 0c0 5 7 11 7 11z"/><circle cx="12" cy="10" r="2.5"/></svg>',
@@ -2164,6 +2167,9 @@ function openLB(id){
   var p=anyP(id);zl=0;if(p&&BLANKS.indexOf(p)>=0)p=buGal(p);
   $('#layer').innerHTML='<div class="lb" role="dialog" aria-modal="true" aria-label="Büyük görsel"><button class="ib lbx" data-close aria-label="Kapat">'+IC.x+'</button><div class="lbs" id="lbs"><img id="lbi" src="'+imgSrcAt(p)+'" alt="'+esc(p.name)+'" style="width:100%;max-width:min(100%,720px)"></div><div class="lbc"><button data-lz="-1" aria-label="Uzaklaştır">−</button><span id="lbz">100%</span><button data-lz="1" aria-label="Yakınlaştır">+</button></div></div>';
 }
+function openScLB(i,k){var it=scItems()[i];if(!it)return;var v=(it.views&&it.views.length?it.views:[{n:'',src:it.thumb}]).filter(function(x){return /^data:image\//.test(x.src||'');});if(!v.length)return;k=k||0;zl=0;
+  $('#layer').innerHTML='<div class="lb" role="dialog" aria-modal="true" aria-label="Tasarımın büyük görünümü"><button class="ib lbx" data-close aria-label="Kapat">'+IC.x+'</button><div class="lbs" id="lbs"><img id="lbi" src="'+v[k].src+'" alt="'+esc(it.label||'Tasarım')+'" style="width:100%;max-width:min(100%,720px)"></div><div class="lbc">'+(v.length>1?v.map(function(x,j){return '<button type="button" class="lbt'+(j===k?' on':'')+'" data-scview="'+i+'" data-k="'+j+'">'+esc(x.n)+'</button>';}).join(''):'')+'<button data-lz="-1" aria-label="Uzaklaştır">−</button><span id="lbz">100%</span><button data-lz="1" aria-label="Yakınlaştır">+</button></div></div>';}
+document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('[data-scview]');if(!b)return;e.preventDefault();openScLB(+b.dataset.scview,+(b.dataset.k||0));});
 function setLZ(d){
   var s=$('#lbs'),i=$('#lbi');if(!s||!i)return;
   var old=ZL[zl];zl=Math.max(0,Math.min(ZL.length-1,zl+d));
@@ -2562,7 +2568,7 @@ function cartRows(){var ids=Object.keys(cart).filter(function(k){return cart[k]>
   ids.forEach(function(id){var p=ALLP.filter(function(x){return x.id===ckId(id);})[0];if(!p){delete cart[id];return;}tot+=p.price*cart[id];n+=cart[id];
     h+='<div class="ci"><a href="#urun-'+ckId(id)+'"><img src="'+IMG(p)+'" alt=""></a><div><small class="ty">'+pTypeColor(p)+'</small><b>'+esc(p.name)+'</b>'+(function(){var zs=pSizes(p),z=ckSz(id);if(!zs.length&&!z)return '';if(z&&zs.indexOf(z)<0)zs=zs.concat([z]);return '<label class="csz">Beden<select data-csz="'+esc(id)+'" aria-label="Beden">'+(z?'':'<option value="">Seç</option>')+zs.map(function(x){return '<option'+(x===z?' selected':'')+'>'+esc(x)+'</option>';}).join('')+'</select></label>';})()+'<div class="qty"><button data-q="'+id+'" data-d="-1" aria-label="Azalt">−</button><span>'+cart[id]+'</span><button data-q="'+id+'" data-d="1" aria-label="Artır">+</button><button class="rm" data-q="'+id+'" data-d="-999" aria-label="Kaldır">Kaldır</button></div></div><b class="pz">'+tl(p.price*cart[id])+'</b></div>';});
   var sc=scItems();sc.forEach(function(it,i){var q=scQty(it),t=scTot(it);tot+=t;n+=q;
-    h+='<div class="ci sci"><a href="studyo.html#sepet"><img src="'+esc(it.thumb||'')+'" alt=""></a><div><small class="ty">Baskı Atölyesi · Senin tasarımın</small><b>'+esc(it.label||'Tasarım')+'</b><small class="note" style="display:block;margin-top:4px">'+(q?'<b class="scm">'+q+' adet × '+tl(+it.unit||0)+(scDisc(q)?' − %'+Math.round(scDisc(q)*100)+' adet indirimi':'')+' = '+tl(t)+'</b>':((it.szList||[]).length===1?'Adet seç':'Beden ve adet seç'))+'</small>'+scGrid(it,i)+'<div class="qty"><button class="rm" data-scrm="'+i+'" aria-label="Kaldır">Kaldır</button><b class="pz">'+tl(t)+'</b></div></div></div>';});
+    h+='<div class="ci sci"><button type="button" class="scimg" data-scview="'+i+'" aria-label="Tasarımı büyüt"><img src="'+esc(it.thumb||'')+'" alt=""><i aria-hidden="true">'+IC.zoom+'</i></button><div><small class="ty">Baskı Atölyesi · Senin tasarımın</small><b>'+esc(it.label||'Tasarım')+'</b><small class="note" style="display:block;margin-top:4px">'+(q?'<b class="scm">'+q+' adet × '+tl(+it.unit||0)+(scDisc(q)?' − %'+Math.round(scDisc(q)*100)+' adet indirimi':'')+' = '+tl(t)+'</b>':((it.szList||[]).length===1?'Adet seç':'Beden ve adet seç'))+'</small>'+scGrid(it,i)+'<div class="qty"><button class="rm" data-scrm="'+i+'" aria-label="Kaldır">Kaldır</button><b class="pz">'+tl(t)+'</b></div></div></div>';});
   return {ids:ids,sc:sc,tot:tot,n:n,h:h};}
 function openCart(){closeLayer();if(location.hash==='#sepet'){var y=window.scrollY;$('#main').innerHTML=VIEWS.sepet();window.scrollTo(0,y);}else location.hash='#sepet';}
 function sepetView(){var c=cartRows();

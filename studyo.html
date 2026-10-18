@@ -2748,7 +2748,7 @@ $('#copyBtn').addEventListener('click',async function(){
 var cartItems=[];
 /* Sepet sayfa kapansa da (ürünlere dönüp gelince) durur */
 try{var cs0=JSON.parse(localStorage.getItem('wf_studio_cart')||'[]');if(Array.isArray(cs0)){cs0.forEach(function(it){var l=it.szList||[];if(l.length===1){it.sizes=it.sizes||{};if(!(+it.sizes[l[0]]>0))it.sizes[l[0]]=1;}});cartItems=cs0;}}catch(_){}
-function saveCart(){try{localStorage.setItem('wf_studio_cart',JSON.stringify(cartItems));}catch(_){}}
+function saveCart(){try{localStorage.setItem('wf_studio_cart',JSON.stringify(cartItems));}catch(_){try{cartItems.forEach(function(x,i){if(i<cartItems.length-1)delete x.views;});localStorage.setItem('wf_studio_cart',JSON.stringify(cartItems));}catch(__){try{cartItems.forEach(function(x){delete x.views;});localStorage.setItem('wf_studio_cart',JSON.stringify(cartItems));}catch(___){}}}}
 function syncCartUI(){
   var n=cartItems.length,rc=0;try{var rcs=JSON.parse(localStorage.getItem('wf_cart')||'{}');for(var rk in rcs)rc+=+rcs[rk]||0;}catch(_){}var tn=n+rc;$('#cartBtn').hidden=!tn;$('#cartN').textContent=tn;
   $('#goPay').hidden=!n;$('#payN').textContent=n;
@@ -2801,8 +2801,9 @@ async function addToCart(silent){
   try{
     var c=await renderPreview(sidesOf()[0],0.35);
     var bg=document.createElement('canvas');bg.width=c.width;bg.height=c.height;var bx=bg.getContext('2d');bx.fillStyle='#eef1ef';bx.fillRect(0,0,bg.width,bg.height);bx.drawImage(c,0,0);
+    var views=[];try{var sd=sidesOf();for(var vi=0;vi<sd.length;vi++){var sdn=sd[vi];if(vi>0&&!(state[sdn]&&state[sdn].objs&&state[sdn].objs.length))continue;var vc=await renderPreview(sdn,1.2);var vb=document.createElement('canvas');vb.width=vc.width;vb.height=vc.height;var vx=vb.getContext('2d');vx.fillStyle='#eef1ef';vx.fillRect(0,0,vb.width,vb.height);vx.drawImage(vc,0,0);views.push({n:SIDE_NAME[sdn]||sdn,src:vb.toDataURL('image/jpeg',0.82)});}}catch(_){views=[];}
     var szs=need?JSON.parse(JSON.stringify(state.sizes)):{};if(!need){var sl0=sizeList()||[];if(sl0.length===1)szs[sl0[0]]=1;else{var cz0=curSize();if(cz0)szs[cz0]=1;}}
-    cartItems.push({sig:sig,thumb:bg.toDataURL('image/jpeg',0.8),label:productLabel(),cut:state.cut,unit:p.unit,szList:sizeList(),sizes:szs,lines:designLines(),roster:rosterRows()});wfStat(['e:stud-sepet']);
+    cartItems.push({sig:sig,thumb:bg.toDataURL('image/jpeg',0.8),views:views,label:productLabel(),cut:state.cut,unit:p.unit,szList:sizeList(),sizes:szs,lines:designLines(),roster:rosterRows()});wfStat(['e:stud-sepet']);
     ok=true;
   }catch(_){toast('Sepete eklenemedi');}
   b.disabled=false;renderCart();
