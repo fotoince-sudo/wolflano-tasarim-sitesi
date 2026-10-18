@@ -1148,6 +1148,14 @@ function phCalib(u){
       while(qh<qt){i=q[qh++];y=(i/W)|0;xx=i-y*W;if(xx>0)push(i-1);if(xx<W-1)push(i+1);if(y>0)push(i-W);if(y<H-1)push(i+W);}
       for(i=0;i<N;i++)m[i]=vis[i]?0:1;
     }
+    /* Kenar temizliği: fotoğraf zemininden ya da gölgesinden kalan ince gri hare (dikiş gibi görünen çizgi) silinir,
+       kenar 3 piksel içeri alınıp yumuşatılır; ürün zemine "dikilmiş" değil, doğal oturmuş görünür. */
+    var frac0=0;for(i=0;i<N;i++)frac0+=m[i];frac0/=N;
+    if(hasA||(frac0>=.12&&frac0<=.88)){
+      for(var it=0;it<3;it++){var e=new Uint8Array(N);for(y=1;y<H-1;y++)for(xx=1;xx<W-1;xx++){i=y*W+xx;e[i]=m[i]&&m[i-1]&&m[i+1]&&m[i-W]&&m[i+W]?1:0;}m=e;}
+      for(i=0;i<N;i++){if(!m[i]){p[i*4+3]=0;continue;}y=(i/W)|0;xx=i-y*W;if(y>0&&y<H-1&&xx>0&&xx<W-1&&(!m[i-1]||!m[i+1]||!m[i-W]||!m[i+W]))p[i*4+3]=Math.min(p[i*4+3],140);}
+      x.putImageData(D,0,0);hasA=true;
+    }
     var top=H,bot=-1,l=W,r2=-1,cnt=0;
     for(i=0;i<N;i++){if(!m[i])continue;cnt++;y=(i/W)|0;xx=i-y*W;if(y<top)top=y;if(y>bot)bot=y;if(xx<l)l=xx;if(xx>r2)r2=xx;}
     var frac=cnt/N;
