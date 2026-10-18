@@ -664,8 +664,8 @@ var AREAS={
   a3:  {name:'A3 baskı',      chip:'A3',    cm:[29.7,42], rot:false, fee:140},
   logo:{name:'Sol göğüs logo',chip:'Logo',  cm:[8,8],     rot:false, fee:40, at:[372,176]},
   hat: {name:'Şapka ön baskı',chip:'Şapka', cm:[20,10],    rot:false, fee:40, at:[300,285]},
-  mug: {name:'Kupa baskı',    chip:'Kupa',  cm:[8,8],     rot:false, fee:50, at:[296,302]},
-  mugw:{name:'Kupa süblimasyon',chip:'Süblimasyon 20×10',cm:[20,10],rot:false, fee:75, at:[296,302]}
+  mug: {name:'Kupa baskı',    chip:'Kupa 8×8',  cm:[8,8],  rot:false, fee:50, at:[296.4,305]},
+  mugw:{name:'Kupa süblimasyon',chip:'Süblimasyon 20×10',cm:[20,10],rot:false, fee:75, at:[256.8,305]}
 };
 /* Kesin kurallar: A4/A3 boğaz (arkada ense) çizgisinden 8 cm aşağıda başlar. Logo 8×8 cm, sol göğüste (karşıdan bakınca sağ), hiçbir üründe yeri değişmez. */
 var NECK_Y={front:101,back:76}, DROP_CM=8;
@@ -684,23 +684,26 @@ var PRODUCTS={
   hat:  {name:'Şapka',      cuts:['std'],price:{std:129},
          sides:{front:['hat']},vb:{cx:300,cy:290,w:440,h:420},
          rule:'Yalnız ön yüz, 20 × 10 cm sabit baskı alanı.',draw:function(side,tee,cut,thumb){return hatSVG(tee,thumb);}},
-  mug:  {name:'Kupa',       cuts:['std'],price:{std:149},
-         sides:{front:['mug','mugw'],back:['mug']},vb:{cx:306,cy:304,w:150,h:140},
+  mug:  {name:'Kupa',       cuts:['std','sub'],price:{std:149,sub:149},
+         sides:{front:['mug','mugw'],back:['mug']},vb:{cx:306,cy:305,w:130,h:118},
          rule:'Kulpun iki yanına (ön ve arka) 8 × 8 cm baskı ya da kupanın çevresini saran 20 × 10 cm süblimasyon.',draw:function(side,tee,cut,thumb){return mugSVG(side,tee,thumb);}}
 };
 var PRODUCT_ORDER=['tee','sweat','polo','hat','mug'];
 var SIDE_NAME={front:'Ön',back:'Arka'};
-var CUT_NAME={erkek:'Erkek',kadin:'Kadın',cocuk:'Çocuk',std:'Standart'};
+var CUT_NAME={erkek:'Erkek',kadin:'Kadın',cocuk:'Çocuk',std:'Standart',sub:'Süblimasyon'};
 /* Kesim: ürün çizimi boğaz çizgisine sabitlenip ölçeklenir. Böylece 8 cm kuralı ve logo yeri hiçbir kesimde değişmez. [yatay, dikey] oran */
-var CUT_K={erkek:[1,1],kadin:[.92,.94],cocuk:[.74,.72],std:[1,1]};
-var SIZE_SETS={erkek:['S','M','L','XL','2XL','3XL'],kadin:['XS','S','M','L','XL','2XL'],cocuk:['3-4','5-6','7-8','9-10','11-12','13-14'],std:['Std']};
+var CUT_K={erkek:[1,1],kadin:[.92,.94],cocuk:[.74,.72],std:[1,1],sub:[1,1]};
+var SIZE_SETS={erkek:['S','M','L','XL','2XL','3XL'],kadin:['XS','S','M','L','XL','2XL'],cocuk:['3-4','5-6','7-8','9-10','11-12','13-14'],std:['Std'],sub:['Std']};
 var PRICE={tiers:[[50,.15],[25,.10],[10,.05]]};
 function P(){return PRODUCTS[state.product];}
-function mugWrap(){return state.product==='mug'&&state.front&&state.front.area==='mugw';}
+function mugWrap(){return state.product==='mug'&&state.cut==='sub';}
 /* Süblimasyon kupanın çevresini sarar: arka yüz ayrıca basılmaz */
 function sidesOf(){var k=Object.keys(P().sides);return mugWrap()?['front']:k;}
 function sizeList(){return SIZE_SETS[state.cut];}
 function productLabel(){var q=P();return (q.cuts.length>1?CUT_NAME[state.cut]+' ':'')+q.name;}
+function isStd(){return state.cut==='std'||state.cut==='sub';}
+/* Kupada kesim = baskı türü: Standart (8×8, iki yan) ya da Süblimasyon (20×10, çevreyi sarar) */
+function areasFor(side){var l=P().sides[side]||[];if(state.product==='mug')l=l.filter(function(k){return state.cut==='sub'?k==='mugw':k!=='mugw';});return l;}
 function basePrice(){return P().price[state.cut];}
 function forcedLand(key){var l=P().land;return !!(l&&l[key]);}
 function dimsOf(key,land){var d=AREAS[key].cm;return (land&&AREAS[key].rot)?[d[1],d[0]]:d;}
@@ -1171,7 +1174,7 @@ function phCalib(u){
 }
 /* Şapka ve kupa: yönetimde fotoğraf yüklenmişse çizim yerine gerçek fotoğraf. Fotoğraftaki ürün, çizimin kapladığı kutuya
    oturtulur (genişlik ve üst kenar); böylece 20 × 10 cm şapka ve 8 × 8 cm kupa baskı alanının yeri ve oranı değişmez. */
-var PH_FIT={hat:{l:60,r:540,top:112},mug:{l:230,r:362,top:267}};
+var PH_FIT={hat:{l:60,r:540,top:112},mug:{l:270,r:344,top:268.4}};
 function phSVG(side,tee,product,cut){
   if(!PH.site)return null;
   if(PRODUCTS[product].draw){var F=PH_FIT[product];if(!F)return null;
@@ -1220,17 +1223,21 @@ window.phSite=function(d){PH.site=d;PH.media=d.media||'';PH.teesBase=TEES.slice(
   try{renderAll();}catch(_){}
 };
 function mugSVG(side,tee,thumb){
-  /* 8 cm çaplı, 9,5 cm boylu kupa; ön yüzde kulp sağda, arka yüzde solda görünür */
-  var vb=thumb?'222 236 168 136':'0 0 600 640',hr=side!=='back',
-      hp=hr?'M334 282C358 282 362 292 362 302C362 314 356 324 334 324':'M258 282C234 282 230 292 230 302C230 314 236 324 258 324';
+  /* Klasik seramik kupa: 8 cm çap, 10 cm boy (1 cm = 6,6 px). Ön yüzde kulp sağda, arka yüzde solda. */
+  var vb=thumb?'252 254 108 100':'0 0 600 640',mir=side==='back'?' transform="translate(592.8 0) scale(-1 1)"':'';
+  var body='M270 272V333Q270 338 275 338H317.8Q322.8 338 322.8 333V272Z';
+  var handle='M322.8 281C337.6 281 344.2 289.4 344.2 302.4C344.2 316.2 337 326.6 322.8 328.4V321.4C332.6 319.6 337.2 312.6 337.2 302.6C337.2 292.6 332.6 288 322.8 288Z';
   return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="'+vb+'" width="600" height="640">'+
-  '<defs><linearGradient id="ms" x1="0" x2="1"><stop offset="0" stop-color="#000" stop-opacity=".18"/><stop offset=".3" stop-color="#fff" stop-opacity=".12"/><stop offset=".55" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".2"/></linearGradient></defs>'+
-  '<ellipse cx="296" cy="336" rx="44" ry="4" fill="#000" opacity=".14"/>'+
-  '<path d="'+hp+'" fill="none" stroke="'+tee+'" stroke-width="8" stroke-linecap="round"/><path d="'+hp+'" fill="none" stroke="#000" stroke-opacity=".18" stroke-width="8" stroke-linecap="round"/>'+
-  '<path d="M262 271L330 271L330 328Q330 334 324 334L268 334Q262 334 262 328Z" fill="'+tee+'"/>'+
-  '<path d="M262 271L330 271L330 328Q330 334 324 334L268 334Q262 334 262 328Z" fill="url(#ms)"/>'+
-  '<ellipse cx="296" cy="271" rx="34" ry="4" fill="'+tee+'"/><ellipse cx="296" cy="271" rx="34" ry="4" fill="#000" fill-opacity=".22"/>'+
-  '<ellipse cx="296" cy="271.6" rx="31" ry="2.8" fill="#000" fill-opacity=".28"/></svg>';
+  '<defs><linearGradient id="mgs" x1="0" x2="1"><stop offset="0" stop-color="#000" stop-opacity=".26"/><stop offset=".14" stop-color="#000" stop-opacity=".06"/><stop offset=".3" stop-color="#fff" stop-opacity=".34"/><stop offset=".42" stop-color="#fff" stop-opacity=".06"/><stop offset=".78" stop-color="#000" stop-opacity=".04"/><stop offset="1" stop-color="#000" stop-opacity=".3"/></linearGradient>'+
+  '<linearGradient id="mgv" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#000" stop-opacity=".12"/><stop offset=".08" stop-color="#000" stop-opacity="0"/><stop offset=".92" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".14"/></linearGradient>'+
+  '<linearGradient id="mgh" x1="0" x2="1"><stop offset="0" stop-color="#000" stop-opacity=".22"/><stop offset=".5" stop-color="#fff" stop-opacity=".18"/><stop offset="1" stop-color="#000" stop-opacity=".28"/></linearGradient></defs>'+
+  '<ellipse cx="300" cy="339.4" rx="35" ry="2.8" fill="#000" opacity=".16"/>'+
+  '<g'+mir+'><path d="'+handle+'" fill="'+tee+'"/><path d="'+handle+'" fill="url(#mgh)"/></g>'+
+  '<path d="'+body+'" fill="'+tee+'"/><path d="'+body+'" fill="url(#mgs)"/><path d="'+body+'" fill="url(#mgv)"/>'+
+  '<ellipse cx="296.4" cy="272" rx="26.4" ry="3.6" fill="'+tee+'"/><ellipse cx="296.4" cy="272" rx="26.4" ry="3.6" fill="#000" fill-opacity=".1"/>'+
+  '<ellipse cx="296.4" cy="272.5" rx="24.4" ry="2.7" fill="#000" fill-opacity=".3"/>'+
+  '<path d="M272.4 272.6A24.4 2.7 0 0 0 320.4 272.6" fill="none" stroke="#fff" stroke-opacity=".35" stroke-width=".5"/>'+
+  '<path d="M278 276V330" stroke="#fff" stroke-opacity=".28" stroke-width="2.2" stroke-linecap="round"/></svg>';
 }
 function hatSVG(tee,thumb){
   var vb=thumb?'70 75 450 480':'0 0 600 640';
@@ -1442,7 +1449,7 @@ function layout(){
   var wr=wrap.getBoundingClientRect(),W=wr.width,H=wr.height;
   if(!W||!H)return;
   var k=CUT_K[state.cut]||CUT_K.erkek,ay=NECK_Y[view.side],vb=P().vb,base,s,cx=STAGE_W/2,cy;
-  if(vb&&mugWrap())vb={cx:296,cy:304,w:200,h:140};
+  if(vb&&mugWrap())vb={cx:267,cy:305,w:178,h:118};
   if(vb){base=Math.min(W/vb.w,H/vb.h)*0.97;cx=vb.cx;cy=vb.cy;}
   else{var fb=fitBox(view.side),fh=fb.bot-fb.top;var mob=W<700,gx=mob?0.9:0.86;base=Math.min((W-64)*gx/fb.w,(H-60)*gx/fh);cy=(fb.top+fb.bot)/2-4;}
   s=base;
@@ -1830,7 +1837,7 @@ function remap(c,oa,na){
   });
 }
 function changeArea(key){
-  var c=cur();if(c.area===key||(P().sides[view.side]||[]).indexOf(key)<0)return;
+  var c=cur();if(c.area===key||areasFor(view.side).indexOf(key)<0)return;
   remap(c,areaBox(view.side,c.area),areaBox(view.side,key));
   c.area=key;renderAll();pushHist();
 }
@@ -1838,7 +1845,7 @@ var ICON_PORT='<svg class="pg" viewBox="0 0 14 14" aria-hidden="true"><rect x="3
 var ICON_LAND='<svg class="pg" viewBox="0 0 14 14" aria-hidden="true"><rect x="1.5" y="3.5" width="11" height="7" rx="1"/></svg>';
 /* Alan ve yön seçimi tek dokunuşta: öğeler bir kez yeni alana oranlanır, geçmişe tek adım yazılır. */
 function selectArea(key,land){
-  var c=cur();if((P().sides[view.side]||[]).indexOf(key)<0)return;
+  var c=cur();if(areasFor(view.side).indexOf(key)<0)return;
   var turnable=AREAS[key].rot&&!forcedLand(key);
   if(c.area===key&&(!turnable||!!c.land===land))return;
   var oa=areaBox(view.side,c.area);
@@ -1880,11 +1887,12 @@ function chooseProduct(p,c){
   if(state.cut!==c){var oldL=sizeList();state.cut=c;var nl=sizeList();Object.keys(state.sizes).forEach(function(z){if(nl.indexOf(z)<0)delete state.sizes[z];});}
   try{if(PH.site)phApplyColors();}catch(_){}
   ensureSizes();
+  if(state.product==='mug'){var wa=state.cut==='sub'?'mugw':'mug';if(state.front.area!==wa){remap(state.front,areaBox('front',state.front.area),areaBox('front',wa));state.front.area=wa;}if(state.cut==='sub')view.side='front';}
   if(!P().sides[view.side])view.side='front';
   view.sel=null;closeProdPage();
   view.fit='shirt';resetZoom();syncFitBtn();
   renderAll();layout();if(ch)pushHist();
-  toast(productLabel()+': '+P().rule);
+  toast(productLabel()+': '+(state.product==='mug'?(state.cut==='sub'?'kupanın çevresini saran 20 × 10 cm süblimasyon baskı.':'kulpun iki yanına (ön ve arka) 8 × 8 cm baskı.'):P().rule));
 }
 function syncProduct(){}
 function openProdPage(){closeTab();select(null);renderProdPage();$('#prodPage').hidden=false;$('#pgBody').scrollTop=0;}
@@ -2191,18 +2199,18 @@ function renderTplPreviews(){
 }
 function syncTeeUI(){if(!$('#prodPage').hidden)renderProdPage();syncOpt();if(view.tab==='opt')renderOpt();}
 /* Stüdyodan çıkmadan ürün rengi ve beden değişimi (üst satırdaki renk noktası) */
-function curSize(){var l=sizeList()||[];if(!l.length||state.cut==='std')return '';try{var z=phSize();if(z&&l.indexOf(z)>=0)return z;}catch(_){}var best='',mx=0;l.forEach(function(z){if((state.sizes[z]||0)>mx){mx=state.sizes[z];best=z;}});return best||PH.want||'';}
+function curSize(){var l=sizeList()||[];if(!l.length||isStd())return '';try{var z=phSize();if(z&&l.indexOf(z)>=0)return z;}catch(_){}var best='',mx=0;l.forEach(function(z){if((state.sizes[z]||0)>mx){mx=state.sizes[z];best=z;}});return best||PH.want||'';}
 function syncOpt(){var d=$('#optDot'),z=$('#optSz');if(!d)return;d.style.background=state.tee;var cs=curSize();z.textContent=cs;z.hidden=!cs;$('#optBtn').classList.toggle('on',view.tab==='opt');}
 function renderOpt(){
   var nm='',sw='';TEES.forEach(function(t){if(t[1]===state.tee)nm=t[0];sw+='<button class="csw'+(t[1]===state.tee?' on':'')+'" data-tee="'+t[1]+'" style="background:'+t[1]+'" aria-label="'+t[0]+'"></button>';});
   $('#optColors').innerHTML=sw;$('#optColorName').textContent=nm;
-  var l=state.cut==='std'?[]:(sizeList()||[]),cz=curSize();$('#optSizeWrap').hidden=!l.length;
+  var l=isStd()?[]:(sizeList()||[]),cz=curSize();$('#optSizeWrap').hidden=!l.length;
   $('#optSizes').innerHTML=l.map(function(z){return '<button type="button" data-oz="'+z+'"'+(z===cz?' class="on"':'')+'>'+z+'</button>';}).join('');
   var dz=null;try{dz=phDims(state.product,state.cut);}catch(_){}
   $('#optSzInfo').textContent=dz&&cz?'· en '+dz[0]+' cm, boy '+dz[1]+' cm':'';
 }
 function syncChips(){
-  var q=P(),al=q.sides[view.side]||[],h='';
+  var q=P(),al=areasFor(view.side),h='';
   var curLand=isLand(view.side);
   function chip(k,l){
     var on=k===cur().area&&(l===null||l===curLand),ic=l===null?'':(l?ICON_LAND:ICON_PORT);
@@ -2425,7 +2433,7 @@ function priceInfo(){
 function needSizesHere(){var k=rosterKinds();return k.name||k.num;}
 function renderSizes(){
   var h='',sz=$('#sizeHead').parentNode;sz.hidden=!needSizesHere();
-  $('#sizeHead').textContent=state.cut==='std'?'Adet':(state.cut==='cocuk'?'Beden (yaş) ve adet':'Beden ve adet');
+  $('#sizeHead').textContent=isStd()?'Adet':(state.cut==='cocuk'?'Beden (yaş) ve adet':'Beden ve adet');
   sizeList().forEach(function(s){h+='<div class="step"><b>'+s+'</b><button data-s="'+s+'" data-d="-1" aria-label="'+s+' azalt">−</button><output>'+(state.sizes[s]||0)+'</output><button data-s="'+s+'" data-d="1" aria-label="'+s+' artır">+</button></div>';});
   $('#sizeGrid').innerHTML=h;
   renderRoster();
@@ -2449,7 +2457,7 @@ function renderRoster(){
   sec.hidden=false;
   var R=state.roster||{},h='';
   sizeList().forEach(function(s){for(var i=1;i<=(state.sizes[s]||0);i++){var key=s+'#'+i,v=R[key]||{};
-    h+='<div class="rs-row"><b>'+(state.cut==='std'?i+'.':s+' · '+i)+'</b>'+
+    h+='<div class="rs-row"><b>'+(isStd()?i+'.':s+' · '+i)+'</b>'+
       (k.name?'<input data-rk="'+key+'" data-rf="n" value="'+escX(v.n||'')+'" placeholder="İsim" maxlength="16" autocomplete="off" autocapitalize="characters" aria-label="'+s+' '+i+' isim">':'')+
       (k.num?'<input class="no" data-rk="'+key+'" data-rf="k" value="'+escX(v.k||'')+'" placeholder="No" maxlength="3" inputmode="numeric" autocomplete="off" aria-label="'+s+' '+i+' numara">':'')+'</div>';}});
   var L=$('#rosterList');L.className='rs'+(k.name&&k.num?'':' one');
