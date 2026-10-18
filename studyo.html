@@ -437,7 +437,10 @@ svg.i{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stro
 .fxp>b{font:700 11px var(--ui);letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
 .fxc{display:flex;flex-wrap:wrap;gap:5px}
 .fxc button{border:1px solid var(--line2);background:var(--panel2);border-radius:999px;padding:6px 10px;font:600 12px var(--ui);color:var(--ink)}
-.toast.tap{pointer-events:auto}
+.toast.tap{pointer-events:auto;cursor:pointer}
+.ctxbar .aibtn{background:var(--accent);color:#fff;border-color:var(--accent)}.ctxbar .aibtn svg{stroke:#fff}
+.ctxbar .aibtn.pulse{animation:aipulse 1s ease 3}@keyframes aipulse{50%{box-shadow:0 0 0 6px rgba(21,155,145,.25)}}
+.wolfph{display:grid;gap:6px;margin-top:12px;padding-top:12px;border-top:1px solid var(--line)}.wolfph>b{font:700 11px var(--ui);letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
 .aitag{font:700 9px var(--ui);letter-spacing:.06em;text-transform:none;background:var(--accent);color:#fff;border-radius:999px;padding:2px 6px;margin-left:6px;font-style:normal;vertical-align:1px}
 .fxc.ai button{border-color:var(--accent)}.ainote{font:500 11px var(--ui);color:var(--muted);margin-top:-2px}
 .aispin{display:inline-block;width:12px;height:12px;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;margin-right:8px;vertical-align:-2px;animation:aisp .8s linear infinite}@keyframes aisp{to{transform:rotate(360deg)}}
@@ -498,6 +501,7 @@ img{-webkit-touch-callout:none;-webkit-user-drag:none}
   <div class="ctxwrap" id="ctx" hidden>
     <div class="pop" id="colorPop" hidden></div>
     <div class="ctxbar" id="ctxBar">
+      <button data-c="fx" data-t="image" class="aibtn" id="fxBtn"><svg class="i" viewBox="0 0 24 24"><path d="M12 3l1.8 4.2L18 9l-4.2 1.8L12 15l-1.8-4.2L6 9l4.2-1.8z"/><path d="M19 15l.8 1.7 1.7.8-1.7.8-.8 1.7-.8-1.7-1.7-.8 1.7-.8z"/></svg>Wolf çizsin · Tarz</button>
       <button data-c="color" data-t="text clip"><i class="dot" id="ctxDot"></i>Renk</button>
       <button data-c="del" data-t="text clip image" class="danger"><svg class="i" viewBox="0 0 24 24"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg>Sil</button>
       <button data-c="swap" data-t="clip image"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="10" r="1.6"/><path d="M21 16l-5-5-8 8"/></svg>Değiştir</button>
@@ -507,7 +511,6 @@ img{-webkit-touch-callout:none;-webkit-user-drag:none}
       <button data-c="edit" data-t="text"><svg class="i" viewBox="0 0 24 24"><path d="M4 20l4-1 11-11-3-3L5 16z"/></svg>Düzenle</button>
       <button data-c="font" data-t="text"><svg class="i" viewBox="0 0 24 24"><path d="M5 6V4h14v2M12 4v16M9 20h6"/></svg>Yazı tipi</button>
       <button data-c="stroke" data-t="text"><svg class="i" viewBox="0 0 24 24"><rect x="5" y="5" width="14" height="14" rx="3" stroke-dasharray="3 2.4"/></svg>Kontur</button>
-      <button data-c="fx" data-t="image"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8" stroke-dasharray="3 2.5"/><path d="M9 14l2-3 2 2 2-3"/></svg>Tarz ve kenar</button>
       <button data-c="nobg" data-t="image" id="nobgBtn"><svg class="i" viewBox="0 0 24 24"><path d="M4 20l10-10"/><path d="M15 3l1 2 2 1-2 1-1 2-1-2-2-1 2-1z"/><path d="M19 11l.6 1.4L21 13l-1.4.6L19 15l-.6-1.4L17 13l1.4-.6z"/></svg>Arka planı sil</button>
       <span class="pill" id="qPill" data-t="image"></span>
       <span class="pill mid" id="ovPill" data-t="text clip image" hidden>Taşan kısım basılmaz</span>
@@ -554,7 +557,8 @@ img{-webkit-touch-callout:none;-webkit-user-drag:none}
       <div class="wolfp"><b>Wolf tasarlasın</b><p>Ne istediğini bir cümleyle yaz. Wolf, ürününe ve baskı alanına uygun tasarımı hazırlar.</p>
       <div class="wolfin"><textarea id="wolfIn" rows="2" enterkeyhint="send" placeholder="Örn. ay ışığında uluyan kurt, altında takımımızın adı"></textarea><button class="primary" id="wolfGo" type="button" aria-label="Gönder"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h13M13 6l6 6-6 6"/></svg></button></div>
       <div class="fxc ai" id="wolfSt" style="margin-top:8px"></div>
-      <p class="note" id="wolfNote">Wolf yapay zekâ ile 30-60 saniyede çizer ve baskı alanına yerleştirir. Bir fotoğraf seçiliyse onu kullanır. Tasarıma yazı istersen tırnak içinde yaz: "WOLFLANO". Üyelikle günde 6 hak. İstersen <a href="#" id="wolfWa" style="color:var(--accent);font-weight:600">fikrini ekibimize gönder</a>, biz hazırlayalım.</p></div>
+      <div class="wolfph" id="wolfPh"></div>
+      <p class="note" id="wolfNote">Wolf yapay zekâ ile 30-60 saniyede çizer ve baskı alanına yerleştirir. Üyelikle günde 3 hak. Bir fotoğraf seçiliyse onu kullanır. Tasarıma yazı istersen tırnak içinde yaz: "WOLFLANO". İstersen <a href="#" id="wolfWa" style="color:var(--accent);font-weight:600">fikrini ekibimize gönder</a>, biz hazırlayalım.</p></div>
     </div>
     <div class="panel" data-p="opt" hidden>
       <div class="mini-title">Ürün rengi <em id="optColorName"></em></div>
@@ -1688,7 +1692,7 @@ function loadFile(file){
     renderUploads();addImageObj(id);
     var nq=qualityOf(selObj()||{});
     if(nq&&nq.cls==='low')longToast('Fotoğraf eklendi. Baskı kalitesi düşük ('+nq.ppi+' dpi), baskıda bulanık çıkabilir. Küçült ya da daha büyük bir fotoğraf yükle.');
-    else toast('Fotoğraf eklendi');
+    else aiHint();
   };
   im.onerror=function(){toast('Bu dosya açılamadı. PNG veya JPG dene.');};
   im.src=url;
@@ -1852,7 +1856,7 @@ async function applyFx(st,edge,soft){
 function fxPop(){
   var o=selObj(),pop=$('#colorPop');if(!o||o.type!=='image'||view.pop!=='fx')return;
   var st=o.phs||'none',ed=o.phe||'none',sf=o.phf==null?0.5:o.phf;
-  pop.innerHTML='<div class="fxp"><b>Wolf çizsin <em class="aitag">Yapay zekâ</em></b><div class="fxc ai">'+AI_ST.map(function(s){return '<button type="button" data-ais="'+s[0]+'"'+(st==='ai-'+s[0]?' class="on"':'')+(AI_BUSY||fxBusy?' disabled':'')+'>'+s[1]+'</button>';}).join('')+'</div><small class="ainote">'+(AI_BUSY?'Wolf çiziyor…':'Gerçek çizim gibi sonuç · 30-60 sn · üyelik ile günde 6 hak')+'</small>'+
+  pop.innerHTML='<div class="fxp"><b>Wolf çizsin <em class="aitag">Yapay zekâ</em></b><div class="fxc ai">'+AI_ST.map(function(s){return '<button type="button" data-ais="'+s[0]+'"'+(st==='ai-'+s[0]?' class="on"':'')+(AI_BUSY||fxBusy?' disabled':'')+'>'+s[1]+'</button>';}).join('')+'</div><small class="ainote">'+(AI_BUSY?'Wolf çiziyor…':'Gerçek çizim gibi sonuç · 30-60 sn · üyelik ile günde 3 hak')+'</small>'+
     '<b>Hızlı filtre</b><div class="fxc">'+PHS.map(function(s){return '<button type="button" data-phs="'+s[0]+'"'+(s[0]===st?' class="on"':'')+(fxBusy?' disabled':'')+'>'+s[1]+'</button>';}).join('')+'</div>'+
     '<b>Kenar</b><div class="fxc">'+PHE.map(function(s){return '<button type="button" data-phe="'+s[0]+'"'+(s[0]===ed?' class="on"':'')+(fxBusy?' disabled':'')+'>'+s[1]+'</button>';}).join('')+'</div>'+
     (ed!=='none'?'<label class="fxr"><span>Kenar yumuşaklığı</span><input type="range" min="0" max="100" value="'+Math.round(sf*100)+'" data-phf="1"'+(fxBusy?' disabled':'')+'></label>':'')+'</div>';
@@ -1864,7 +1868,7 @@ var AI_BUSY=false;
 async function aiTok(){try{var s=JSON.parse(localStorage.getItem('wf_sb')||'null');if(!s||!s.access)return null;if(s.exp>Date.now())return s.access;
   var r=await fetch(SB.url+'/auth/v1/token?grant_type=refresh_token',{method:'POST',headers:{apikey:SB.key,'Content-Type':'application/json'},body:JSON.stringify({refresh_token:s.refresh})});
   if(!r.ok)return null;var j=await r.json();var n={access:j.access_token,refresh:j.refresh_token,exp:Date.now()+((+j.expires_in||3600)-60)*1000,user:j.user||s.user,adm:s.adm};localStorage.setItem('wf_sb',JSON.stringify(n));return n.access;}catch(_){return null;}}
-function aiLogin(){var t=toastEl();t.classList.add('long','tap');t.innerHTML='Wolf\'un çizmesi için üye girişi gerekiyor. <a href="index.html#hesabim" target="_blank" rel="noopener" style="color:inherit;font-weight:700;text-decoration:underline">Giriş yap / üye ol</a>, sonra buraya dönüp yeniden dokun.';t.hidden=false;clearTimeout(toastT);toastT=setTimeout(function(){t.hidden=true;},9000);}
+function aiLogin(){var t=toastEl();t.classList.add('long','tap');t.style.pointerEvents='auto';t.innerHTML='Wolf\'un çizmesi için üye girişi gerekiyor. <a href="index.html#hesabim" target="_blank" rel="noopener" style="color:inherit;font-weight:700;text-decoration:underline">Giriş yap / üye ol</a>, sonra buraya dönüp yeniden dokun.';t.hidden=false;clearTimeout(toastT);toastT=setTimeout(function(){t.hidden=true;},9000);}
 async function aiPhotoData(assetId){var a=assets[assetId],im=await loadImg(a.url),M=1536,sc=Math.min(1,M/Math.max(im.naturalWidth,im.naturalHeight));
   var c=document.createElement('canvas');c.width=Math.round(im.naturalWidth*sc);c.height=Math.round(im.naturalHeight*sc);var x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,c.width,c.height);x.drawImage(im,0,0,c.width,c.height);return c.toDataURL('image/jpeg',0.88);}
 async function aiCall(body){
@@ -1888,6 +1892,16 @@ function aiWait(m){var t=toastEl(),t0=Date.now();t.classList.remove('long');clea
   function up(){var sec=Math.round((Date.now()-t0)/1000);t.innerHTML='<span class="aispin"></span>'+m+' · '+sec+' sn';t.hidden=false;}
   up();aiTimer=setInterval(up,1000);}
 function aiDone(){clearInterval(aiTimer);aiTimer=null;}
+['pointerdown','mousedown','touchstart'].forEach(function(ev){document.addEventListener(ev,function(e){var t=e.target.closest&&e.target.closest('.toast.tap');if(t)e.stopPropagation();},true);});
+function aiHint(){
+  if(view.aiNext){view.aiNext=false;try{closeTab();}catch(_){}setTimeout(function(){view.pop=null;showFx();},250);return;}
+  var t=toastEl();t.classList.add('long','tap');t.style.pointerEvents='auto';t.innerHTML='Fotoğraf eklendi. <b style="text-decoration:underline">Wolf çizsin</b>: karikatür, kalem çizim ya da yağlı boyaya çevirmek için dokun.';t.hidden=false;clearTimeout(toastT);
+  var sid=view.sel;t.onclick=function(){t.onclick=null;t.hidden=true;try{closeTab();}catch(_){}if(sid!=null&&view.sel!==sid)try{select(sid);}catch(_){}view.pop=null;showFx();};toastT=setTimeout(function(){t.hidden=true;t.onclick=null;},7000);
+  var b=$('#fxBtn');if(b){b.classList.remove('pulse');void b.offsetWidth;b.classList.add('pulse');}}
+function wolfPhRender(){var e=$('#wolfPh');if(!e)return;var o=selObj();
+  if(o&&o.type==='image')e.innerHTML='<b>Seçili fotoğrafını çizdir</b><div class="fxc ai">'+AI_ST.map(function(s){return '<button type="button" data-ais="'+s[0]+'">'+s[1]+'</button>';}).join('')+'</div>';
+  else e.innerHTML='<b>Kendi fotoğrafından çizim</b><button type="button" class="ghost" id="wolfPhUp">Fotoğraf yükle, Wolf çizsin</button><small class="ainote">Karikatür, kalem çizim, illüstrasyon ya da yağlı boya</small>';}
+document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('#wolfPhUp');if(!b)return;view.aiNext=true;var f=$('#fileIn');if(f)f.click();});
 function popClose(){view.pop=null;var p=$('#colorPop');if(p)p.hidden=true;}
 async function aiStyle(st){
   var o=selObj();if(!o||o.type!=='image'||AI_BUSY||fxBusy)return;
@@ -1900,12 +1914,12 @@ async function aiStyle(st){
     var img=await aiCall({style:st,orient:a.w>a.h*1.15?'landscape':'portrait',image:src});
     if(!img)return;
     var id=await aiAsset(img),na=assets[id];o.assetId=id;o.phs='ai-'+st;o.phe='none';o.h=o.w*na.h/na.w;
-    renderObjects();updateSel();syncCtx();pushHist();toast('Wolf çizdi. Beğenmezsen Tarz ve kenar → Gerçek ile asıl fotoğrafa dönersin.');
+    renderObjects();updateSel();syncCtx();pushHist();toast('Wolf çizdi. Beğenmezsen Wolf çizsin · Tarz → Gerçek ile asıl fotoğrafa dönersin.');
   }catch(_){longToast('Wolf şu an çizemedi. Biraz sonra yeniden dene.');}
   finally{AI_BUSY=false;aiDone();}
 }
 function showFx(){var o=selObj();if(!o)return;if(view.pop==='fx'){view.pop=null;$('#colorPop').hidden=true;return;}view.pop='fx';fxPop();}
-document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('[data-ais]');if(!b||!$('#colorPop').contains(b))return;e.preventDefault();e.stopPropagation();aiStyle(b.dataset.ais);},true);
+document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('[data-ais]');if(!b||!($('#colorPop').contains(b)||($('#wolfPh')&&$('#wolfPh').contains(b))))return;e.preventDefault();e.stopPropagation();aiStyle(b.dataset.ais);},true);
 document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('[data-phs],[data-phe]');if(!b||!$('#colorPop').contains(b))return;e.preventDefault();e.stopPropagation();
   popClose();if(b.dataset.phs)applyFx(b.dataset.phs,null,null);else applyFx(null,b.dataset.phe,null);},true);
 document.addEventListener('change',function(e){var t=e.target;if(t&&t.dataset&&t.dataset.phf)applyFx(null,null,(+t.value)/100);});
@@ -2244,6 +2258,7 @@ function openTab(name,focusInput){
   view.fit='area';resetZoom();syncFitBtn();
   if(name==='tpl')renderTplPreviews();
   if(name==='opt')renderOpt();
+  if(name==='wolf')try{wolfPhRender();}catch(_){}
   syncOpt();
   if(name==='text')renderFxRows();
   if(name==='text'&&focusInput){setTimeout(function(){if(!textIn.disabled){textIn.focus();textIn.select();}},80);}
@@ -2346,7 +2361,7 @@ function renderAll(){
 var toastT=0;
 /* Sipariş, ödeme veya ürün sayfası açıkken bildirim tasarım alanının arkasında kalmasın diye en üstte gösterilir. */
 function toastEl(){var top=['#order','#checkout','#prodPage','#wolfPage'].some(function(q){var e=$(q);return e&&!e.hidden;});
-  var t=top?$('#toastTop'):$('#toast'),o=top?$('#toast'):$('#toastTop');if(o)o.hidden=true;if(t)t.classList.remove('tap');return t;}
+  var t=top?$('#toastTop'):$('#toast'),o=top?$('#toast'):$('#toastTop');if(o)o.hidden=true;if(t){t.classList.remove('tap');t.style.pointerEvents='';t.onclick=null;}return t;}
 function toast(m){var t=toastEl();t.classList.remove('long');t.textContent=m;t.hidden=false;clearTimeout(toastT);toastT=setTimeout(function(){t.hidden=true;},2400);}
 
 /* ---------- Olaylar ---------- */
