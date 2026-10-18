@@ -304,6 +304,15 @@ svg.i{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stro
 .o-foot small{display:block;color:var(--muted);font:600 12px var(--ui)}
 .o-foot b{font:700 26px/1 var(--disp);letter-spacing:.02em;font-variant-numeric:tabular-nums}
 @media (prefers-reduced-motion:reduce){#stage{transition:none}.hint{transition:none}}
+/* Şablonlar tek sıra halinde sağa-sola kayar; tasarım alanı üstte görünür kalır */
+#tplGrid.tpl-grid{grid-auto-flow:column;grid-auto-columns:104px;grid-template-columns:none;overflow-x:auto;overflow-y:hidden;gap:8px;scroll-snap-type:x proximity;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch;padding-bottom:4px;scrollbar-width:none}
+#tplGrid.tpl-grid::-webkit-scrollbar{display:none}
+#tplGrid .tpl,#tplGrid .atpl{scroll-snap-align:start}
+#tplGrid .tpl .prev{height:124px}
+#tplGrid .tpl .prev .in{transform:translateX(-50%) scale(.6)}
+.sheet:has(>.panel[data-p="tpl"]:not([hidden])){height:auto}
+.panel[data-p="tpl"]{overflow-y:visible}
+
 
 /* Kompakt seçenekler: renk, şekil, yazı tipi panelleri daha küçük ve sade */
 .sheet{height:clamp(150px,27%,236px)}
@@ -2172,7 +2181,7 @@ $('#clipCats').addEventListener('click',function(e){
 $('#clipGrid').addEventListener('click',function(e){var b=e.target.closest('[data-clip]');if(b)addClip(b.dataset.clip);});
 $('#fileIn').addEventListener('change',function(e){var f=e.target.files[0];if(f)loadFile(f);e.target.value='';});
 $('#upGrid').addEventListener('click',function(e){var b=e.target.closest('[data-asset]');if(b)addImageObj(b.dataset.asset);});
-$('#tplCats').addEventListener('click',function(e){var b=e.target.closest('[data-tc]');if(!b)return;view.tplCat=b.dataset.tc;$('#tplQ').value='';renderTpl();renderTplPreviews();});
+$('#tplCats').addEventListener('click',function(e){var b=e.target.closest('[data-tc]');if(!b)return;view.tplCat=b.dataset.tc;$('#tplQ').value='';renderTpl();renderTplPreviews();$('#tplGrid').scrollLeft=0;});
 $('#tplQ').addEventListener('input',function(){renderTpl();renderTplPreviews();});
 $('#tplQ').addEventListener('keydown',function(e){if(e.key==='Enter')this.blur();});
 $('#tplQx').addEventListener('click',function(){$('#tplQ').value='';renderTpl();renderTplPreviews();});
