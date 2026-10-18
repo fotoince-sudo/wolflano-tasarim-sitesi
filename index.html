@@ -579,8 +579,8 @@ body.cko #nav,body.cko .menu-btn,body.cko .lang,body.cko #cartBtn,body.cko #ann{
 .mkn{margin-top:22px;display:grid;grid-template-columns:44% 1fr;gap:14px;align-items:center;padding:14px;border:1.5px solid var(--green);border-radius:16px;background:#fff}
 .mkn.noimg{grid-template-columns:1fr}
 .mki img{display:block;width:100%;height:auto;max-height:220px;object-fit:contain}
-.mkt b{display:block;font:800 clamp(13px,3.9vw,18px)/1.2 var(--ui);letter-spacing:.04em;text-transform:uppercase;color:var(--ink,#101a14)}
-.mkt p{margin:6px 0 0;font-size:clamp(12px,3.3vw,15px);line-height:1.45;color:var(--muted,#4a554e)}
+.mkh{grid-column:1/-1;display:block;font:800 clamp(12px,3.95vw,24px)/1.2 var(--ui);letter-spacing:.02em;text-transform:uppercase;white-space:nowrap;text-align:center;color:var(--ink,#101a14);padding-bottom:10px;border-bottom:1px solid var(--line,#e2e8e4)}
+.mkt p{margin:0;font-size:clamp(12px,3.3vw,15px);line-height:1.45;color:var(--muted,#4a554e)}
 .mkt small{display:block;margin-top:6px;font-size:clamp(11px,3vw,13px);line-height:1.4;color:var(--muted,#4a554e)}
 .mkn+.bizban{margin-top:12px}
 @media (min-width:760px){.mkn{grid-template-columns:300px 1fr;gap:24px;padding:18px 24px}}
@@ -1928,7 +1928,7 @@ function homeWhy(){return '<section class="hcol why"><p class="eyebrow">'+esc(TX
 function homeAtolye(){var L=[['#tasarla','Kendin tasarla','g'],['studyo.html?wolf=1','Wolf tasarlasın','d']];
   return '<section class="hcol hatol"><p class="eyebrow">'+esc(TX('atolyeTitle'))+'</p><p class="lead" style="margin:0 0 12px">'+esc(TX('atolyeLead'))+'</p><div class="hatl">'+L.map(function(x){return '<a class="'+x[2]+'" href="'+x[0]+'">'+x[1]+'<span>'+IC.arrow+'</span></a>';}).join('')+'</div><a class="link" href="#atolye" style="margin-top:14px;display:inline-flex">Baskı Atölyesine git '+IC.arrow+'</a></section>';}
 function makineBox(){var m=D.makine||DEF.makine;if(m.show===false)return '';var im=(m.imgs||[]).filter(Boolean)[0];if(!im&&!m.title&&!m.text)return '';
-  return '<div class="mkn'+(im?'':' noimg')+'">'+(im?'<div class="mki"><img src="'+src(im)+'" alt="Baskı makinesi" loading="lazy"></div>':'')+'<div class="mkt">'+(m.title?'<b>'+esc(m.title)+'</b>':'')+(m.text?'<p>'+esc(m.text)+'</p>':'')+(m.note?'<small>'+esc(m.note)+'</small>':'')+'</div></div>';}
+  return '<div class="mkn'+(im?'':' noimg')+'">'+(m.title?'<b class="mkh">'+esc(m.title)+'</b>':'')+(im?'<div class="mki"><img src="'+src(im)+'" alt="Baskı makinesi" loading="lazy"></div>':'')+'<div class="mkt">'+(m.text?'<p>'+esc(m.text)+'</p>':'')+(m.note?'<small>'+esc(m.note)+'</small>':'')+'</div></div>';}
 function atolyePair(){return '<a class="wolfban bizban" href="studyo.html?wolf=1"><span class="wic">'+IC.spark+'</span><span class="wtx"><b>'+esc(TX('wolfTitle'))+'</b><small>'+esc(TX('wolfText'))+'</small></span><span class="wgo">'+IC.arrow+'</span></a>';}
 function howHTML(){return '<section class="how"><div class="wrap"><h2>'+esc(TX('howTitle'))+'</h2><div class="steps">'+
   '<div class="step"><span class="dot">'+IC.up+'</span><div><h3>'+esc(TX('how1t'))+'</h3><p>'+esc(TX('how1d'))+'</p></div></div>'+
