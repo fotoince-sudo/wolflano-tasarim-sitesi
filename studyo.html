@@ -554,7 +554,7 @@ img{-webkit-touch-callout:none;-webkit-user-drag:none}
       <div class="wolfp"><b>Wolf tasarlasın</b><p>Ne istediğini bir cümleyle yaz. Wolf, ürününe ve baskı alanına uygun tasarımı hazırlar.</p>
       <div class="wolfin"><textarea id="wolfIn" rows="2" enterkeyhint="send" placeholder="Örn. ay ışığında uluyan kurt, altında takımımızın adı"></textarea><button class="primary" id="wolfGo" type="button" aria-label="Gönder"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h13M13 6l6 6-6 6"/></svg></button></div>
       <div class="fxc ai" id="wolfSt" style="margin-top:8px"></div>
-      <p class="note" id="wolfNote">Wolf yapay zekâ ile 30-60 saniyede çizer ve tasarımı baskı alanına yerleştirir. Üyelikle günde 6 hak. İstersen <a href="#" id="wolfWa" style="color:var(--accent);font-weight:600">fikrini ekibimize gönder</a>, biz hazırlayalım.</p></div>
+      <p class="note" id="wolfNote">Wolf yapay zekâ ile 30-60 saniyede çizer ve baskı alanına yerleştirir. Bir fotoğraf seçiliyse onu kullanır. Üyelikle günde 6 hak. İstersen <a href="#" id="wolfWa" style="color:var(--accent);font-weight:600">fikrini ekibimize gönder</a>, biz hazırlayalım.</p></div>
     </div>
     <div class="panel" data-p="opt" hidden>
       <div class="mini-title">Ürün rengi <em id="optColorName"></em></div>
@@ -2351,9 +2351,12 @@ document.addEventListener('click',function(e){var b=e.target.closest&&e.target.c
 $('#wolfGo').addEventListener('click',async function(){var t=($('#wolfIn').value||'').trim();if(t.length<4){toast('Önce ne istediğini kısaca yaz');$('#wolfIn').focus();return;}
   if(AI_BUSY)return;AI_BUSY=true;var g=$('#wolfGo');g.disabled=true;
   try{var tk=await aiTok();if(!tk){aiLogin();return;}
-    var A=areaBox(view.side,cur().area);aiWait('Wolf çiziyor · 30-60 saniye sürebilir');
-    var img=await aiCall({prompt:t+'. Design for '+productLabel()+' print. Isolated artwork on a plain pure white background.',style:wolfSt,orient:A.w>A.h*1.15?'landscape':'portrait'});
-    if(!img)return;var id=await aiAsset(img);addImageObj(id);closeTab();toast('Wolf çizdi. Taşıyabilir, büyütebilirsin. Beyaz zemini "Arka planı sil" ile kaldırabilirsin.');}
+    var A=areaBox(view.side,cur().area),so=selObj(),ph=(so&&so.type==='image')?so:null;aiWait('Wolf çiziyor · 30-60 saniye sürebilir');
+    var body={prompt:t+'. Design for '+productLabel()+' print. Isolated artwork on a plain pure white background.',style:wolfSt,orient:A.w>A.h*1.15?'landscape':'portrait'};
+    if(ph){if(!ph.base||!assets[ph.base])ph.base=ph.assetId;body.image=await aiPhotoData(ph.base);}
+    var img=await aiCall(body);
+    if(!img)return;var id=await aiAsset(img);
+    if(ph){var na=assets[id];ph.assetId=id;ph.phs='ai-'+wolfSt;ph.phe='none';ph.h=ph.w*na.h/na.w;renderObjects();updateSel();syncCtx();pushHist();}else addImageObj(id);closeTab();toast('Wolf çizdi. Taşıyabilir, büyütebilirsin. Beyaz zemini "Arka planı sil" ile kaldırabilirsin.');}
   catch(_){longToast('Wolf şu an çizemedi. Biraz sonra yeniden dene.');}
   finally{AI_BUSY=false;g.disabled=false;}
 });
