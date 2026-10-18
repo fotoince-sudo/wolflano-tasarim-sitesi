@@ -332,6 +332,13 @@ svg.i{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stro
   .sub-r{gap:4px;flex:none}.sub-r .ib{width:34px;height:34px}
 }
 @media (max-width:360px){.brand span{display:none}.top-actions #redoBtn{display:none}}
+/* Telefonda baskı ölçüleri (A4, A3, logo…) ayrı satırda, hepsi görünür */
+@media (max-width:520px){
+  .sub{flex-wrap:wrap;row-gap:6px}
+  .sub .sub-r{margin-left:auto}
+  .sub .chips{order:9;flex:1 0 100%;flex-wrap:wrap;overflow:visible;-webkit-mask-image:none;mask-image:none;padding-right:0;gap:5px}
+  .sub .chips button{padding:6px 9px}
+}
 
 /* Şablonlar tek sıra halinde sağa-sola kayar; tasarım alanı üstte görünür kalır */
 #tplGrid.tpl-grid{grid-auto-flow:column;grid-auto-columns:104px;grid-template-columns:none;overflow-x:auto;overflow-y:hidden;gap:8px;scroll-snap-type:x proximity;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch;padding-bottom:4px;scrollbar-width:none}
