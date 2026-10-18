@@ -2681,7 +2681,7 @@ async function addToCart(silent){
     var c=await renderPreview(sidesOf()[0],0.35);
     var bg=document.createElement('canvas');bg.width=c.width;bg.height=c.height;var bx=bg.getContext('2d');bx.fillStyle='#eef1ef';bx.fillRect(0,0,bg.width,bg.height);bx.drawImage(c,0,0);
     var szs=need?JSON.parse(JSON.stringify(state.sizes)):{};if(!need){var sl0=sizeList()||[];if(sl0.length===1)szs[sl0[0]]=1;else{var cz0=curSize();if(cz0)szs[cz0]=1;}}
-    cartItems.push({sig:sig,thumb:bg.toDataURL('image/jpeg',0.8),label:productLabel(),cut:state.cut,unit:p.unit,szList:sizeList(),sizes:szs,lines:designLines(),roster:rosterRows()});
+    cartItems.push({sig:sig,thumb:bg.toDataURL('image/jpeg',0.8),label:productLabel(),cut:state.cut,unit:p.unit,szList:sizeList(),sizes:szs,lines:designLines(),roster:rosterRows()});wfStat(['e:stud-sepet']);
     ok=true;
   }catch(_){toast('Sepete eklenemedi');}
   b.disabled=false;renderCart();
@@ -2768,6 +2768,15 @@ renderSpList();
 $('#spList').addEventListener('change',function(){var sp=spCur();$('#spDocWrap').hidden=!sp;if(sp)$('#spDocLab').textContent=sp[3];renderCoSum();});
 /* ---------- Siparişi yönetim paneline (Supabase) kaydet: indirim ve ücretsiz adet sunucuda yeniden hesaplanır ---------- */
 var SB={url:'https://wgovwmeirlzwalelazfj.supabase.co',key:'sb_publishable_PP5xFd7ga61xaDOCHeET_Q_zfMaE_4G'};
+/* Ziyaretçi sayacı (çerezsiz, kişisel veri yok) */
+function wfStat(k){try{if(localStorage.getItem('wf_nostat')||navigator.webdriver||!/wolflano/i.test(location.hostname)||/bot|crawl|spider|preview|headless|facebookexternalhit/i.test(navigator.userAgent||''))return;
+  fetch(SB.url+'/rest/v1/rpc/wf_hit',{method:'POST',keepalive:true,headers:{apikey:SB.key,'Content-Type':'application/json'},body:JSON.stringify({p_keys:k})}).catch(function(){});}catch(_){}}
+(function(){var k=['pv','p:studyo'];try{var dd=new Date(Date.now()+3*3600e3).toISOString().slice(0,10);if(localStorage.getItem('wf_vday')!==dd){localStorage.setItem('wf_vday',dd);
+  var r='',u=navigator.userAgent||'',q=location.search||'';try{r=document.referrer?new URL(document.referrer).hostname:'';}catch(_){}
+  var t=(r+' '+q+' '+(/Instagram/.test(u)?'instagram':'')+(/FBAN|FBAV/.test(u)?' facebook':'')).toLowerCase(),src='direkt';
+  [['instagram',/instagram/],['facebook',/facebook|fbclid/],['google',/google/],['whatsapp',/whatsapp|wa\.me/],['tiktok',/tiktok/],['youtube',/youtube|youtu\.be/]].some(function(x){if(x[1].test(t)){src=x[0];return true;}});
+  if(src==='direkt'&&r&&!/wolflano/i.test(r))src='diger';
+  k.push('v','r:'+src,'d:'+(/Mobi|Android|iPhone|iPad/i.test(u)?'mobil':'masaustu'));}}catch(_){}wfStat(k);})();
 function sbTok(){try{var x=JSON.parse(localStorage.getItem('wf_sb')||'null');return x&&x.access&&x.exp>Date.now()?x.access:null;}catch(_){return null;}}
 function telNorm(t){var d=String(t||'').replace(/\D/g,'');if(d.indexOf('90')===0&&d.length===12)d=d.slice(2);if(d.length===10&&d.charAt(0)==='5')d='0'+d;return d;}
 async function orderCreate(o){
