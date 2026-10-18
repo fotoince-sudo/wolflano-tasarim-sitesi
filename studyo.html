@@ -463,6 +463,8 @@ img{-webkit-touch-callout:none;-webkit-user-drag:none}
       <button data-c="fwd" data-t="text clip image"><svg class="i" viewBox="0 0 24 24"><path d="M12 19V5M5 12l7-7 7 7"/></svg>Öne</button>
       <button data-c="bwd" data-t="text clip image"><svg class="i" viewBox="0 0 24 24"><path d="M12 5v14M5 12l7 7 7-7"/></svg>Arkaya</button>
     
+      <button data-c="gcolor" data-g="1"><i class="dot" id="gDot"></i>Renk</button>
+      <button data-c="gdel" data-g="1" class="danger" id="gDel"><svg class="i" viewBox="0 0 24 24"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg><span>Sil</span></button>
       <span class="pill gsel" data-g="1">Tüm tasarım seçili</span>
       <button data-c="gcenter" data-g="1"><svg class="i" viewBox="0 0 24 24"><path d="M12 3v18M3 12h18"/><rect x="7" y="7" width="10" height="10" rx="2"/></svg>Ortala</button>
       <button data-c="gdone" data-g="1"><svg class="i" viewBox="0 0 24 24"><path d="M5 12l5 5L20 7"/></svg>Bitti</button>
@@ -1378,7 +1380,7 @@ function grpBox(){
 }
 function enterGroup(){
   if(grpObjs().length<1)return false;
-  view.sel=null;view.pop=null;view.grp=true;buildSel();syncCtx();syncTextInput();return true;
+  view.sel=null;view.pop=null;view.gdel=false;view.grp=true;buildSel();syncCtx();syncTextInput();return true;
 }
 function buildSel(){
   selLayer.innerHTML='';
@@ -1451,7 +1453,10 @@ function qualityOf(o){
 function syncCtx(){
   var o=selObj();
   $$('#ctxBar [data-g]').forEach(function(b){b.hidden=!view.grp;});
-  if(view.grp){ctx.hidden=false;$('#colorPop').hidden=true;$$('#ctxBar [data-t]').forEach(function(b){b.hidden=true;});return;}
+  if(view.grp){ctx.hidden=false;$('#colorPop').hidden=!view.pop;$$('#ctxBar [data-t]').forEach(function(b){b.hidden=true;});
+    var gc=grpObjs().filter(function(q){return q.type!=='image';})[0];$('#gDot').style.background=gc?gc.color:'transparent';
+    var gd=$('#gDel span');if(gd)gd.textContent=view.gdel?'Emin misin? Tekrar dokun':'Sil';return;}
+  view.gdel=false;
   ctx.hidden=!o;
   var pop=$('#colorPop');
   if(!o){pop.hidden=true;return;}
@@ -1467,7 +1472,7 @@ function syncCtx(){
   pop.hidden=!view.pop;
 }
 function showPop(mode){
-  var o=selObj();if(!o)return;
+  var o=view.grp?grpObjs().filter(function(q){return q.type!=='image';})[0]:selObj();if(!o)return;
   if(view.pop===mode){view.pop=null;$('#colorPop').hidden=true;return;}
   view.pop=mode;
   var pop=$('#colorPop'),cur_=mode==='stroke'?o.stroke:o.color,h='';
@@ -1477,6 +1482,7 @@ function showPop(mode){
   pop.innerHTML=h;pop.hidden=false;
 }
 function applyColor(c){
+  if(view.grp){if(!c)return;grpObjs().forEach(function(q){if(q.type==='image')return;q.color=c;updateEl(els[q.id],q);});syncCtx();if(view.pop)showPopRefresh();return;}
   var o=selObj();if(!o)return;
   if(view.pop==='stroke'){o.stroke=c||null;}else{o.color=c;}
   updateEl(els[o.id],o);syncCtx();
@@ -2176,6 +2182,9 @@ $('#ctxBar').addEventListener('click',function(e){
   var c=b.dataset.c;
   if(c==='all'){if(enterGroup())toast('Tüm tasarım seçildi. Köşedeki noktayla hepsini birlikte büyüt, küçült.');return;}
   if(c==='gdone'){select(null);return;}
+  if(c==='gcolor'){view.gdel=false;showPop('fill');syncCtx();return;}
+  if(c==='gdel'){if(!view.gdel){view.gdel=true;syncCtx();return;}var keep=cur().objs.filter(function(q){return q.lock;});cur().objs=keep;select(null);renderAll();pushHist();toast('Tasarım silindi. Geri almak için ↶');return;}
+  if(c!=='gdel')view.gdel=false;
   if(c==='gcenter'){var GX=grpBox(),GA=areaBox(view.side,cur().area);if(GX){var ddx=GA.cx-GX.cx,ddy=GA.cy-GX.cy;grpObjs().forEach(function(q){q.x+=ddx;q.y+=ddy;place(els[q.id],q);});updateSel();var ab2=$('#areaBox');ab2.classList.add('onV','onH');setTimeout(centerOff,900);pushHist();toast('Tasarım baskı alanına ortalandı');}return;}
   if(view.grp)return;
   if(c==='lock'){toggleLock();return;}
@@ -2193,7 +2202,7 @@ $('#ctxBar').addEventListener('click',function(e){
   else if(c==='del')deleteSel();
 });
 $('#colorPop').addEventListener('click',function(e){var b=e.target.closest('[data-col]');if(!b)return;applyColor(b.dataset.col||null);pushHist();});
-$('#colorPop').addEventListener('input',function(e){if(e.target.id==='colorCustom'){var o=selObj();if(!o)return;if(view.pop==='stroke')o.stroke=e.target.value;else o.color=e.target.value;updateEl(els[o.id],o);$('#ctxDot').style.background=o.color;}});
+$('#colorPop').addEventListener('input',function(e){if(e.target.id==='colorCustom'&&view.grp){applyColor(e.target.value);return;}if(e.target.id==='colorCustom'){var o=selObj();if(!o)return;if(view.pop==='stroke')o.stroke=e.target.value;else o.color=e.target.value;updateEl(els[o.id],o);$('#ctxDot').style.background=o.color;}});
 $('#colorPop').addEventListener('change',function(e){if(e.target.id==='colorCustom')pushHist();});
 document.addEventListener('keydown',function(e){
   var tag=(e.target.tagName||'').toLowerCase();
