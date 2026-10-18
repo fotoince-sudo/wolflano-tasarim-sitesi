@@ -2053,7 +2053,10 @@ var CARGO={provider:null,quote:function(q){return Promise.resolve(null);}},shipQ
 function shipFee(sub){var dm=document.querySelector('input[name=oT]:checked');if(dm&&dm.value==='elden')return 0;var s=D.ship||{fee:0,free:0};if(+s.free>0&&sub>=+s.free)return 0;return (shipQuote&&typeof shipQuote.fee==='number')?shipQuote.fee:(+s.fee||0);}
 /* ---------- Tek sepet: Baskı Atölyesi tasarımları (stüdyo, wf_studio_cart) mağaza sepetiyle birlikte ---------- */
 var SC_TIERS=[[50,.15],[25,.10],[10,.05]];
-function scItems(){try{var a=JSON.parse(localStorage.getItem('wf_studio_cart')||'[]');return Array.isArray(a)?a:[];}catch(_){return [];}}
+/* Beden seçimi gerekmeyen (tek seçenekli) baskı ürünleri sepete en az 1 adetle gelir */
+function scItems(){try{var a=JSON.parse(localStorage.getItem('wf_studio_cart')||'[]');if(!Array.isArray(a))return [];var ch=false;
+  a.forEach(function(it){var l=it.szList||[];if(l.length===1){it.sizes=it.sizes||{};if(!(+it.sizes[l[0]]>0)){it.sizes[l[0]]=1;ch=true;}}});
+  if(ch){try{localStorage.setItem('wf_studio_cart',JSON.stringify(a));}catch(_){}}return a;}catch(_){return [];}}
 function scSave(a){try{localStorage.setItem('wf_studio_cart',JSON.stringify(a));}catch(_){}}
 function scQty(it){var n=0,z=it&&it.sizes||{};for(var k in z)n+=+z[k]||0;return n;}
 function scDisc(q){for(var i=0;i<SC_TIERS.length;i++)if(q>=SC_TIERS[i][0])return SC_TIERS[i][1];return 0;}
@@ -2369,7 +2372,7 @@ function cartRows(){var ids=Object.keys(cart).filter(function(k){return cart[k]>
   ids.forEach(function(id){var p=ALLP.filter(function(x){return x.id===ckId(id);})[0];if(!p){delete cart[id];return;}tot+=p.price*cart[id];n+=cart[id];
     h+='<div class="ci"><a href="#urun-'+ckId(id)+'"><img src="'+IMG(p)+'" alt=""></a><div><small class="ty">'+pTypeColor(p)+'</small><b>'+esc(p.name)+'</b>'+(function(){var zs=pSizes(p),z=ckSz(id);if(!zs.length&&!z)return '';if(z&&zs.indexOf(z)<0)zs=zs.concat([z]);return '<label class="csz">Beden<select data-csz="'+esc(id)+'" aria-label="Beden">'+(z?'':'<option value="">Seç</option>')+zs.map(function(x){return '<option'+(x===z?' selected':'')+'>'+esc(x)+'</option>';}).join('')+'</select></label>';})()+'<div class="qty"><button data-q="'+id+'" data-d="-1" aria-label="Azalt">−</button><span>'+cart[id]+'</span><button data-q="'+id+'" data-d="1" aria-label="Artır">+</button><button class="rm" data-q="'+id+'" data-d="-999" aria-label="Kaldır">Kaldır</button></div></div><b class="pz">'+tl(p.price*cart[id])+'</b></div>';});
   var sc=scItems();sc.forEach(function(it,i){var q=scQty(it),t=scTot(it);tot+=t;n+=q;
-    h+='<div class="ci sci"><a href="studyo.html#sepet"><img src="'+esc(it.thumb||'')+'" alt=""></a><div><small class="ty">Baskı Atölyesi · Senin tasarımın</small><b>'+esc(it.label||'Tasarım')+'</b><small class="note" style="display:block;margin-top:4px">'+(q?q+' adet · '+tl(+it.unit||0)+' / adet':'Beden ve adet seç')+(scDisc(q)?' · %'+Math.round(scDisc(q)*100)+' adet indirimi':'')+'</small>'+scGrid(it,i)+'<div class="qty"><button class="rm" data-scrm="'+i+'" aria-label="Kaldır">Kaldır</button></div></div><b class="pz">'+tl(t)+'</b></div>';});
+    h+='<div class="ci sci"><a href="studyo.html#sepet"><img src="'+esc(it.thumb||'')+'" alt=""></a><div><small class="ty">Baskı Atölyesi · Senin tasarımın</small><b>'+esc(it.label||'Tasarım')+'</b><small class="note" style="display:block;margin-top:4px">'+(q?q+' adet · '+tl(+it.unit||0)+' / adet':((it.szList||[]).length===1?'Adet seç':'Beden ve adet seç'))+(scDisc(q)?' · %'+Math.round(scDisc(q)*100)+' adet indirimi':'')+'</small>'+scGrid(it,i)+'<div class="qty"><button class="rm" data-scrm="'+i+'" aria-label="Kaldır">Kaldır</button></div></div><b class="pz">'+tl(t)+'</b></div>';});
   return {ids:ids,sc:sc,tot:tot,n:n,h:h};}
 function openCart(){closeLayer();if(location.hash==='#sepet'){var y=window.scrollY;$('#main').innerHTML=VIEWS.sepet();window.scrollTo(0,y);}else location.hash='#sepet';}
 function sepetView(){var c=cartRows();

@@ -2526,7 +2526,7 @@ function renderPrice(){
     var sd=state[s];h+='<div><dt>'+SIDE_NAME[s]+' baskı'+(sd.objs.length?' ('+areaTitle(s)+')':'')+'</dt><dd>'+(sd.objs.length?(AREAS[sd.area].fee?fmt(AREAS[sd.area].fee):'Fiyata dahil'):'Yok')+'</dd></div>';
   });
   h+='<div><dt>Birim fiyat</dt><dd>'+fmt(p.unit)+'</dd></div>';
-  if(!needSizesHere()){h+='<div><dt>Beden ve adet</dt><dd>Sepette seçilir</dd></div>';$('#priceList').innerHTML=h;$('#totalOut').textContent=fmt(p.unit)+' / adet';renderCart();$('#sum').value=summaryText();return;}
+  if(!needSizesHere()){h+=isStd()?'<div><dt>Adet</dt><dd>1 · sepette değiştirilebilir</dd></div>':'<div><dt>Beden ve adet</dt><dd>Sepette seçilir</dd></div>';$('#priceList').innerHTML=h;$('#totalOut').textContent=fmt(p.unit)+' / adet';renderCart();$('#sum').value=summaryText();return;}
   h+='<div><dt>Adet</dt><dd>'+p.qty+'</dd></div>';
   if(p.disc)h+='<div><dt>Adet indirimi</dt><dd>%'+Math.round(p.disc*100)+'</dd></div>';
   $('#priceList').innerHTML=h;
@@ -2626,7 +2626,7 @@ $('#copyBtn').addEventListener('click',async function(){
 /* ---------- Sepet ---------- */
 var cartItems=[];
 /* Sepet sayfa kapansa da (ürünlere dönüp gelince) durur */
-try{var cs0=JSON.parse(localStorage.getItem('wf_studio_cart')||'[]');if(Array.isArray(cs0))cartItems=cs0;}catch(_){}
+try{var cs0=JSON.parse(localStorage.getItem('wf_studio_cart')||'[]');if(Array.isArray(cs0)){cs0.forEach(function(it){var l=it.szList||[];if(l.length===1){it.sizes=it.sizes||{};if(!(+it.sizes[l[0]]>0))it.sizes[l[0]]=1;}});cartItems=cs0;}}catch(_){}
 function saveCart(){try{localStorage.setItem('wf_studio_cart',JSON.stringify(cartItems));}catch(_){}}
 function syncCartUI(){
   var n=cartItems.length,rc=0;try{var rcs=JSON.parse(localStorage.getItem('wf_cart')||'{}');for(var rk in rcs)rc+=+rcs[rk]||0;}catch(_){}var tn=n+rc;$('#cartBtn').hidden=!tn;$('#cartN').textContent=tn;
@@ -2680,7 +2680,8 @@ async function addToCart(silent){
   try{
     var c=await renderPreview(sidesOf()[0],0.35);
     var bg=document.createElement('canvas');bg.width=c.width;bg.height=c.height;var bx=bg.getContext('2d');bx.fillStyle='#eef1ef';bx.fillRect(0,0,bg.width,bg.height);bx.drawImage(c,0,0);
-    cartItems.push({sig:sig,thumb:bg.toDataURL('image/jpeg',0.8),label:productLabel(),cut:state.cut,unit:p.unit,szList:sizeList(),sizes:need?JSON.parse(JSON.stringify(state.sizes)):{},lines:designLines(),roster:rosterRows()});
+    var szs=need?JSON.parse(JSON.stringify(state.sizes)):{};if(!need){var sl0=sizeList()||[];if(sl0.length===1)szs[sl0[0]]=1;else{var cz0=curSize();if(cz0)szs[cz0]=1;}}
+    cartItems.push({sig:sig,thumb:bg.toDataURL('image/jpeg',0.8),label:productLabel(),cut:state.cut,unit:p.unit,szList:sizeList(),sizes:szs,lines:designLines(),roster:rosterRows()});
     ok=true;
   }catch(_){toast('Sepete eklenemedi');}
   b.disabled=false;renderCart();
