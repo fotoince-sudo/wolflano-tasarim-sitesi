@@ -992,8 +992,26 @@ function phCalib(u){
   im.onerror=function(){rec.fail=true;};
   im.src=u;return rec;
 }
+/* Şapka ve kupa: yönetimde fotoğraf yüklenmişse çizim yerine gerçek fotoğraf. Fotoğraftaki ürün, çizimin kapladığı kutuya
+   oturtulur (genişlik ve üst kenar); böylece 20 × 10 cm şapka ve 8 × 8 cm kupa baskı alanının yeri ve oranı değişmez. */
+var PH_FIT={hat:{l:60,r:540,top:112},mug:{l:230,r:362,top:267}};
 function phSVG(side,tee,product,cut){
-  if(!PH.site||PRODUCTS[product].draw)return null;
+  if(!PH.site)return null;
+  if(PRODUCTS[product].draw){var F=PH_FIT[product];if(!F)return null;
+    var bb=phBlank(product,cut)||phBlank(product,'std'),cz=phColors(bb);if(!cz.length)return null;
+    /* Seçilen rengin kendi fotoğrafı yoksa açık renkli (beyaz/krem) fotoğraf o renge boyanır: tek fotoğrafla bütün renkler */
+    var c0=cz.filter(function(c){return String(c.hex).toLowerCase()===String(tee).toLowerCase();})[0],tint=false;
+    if(!c0){var lt=cz.slice().sort(function(a,b){return lum(b.hex)-lum(a.hex);})[0];if(lum(lt.hex)<.7)return null;c0=lt;tint=true;}
+    var u0=phSrc(side==='back'?(c0.back||c0.front||''):(c0.front||''));if(!u0)return null;
+    var k0=phCalib(u0);if(!k0.ready||k0.raw)return null;
+    var fl='';if(tint){var L0=lum(tee),hk=(0.24*(1-L0)).toFixed(3);
+      fl='<defs><filter id="phT" x="0" y="0" width="100%" height="100%" color-interpolation-filters="sRGB"><feColorMatrix in="SourceGraphic" type="saturate" values="0" result="g"/>'+
+        '<feComponentTransfer in="g" result="sh"><feFuncR type="linear" slope="1.12" intercept="-.02"/><feFuncG type="linear" slope="1.12" intercept="-.02"/><feFuncB type="linear" slope="1.12" intercept="-.02"/></feComponentTransfer>'+
+        '<feFlood flood-color="'+tee+'" result="c"/><feBlend in="c" in2="sh" mode="multiply" result="m"/>'+
+        '<feComponentTransfer in="sh" result="hl"><feFuncR type="linear" slope="'+hk+'"/><feFuncG type="linear" slope="'+hk+'"/><feFuncB type="linear" slope="'+hk+'"/></feComponentTransfer>'+
+        '<feBlend in="m" in2="hl" mode="screen" result="o"/><feComposite in="o" in2="SourceAlpha" operator="in"/></filter></defs>';}
+    var s0=(F.r-F.l)/Math.max(1,k0.r-k0.l+1),X0=(F.l+F.r)/2-(k0.l+k0.r)/2*s0,Y0=F.top-k0.top*s0;
+    return '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 600 640" width="600" height="640">'+fl+'<image href="'+k0.url+'" xlink:href="'+k0.url+'" x="'+X0.toFixed(1)+'" y="'+Y0.toFixed(1)+'" width="'+(k0.W*s0).toFixed(1)+'" height="'+(k0.H*s0).toFixed(1)+'" preserveAspectRatio="none"'+(tint?' filter="url(#phT)"':'')+'/></svg>';}
   var b=phBlank(product,cut),cs=phColors(b);if(!cs.length)return null;
   var co=cs.filter(function(c){return String(c.hex).toLowerCase()===String(tee).toLowerCase();})[0]||cs[0];
   var u=phSrc(side==='back'?(co.back||''):(co.front||''));if(!u)return null;
@@ -1015,7 +1033,8 @@ function phOn(){return !!(PH.site&&!P().draw&&phColors(phBlank(state.product,sta
 function phApplyColors(){
   if(!PH.teesBase)PH.teesBase=TEES.slice();
   var cs=phColors(phBlank(state.product,state.cut));TEES.length=0;
-  (cs.length?cs.map(function(c){return [c.name||c.hex,c.hex];}):PH.teesBase).forEach(function(t){TEES.push(t);});
+  if(P().draw&&cs.length){var bl=PH.teesBase.slice();cs.forEach(function(c){if(!bl.some(function(t){return String(t[1]).toLowerCase()===String(c.hex).toLowerCase();}))bl.push([c.name||c.hex,c.hex]);});cs=[];bl.forEach(function(t){TEES.push(t);});}
+  else (cs.length?cs.map(function(c){return [c.name||c.hex,c.hex];}):PH.teesBase).forEach(function(t){TEES.push(t);});
   if(!TEES.some(function(t){return String(t[1]).toLowerCase()===String(state.tee).toLowerCase();}))state.tee=TEES[0][1];
 }
 window.phSite=function(d){PH.site=d;PH.media=d.media||'';PH.teesBase=TEES.slice();
