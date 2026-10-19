@@ -40,7 +40,8 @@ Deno.serve(async () => {
       <p style="margin:24px 0"><a href="${link}" style="background:#3f8f55;color:#fff;border:2px solid #111;border-radius:10px;padding:12px 20px;text-decoration:none;font-weight:bold">Ürüne git</a></p>
       <p style="color:#666;font-size:13px">Bu e-postayı Wolflano'da “Gelince haber ver” dediğin için aldın.<br>Wolflano · İzmir · +90 530 764 17 17</p></div>`;
     try {
-      await send({ from: `"Wolflano" <${user}>`, to: r.contact, subject: `${name} stoğa geldi`, html,
+      await send({ from: `"Wolflano" <${user}>`, replyTo: user, to: r.contact, subject: `${name} stoğa geldi`, html,
+        headers: { "List-Unsubscribe": `<mailto:${user}?subject=Haber%20listesinden%20cik>` },
         text: `${name} yeniden stokta. ${what}\n${link}\n\nWolflano` });
       await sb.from("stok_haber").update({ notified_at: new Date().toISOString() }).eq("id", r.id);
       sent++;
