@@ -298,7 +298,7 @@ svg.i{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stro
 .cl button{border:0;background:none;color:var(--muted);font:600 13px var(--ui);padding:6px}
 #sum{width:100%;border:1px solid var(--line2);background:var(--panel);color:var(--ink);border-radius:12px;padding:12px;font:500 14px/1.5 var(--ui);resize:none}
 .o-foot .cnt{display:inline-grid;place-items:center;min-width:22px;height:22px;padding:0 6px;border-radius:999px;background:var(--accent);color:var(--accent-ink);font:700 12px var(--ui);margin-left:4px}
-#added{position:fixed;inset:0;z-index:70;display:flex;align-items:flex-end;justify-content:center}
+#added,#soldDlg{position:fixed;inset:0;z-index:70;display:flex;align-items:flex-end;justify-content:center}#soldDlg[hidden]{display:none}#soldDlg .ad-ok{font-size:20px}
 .ad-scrim{position:absolute;inset:0;background:rgba(0,0,0,.45)}
 .ad-card{position:relative;width:100%;max-width:520px;background:var(--panel);border-radius:20px 20px 0 0;padding:18px 16px calc(14px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:10px;box-shadow:0 -10px 30px rgba(0,0,0,.2);animation:adUp .22s ease-out}
 @keyframes adUp{from{transform:translateY(40px);opacity:.4}to{transform:none;opacity:1}}
@@ -2796,7 +2796,7 @@ function renderCart(){
 async function addToCart(silent){
   var sig=designSig();
   if(cartItems.some(function(x){return x.sig===sig;})){if(silent!==true)showAdded(true);return true;}
-  var pb=phBlank(state.product,state.cut);if(pb&&pb.stock!==null&&pb.stock!==undefined&&pb.stock!==''&&+pb.stock<=0){toast('Bu ürün şu an stokta yok, sepete eklenemez.');return false;}
+  var pb=phBlank(state.product,state.cut);if(pb&&pb.stock!==null&&pb.stock!==undefined&&pb.stock!==''&&+pb.stock<=0){if(silent===true)return false;toast('Bu ürün şu an stokta yok, sepete eklenemez.');await saveSoldDesign(pb);return false;}
   var p=priceInfo(),need=needSizesHere();if(need&&!p.qty){toast('Önce adet seç');return false;}
   var b=$('#addCart');b.disabled=true;var ok=false;
   try{
@@ -2820,6 +2820,33 @@ function showAdded(already){
   $('#added').hidden=false;setTimeout(function(){$('#adNew').focus();},60);
 }
 function hideAdded(){$('#added').hidden=true;}
+/* ---------- Stokta olmayan ürün: tasarım favorilere kaydedilir, üyeye stoğa gelince e-posta gider ---------- */
+function blobToData(b){return new Promise(function(res){var r=new FileReader();r.onload=function(){res(r.result);};r.onerror=function(){res('');};r.readAsDataURL(b);});}
+function sfavGet(){try{return JSON.parse(localStorage.getItem('wf_sfav')||'[]')||[];}catch(_){return [];}}
+async function saveSoldDesign(pb){
+  var b=$('#addCart');if(b)b.disabled=true;
+  try{
+    var used={},out={};['front','back'].forEach(function(sd){(state[sd].objs||[]).forEach(function(o){if(o.type==='image'&&o.assetId)used[o.assetId]=1;});});
+    for(var id in used){var a=assets[id];if(!a)continue;var u=a.url;if(!/^(https?:|data:)/.test(u)){try{u=await blobToData(await (await fetch(u)).blob());}catch(_){u='';}}if(u)out[id]={url:u,w:a.w,h:a.h};}
+    var c=await renderPreview(sidesOf()[0],0.35),bg=document.createElement('canvas');bg.width=c.width;bg.height=c.height;var bx=bg.getContext('2d');bx.fillStyle='#eef1ef';bx.fillRect(0,0,bg.width,bg.height);bx.drawImage(c,0,0);
+    var sig=designSig(),l=sfavGet().filter(function(x){return x.sig!==sig;});
+    var it={id:Date.now().toString(36),sig:sig,bid:pb.id,label:productLabel(),thumb:bg.toDataURL('image/jpeg',0.75),ts:Date.now(),
+      data:{v:1,product:state.product,cut:state.cut,tee:state.tee,brand:state.brand!==false,front:JSON.parse(JSON.stringify(state.front)),back:JSON.parse(JSON.stringify(state.back)),assets:out}};
+    l.push(it);
+    for(;;){try{localStorage.setItem('wf_sfav',JSON.stringify(l));break;}catch(_){if(l.length>1)l.shift();else{toast('Tasarım çok büyük, kaydedilemedi.');break;}}}
+    var p;try{p=JSON.parse(localStorage.getItem('wf_waitp')||'[]')||[];}catch(_){p=[];}
+    if(!p.some(function(x){return x.kind==='baski'&&x.id===pb.id;}))p.push({kind:'baski',id:pb.id,name:pb.name||productLabel()});
+    try{localStorage.setItem('wf_waitp',JSON.stringify(p.slice(-30)));}catch(_){}
+  }catch(_){}
+  if(b)b.disabled=false;
+  var mem=false;try{var ss=JSON.parse(localStorage.getItem('wf_sb')||'null');mem=!!(ss&&ss.user&&ss.user.email);}catch(_){}
+  var w=$('#soldDlg');if(!w){w=document.createElement('div');w.id='soldDlg';document.body.appendChild(w);w.addEventListener('click',function(e){if(e.target.closest('[data-sdx]'))w.hidden=true;});}
+  w.innerHTML='<div class="ad-scrim" data-sdx></div><div class="ad-card" role="dialog" aria-modal="true" aria-labelledby="sdT"><div class="ad-h"><span class="ad-ok" aria-hidden="true">♥</span><div><b id="sdT">Bu ürün şu an stokta yok</b><small>Tasarımın favorilerine kaydedildi, kaybolmaz.</small></div></div>'+
+    '<p style="margin:0;font:500 14px/1.5 var(--ui)">Ürün stoğa girdiği anda '+(mem?'e-postana':'üye e-postana')+' otomatik haber vereceğiz. Sonra favorilerinden tasarımı açıp sepete ekleyebilirsin.</p>'+
+    (mem?'<a class="primary ad-b" style="display:grid;place-items:center;text-decoration:none" href="index.html#favoriler">Favorilerime git</a>':'<a class="primary ad-b" style="display:grid;place-items:center;text-decoration:none" href="index.html#hesabim">Üye ol, gelince haber ver</a><p class="note" style="margin:0">Haber verebilmemiz için üyelik gerekiyor. Üyeysen aynı yerden giriş yap.</p>')+
+    '<button class="ad-link" data-sdx>Tasarıma geri dön</button></div>';
+  w.hidden=false;
+}
 function freshDesign(){['front','back'].forEach(function(s){state[s].objs=[];});view.sel=null;view.grp=false;view.side='front';}
 $('#addCart').addEventListener('click',function(){addToCart();});
 $('#added').addEventListener('click',function(e){if(e.target.closest('[data-adx]'))hideAdded();});
@@ -3452,6 +3479,8 @@ syncUndo();
     if(id&&/^[0-9a-f-]{36}$/i.test(id)){try{var r=await rq('/rest/v1/admin_designs?select=*&id=eq.'+id);if(r&&r[0]){applyDesign(r[0].data,true);var at=r[0].title;setTimeout(function(){toast('"'+at+'" açıldı');},300);}}catch(_){toast('Tasarım açılamadı');}}
   }
   $('#admBtn').addEventListener('click',openAdm);
+  window.wfApplyDesign=applyDesign;
+  try{var fv=new URLSearchParams(location.search).get('fav');if(fv){var fd=sfavGet().filter(function(x){return x.id===fv;})[0];if(fd)setTimeout(function(){try{applyDesign(fd.data,true);toast('Kayıtlı tasarımın açıldı');}catch(_){toast('Tasarım açılamadı');}},600);}}catch(_){}
   init();
 })();
 })();
