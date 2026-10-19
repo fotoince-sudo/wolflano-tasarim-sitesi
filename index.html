@@ -1826,17 +1826,17 @@ function wfWaitPend(it){var p;try{p=JSON.parse(localStorage.getItem('wf_waitp')|
 async function wfWaitFlush(){var p;try{p=JSON.parse(localStorage.getItem('wf_waitp')||'[]')||[];}catch(_){p=[];}if(!p.length||!ACCOUNT.user)return;
   var left=[],n=0;for(var i=0;i<p.length;i++){if(await wfWaitSend(p[i]))n++;else left.push(p[i]);}
   try{if(left.length)localStorage.setItem('wf_waitp',JSON.stringify(left));else localStorage.removeItem('wf_waitp');}catch(_){}
-  if(n)toast('Tamam. Ürün stoğa gelince e-postana haber vereceğiz.');}
+  if(n)toast('Tamam. Ürün stoğa gelince e-postana haber vereceğiz. Gereksiz (Spam) klasörüne de bak.');}
 function wfWaitCheck(){var w=wfWaitGet(),ch=false;Object.keys(w).forEach(function(k){var kind=k.split(':')[0],id=k.slice(kind.length+1),L=kind==='baski'?(BLANKS||[]):ALLP,x=L.filter(function(y){return y.id===id;})[0];if(x&&!soldOut(x)){var nm=x.name||(w[k]&&w[k].n)||'ürün';delete w[k];ch=true;toast('Beklediğin “'+nm+'” stoğa geldi.');}});if(ch)wfWaitSet(w);}
 function soldOutFlow(p){favs[p.id]=1;syncCart();toast(NOSTOCK);setTimeout(function(){waitSheet({kind:'urun',id:p.id,name:p.name});},450);}
 function waitSheet(it){WAIT_IT=it;var mem=!!ACCOUNT.user,done=wfWaitHas(it);
   $('#layer').innerHTML='<div class="scrim" data-close></div><div class="ats" role="dialog" aria-label="Stokta yok"><div class="hd"><b>Bu ürün şu an stokta yok</b><button class="ib" data-close aria-label="Kapat">'+IC.x+'</button></div>'+
   '<p style="margin:0">“'+esc(it.name||'Ürün')+'” favorilerine eklendi. '+(done?'Stoğa girince <b>'+esc(mem?ACCOUNT.user.email:'e-postana')+'</b> haber vereceğiz.':'Stoğa girdiği anda '+(mem?'<b>'+esc(ACCOUNT.user.email)+'</b> adresine':'e-postana')+' otomatik haber verelim.')+'</p>'+
   '<div class="acts">'+(done?'':(mem?'<button type="button" class="btn" data-waitgo>Gelince haber ver</button>':'<a class="btn" href="#hesabim" data-waitreg>Üye ol, gelince haber ver</a><p class="note" style="margin:0">Haber verebilmemiz için üyelik gerekiyor. Üyeysen aynı yerden giriş yap.</p>'))+
-  '<a class="btn soft" href="#favoriler" data-close>Favorilerime git</a></div></div>';}
+  '<a class="btn soft" href="#favoriler" data-close>Favorilerime git</a><p class="note" style="margin:0">Mailimiz Gereksiz (Spam) klasörüne düşebilir, oraya da bak.</p></div></div>';}
 document.addEventListener('click',async function(e){var t=e.target;if(!t.closest||!WAIT_IT)return;
   if(t.closest('[data-waitreg]')){wfWaitPend(WAIT_IT);accMode='register';closeLayer();return;}
-  var g=t.closest('[data-waitgo]');if(g){e.preventDefault();g.disabled=true;g.textContent='Kaydediliyor…';var ok=await wfWaitSend(WAIT_IT);closeLayer();toast(ok?'Tamam. Stoğa gelince e-postana haber vereceğiz.':'Kaydedilemedi, bağlantını kontrol edip tekrar dene.');}});
+  var g=t.closest('[data-waitgo]');if(g){e.preventDefault();g.disabled=true;g.textContent='Kaydediliyor…';var ok=await wfWaitSend(WAIT_IT);closeLayer();toast(ok?'Tamam. Stoğa gelince e-postana haber vereceğiz. Gereksiz (Spam) klasörüne de bak.':'Kaydedilemedi, bağlantını kontrol edip tekrar dene.');}});
 function sfavGet(){try{return JSON.parse(localStorage.getItem('wf_sfav')||'[]')||[];}catch(_){return [];}}
 function sfavHTML(){var l=sfavGet();if(!l.length)return '';
   return '<h2 class="h2" style="font-size:20px;margin:32px 0 12px">Kayıtlı tasarımlarım</h2><div class="grid">'+l.map(function(sv){var b=(BLANKS||[]).filter(function(x){return x.id===sv.bid;})[0],out=!!(b&&soldOut(b)),u=STUDIO+'?fav='+encodeURIComponent(sv.id);

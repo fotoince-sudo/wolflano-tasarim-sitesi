@@ -2844,7 +2844,7 @@ async function saveSoldDesign(pb){
   w.innerHTML='<div class="ad-scrim" data-sdx></div><div class="ad-card" role="dialog" aria-modal="true" aria-labelledby="sdT"><div class="ad-h"><span class="ad-ok" aria-hidden="true">♥</span><div><b id="sdT">Bu ürün şu an stokta yok</b><small>Tasarımın favorilerine kaydedildi, kaybolmaz.</small></div></div>'+
     '<p style="margin:0;font:500 14px/1.5 var(--ui)">Ürün stoğa girdiği anda '+(mem?'e-postana':'üye e-postana')+' otomatik haber vereceğiz. Sonra favorilerinden tasarımı açıp sepete ekleyebilirsin.</p>'+
     (mem?'<a class="primary ad-b" style="display:grid;place-items:center;text-decoration:none" href="index.html#favoriler">Favorilerime git</a>':'<a class="primary ad-b" style="display:grid;place-items:center;text-decoration:none" href="index.html#hesabim">Üye ol, gelince haber ver</a><p class="note" style="margin:0">Haber verebilmemiz için üyelik gerekiyor. Üyeysen aynı yerden giriş yap.</p>')+
-    '<button class="ad-link" data-sdx>Tasarıma geri dön</button></div>';
+    '<p class="note" style="margin:0">Mailimiz Gereksiz (Spam) klasörüne düşebilir, oraya da bak.</p><button class="ad-link" data-sdx>Tasarıma geri dön</button></div>';
   w.hidden=false;
 }
 function freshDesign(){['front','back'].forEach(function(s){state[s].objs=[];});view.sel=null;view.grp=false;view.side='front';}
