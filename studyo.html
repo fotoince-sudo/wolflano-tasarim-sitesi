@@ -2796,6 +2796,7 @@ function renderCart(){
 async function addToCart(silent){
   var sig=designSig();
   if(cartItems.some(function(x){return x.sig===sig;})){if(silent!==true)showAdded(true);return true;}
+  var pb=phBlank(state.product,state.cut);if(pb&&pb.stock!==null&&pb.stock!==undefined&&pb.stock!==''&&+pb.stock<=0){toast('Bu ürün şu an stokta yok, sepete eklenemez.');return false;}
   var p=priceInfo(),need=needSizesHere();if(need&&!p.qty){toast('Önce adet seç');return false;}
   var b=$('#addCart');b.disabled=true;var ok=false;
   try{
