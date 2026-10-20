@@ -716,6 +716,8 @@ body.cko #nav,body.cko .menu-btn,body.cko .lang,body.cko #cartBtn,body.cko #ann{
 .lg-v h3{color:var(--green)}
 .lg-v li::before{content:"✓";position:absolute;left:0;top:0;color:var(--green);font-weight:800}
 @media (max-width:700px){.lg-g{grid-template-columns:1fr}}
+
+p,li,.lead{text-wrap:pretty}
 </style>
 
 <header class="top"><div class="wrap">
@@ -3587,4 +3589,17 @@ var DATA_P=(async function(){
   ready=true;setTimeout(function(){try{wfWaitCheck();}catch(_){}},900);if(cur==='yonetim'){A=newA();}if(cur==='yonetim'||cur==='biz')route();
 })();
 })();
+
+/* Tek kelime alt satıra düşmesin: son iki kelimeyi birbirine bağla */
+(function(){var SEL='p,h1,h2,h3,h4,li,.sig,.w,.kr-t,.lead,.eyebrow,figcaption,blockquote';
+  function fix(el){if(el.closest('textarea,input,[contenteditable],.ad,#adm,script,style'))return;
+    var w=document.createTreeWalker(el,NodeFilter.SHOW_TEXT,null),t,last=null;while((t=w.nextNode()))if(/\S/.test(t.nodeValue))last=t;
+    if(!last)return;var v=last.nodeValue,m=v.match(/^([\s\S]*\S)( +)(\S+\s*)$/);if(!m)return;
+    var lw=m[3].trim();if(lw.length>18)return;
+    if((el.textContent||'').trim().split(/\s+/).length<4)return;
+    last.nodeValue=m[1]+' '+m[3];}
+  function run(root){try{(root.matches&&root.matches(SEL)?[root]:[]).concat([].slice.call((root.querySelectorAll?root:document).querySelectorAll(SEL))).forEach(fix);}catch(e){}}
+  var q=[],tm=null;function flush(){var l=q;q=[];tm=null;l.forEach(run);}
+  function start(){run(document.body);new MutationObserver(function(ms){ms.forEach(function(m){m.addedNodes.forEach(function(n){if(n.nodeType===1)q.push(n);else if(n.nodeType===3&&n.parentElement)q.push(n.parentElement);});});if(!tm)tm=setTimeout(flush,30);}).observe(document.body,{childList:true,subtree:true});}
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start);else start();})();
 </script>
