@@ -1206,7 +1206,11 @@ function phCalib(u){
     for(k=0;k<W;k++){if(p[k*4+3]<250||p[((H-1)*W+k)*4+3]<250){hasA=true;break;}}
     if(hasA){for(i=0;i<N;i++)m[i]=p[i*4+3]>110?1:0;}
     else{
-      var bgm=new Uint8Array(N),T=18*18;
+      /* Zemin eşiği kenar piksellerinin dağılımına göre: düz beyaz zeminde beyaz ürün silinmesin diye eşik daralır */
+      var sm=0,sq=0,sn=0;for(k=0;k<W;k+=2){[k,(H-1)*W+k].forEach(function(j){var v=(p[j*4]+p[j*4+1]+p[j*4+2])/3;sm+=v;sq+=v*v;sn++;});}
+      for(y=0;y<H;y+=2){[y*W,y*W+W-1].forEach(function(j){var v=(p[j*4]+p[j*4+1]+p[j*4+2])/3;sm+=v;sq+=v*v;sn++;});}
+      var bmean=sm/sn,bsd=Math.sqrt(Math.max(0,sq/sn-bmean*bmean)),tt=Math.max(5,Math.min(18,bsd*2.5+3));if(bmean<200)tt=18;
+      var bgm=new Uint8Array(N),T=tt*tt;
       for(y=0;y<H;y++){var r=0,g=0,b=0,n=0;for(k=0;k<4;k++){var o1=(y*W+k)*4,o2=(y*W+W-1-k)*4;r+=p[o1]+p[o2];g+=p[o1+1]+p[o2+1];b+=p[o1+2]+p[o2+2];n+=2;}r/=n;g/=n;b/=n;
         for(xx=0;xx<W;xx++){var o=(y*W+xx)*4,dr=p[o]-r,dg=p[o+1]-g,db=p[o+2]-b;if(dr*dr+dg*dg+db*db<=T)bgm[y*W+xx]=1;}}
       var q=new Int32Array(N),qh=0,qt=0,vis=new Uint8Array(N);
@@ -1260,7 +1264,9 @@ function phSVG(side,tee,product,cut){
   var d=phDims(product,cut);if(!d)return null;
   var sc=d[1]*PPC/Math.max(1,cal.bot-cal.top+1),w=cal.W*sc,h=cal.H*sc,topY=NECK_Y[side]-NECK_DROP[side],cx=(cal.l+cal.r)/2*sc;
   var X=300-cx,Y=topY-cal.top*sc;
-  return '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 600 640" width="600" height="640"><image href="'+cal.url+'" xlink:href="'+cal.url+'" x="'+X.toFixed(1)+'" y="'+Y.toFixed(1)+'" width="'+w.toFixed(1)+'" height="'+h.toFixed(1)+'" preserveAspectRatio="none"/></svg>';
+  /* Açık renkli ürün (beyaz, krem) açık zeminde kaybolmasın: ürünün kenarına ince kontur ve altına yumuşak gölge */
+  var lt=!cal.raw&&lum(co.hex)>.72,sf=lt?'<defs><filter id="phL" x="-8%" y="-6%" width="116%" height="116%" color-interpolation-filters="sRGB"><feDropShadow dx="0" dy="0" stdDeviation="1.1" flood-color="#1c2420" flood-opacity=".42" result="e"/><feDropShadow in="e" dx="0" dy="9" stdDeviation="10" flood-color="#1c2420" flood-opacity=".22"/></filter></defs>':'';
+  return '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 600 640" width="600" height="640">'+sf+'<image href="'+cal.url+'" xlink:href="'+cal.url+'" x="'+X.toFixed(1)+'" y="'+Y.toFixed(1)+'" width="'+w.toFixed(1)+'" height="'+h.toFixed(1)+'" preserveAspectRatio="none"'+(lt?' filter="url(#phL)"':'')+'/></svg>';
 }
 /* Ekran ölçeği: ürünün EN BÜYÜK bedeni ekranı doldurur, ölçek bütün bedenlerde aynı kalır (bedenler arası gerçek fark görünür) */
 function fitBox(side){
