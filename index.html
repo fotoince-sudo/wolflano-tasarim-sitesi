@@ -1421,10 +1421,17 @@ function udView(){
   if(UD.err)h+='<p class="msg">'+esc(UD.err)+'</p>';
   if(!UD.items.length&&!UD.err)h+='<p class="note">Depo boş.</p>';
   UD.items.forEach(function(x){var pn=(UD_PROD.filter(function(p){return p[0]===x.product;})[0]||['',x.product])[1],cn=((UD_CUT[x.product]||[]).filter(function(c){return c[0]===x.cut;})[0]||['',''])[1];
-    h+='<div class="arow"><img src="'+esc(x.front)+'" alt="" style="object-fit:contain;background:#eef1ef"><div><b>'+esc(x.name||'Adsız')+'</b><small><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:'+esc(x.hex||'#fff')+';border:1px solid #0003;vertical-align:-1px"></span> '+esc(x.color||'')+' · '+esc(pn)+(cn&&x.product!=='hat'?' · '+esc(cn):'')+(x.back?' · ön + arka':' · yalnız ön')+'</small></div>'+
+    h+='<div class="arow"><img src="'+esc(x.front)+'" alt="" style="object-fit:contain;background:#eef1ef"><div><b>'+esc(x.name||'Adsız')+'</b><small><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:'+esc(x.hex||'#fff')+';border:1px solid #0003;vertical-align:-1px"></span> '+esc(x.color||'')+' · '+esc(pn)+(cn&&x.product!=='hat'?' · '+esc(cn):'')+(x.back?' · ön + arka':' · yalnız ön')+'</small>'+
+      '<span class="mini" style="gap:6px;flex-wrap:wrap"><select data-udfix="product" data-id="'+esc(x.id)+'" aria-label="Ürün türü" style="height:34px;font-size:14px">'+UD_PROD.map(function(q){return '<option value="'+q[0]+'"'+(q[0]===x.product?' selected':'')+'>'+q[1]+'</option>';}).join('')+'</select>'+
+      '<select data-udfix="cut" data-id="'+esc(x.id)+'" aria-label="Kesim" style="height:34px;font-size:14px">'+(UD_CUT[x.product]||[]).map(function(q){return '<option value="'+q[0]+'"'+(q[0]===x.cut?' selected':'')+'>'+q[1]+'</option>';}).join('')+'</select></span></div>'+
       '<div class="mini" style="gap:6px"><a class="btn soft sm" href="studyo.html?depo='+encodeURIComponent(x.id)+'" target="_blank" rel="noopener">Stüdyoda aç</a><button data-ud="del" data-id="'+esc(x.id)+'" style="color:var(--red)">'+(UD.del===x.id?'Emin misin?':'Çıkar')+'</button></div></div>';});
   return h+'</div>';
 }
+/* Depodaki ürünün türü ya da kesimi yanlış girildiyse yerinde düzeltilir */
+document.addEventListener('change',async function(e){var t=e.target;if(!t||!t.dataset||!t.dataset.udfix)return;
+  var id=t.dataset.id,k=t.dataset.udfix,items=(UD.items||[]).map(function(x){if(x.id!==id)return x;var y=Object.assign({},x);y[k]=t.value;
+    if(k==='product'){var cs=UD_CUT[t.value]||[];if(!cs.some(function(c){return c[0]===y.cut;}))y.cut=(cs[0]||[''])[0];}return y;});
+  if(await udSave(items))toast('Depo ürünü güncellendi');udRefresh();});
 document.addEventListener('change',function(e){var t=e.target;if(!t||t.id!=='ud-p')return;var c=document.getElementById('ud-c');if(c)c.innerHTML=(UD_CUT[t.value]||[]).map(function(x){return '<option value="'+x[0]+'">'+x[1]+'</option>';}).join('');});
 document.addEventListener('click',async function(e){
   var b=e.target.closest&&e.target.closest('[data-ud]');if(!b)return;e.preventDefault();var a=b.dataset.ud;
