@@ -1,4 +1,4 @@
-# Ürün fotoğraflarının zeminini temizler (GitHub Actions'ta çalışır).
+# Ürün fotoğraflarının zeminini temizler (GitHub Actions'ta çalışır; 5 dakikada bir ve bu dosya değişince).
 # Yönetim panelinde "Ürün fotoğrafları (otomatik)" bölümüne yüklenen her fotoğraf için:
 #   1) yapay zekâ modeli (ISNet) ile ürünü zeminden ayırır, kenarı pürüzsüzleştirir, kenardaki zemin rengini arındırır,
 #   2) bütün fotoğrafları aynı ölçüde (1200 × 1500) ortalar ki renk değişince ürün yerinden oynamasın,
