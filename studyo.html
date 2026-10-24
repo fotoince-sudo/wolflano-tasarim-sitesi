@@ -3482,14 +3482,31 @@ syncUndo();
   function colorName(){if(DEPO.cur&&depoBlank(state.product,state.cut)){var dc=depoCols(DEPO.cur).filter(function(c){return c.hex.toLowerCase()===String(state.tee).toLowerCase();})[0];return dc?dc.name:(DEPO.cur.color||'');}var n='';TEES.forEach(function(t){if(t[1]===state.tee)n=t[0];});return n;}
   /* Kategori seçimi "ana|alt|alt-alt" yolu olarak gelir: ürün ana kategoriye ve seçilen alt kategorilere eklenir */
   function catPath(v){var a=String(v||'').split('|').filter(Boolean);return {cat:a[0]?[a[0]]:[],sub:a.slice(1)};}
+  async function prodImgs(ss){var imgs=[];ss=ss.filter(function(q){return q!=='logo'||ss.indexOf('front')<0;});for(var i=0;i<ss.length;i++){var c=await renderComposite(ss[i],1.2),bg=document.createElement('canvas');bg.width=c.width;bg.height=c.height;var x=bg.getContext('2d');x.fillStyle='#f1f3f2';x.fillRect(0,0,bg.width,bg.height);x.drawImage(c,0,0);
+      var tk='img/tas-'+rnd()+'.jpg';await upload('site',tk,await canvasBlob(bg,'image/jpeg',.88));imgs.push(tk);}return imgs;}
+  /* Yayındaki ürünü güncelle: yalnız tasarım görselleri yenilenir; kod, fiyat, kategori, açıklama aynı kalır */
+  async function doUpdate(){
+    var E=ADM.edit;if(!E)throw {msg:'Düzenlenen ürün yok.'};
+    var ss=sidesWith();if(!ss.length)throw {msg:'Önce bir tasarım yap.'};
+    var t=await tok();if(!t)throw {code:'auth'};
+    var rows=await rq('/rest/v1/site_content?select=data&id=eq.main');var d=rows&&rows[0]&&rows[0].data;if(!d)throw {msg:'Site verisi okunamadı.'};
+    var p=(d.products||[]).filter(function(x){return x.id===E.pid;})[0];if(!p)throw {msg:'Ürün sitede bulunamadı (silinmiş olabilir).'};
+    var imgs=await prodImgs(ss),rest=(p.imgs||[]).filter(function(k){return !/^img\/tas-/.test(String(k));});
+    p.imgs=imgs.concat(rest);
+    var data=await collect();
+    if(p.adesign)await rq('/rest/v1/admin_designs?id=eq.'+p.adesign,{method:'PATCH',body:{data:data,thumb:pubUrl(imgs[0]),product:state.product,cut:state.cut,color:state.tee}});
+    await rq('/rest/v1/site_content?on_conflict=id',{method:'POST',body:{id:'main',data:d,updated_at:new Date().toISOString()},prefer:'resolution=merge-duplicates,return=minimal'});
+    var nm=p.name||E.title;ADM.edit=null;mode='urun';
+    setTimeout(function(){location.href='index.html#urun-'+encodeURIComponent(p.id);},1800);
+    return '"'+nm+'" güncellendi. Ürün sayfasına dönülüyor…';
+  }
   async function doProd(title,catId,price,byWolf,o){
     o=o||{};var cp=catPath(catId);
     var ss=sidesWith();if(!ss.length)throw {msg:'Önce bir tasarım yap.'};
     var t=await tok();if(!t)throw {code:'auth'};
     var rows=await rq('/rest/v1/site_content?select=data&id=eq.main');var d=rows&&rows[0]&&rows[0].data;if(!d)throw {msg:'Site verisi okunamadı.'};
     if(d.media!=='sb')throw {msg:'Önce yönetim panelinden bir kez Kaydet\'e bas, sonra tekrar dene.'};
-    var imgs=[],ssI=ss.filter(function(q){return q!=='logo'||ss.indexOf('front')<0;});ss=ssI;for(var i=0;i<ss.length;i++){var c=await renderComposite(ss[i],1.2),bg=document.createElement('canvas');bg.width=c.width;bg.height=c.height;var x=bg.getContext('2d');x.fillStyle='#f1f3f2';x.fillRect(0,0,bg.width,bg.height);x.drawImage(c,0,0);
-      var tk='img/tas-'+rnd()+'.jpg';await upload('site',tk,await canvasBlob(bg,'image/jpeg',.88));imgs.push(tk);}
+    var imgs=await prodImgs(ss);
     var data=await collect();
     var rec=await insertRow({title:title,kind:'urun',status:'yayında',product:state.product,cut:state.cut,color:state.tee,data:data,thumb:pubUrl(imgs[0]),by_wolf:!!byWolf});
     var no=(d.products||[]).reduce(function(m,p){return Math.max(m,+p.no||0);},0)+1,id='n'+rnd();
@@ -3559,8 +3576,9 @@ syncUndo();
   function defPrice(){try{return Math.round(priceInfo().unit);}catch(_){return basePrice();}}
   function renderAdm(){
     var w=$('#admSheet');
-    var tabs=[['sablon','Şablon'],['urun','Ürün yap'],['baski','Baskıya gönder'],['taslak','Taslak']];
+    var tabs=[['sablon','Şablon'],['urun','Ürün yap'],['baski','Baskıya gönder'],['taslak','Taslak']];if(ADM.edit)tabs.unshift(['guncelle','Güncelle']);else if(mode==='guncelle')mode='urun';
     var body='';
+    if(mode==='guncelle')body='<p class="note">Düzenlenen ürün: <b>'+ea(ADM.edit.title||'')+'</b>. "Ürünü güncelle" yalnız ön ve arka görsellerini yeniler; ürün kodu, fiyat, kategori, açıklama ve stok aynı kalır.</p>';
     if(mode==='sablon')body='<p class="note">Tasarım, müşterilerin Şablon panelinde "'+TPL_CAT_ADM+'" başlığında görünür. Müşteri seçince kendi ürününe uyarlanır.</p>';
     if(mode==='urun')body=prodInfo()+
       '<div class="am-two"><label class="am-f">Ürün türü<select id="amType">'+typeOpts()+'</select></label><label class="am-f">Renk<input id="amColor" maxlength="30" value="'+ea(colorName())+'"></label></div>'+
@@ -3575,7 +3593,7 @@ syncUndo();
       '<small class="am-who">'+ea(ADM.email)+'</small>'+
       depoBox()+'<label class="am-f">Tasarım adı<input id="amTitle" maxlength="80" placeholder="Örn. Gece Kurdu" value="'+ea($('#amTitle')?$('#amTitle').value:'')+'"></label>'+
       '<div class="am-tabs">'+tabs.map(function(t){return '<button type="button" data-amm="'+t[0]+'"'+(t[0]===mode?' class="on"':'')+'>'+t[1]+'</button>';}).join('')+'</div>'+body+
-      '<button type="button" class="primary wide" id="amGo">'+{sablon:'Şablon olarak kaydet',urun:'Ürün olarak yayınla',baski:'Baskıya gönder',taslak:'Taslak kaydet'}[mode]+'</button></div>';
+      '<button type="button" class="primary wide" id="amGo">'+{guncelle:'Ürünü güncelle',sablon:'Şablon olarak kaydet',urun:'Ürün olarak yayınla',baski:'Baskıya gönder',taslak:'Taslak kaydet'}[mode]+'</button></div>';
     if(mode==='urun')autoCat();
   }
   /* Ürün yap: seçili ürünün bilgisi (fotoğraf, tür, kesim, renk) ve tür/kategori seçenekleri */
@@ -3608,6 +3626,7 @@ syncUndo();
       var z=e.target.closest('[data-amz]');if(z){var k=z.dataset.amz;psz[k]=Math.max(0,Math.min(9999,(psz[k]||0)+(+z.dataset.d)));if(!psz[k])delete psz[k];z.parentNode.querySelector('output').textContent=psz[k]||0;return;}
       var g=e.target.closest('#amGo');if(!g)return;
       var title=($('#amTitle').value||'').trim()||(mode==='urun'&&DEPO.cur&&DEPO.cur.name?DEPO.cur.name:'Wolflano tasarımı');
+      if(mode==='guncelle'){run(doUpdate,g);return;}
       if(mode==='sablon')run(function(){return doTemplate(title);},g);
       else if(mode==='taslak')run(function(){return doDraft(title);},g);
       else if(mode==='urun'){var cat=$('#amCat').value,pr=+$('#amPrice').value;if(!cat){toast('Kategori seç');return;}if(!(pr>0)){toast('Fiyat yaz');return;}
@@ -3684,6 +3703,11 @@ syncUndo();
     var b=$('#admBtn');if(b)b.hidden=false;wolfBox();
     await loadDepo();
     var dq=new URLSearchParams(location.search).get('depo');if(dq)useDepo(dq,true);
+    var dz=new URLSearchParams(location.search).get('duzenle');
+    if(dz){var dp=((ADM.site&&ADM.site.products)||[]).filter(function(x){return x.id===dz;})[0];
+      if(!dp||!dp.adesign)toast('Bu ürünün stüdyo tasarımı bulunamadı');
+      else{try{if(dp.depo)useDepo(dp.depo,true);var r0=await rq('/rest/v1/admin_designs?select=*&id=eq.'+dp.adesign);if(r0&&r0[0]){applyDesign(r0[0].data,true);ADM.edit={pid:dp.id,title:dp.name||r0[0].title};mode='guncelle';
+        setTimeout(function(){longToast('"'+ADM.edit.title+'" düzenleniyor. Bitince Yönetici → Ürünü güncelle.');},400);}else toast('Tasarım bulunamadı');}catch(_){toast('Tasarım açılamadı');}}}
     var id=new URLSearchParams(location.search).get('ad');
     if(id&&/^[0-9a-f-]{36}$/i.test(id)){try{var r=await rq('/rest/v1/admin_designs?select=*&id=eq.'+id);if(r&&r[0]){applyDesign(r[0].data,true);var at=r[0].title;setTimeout(function(){toast('"'+at+'" açıldı');},300);}}catch(_){toast('Tasarım açılamadı');}}
   }
