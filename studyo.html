@@ -217,6 +217,7 @@ svg.i{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stro
 .cp-u.on{border-color:var(--accent);color:var(--accent)}
 .cp-in input{flex:1;min-width:0;height:34px;border:1px solid var(--line2);border-radius:10px;padding:0 10px;font:600 16px var(--ui);background:var(--panel2);color:inherit;text-transform:uppercase}
 .cp-in input::placeholder{text-transform:none;font-weight:500}
+.cp-cp{margin-left:auto;height:30px;border:1px solid var(--accent);background:transparent;color:var(--accent);border-radius:9px;padding:0 12px;font:700 12px var(--ui)}
 .cp-in button{height:34px;border:0;border-radius:10px;padding:0 14px;background:var(--accent);color:#fff;font:700 13px var(--ui)}
 .sw.custom input{position:absolute;inset:0;opacity:0;width:100%;height:100%;cursor:pointer}
 
@@ -1845,7 +1846,7 @@ function showPop(mode){
   h+='<label class="sw custom" aria-label="Özel renk"><input type="color" id="colorCustom" value="'+(cur_||'#159b91')+'"></label>';
   var us=usedColors();
   if(us.length){h+='<div class="cp-row"><span class="cp-t">Bu tasarımdaki renkler</span><div class="cp-used">'+us.map(function(c){return '<button class="cp-u'+(cur_&&cur_.toLowerCase()===c?' on':'')+'" data-col="'+c+'"><i style="background:'+c+'"></i>'+colLabel(c)+'</button>';}).join('')+'</div></div>';}
-  h+='<div class="cp-row cp-sel"><span class="cp-t">Seçili</span><b>'+(cur_?'<i style="background:'+cur_+'"></i>'+colLabel(cur_):(mode==='stroke'?'Kontur yok':'—'))+'</b></div>';
+  h+='<div class="cp-row cp-sel"><span class="cp-t">Seçili</span><b>'+(cur_?'<i style="background:'+cur_+'"></i>'+colLabel(cur_):(mode==='stroke'?'Kontur yok':'—'))+'</b>'+(cur_?'<button type="button" class="cp-cp" data-copy="'+colLabel(cur_)+'">Kopyala</button>':'')+'</div>';
   h+='<form class="cp-row cp-in" id="colorCodeF"><input id="colorCode" type="text" inputmode="text" autocomplete="off" autocapitalize="characters" placeholder="Renk kodu: W12 ya da #159B91"><button type="submit">Uygula</button></form>';
   pop.innerHTML=h;pop.hidden=false;
 }
@@ -2720,7 +2721,8 @@ function ctxClick(e){
 }
 $('#ctxBar').addEventListener('click',ctxClick);
 (function(){var sb=$('#stageBar');sb.addEventListener('click',ctxClick);['pointerdown','pointerup'].forEach(function(t){sb.addEventListener(t,function(e){e.stopPropagation();},{passive:true});});})();
-$('#colorPop').addEventListener('click',function(e){var b=e.target.closest('[data-col]');if(!b)return;applyColor(b.dataset.col||null);pushHist();});
+$('#colorPop').addEventListener('click',function(e){var cp=e.target.closest('[data-copy]');if(cp){var tx=cp.dataset.copy;(navigator.clipboard&&navigator.clipboard.writeText?navigator.clipboard.writeText(tx):Promise.reject()).then(function(){toast('Kopyalandı: '+tx);},function(){var ta=document.createElement('textarea');ta.value=tx;ta.setAttribute('readonly','');ta.style.position='fixed';ta.style.opacity='0';document.body.appendChild(ta);ta.select();try{document.execCommand('copy');toast('Kopyalandı: '+tx);}catch(_){toast(tx);}ta.remove();});return;}
+  var b=e.target.closest('[data-col]');if(!b)return;applyColor(b.dataset.col||null);pushHist();});
 $('#colorPop').addEventListener('input',function(e){if(e.target.id==='colorCustom'&&view.grp){applyColor(e.target.value);return;}if(e.target.id==='colorCustom'){var o=selObj();if(!o)return;if(view.pop==='stroke')o.stroke=e.target.value;else o.color=e.target.value;updateEl(els[o.id],o);$('#ctxDot').style.background=o.color;}});
 $('#colorPop').addEventListener('change',function(e){if(e.target.id==='colorCustom')pushHist();});
 $('#colorPop').addEventListener('submit',function(e){e.preventDefault();var inp=$('#colorCode'),c=colParse(inp&&inp.value);if(!c){toast('Kod bulunamadı. Örnek: W12 ya da #159B91');return;}applyColor(c);pushHist();toast('Renk uygulandı: '+colLabel(c));});
