@@ -1558,8 +1558,13 @@ async function mnGen(list){
   MKS.gen=list.length;MKS.genTxt='';mnRefresh();var ok=0;
   for(var i=0;i<list.length;i++){
     var it=list[i];MKS.genTxt=(list.length>1?(i+1)+' / '+list.length+' · ':'')+(it.mode==='ref'?'Kimlik fotoğrafı':mnLabel(MK_POZ,it.poz))+' hazırlanıyor… (1–2 dakika sürebilir)';mnRefresh();
+    if(i>0)await new Promise(function(r){setTimeout(r,12000);});
     try{
-      var url=await mnCall({mk:mk,mode:it.mode,sahne:it.sahne,poz:it.poz,alt:it.alt,ref:it.mode==='ref'?'':ref});
+      var body={mk:mk,mode:it.mode,sahne:it.sahne,poz:it.poz,alt:it.alt,ref:it.mode==='ref'?'':ref},url;
+      for(var t=0;;t++){try{url=await mnCall(body);break;}
+        catch(e1){if(t>=2||/bakiye|Oturum|yalnız|geçersiz|seç/.test(String(e1.message)))throw e1;
+          MKS.genTxt=(list.length>1?(i+1)+' / '+list.length+' · ':'')+mnLabel(MK_POZ,it.poz)+' yeniden deneniyor…';mnRefresh();
+          await new Promise(function(r){setTimeout(r,(t+1)*20000);});}}
       if(/^data:/.test(url)){toast('Fotoğraf üretildi ama kaydedilemedi');continue;}
       var p={id:'m'+Date.now().toString(36)+Math.random().toString(36).slice(2,5),mk:mk,kind:it.mode,sahne:it.sahne||'',poz:it.poz||'',alt:it.alt||'',url:url,at:new Date().toISOString()};
       MKS.d.photos.unshift(p);if(it.mode==='ref'&&!MKS.d.refs[mk])MKS.d.refs[mk]=url;

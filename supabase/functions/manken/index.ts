@@ -44,8 +44,8 @@ const SAHNE: Record<string, { t: string; kid?: boolean; adult?: boolean }> = {
 const POZ: Record<string, string> = {
   on: 'Front view, standing straight facing the camera, arms relaxed slightly away from the body, framed from just above the knees to the top of the head, camera at chest height',
   arka: 'Back view: the person stands with their back fully to the camera, arms relaxed slightly away from the body, framed from just above the knees to the top of the head, camera at chest height; the whole back of the T-shirt is clearly visible',
-  sol: 'Exact left side profile, the left sleeve facing the camera, arms relaxed, framed from just above the knees to the top of the head, camera at chest height',
-  sag: 'Exact right side profile, the right sleeve facing the camera, arms relaxed, framed from just above the knees to the top of the head, camera at chest height',
+  sol: 'Exact 90-degree side profile: the person has turned so their LEFT shoulder and LEFT arm are nearest the camera, nose and chest pointing toward the LEFT edge of the image, the left sleeve fully visible, arms relaxed, framed from just above the knees to the top of the head, camera at chest height',
+  sag: 'Exact 90-degree side profile: the person has turned so their RIGHT shoulder and RIGHT arm are nearest the camera, nose and chest pointing toward the RIGHT edge of the image, the right sleeve fully visible, arms relaxed, framed from just above the knees to the top of the head, camera at chest height',
   rahat: 'Standing relaxed, looking at the camera, full face clearly visible, framed from the knees up',
   yuru: 'Walking toward the camera, mid-step, full face clearly visible, framed from the knees up',
   otur: 'Sitting on a low wall, smiling, full face clearly visible',
@@ -176,12 +176,19 @@ Deno.serve(async (req) => {
       if (drop === 'size' || p === 'size') { opts.size = 'auto'; r = await call(models[mi]); continue; }
       break;
     }
+    // Art arda üretimde OpenAI "çok sık istek" (429) ya da geçici sunucu hatası verebilir: kısa bekleyip yeniden dene
+    for (let k = 0; k < 2 && (r.status === 429 || r.status >= 500); k++) {
+      const ra = Number(r.headers.get('retry-after')) || 0;
+      await new Promise((ok) => setTimeout(ok, Math.min(Math.max(ra, 8), 20) * 1000));
+      r = await call(models[mi]);
+    }
     console.log('model', models[mi], r.status);
     const out = await r.json().catch(() => ({}));
     if (!r.ok) {
       const msg = JSON.stringify(out?.error || out).toLowerCase();
       console.error('openai', r.status, msg.slice(0, 300));
       if (/moderation|safety|content_policy/.test(msg)) return j({ error: 'moderation', message: 'Bu fotoğraf üretilemedi, başka bir mekân ya da poz dene.' }, 422);
+      if (r.status === 429 && !/billing|insufficient/.test(msg)) return j({ error: 'rate', message: 'OpenAI kısa süreli yoğunluk dedi, birazdan yeniden denenecek.' }, 429);
       if (/billing|quota|insufficient/.test(msg)) return j({ error: 'quota', message: 'OpenAI hesabında bakiye yok. Hesaba bakiye yüklenince çalışır.' }, 402);
       return j({ error: 'fail', message: 'Fotoğraf şu an üretilemedi, biraz sonra yeniden dene.' }, 502);
     }
