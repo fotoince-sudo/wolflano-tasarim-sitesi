@@ -268,11 +268,12 @@ textarea{min-height:120px;resize:vertical}
 .pbig{font:600 31px var(--serif);font-variant-numeric:tabular-nums}
 .info .btn{width:100%;justify-content:center}
 .info ul{margin:0;padding-left:18px;color:var(--muted);font-size:14px}
-.lb{position:fixed;inset:0;z-index:41;display:flex;flex-direction:column;background:rgba(0,0,0,.92);padding:env(safe-area-inset-top,0px) 0 env(safe-area-inset-bottom,0px)}
-.lbs{flex:1;overflow:auto;display:grid;place-items:center;touch-action:pan-x pan-y}
+.lb{position:fixed;inset:0;z-index:41;display:flex;flex-direction:column;background:#0b0c0c;padding:env(safe-area-inset-top,0px) 0 0}
+.lb{height:100vh;height:100dvh;bottom:auto}
+.lbs{flex:1;min-height:0;overflow:auto;display:grid;place-items:center;touch-action:pan-x pan-y}
 .lbs.z{place-items:start}
 .lbs img{display:block;max-width:none;height:auto;cursor:zoom-in}
-.lbc{display:flex;gap:10px;justify-content:center;align-items:center;padding:12px;color:#fff}
+.lbc{flex:none;display:flex;gap:10px;justify-content:center;align-items:center;padding:12px 12px calc(12px + env(safe-area-inset-bottom,0px));color:#fff}
 .lbc button{width:48px;height:48px;border-radius:50%;border:1px solid rgba(255,255,255,.4);background:rgba(255,255,255,.12);color:#fff;font:600 22px var(--ui)}
 .lbc span{min-width:56px;text-align:center;font-weight:600}
 .lbx{position:absolute;top:calc(8px + env(safe-area-inset-top,0px));right:8px;color:#fff;z-index:2}
