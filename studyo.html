@@ -3836,7 +3836,7 @@ syncUndo();
   }
   function renderAdm(){
     var w=$('#admSheet');
-    var tabs=[['sablon','Şablon'],['urun','Ürün yap'],['baski','Baskıya gönder'],['taslak','Taslak']];tabs.push(['manken','Mankende gör']);if(ADM.edit)tabs.unshift(['guncelle','Güncelle']);else if(mode==='guncelle')mode='urun';
+    var tabs=[['sablon','Şablon'],['urun','Ürün yap'],['baski','Baskıya gönder'],['taslak','Taslak']];tabs.push(['manken','Mankende gör']);if(ADM.edit)tabs.unshift(['guncelle','Güncelle']);else if(mode==='guncelle')mode='sablon';
     var body='';
     if(mode==='guncelle')body='<p class="note">Düzenlenen ürün: <b>'+ea(ADM.edit.title||'')+'</b>. "Ürünü güncelle" yalnız ön ve arka görsellerini yeniler; ürün kodu, fiyat, kategori, açıklama ve stok aynı kalır.</p>';
     if(mode==='sablon')body='<div class="am-two"><label class="am-f">Kimler görsün<select id="amVis"><option value="herkes"'+(tplVis==='herkes'?' selected':'')+'>Herkes (müşteriler de)</option><option value="ozel"'+(tplVis==='ozel'?' selected':'')+'>Sadece Wolflano</option></select></label>'+
@@ -3876,7 +3876,8 @@ syncUndo();
   function autoCat(){var sel=$('#amCat'),ty=$('#amType');if(!sel||!ty)return;var k=SUBKEY[ty.value];if(!k)return;
     var want=state.cut==='kadin'?'kadin':state.cut==='erkek'?'erkek':'';if(!want)return;
     var opt=[].filter.call(sel.options,function(o){var a=o.value.split('|');return a[0]===want&&a.length===2&&new RegExp('-'+k+'$').test(a[1]);})[0];if(opt)sel.value=opt.value;}
-  function openAdm(){closeTab();select(null);var w=$('#admSheet');if(!w){w=document.createElement('div');w.id='admSheet';document.body.appendChild(w);bindAdm(w);}
+  /* Pencere her açılışta Şablon sekmesiyle başlar (ürün düzenlenirken Güncelle); önceki sekme hatırlanıp yanlışlıkla ürün yayınlanmasın */
+  function openAdm(){if(!ADM.edit)mode='sablon';closeTab();select(null);var w=$('#admSheet');if(!w){w=document.createElement('div');w.id='admSheet';document.body.appendChild(w);bindAdm(w);}
     var t=$('#amTitle');renderAdm();w.hidden=false;}
   function closeAdm(){var w=$('#admSheet');if(w)w.hidden=true;}
   function bindAdm(w){
@@ -3908,9 +3909,10 @@ syncUndo();
   /* ---- Wolf'a yaptır: yazılı görevi anlar (şablon, ürün, baskı, taslak) ---- */
   function wolfParse(t){
     var s=t.toLocaleLowerCase('tr-TR'),r={};
-    if(/baskı|bastır|basılsın|üretim/.test(s))r.kind='baski';
+    /* "şablon" en önce: "ürünün ön arka tasarımını bitirdim, şablon olarak kaydet" gibi cümlelerde "ürün" kelimesi geçse de şablon kaydedilsin */
+    if(/şablon|sablon/.test(s))r.kind='sablon';
+    else if(/baskı|bastır|basılsın|üretim/.test(s))r.kind='baski';
     else if(/ürün|yayınla|satışa|koleksiyon/.test(s))r.kind='urun';
-    else if(/şablon|sablon/.test(s))r.kind='sablon';
     else if(/taslak|kaydet|sakla/.test(s))r.kind='taslak';
     var pm=/(\d+[.,]?\d*)\s*(₺|tl|lira)/.exec(s);if(pm)r.price=parseFloat(pm[1].replace(',','.'));
     var tm=/["“']([^"”']{2,80})["”']/.exec(t);if(tm)r.title=tm[1];
