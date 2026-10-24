@@ -1,1 +1,52 @@
-{}
+{
+"img/mvme1qqvog0u.jpg": {
+"color": "Lacivert",
+"file": "cut/mvme1qqvog0u.webp",
+"ns": -0.0523,
+"rgb": [
+36,
+37,
+63
+]
+},
+"img/mvme1qybhxhu.jpg": {
+"color": "Siyah",
+"file": "cut/mvme1qybhxhu.webp",
+"ns": -0.0459,
+"rgb": [
+24,
+23,
+25
+]
+},
+"img/mvme1r6j11o4.jpg": {
+"color": "Mavi",
+"file": "cut/mvme1r6j11o4.webp",
+"ns": 0.181,
+"rgb": [
+25,
+68,
+151
+]
+},
+"img/mvme1rcne5m0.jpg": {
+"color": "Beyaz",
+"file": "cut/mvme1rcne5m0.webp",
+"ns": 0.1048,
+"rgb": [
+229,
+229,
+231
+]
+},
+"img/mvme1rkt2yzp.jpg": {
+"color": "Yeşil",
+"file": "cut/mvme1rkt2yzp.webp",
+"ns": -0.0149,
+"rgb": [
+44,
+72,
+60
+]
+}
+}
