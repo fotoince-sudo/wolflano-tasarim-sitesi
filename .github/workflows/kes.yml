@@ -1,0 +1,69 @@
+# Ürün fotoğraflarının zeminini otomatik temizler.
+# Her 5 dakikada bir yönetim panelinde yeni yüklenen ürün fotoğrafı var mı bakar; varsa .github/kes.py ile işler,
+# sonucu cut/ klasörüne koyar ve siteyi yeniden yayınlatır. Yeni fotoğraf yoksa hiçbir şey değiştirmez.
+name: Ürün fotoğrafı temizleme
+
+on:
+  schedule:
+    - cron: '*/5 * * * *'
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ['.github/kes.py', '.github/workflows/kes.yml']
+
+permissions:
+  contents: write
+  actions: write
+
+concurrency:
+  group: kes
+  cancel-in-progress: false
+
+jobs:
+  kes:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Yeni fotoğraf var mı
+        id: bak
+        run: |
+          python3 - <<'EOF'
+          import json, os, urllib.request
+          k = 'sb_publishable_PP5xFd7ga61xaDOCHeET_Q_zfMaE_4G'
+          q = urllib.request.Request('https://wgovwmeirlzwalelazfj.supabase.co/rest/v1/site_content?select=data&id=eq.main', headers={'apikey': k})
+          d = json.loads(urllib.request.urlopen(q, timeout=60).read())[0]['data']
+          man = json.load(open('cut/index.json')) if os.path.exists('cut/index.json') else {}
+          yeni = [r for b in d.get('blanks') or [] for r in (b.get('raw') or []) if r and r not in man]
+          print('yeni fotoğraf:', len(yeni))
+          open(os.environ['GITHUB_OUTPUT'], 'a').write('yeni=%d\n' % len(yeni))
+          EOF
+      - uses: actions/setup-python@v5
+        if: steps.bak.outputs.yeni != '0'
+        with:
+          python-version: '3.12'
+      - name: Model önbelleği
+        if: steps.bak.outputs.yeni != '0'
+        uses: actions/cache@v4
+        with:
+          path: isnet.onnx
+          key: isnet-general-use-v1
+      - name: Araçları kur
+        if: steps.bak.outputs.yeni != '0'
+        run: |
+          pip install -q onnxruntime opencv-python-headless pillow numpy
+          [ -f isnet.onnx ] || curl -fsSL -o isnet.onnx https://github.com/danielgatis/rembg/releases/download/v0.0.0/isnet-general-use.onnx
+      - name: Fotoğrafları temizle
+        if: steps.bak.outputs.yeni != '0'
+        run: python3 .github/kes.py
+      - name: Kaydet ve yayınlat
+        if: steps.bak.outputs.yeni != '0'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          git config user.name "fotoince-sudo"
+          git config user.email "fotoince@gmail.com"
+          git add cut
+          if git diff --cached --quiet; then echo "değişiklik yok"; exit 0; fi
+          git commit -q -m "Ürün fotoğrafları: zemin temizlendi"
+          for i in 1 2 3; do git pull -q --rebase origin main && git push -q origin HEAD:main && break; sleep 5; done
+          gh workflow run derle.yml --ref main
