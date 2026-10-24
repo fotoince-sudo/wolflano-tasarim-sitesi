@@ -706,6 +706,8 @@ var AREAS={
 /* LOGO STANDARDI (tişört, polo, sweatshirt): ölçüler yakanın en üst noktasından (cetvelde 0 · omuz) ve ürünün dikey orta çizgisinden cm.
    [yakadan aşağı: logonun üst kenarı, orta çizgiden giyenin sol göğsüne doğru: logonun ortası]. Her bedende aynı cm, ürün gerçek boyutunda olduğu için logo her bedene doğru oturur. */
 var LOGO_AT={erkek:[15,12],kadin:[14,11],cocuk:[10,8.5]};
+/* Ürüne özel: kadın tişört ve sweatshirt'te logo yakadan 12 cm (kadın polo genel ölçüde kalır) */
+var LOGO_AT_P={tee:{kadin:[12,11]},sweat:{kadin:[12,11]}};
 var NECK_Y={front:101,back:76}, DROP_CM=8, DROP_CM_COCUK=6; /* çocuk bedenlerinde A4/A3 boğazdan 6 cm aşağıda başlar */
 /* PRODUCTS: sides=yüzey → izinli alanlar, land={alan:true} o alan o üründe hep yatay,
              cuts=kesimler, price=kesim başına örnek fiyat, vb=sabit görünüm kutusu (giysi dışı ürünler), draw=çizim fonksiyonu */
@@ -762,7 +764,7 @@ function areaBox(side,key,land){
   if(land===undefined)land=landFor(side,key);
   var d=dimsOf(key,land),w=d[0]*PPC,h=d[1]*PPC,cx,top,at=AREAS[key].at;
   if(at){cx=at[0];top=at[1]-h/2;}
-  else if(key==='logo'){var LA=LOGO_AT[state.cut]||LOGO_AT.erkek;cx=300+LA[1]*PPC;top=((P().neck||NECK_Y).front-NECK_DROP.front)+LA[0]*PPC;at=true;}
+  else if(key==='logo'){var LA=((LOGO_AT_P[state.product]||{})[state.cut])||LOGO_AT[state.cut]||LOGO_AT.erkek;cx=300+LA[1]*PPC;top=((P().neck||NECK_Y).front-NECK_DROP.front)+LA[0]*PPC;at=true;}
   else{cx=300;top=((P().neck||NECK_Y)[face(side)])+(state.cut==='cocuk'?DROP_CM_COCUK:DROP_CM)*PPC;}
   return {l:cx-w/2,t:top,r:cx+w/2,b:top+h,w:w,h:h,cx:cx,cy:top+h/2,at:!!at};
 }
