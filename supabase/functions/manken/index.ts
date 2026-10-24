@@ -93,13 +93,22 @@ Deno.serve(async (req) => {
     if (!mk) return j({ error: 'bad', message: 'Manken seçilmedi.' }, 400);
     const pr = mk.kid ? 'the child' : (mk.he ? 'He' : 'She');
     const style = mk.kid ? KIDSTYLE : STYLE;
-    const mode = b.mode === 'ref' ? 'ref' : 'photo';
+    const mode = b.mode === 'ref' ? 'ref' : b.mode === 'mask' ? 'mask' : 'photo';
 
     let prompt = '';
     let size = '1024x1536';
     let refBlob: Blob | null = null;
 
-    if (mode === 'ref') {
+    if (mode === 'mask') {
+      // Giydirme için tişört haritası: aynı fotoğrafta yalnız tişört saf yeşile boyanır, panel bundan maskeyi çıkarır
+      const u = String(b.url || '');
+      if (!u.startsWith(`${SB_URL}/storage/v1/object/public/site/`)) return j({ error: 'bad', message: 'Fotoğraf geçersiz.' }, 400);
+      const rr = await fetch(u);
+      if (!rr.ok) return j({ error: 'bad', message: 'Fotoğraf okunamadı.' }, 400);
+      refBlob = new Blob([await rr.arrayBuffer()], { type: rr.headers.get('content-type') || 'image/jpeg' });
+      size = ['1024x1536', '1536x1024', '1024x1024'].includes(String(b.size)) ? String(b.size) : 'auto';
+      prompt = 'Edit this photo: recolor ONLY the T-shirt the person is wearing (body, both sleeves, collar and every fold) to a flat, fully saturated pure chroma-key green (#00FF00), keeping its exact shape and outline. Everything else must stay exactly identical and in exactly the same position: same person, face, skin, hair, arms, hands, trousers or shorts, background, framing, lighting and image size. Do not move, crop, zoom or redraw anything except the T-shirt color.';
+    } else if (mode === 'ref') {
       size = '1536x1024';
       prompt = `Create a reference portrait sheet of ${mk.desc}. Show the same person three times side by side on a plain light-grey background: front view, three-quarter view, side profile, from chest up. ${mk.he ? 'He' : 'She'} wears ${TEE}. ${style}`;
     } else {
@@ -130,7 +139,7 @@ Deno.serve(async (req) => {
     const envModel = Deno.env.get('OPENAI_IMAGE_MODEL') || '';
     const models = [envModel, refBlob ? 'gpt-image-2.5-sunburst' : 'gpt-image-2.5-flare', refBlob ? 'gpt-image-2.5-flare' : 'gpt-image-2.5-sunburst', 'gpt-image-2', 'gpt-image-1.5', 'gpt-image-1']
       .filter((m, i, a) => m && a.indexOf(m) === i);
-    const opts: Record<string, string> = { size, quality: 'high', output_format: 'jpeg', output_compression: '90' };
+    const opts: Record<string, string> = { size, quality: mode === 'mask' ? 'medium' : 'high', output_format: 'jpeg', output_compression: '90' };
     if (refBlob) opts.input_fidelity = 'high';
     async function call(model: string) {
       if (refBlob) {

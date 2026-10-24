@@ -410,7 +410,16 @@ svg.i{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stro
 .am-two{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .am-info{display:flex;gap:10px;align-items:center;border:1px solid var(--line2);border-radius:12px;padding:8px;background:var(--panel2)}.am-info img{width:56px;height:56px;object-fit:contain;border-radius:8px;background:#eef1ef;flex:0 0 56px}.am-info div{display:grid;gap:2px;font:600 13px var(--ui);color:var(--ink)}.am-info small{font:600 12px var(--ui);color:var(--muted)}
 .am-f input,.am-f select{height:40px;border-radius:10px;border:1px solid var(--line2);background:var(--panel2);color:var(--ink);padding:0 12px;font:600 16px var(--ui)}
-.am-tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;background:var(--panel2);padding:3px;border-radius:12px}
+.mn-ph{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;-webkit-overflow-scrolling:touch}
+.mn-ph button{flex:0 0 88px;display:grid;gap:4px;border:1px solid var(--line);border-radius:12px;padding:4px;background:var(--panel2);font:600 11px var(--ui);color:var(--muted)}
+.mn-ph button.on{border-color:var(--accent,#2f7a4d);box-shadow:0 0 0 2px var(--accent,#2f7a4d) inset}
+.mn-ph img{width:100%;aspect-ratio:2/3;object-fit:cover;border-radius:8px;display:block;background:#eef1ef}
+.mn-col{display:flex;gap:8px;flex-wrap:wrap}
+.mn-col button{width:34px;height:34px;border-radius:50%;border:1px solid rgba(0,0,0,.18)}
+.mn-col button.on{box-shadow:0 0 0 2px var(--panel,#fff),0 0 0 4px var(--accent,#2f7a4d)}
+.mn-out{width:100%;border-radius:12px;display:block}
+.mn-msg{color:#b4472f}
+.am-tabs{display:grid;grid-template-columns:repeat(auto-fit,minmax(78px,1fr));gap:4px;background:var(--panel2);padding:3px;border-radius:12px}
 .am-tabs button{border:0;background:none;border-radius:9px;height:34px;font:600 12px var(--ui);color:var(--muted)}
 .am-tabs button.on{background:var(--panel);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.12)}
 .am-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
@@ -2727,6 +2736,59 @@ async function renderComposite(side,scale){
       x.globalCompositeOperation='screen';x.drawImage(await loadImg(svgUrl(sl.light)),0,0,c.width,c.height);x.restore();}}catch(_){}
   return c;
 }
+/* ===== Mankende gör: beyaz tişörtlü manken fotoğrafını ürün rengine boyar, tasarımı kumaşa işler =====
+   img: manken fotoğrafı (yüklenmiş Image), area: {x,y,w,h} oran (A4 dikey kutusu), hex: tişört rengi,
+   layers: [{canvas, l,t,w,h}] fotoğraf pikselinde, tol: algılama hassasiyeti (0..1, varsayılan .5) */
+function mnCompose(img,maskImg,area,hex,layers,tol){
+  var W=img.naturalWidth,H=img.naturalHeight,c=document.createElement('canvas');c.width=W;c.height=H;
+  var x=c.getContext('2d',{willReadFrequently:true});x.drawImage(img,0,0);
+  var id=x.getImageData(0,0,W,H),d=id.data,N=W*H,L=new Float32Array(N),S=new Float32Array(N),i,p;
+  for(i=0,p=0;i<N;i++,p+=4){var r=d[p],g=d[p+1],b=d[p+2],mx=Math.max(r,g,b),mn=Math.min(r,g,b);L[i]=(0.2126*r+0.7152*g+0.0722*b)/255;S[i]=mx?(mx-mn)/mx:0;}
+  /* Tişörtün beyazı: kutunun içindeki parlak, renksiz piksellerden */
+  var bx=Math.round(area.x*W),by=Math.round(area.y*H),bw=Math.round(area.w*W),bh=Math.round(area.h*H),arr=[];
+  var sarr=[];for(var yy=by;yy<by+bh;yy+=3)for(var xx=bx;xx<bx+bw;xx+=3){if(xx<0||yy<0||xx>=W||yy>=H)continue;i=yy*W+xx;sarr.push(S[i]);if(S[i]<.3)arr.push(L[i]);}
+  sarr.sort(function(a,b){return a-b;});var sMed=sarr.length?sarr[sarr.length>>1]:.05;
+  arr.sort(function(a,b){return a-b;});var ref=arr.length?arr[Math.floor(arr.length*.9)]:.9;ref=Math.max(.35,ref);
+  tol=tol==null?.5:tol;
+  var M=new Uint8Array(N),satMax=Math.max(.16,sMed+.12),lowL=ref*.3;
+  if(maskImg){
+    /* Tişört haritası: yalnız tişörtün saf yeşile boyandığı kopya; buradan maske çıkar */
+    var mc=document.createElement('canvas');mc.width=W;mc.height=H;var mx=mc.getContext('2d',{willReadFrequently:true});mx.drawImage(maskImg,0,0,W,H);
+    var md=mx.getImageData(0,0,W,H).data,G=new Uint8Array(N);
+    for(i=0,p=0;i<N;i++,p+=4){var gg=md[p+1];if(gg>100&&gg-Math.max(md[p],md[p+2])>50)G[i]=1;}
+    var rd=Math.max(2,Math.round(Math.max(W,H)*.005));
+    var grow=function(A,r,on){var B=A;for(var t=0;t<r;t++){var C=new Uint8Array(N);for(var j=0;j<N;j++){var jx=j%W,nb4=[jx>0?B[j-1]:on?0:1,jx<W-1?B[j+1]:on?0:1,j>=W?B[j-W]:on?0:1,j<N-W?B[j+W]:on?0:1];
+      if(on){C[j]=B[j]||nb4[0]||nb4[1]||nb4[2]||nb4[3]?1:0;}else{C[j]=B[j]&&nb4[0]&&nb4[1]&&nb4[2]&&nb4[3]?1:0;}}B=C;}return B;};
+    var Gd=grow(G,rd,true),Ge=grow(G,rd,false);
+    var X0=bx-bw*1.5,X1=bx+bw*2.5,Y0=by-bh*.5,Y1=by+bh*2.5;
+    for(i=0;i<N;i++){var ix1=i%W,iy1=(i/W)|0;if(ix1<X0||ix1>X1||iy1<Y0||iy1>Y1)continue;M[i]=Ge[i]||(Gd[i]&&S[i]<=satMax&&L[i]>=lowL)?1:0;}
+  }
+  /* Yumuşak kenar */
+  var F=new Float32Array(N);for(i=0;i<N;i++)F[i]=M[i];
+  for(var pass=0;pass<2;pass++){var G=new Float32Array(N);for(i=0;i<N;i++){var ix=i%W,s=F[i]*4,cn=4;if(ix>0){s+=F[i-1];cn++;}if(ix<W-1){s+=F[i+1];cn++;}if(i>=W){s+=F[i-W];cn++;}if(i<N-W){s+=F[i+W];cn++;}G[i]=s/cn;}F=G;}
+  /* Ortalama gölge */
+  var sum=0,cnt=0;for(i=0;i<N;i+=7)if(M[i]){sum+=Math.min(1.05,L[i]/ref);cnt++;}var avg=cnt?sum/cnt:.9;
+  var m6=/^#?([0-9a-f]{6})$/i.exec(hex||'#ffffff'),hv=m6?parseInt(m6[1],16):0xffffff,cr=(hv>>16)&255,cg=(hv>>8)&255,cb=hv&255;
+  var lumC=(0.2126*cr+0.7152*cg+0.0722*cb)/255,dark=1-lumC,white=lumC>.93;
+  if(!white){
+    for(i=0,p=0;i<N;i++,p+=4){var a=F[i];if(a<=0)continue;var sh=Math.min(1.06,L[i]/ref),ex=(sh-avg)*(55+60*dark);
+      var nr=cr*sh+ex,ng=cg*sh+ex,nbb=cb*sh+ex;
+      d[p]=d[p]*(1-a)+Math.max(0,Math.min(255,nr))*a;d[p+1]=d[p+1]*(1-a)+Math.max(0,Math.min(255,ng))*a;d[p+2]=d[p+2]*(1-a)+Math.max(0,Math.min(255,nbb))*a;}
+  }
+  /* Tasarım katmanları: kumaşın ışığı ve kırışıklarıyla çarpılır, tişört dışına taşmaz */
+  (layers||[]).forEach(function(ly){
+    var lc=document.createElement('canvas');lc.width=W;lc.height=H;var lx=lc.getContext('2d',{willReadFrequently:true});lx.imageSmoothingQuality='high';
+    lx.drawImage(ly.canvas,ly.l,ly.t,ly.w,ly.h);
+    var x0=Math.max(0,Math.floor(ly.l)),y0=Math.max(0,Math.floor(ly.t)),x1=Math.min(W,Math.ceil(ly.l+ly.w)),y1=Math.min(H,Math.ceil(ly.t+ly.h));if(x1<=x0||y1<=y0)return;
+    var ld=lx.getImageData(x0,y0,x1-x0,y1-y0).data,lw=x1-x0;
+    for(var yy=y0;yy<y1;yy++)for(var xx=x0;xx<x1;xx++){var j=yy*W+xx,o=((yy-y0)*lw+(xx-x0))*4,al=ld[o+3]/255;if(al<=0)continue;
+      var sh2=Math.min(1.08,Math.max(.35,(L[j]/ref)/avg)),k2=sh2>1?1+(sh2-1)*.5:sh2;al*=.97;var pp=j*4;
+      d[pp]=d[pp]*(1-al)+Math.min(255,ld[o]*k2)*al;d[pp+1]=d[pp+1]*(1-al)+Math.min(255,ld[o+1]*k2)*al;d[pp+2]=d[pp+2]*(1-al)+Math.min(255,ld[o+2]*k2)*al;}
+  });
+  x.putImageData(id,0,0);
+  var cov=0;for(i=0;i<N;i+=11)cov+=M[i];
+  return {canvas:c,cover:cov*11/N};
+}
 async function renderPrint(side){
   var key=state[side].area,A=areaBox(side,key),cm=dimsOf(key,isLand(side));
   var dpi=Math.min(300,3508/Math.max(cm[0],cm[1])*2.54),S=(dpi/2.54)/PPC;
@@ -3619,9 +3681,73 @@ syncUndo();
         (s.subs||[]).forEach(function(t){h+='<option value="'+ea(c.id+'|'+s.id+'|'+t.id)+'">'+ea((c.name||'')+' → '+(s.name||'')+' → '+(t.name||''))+'</option>';});});});return h;}
   function catLabel(v){var a=String(v||'').split('|'),cs=(ADM.site&&ADM.site.cats)||[],out=[],lv=cs;a.forEach(function(id){var f=(lv||[]).filter(function(x){return x.id===id;})[0];if(f){out.push(f.name||id);lv=f.subs;}});return out.join(' → ');}
   function defPrice(){try{return Math.round(priceInfo().unit);}catch(_){return basePrice();}}
+  /* ---- Mankende gör: tasarımı Manken stüdyosundaki fotoğraflara giydirir ----
+     Fotoğraflar ve işaretli baskı alanları admin_kv "manken" kaydında. Renkli tişört için bir kerelik "tişört haritası" sunucuda hazırlanır. */
+  var MNV={d:null,busy:false,sel:null,hex:null,out:null,outUrl:'',msg:''};
+  var MN_CUT={kerem:'erkek',emre:'erkek',murat:'erkek',elif:'kadin',deniz:'kadin',selin:'kadin',leyla:'kadin',ada:'cocuk',can:'cocuk',arda:'cocuk'};
+  var MN_NAME={kerem:'Kerem',emre:'Emre',murat:'Murat',elif:'Elif',deniz:'Deniz',selin:'Selin',leyla:'Leyla',ada:'Ada',can:'Can',arda:'Arda'};
+  function mnOkProduct(){return ['tee','sweat','polo'].indexOf(state.product)>=0;}
+  async function mnLoad(){if(MNV.busy)return;MNV.busy=true;
+    try{var r=await rq('/rest/v1/admin_kv?select=data&id=eq.manken');var dd=r&&r[0]&&r[0].data;MNV.d={refs:(dd&&dd.refs)||{},photos:(dd&&dd.photos)||[]};}
+    catch(_){MNV.d={refs:{},photos:[]};MNV.msg='Manken fotoğrafları okunamadı.';}
+    MNV.busy=false;if(mode==='manken'&&!$('#admSheet').hidden)renderAdm();}
+  async function mnPatch(fn){var r=await rq('/rest/v1/admin_kv?select=data&id=eq.manken');var dd=(r&&r[0]&&r[0].data)||{refs:{},photos:[]};dd.photos=dd.photos||[];dd.refs=dd.refs||{};fn(dd);
+    await rq('/rest/v1/admin_kv?on_conflict=id',{method:'POST',body:{id:'manken',data:dd,updated_at:new Date().toISOString()},prefer:'resolution=merge-duplicates,return=minimal'});MNV.d=dd;}
+  function mnList(){return ((MNV.d&&MNV.d.photos)||[]).filter(function(p){return p.kind==='photo'&&p.area&&MN_CUT[p.mk]===state.cut;});}
+  function mnBody(){
+    if(!mnOkProduct())return '<p class="note">Mankende gör şimdilik tişört, sweatshirt ve polo için çalışır.</p>';
+    if(!MNV.d){if(!MNV.busy)setTimeout(mnLoad,0);return '<p class="note">Manken fotoğrafları yükleniyor…</p>';}
+    var L=mnList(),h='';
+    if(!L.length)return '<p class="note">Bu kesim ('+ea(CUT_TR[state.cut]||state.cut)+') için baskı alanı işaretlenmiş manken fotoğrafı yok. Yönetim paneli → Manken stüdyosu\'nda fotoğraf üret, sonra fotoğrafın altındaki <b>Baskı alanı</b>\'na dokunup kutuyu yerleştir.</p>';
+    if(!MNV.sel||!L.some(function(p){return p.id===MNV.sel;}))MNV.sel=L[0].id;
+    h+='<p class="note" style="margin:0 0 6px">Manken fotoğrafı</p><div class="mn-ph">'+L.map(function(p){return '<button type="button" data-mnp="'+ea(p.id)+'"'+(p.id===MNV.sel?' class="on"':'')+'><img src="'+ea(p.url)+'" alt="" loading="lazy"><small>'+ea(MN_NAME[p.mk]||p.mk)+' · '+(p.area.side==='back'?'Arka':'Ön')+'</small></button>';}).join('')+'</div>';
+    var hx=MNV.hex||state.tee;
+    h+='<p class="note" style="margin:10px 0 6px">Tişört rengi</p><div class="mn-col">'+TEES.map(function(t){return '<button type="button" data-mnc="'+ea(t[1])+'" title="'+ea(t[0])+'" style="background:'+ea(t[1])+'"'+(String(t[1]).toLowerCase()===String(hx).toLowerCase()?' class="on"':'')+'></button>';}).join('')+'</div>';
+    if(MNV.msg)h+='<p class="note mn-msg">'+ea(MNV.msg)+'</p>';
+    if(MNV.outUrl)h+='<img class="mn-out" src="'+MNV.outUrl+'" alt="Mankende görünüm"><div class="am-two"><button type="button" class="ghost" data-mnd>İndir</button><button type="button" class="ghost" data-mns>Galeriye kaydet</button></div>';
+    return h+'<p class="note">Tasarım birebir aynı kalır; yalnız tişörtün rengi ve kumaşın ışığı eklenir. Renkli tişörtte her fotoğraf için ilk seferde 1–2 dakikalık bir hazırlık yapılır.</p>';
+  }
+  function mnLoadImg(u){return new Promise(function(res,rej){var im=new Image();im.crossOrigin='anonymous';im.onload=function(){res(im);};im.onerror=function(){rej({msg:'Fotoğraf açılamadı.'});};im.src=u;});}
+  async function mnGo(btn){
+    if(ADM.busy)return;var p=mnList().filter(function(x){return x.id===MNV.sel;})[0];if(!p){toast('Manken fotoğrafı seç');return;}
+    ADM.busy=true;var old=btn&&btn.textContent;if(btn){btn.disabled=true;btn.textContent='Hazırlanıyor…';}
+    try{
+      var hex=MNV.hex||state.tee,m6=/^#?([0-9a-f]{6})$/i.exec(hex),hv=m6?parseInt(m6[1],16):0xffffff,white=((0.2126*((hv>>16)&255)+0.7152*((hv>>8)&255)+0.0722*(hv&255))/255)>.93;
+      var img=await mnLoadImg(p.url),W=img.naturalWidth,H=img.naturalHeight,mask=null;
+      if(!white){
+        if(!p.mask){
+          if(btn)btn.textContent='Tişört haritası hazırlanıyor (bir kerelik, 1–2 dk)…';
+          var t=await tok();if(!t)throw {code:'auth'};
+          var r=await fetch(SBA.url+'/functions/v1/manken',{method:'POST',headers:{'Content-Type':'application/json',apikey:SBA.key,Authorization:'Bearer '+t},body:JSON.stringify({mode:'mask',mk:p.mk,url:p.url,size:W>H?'1536x1024':H>W?'1024x1536':'1024x1024'})});
+          var jj=await r.json().catch(function(){return {};});if(!r.ok||!jj.url)throw {msg:jj.message||'Tişört haritası hazırlanamadı, tekrar dene.'};
+          p.mask=jj.url;await mnPatch(function(dd){dd.photos.forEach(function(x){if(x.id===p.id)x.mask=jj.url;});});
+        }
+        if(btn)btn.textContent='Giydiriliyor…';
+        mask=await mnLoadImg(p.mask);
+      }
+      var side=p.area.side==='back'?'back':'front',ref=areaBox(side,'a4',false),bxl=p.area.x*W,bxt=p.area.y*H,k=(p.area.w*W)/ref.w,layers=[];
+      var ss=side==='back'?['back']:['front','logo'];
+      for(var i=0;i<ss.length;i++){var s=ss[i];if(!P().sides[s]||!state[s]||!state[s].objs.length)continue;
+        var A=areaBox(s,state[s].area),pr=await renderPrint(s);
+        layers.push({canvas:pr.canvas,l:bxl+(A.l-ref.l)*k,t:bxt+(A.t-ref.t)*k,w:A.w*k,h:A.h*k});}
+      var res=mnCompose(img,mask,p.area,hex,layers);
+      MNV.out=res.canvas;MNV.outUrl=res.canvas.toDataURL('image/jpeg',.9);MNV.src=p;MNV.outHex=hex;
+      MNV.msg=layers.length?'':(side==='back'?'Arka yüzde tasarım yok; yalnız renk gösterildi.':'Ön yüzde tasarım yok; yalnız renk gösterildi.');
+    }catch(e){MNV.msg=e&&e.msg?e.msg:(e&&(e.code==='auth'||e.status===401)?'Oturum süresi doldu, yönetim panelinden yeniden giriş yap.':(e&&e.name==='SecurityError'?'Fotoğraf güvenlik engeline takıldı, sayfayı yenileyip tekrar dene.':'Giydirilemedi, tekrar dene.'));try{console.error('Mankende gör',e);}catch(_){}}
+    ADM.busy=false;if(btn){btn.disabled=false;btn.textContent=old;}renderAdm();
+    var o=$('#admSheet .mn-out');if(o)o.scrollIntoView({block:'nearest',behavior:'smooth'});
+  }
+  async function mnSave(btn){
+    if(!MNV.out||ADM.busy)return;ADM.busy=true;if(btn){btn.disabled=true;btn.textContent='Kaydediliyor…';}
+    try{var path='img/giydir-'+rnd()+'.jpg';await upload('site',path,await canvasBlob(MNV.out,'image/jpeg',.9));var u=pubUrl(path),src=MNV.src;
+      await mnPatch(function(dd){dd.photos.unshift({id:'g'+rnd(),mk:src.mk,kind:'giydir',src:src.id,hex:MNV.outHex,url:u,at:new Date().toISOString()});});
+      toast('Galeriye kaydedildi (Manken stüdyosu)');}
+    catch(e){toast(e&&e.code==='auth'?'Oturum süresi doldu':'Kaydedilemedi, tekrar dene');}
+    ADM.busy=false;if(btn){btn.disabled=false;btn.textContent='Galeriye kaydet';}
+  }
   function renderAdm(){
     var w=$('#admSheet');
-    var tabs=[['sablon','Şablon'],['urun','Ürün yap'],['baski','Baskıya gönder'],['taslak','Taslak']];if(ADM.edit)tabs.unshift(['guncelle','Güncelle']);else if(mode==='guncelle')mode='urun';
+    var tabs=[['sablon','Şablon'],['urun','Ürün yap'],['baski','Baskıya gönder'],['taslak','Taslak']];tabs.push(['manken','Mankende gör']);if(ADM.edit)tabs.unshift(['guncelle','Güncelle']);else if(mode==='guncelle')mode='urun';
     var body='';
     if(mode==='guncelle')body='<p class="note">Düzenlenen ürün: <b>'+ea(ADM.edit.title||'')+'</b>. "Ürünü güncelle" yalnız ön ve arka görsellerini yeniler; ürün kodu, fiyat, kategori, açıklama ve stok aynı kalır.</p>';
     if(mode==='sablon')body='<div class="am-two"><label class="am-f">Kimler görsün<select id="amVis"><option value="herkes"'+(tplVis==='herkes'?' selected':'')+'>Herkes (müşteriler de)</option><option value="ozel"'+(tplVis==='ozel'?' selected':'')+'>Sadece Wolflano</option></select></label>'+
@@ -3635,12 +3761,13 @@ syncUndo();
       '<label class="am-f">Açıklama<textarea id="amDesc" maxlength="1200" placeholder="Kumaş, kalıp, baskı tekniği…"></textarea></label>'+
       '<p class="note">Ürün, tasarımın ürün üstündeki görüntüsüyle (ön ve arka) Koleksiyon\'a eklenir. Sonra panelden de düzenleyebilirsin.</p>';
     if(mode==='baski')body='<div class="am-grid">'+sizeGrid()+'</div><p class="note">Sepet ve ödeme olmadan baskıya gider; baskı dosyaları (300 dpi PNG) kaydedilir ve panelde "Baskıda" olarak görünür.</p>';
+    if(mode==='manken')body=mnBody();
     if(mode==='taslak')body='<p class="note">Sonra devam etmek veya başkasına göstermek için yalnız kaydeder. Panelden "Stüdyoda aç" ile geri gelir.</p>';
     w.innerHTML='<div class="am-card" role="dialog" aria-modal="true" aria-label="Yönetici tasarımı"><div class="am-h"><b>Yönetici tasarımı</b><button type="button" class="ib" data-amx aria-label="Kapat"><svg class="i" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>'+
       '<small class="am-who">'+ea(ADM.email)+'</small>'+
       depoBox()+'<label class="am-f">Tasarım adı<input id="amTitle" maxlength="80" placeholder="Örn. Gece Kurdu" value="'+ea($('#amTitle')?$('#amTitle').value:'')+'"></label>'+
       '<div class="am-tabs">'+tabs.map(function(t){return '<button type="button" data-amm="'+t[0]+'"'+(t[0]===mode?' class="on"':'')+'>'+t[1]+'</button>';}).join('')+'</div>'+body+
-      '<button type="button" class="primary wide" id="amGo">'+{guncelle:'Ürünü güncelle',sablon:'Şablon olarak kaydet',urun:'Ürün olarak yayınla',baski:'Baskıya gönder',taslak:'Taslak kaydet'}[mode]+'</button></div>';
+      '<button type="button" class="primary wide" id="amGo">'+{guncelle:'Ürünü güncelle',sablon:'Şablon olarak kaydet',urun:'Ürün olarak yayınla',baski:'Baskıya gönder',taslak:'Taslak kaydet',manken:'Mankene giydir'}[mode]+'</button></div>';
     if(mode==='urun')autoCat();
   }
   /* Ürün yap: seçili ürünün bilgisi (fotoğraf, tür, kesim, renk) ve tür/kategori seçenekleri */
@@ -3668,11 +3795,16 @@ syncUndo();
     w.addEventListener('click',function(e){
       if(e.target===w||e.target.closest('[data-amx]')){closeAdm();return;}
       var m=e.target.closest('[data-amm]');if(m){mode=m.dataset.amm;renderAdm();return;}
+      var mp=e.target.closest('[data-mnp]');if(mp){MNV.sel=mp.dataset.mnp;MNV.outUrl='';MNV.out=null;MNV.msg='';renderAdm();return;}
+      var mc=e.target.closest('[data-mnc]');if(mc){MNV.hex=mc.dataset.mnc;MNV.outUrl='';MNV.out=null;MNV.msg='';renderAdm();return;}
+      if(e.target.closest('[data-mnd]')){if(MNV.out)saveCanvas(MNV.out,'wolflano-manken-'+rnd()+'.png');return;}
+      var msv=e.target.closest('[data-mns]');if(msv){mnSave(msv);return;}
       var dp=e.target.closest('[data-amdp]');if(dp){useDepo(dp.dataset.amdp);return;}
       if(e.target.closest('[data-amdx]')){useDepo(null);return;}
       var z=e.target.closest('[data-amz]');if(z){var k=z.dataset.amz;psz[k]=Math.max(0,Math.min(9999,(psz[k]||0)+(+z.dataset.d)));if(!psz[k])delete psz[k];z.parentNode.querySelector('output').textContent=psz[k]||0;return;}
       var g=e.target.closest('#amGo');if(!g)return;
       var title=($('#amTitle').value||'').trim()||(mode==='urun'&&DEPO.cur&&DEPO.cur.name?DEPO.cur.name:'Wolflano tasarımı');
+      if(mode==='manken'){mnGo(g);return;}
       if(mode==='guncelle'){run(doUpdate,g);return;}
       if(mode==='sablon')run(function(){return doTemplate(title,false,{vis:tplVis,cat:tplCat});},g);
       else if(mode==='taslak')run(function(){return doDraft(title);},g);

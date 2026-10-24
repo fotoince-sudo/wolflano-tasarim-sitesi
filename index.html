@@ -439,6 +439,19 @@ img{-webkit-touch-callout:none;-webkit-user-drag:none;user-drag:none}
 .mk-act{display:grid;grid-template-columns:1fr 1fr;gap:6px}
 .mk-act a,.mk-act button{display:flex;align-items:center;justify-content:center;min-height:36px;border:1px solid var(--line);border-radius:10px;background:#fff;font:600 12px var(--ui);color:var(--ink);text-decoration:none;padding:4px}
 .mk-act a{grid-column:1/-1;border-color:var(--green);color:var(--green)}
+.mna{position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,.55);display:flex;align-items:flex-end;justify-content:center}
+.mna-c{width:100%;max-width:560px;max-height:96vh;overflow-y:auto;background:var(--card,#fff);border-radius:18px 18px 0 0;padding:14px 16px calc(16px + env(safe-area-inset-bottom,0px));display:grid;gap:10px}
+.mna-h{display:flex;justify-content:space-between;align-items:center}
+.mna-x{border:0;background:none;font-size:20px;color:var(--ink)}
+.mna-s{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.mna-s button{height:40px;border:1px solid var(--line);border-radius:10px;background:#fff;font:600 14px var(--ui);color:var(--ink)}
+.mna-s button.on{border-color:var(--green);color:var(--green);box-shadow:0 0 0 1px var(--green) inset}
+.mna-w{position:relative;touch-action:none;user-select:none;-webkit-user-select:none}
+.mna-w img{width:100%;display:block;border-radius:10px;pointer-events:none}
+.mna-b{position:absolute;border:2px dashed #2dd36f;background:rgba(45,211,111,.18);border-radius:4px;touch-action:none;cursor:move}
+.mna-b span{position:absolute;left:6px;top:4px;font:700 12px var(--ui);color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.6)}
+.mna-r{position:absolute;right:-14px;bottom:-14px;width:28px;height:28px;border-radius:50%;background:#2dd36f;border:3px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.4)}
+.mna-f{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .mk-busy{display:flex;align-items:center;gap:10px;font:600 14px var(--ui);color:var(--green)}
 .mk-spin{width:20px;height:20px;border-radius:50%;border:3px solid #d9e6df;border-top-color:var(--green);animation:mkspin .8s linear infinite;flex:0 0 auto}
 @keyframes mkspin{to{transform:rotate(360deg)}}
@@ -1578,7 +1591,7 @@ function mnView(){
   h+='<b style="font-size:15px">'+esc(mnName(mk))+' fotoğrafları ('+ph.length+')</b>';
   if(!ph.length)h+='<p class="note" style="margin:0">Henüz fotoğraf yok.</p>';
   else h+='<div class="mk-grid">'+ph.map(function(p){var isRef=d.refs[mk]===p.url;
-    return '<div class="mk-ph"><a href="'+esc(p.url)+'" target="_blank" rel="noopener"><img src="'+esc(p.url)+'" alt="" loading="lazy"></a><small>'+(p.kind==='ref'?'Kimlik':esc(mnLabel(MK_SAHNE,p.sahne)+' · '+mnLabel(MK_POZ,p.poz)))+(isRef?' · <b style="color:var(--green)">kimlik</b>':'')+'</small><div class="mk-act"><a href="'+esc(p.url)+'" target="_blank" rel="noopener" download>İndir</a>'+(isRef?'':'<button data-mk="setref" data-id="'+p.id+'">Kimlik yap</button>')+'<button data-mk="del" data-id="'+p.id+'" style="color:var(--red)">'+(MKS.del===p.id?'Emin misin?':'Sil')+'</button></div></div>';}).join('')+'</div>';
+    return '<div class="mk-ph"><a href="'+esc(p.url)+'" target="_blank" rel="noopener"><img src="'+esc(p.url)+'" alt="" loading="lazy"></a><small>'+(p.kind==='ref'?'Kimlik':p.kind==='giydir'?'Giydirilmiş':esc(mnLabel(MK_SAHNE,p.sahne)+' · '+mnLabel(MK_POZ,p.poz)))+(p.kind==='photo'&&p.area?' · <b style="color:var(--green)">alan ✓</b>':'')+(isRef?' · <b style="color:var(--green)">kimlik</b>':'')+'</small><div class="mk-act"><a href="'+esc(p.url)+'" target="_blank" rel="noopener" download>İndir</a>'+(p.kind==='photo'?'<button data-mk="area" data-id="'+p.id+'">Baskı alanı</button>':'')+(isRef||p.kind==='giydir'?'':'<button data-mk="setref" data-id="'+p.id+'">Kimlik yap</button>')+'<button data-mk="del" data-id="'+p.id+'" style="color:var(--red)">'+(MKS.del===p.id?'Emin misin?':'Sil')+'</button></div></div>';}).join('')+'</div>';
   h+='<p class="note" style="margin:0">Siteye ya da sosyal medyaya koyarken altına küçük bir "Yapay zekâ ile üretilmiş görseldir" notu ekle.</p>';
   return h+'</div>';
 }
@@ -1596,11 +1609,42 @@ document.addEventListener('click',async function(e){
   if(a==='ref'){mnGen([{mode:'ref'}]);return;}
   if(a==='one'){mnGen([{mode:'photo',sahne:MKS.sahne,poz:MKS.poz,alt:MKS.alt}]);return;}
   if(a==='four'){mnGen(['on','arka','sol','sag'].map(function(p){return {mode:'photo',sahne:MKS.sahne,poz:p,alt:MKS.alt};}));return;}
+  if(a==='area'){var pa=MKS.d.photos.filter(function(x){return x.id===b.dataset.id;})[0];if(pa)mnArea(pa);return;}
   if(a==='setref'){var p=MKS.d.photos.filter(function(x){return x.id===b.dataset.id;})[0];if(!p)return;MKS.d.refs[MKS.sel]=p.url;if(await mnSave())toast('Kimlik fotoğrafı değişti');mnRefresh();return;}
   if(a==='del'){var id=b.dataset.id;if(MKS.del!==id){MKS.del=id;mnRefresh();return;}MKS.del=null;
     var q=MKS.d.photos.filter(function(x){return x.id===id;})[0];MKS.d.photos=MKS.d.photos.filter(function(x){return x.id!==id;});
     if(q&&MKS.d.refs[MKS.sel]===q.url)delete MKS.d.refs[MKS.sel];if(await mnSave())toast('Silindi');mnRefresh();return;}
 });
+/* Baskı alanı işaretleme: fotoğrafın üstünde A4 dikey kutusu; tek parmakla taşı, köşeden büyüt */
+function mnArea(p){
+  var o=document.getElementById('mnAreaEd');if(o)o.remove();
+  o=document.createElement('div');o.id='mnAreaEd';o.className='mna';
+  var side=p.area&&p.area.side?p.area.side:(/^(arka|omuz)$/.test(p.poz||'')?'back':'front');
+  o.innerHTML='<div class="mna-c"><div class="mna-h"><b>Baskı alanı</b><button type="button" class="mna-x" data-mna="x" aria-label="Kapat">✕</button></div>'+
+    '<p class="note" style="margin:0">Kutuyu A4 dikey baskının tişörtte duracağı yere taşı: üst kenarı yakanın bir avuç (8 cm) altında, göğsün ortasında. Genişliği köşesinden ayarla; kutu tişörtün yaklaşık yarısı kadar geniş olmalı.</p>'+
+    '<div class="mna-s"><button type="button" data-mna="front"'+(side==='front'?' class="on"':'')+'>Ön yüz</button><button type="button" data-mna="back"'+(side==='back'?' class="on"':'')+'>Arka yüz</button></div>'+
+    '<div class="mna-w"><img alt="" src="'+esc(p.url)+'"><div class="mna-b"><span>A4</span><i class="mna-r"></i></div></div>'+
+    '<div class="mna-f"><button type="button" class="btn soft" data-mna="x">Vazgeç</button><button type="button" class="btn" data-mna="ok">Kaydet</button></div></div>';
+  document.body.appendChild(o);document.documentElement.style.overflow='hidden';
+  var im=o.querySelector('img'),bx=o.querySelector('.mna-b'),wr=o.querySelector('.mna-w'),st={x:.39,y:.3,w:.22};
+  if(p.area)st={x:p.area.x,y:p.area.y,w:p.area.w};
+  function ratio(){return im.naturalWidth&&im.naturalHeight?(im.naturalWidth*29.7/21)/im.naturalHeight:.94;}
+  function draw(){var h=st.w*ratio();st.w=Math.max(.05,Math.min(.9,st.w));st.x=Math.max(0,Math.min(1-st.w,st.x));st.y=Math.max(0,Math.min(1-h,st.y));
+    bx.style.left=(st.x*100)+'%';bx.style.top=(st.y*100)+'%';bx.style.width=(st.w*100)+'%';bx.style.height=(h*100)+'%';}
+  im.onload=draw;if(im.complete)draw();
+  var drag=null;
+  wr.addEventListener('pointerdown',function(e){if(!e.target.closest('.mna-b'))return;e.preventDefault();var r=wr.getBoundingClientRect();
+    drag={rz:!!e.target.closest('.mna-r'),sx:e.clientX,sy:e.clientY,x:st.x,y:st.y,w:st.w,W:r.width,H:r.height,id:e.pointerId};try{bx.setPointerCapture(e.pointerId);}catch(_){}});
+  bx.addEventListener('pointermove',function(e){if(!drag||e.pointerId!==drag.id)return;e.preventDefault();var dx=(e.clientX-drag.sx)/drag.W,dy=(e.clientY-drag.sy)/drag.H;
+    if(drag.rz){st.w=drag.w+dx;}else{st.x=drag.x+dx;st.y=drag.y+dy;}draw();});
+  function end(){drag=null;}bx.addEventListener('pointerup',end);bx.addEventListener('pointercancel',end);
+  o.addEventListener('click',async function(e){var t=e.target.closest('[data-mna]');if(!t)return;var a=t.dataset.mna;
+    if(a==='front'||a==='back'){side=a;o.querySelectorAll('.mna-s button').forEach(function(b){b.classList.toggle('on',b.dataset.mna===a);});return;}
+    if(a==='x'){o.remove();document.documentElement.style.overflow='';return;}
+    if(a==='ok'){t.disabled=true;t.textContent='Kaydediliyor…';p.area={x:+st.x.toFixed(4),y:+st.y.toFixed(4),w:+st.w.toFixed(4),h:+(st.w*ratio()).toFixed(4),side:side};
+      if(await mnSave())toast('Baskı alanı kaydedildi');o.remove();document.documentElement.style.overflow='';mnRefresh();}
+  });
+}
 var ADX={rows:null,urls:{},err:'',busy:false,f:'hepsi',del:null,staff:null,sErr:''};
 var ADX_KIND={taslak:'Taslak',sablon:'Şablon',urun:'Ürün',baski:'Baskı'};
 var ADX_ST=['baskıda','basıldı','kargoda','teslim edildi'];
