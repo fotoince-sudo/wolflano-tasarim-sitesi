@@ -424,6 +424,24 @@ img{-webkit-touch-callout:none;-webkit-user-drag:none;user-drag:none}
 .sbar span{margin-right:auto;font-size:14px;color:var(--muted)}
 .mini{display:flex;gap:6px}.mini button{width:36px;height:36px;border-radius:8px;border:1px solid var(--line);background:var(--bg)}
 .udcols{display:flex;gap:8px;overflow-x:auto;padding:6px 0 2px;-webkit-overflow-scrolling:touch}
+.mk-chips{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;-webkit-overflow-scrolling:touch}
+.mk-chip{flex:0 0 92px;display:grid;justify-items:center;gap:3px;border:1px solid var(--line);background:var(--card);border-radius:14px;padding:8px 6px;color:var(--ink);font:600 13px/1.2 var(--ui);text-align:center}
+.mk-chip.on{border-color:var(--green);box-shadow:0 0 0 2px var(--green) inset}
+.mk-chip img,.mk-ini{width:56px;height:56px;border-radius:50%;object-fit:cover;object-position:16% 30%;background:#eef1ef;display:grid;place-items:center;font:700 20px var(--ui);color:var(--green)}
+.mk-chip small{font-weight:500;font-size:11px;color:var(--muted,#667)}
+.mk-ref{width:100%;max-width:520px;border-radius:12px;display:block}
+.mk-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+@media(min-width:760px){.mk-grid{grid-template-columns:repeat(4,minmax(0,1fr))}}
+.mk-ph{display:grid;gap:6px;border:1px solid var(--line);border-radius:12px;padding:6px;background:var(--card);font-size:12px}
+.mk-ph img{width:100%;aspect-ratio:2/3;object-fit:cover;border-radius:8px;display:block;background:#eef1ef}
+.mk-sel{display:grid;gap:10px}
+@media(min-width:760px){.mk-sel{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.mk-act{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.mk-act a,.mk-act button{display:flex;align-items:center;justify-content:center;min-height:36px;border:1px solid var(--line);border-radius:10px;background:#fff;font:600 12px var(--ui);color:var(--ink);text-decoration:none;padding:4px}
+.mk-act a{grid-column:1/-1;border-color:var(--green);color:var(--green)}
+.mk-busy{display:flex;align-items:center;gap:10px;font:600 14px var(--ui);color:var(--green)}
+.mk-spin{width:20px;height:20px;border-radius:50%;border:3px solid #d9e6df;border-top-color:var(--green);animation:mkspin .8s linear infinite;flex:0 0 auto}
+@keyframes mkspin{to{transform:rotate(360deg)}}
 .udc{flex:0 0 132px;display:grid;gap:5px;align-content:start;border:1px solid var(--line,#dfe5e1);border-radius:12px;padding:6px;background:#fff;font-size:12px}
 .udc-im{display:grid;grid-template-columns:1fr 1fr;gap:3px}.udc-im img,.udc-im span{width:100%;height:56px;object-fit:contain;border-radius:8px;background:#eef1ef}.udc-im span{display:grid;place-items:center;color:#8a948f;font-size:10px}
 .udc b{display:flex;align-items:center;gap:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.udc b i{width:10px;height:10px;border-radius:50%;border:1px solid #0003;flex:0 0 10px}
@@ -1490,6 +1508,98 @@ document.addEventListener('click',async function(e){
     catch(err){toast(/auth/.test(String(err&&err.message))?'Oturum süresi doldu, yeniden giriş yap.':'Fotoğraf yüklenemedi, tekrar dene.');}
     UD.saving=false;udRefresh();
   }
+});
+/* ===== Manken stüdyosu: sanal mankenlerle tek tuşla fotoğraf (sunucu: manken) =====
+   Kurallar "Wolflano Sanal Manken Kadrosu" belgesinden sunucuda sabit; burada yalnız seçim yapılır.
+   Veri: admin_kv "manken" → {refs:{kerem:url}, photos:[{id,mk,kind,sahne,poz,url,at}]} */
+var MKS={d:null,busy:false,err:'',sel:'kerem',sahne:'studyo',poz:'on',alt:'lsort',gen:0,genTxt:'',del:null,up:false};
+var MK_LIST=[['kerem','Kerem',25,'Sportif'],['emre','Emre',35,'Şehirli şık'],['murat','Murat',45,'Karizmatik'],['elif','Elif',24,'Sportif'],['deniz','Deniz',29,'Şehirli modern'],['selin','Selin',34,'Zarif minimal'],['leyla','Leyla',42,'Olgun karizmatik'],['ada','Ada',7,'Kız çocuk'],['can','Can',9,'Erkek çocuk'],['arda','Arda',14,'Genç']];
+var MK_KID={ada:1,can:1,arda:1};
+var MK_SAHNE=[['studyo','Stüdyo (katalog, gri fon)'],['bodrum','Bodrum limanı, gün batımı'],['balik','Balık sofrası',1],['bogaz','İstanbul Boğazı, Ortaköy'],['galata','İstanbul Galata sokağı'],['kapadokya','Kapadokya, balonlar'],['antik','Side antik kent'],['plaj','Akdeniz plajı'],['sokak','Şehir sokağı, kafeler'],['bozkir','Bozkır ve dağ',1],['spor','Spor salonu'],['okul','Okul bahçesi',2],['park','Şehir parkı']];
+var MK_POZ=[['on','Önden'],['arka','Arkadan (sırt baskısı)'],['sol','Tam soldan (sol kol)'],['sag','Tam sağdan (sağ kol)'],['rahat','Rahat duruş, kameraya bakıyor'],['yuru','Kameraya doğru yürüyor'],['otur','Alçak duvarda oturuyor'],['yan','Yandan, manzaraya bakıyor'],['omuz','Sırtı dönük, omzunun üstünden bakıyor']];
+var MK_ALT=[['lsort','Lacivert şort'],['ssort','Siyah şort'],['lpan','Lacivert pantolon'],['span','Siyah pantolon']];
+function mnRefresh(){if(cur==='yonetim'&&A&&A.tab==='manken'){var y=window.scrollY;adRender();window.scrollTo(0,y);}}
+async function mnLoad(){
+  if(MKS.busy)return;MKS.busy=true;MKS.err='';
+  try{var tk=await sbToken();if(!tk){MKS.err='Oturum süresi doldu, yeniden giriş yap.';MKS.d={refs:{},photos:[]};}
+    else{var r=await sbReq('/rest/v1/admin_kv?select=data&id=eq.manken',{token:tk});var dd=r.ok&&r.j&&r.j[0]&&r.j[0].data;MKS.d={refs:(dd&&dd.refs)||{},photos:(dd&&dd.photos)||[]};if(!r.ok)MKS.err='Manken kayıtları okunamadı.';}}
+  catch(_){MKS.err='Bağlantı kurulamadı.';MKS.d={refs:{},photos:[]};}
+  MKS.busy=false;mnRefresh();
+}
+async function mnSave(){var tk=await sbToken();if(!tk){toast('Oturum süresi doldu, yeniden giriş yap.');return false;}
+  var r=await sbReq('/rest/v1/admin_kv?on_conflict=id',{method:'POST',token:tk,prefer:'resolution=merge-duplicates,return=minimal',body:{id:'manken',data:MKS.d,updated_at:new Date().toISOString()}});
+  if(!r.ok){toast('Kaydedilemedi ('+r.status+')');return false;}return true;}
+async function mnCall(body){
+  var tk=await sbToken();if(!tk)throw new Error('Oturum süresi doldu, yeniden giriş yap.');
+  var r,jj={};
+  try{r=await fetch(SB.url+'/functions/v1/manken',{method:'POST',headers:{'Content-Type':'application/json',apikey:SB.key,Authorization:'Bearer '+tk},body:JSON.stringify(body)});jj=await r.json().catch(function(){return {};});}
+  catch(_){throw new Error('Bağlantı koptu, yeniden dene.');}
+  if(!r.ok||!jj.ok)throw new Error(jj.message||('Üretilemedi ('+r.status+')'));
+  return jj.url||jj.image;
+}
+function mnName(k){return (MK_LIST.filter(function(x){return x[0]===k;})[0]||[k,k])[1];}
+function mnLabel(l,k){return (l.filter(function(x){return x[0]===k;})[0]||['',k])[1];}
+function mnSahneOk(s){var kid=!!MK_KID[MKS.sel];return !(s[2]===1&&kid)&&!(s[2]===2&&!kid);}
+async function mnGen(list){
+  if(MKS.gen)return;var mk=MKS.sel,ref=MKS.d.refs[mk]||'';
+  MKS.gen=list.length;MKS.genTxt='';mnRefresh();var ok=0;
+  for(var i=0;i<list.length;i++){
+    var it=list[i];MKS.genTxt=(list.length>1?(i+1)+' / '+list.length+' · ':'')+(it.mode==='ref'?'Kimlik fotoğrafı':mnLabel(MK_POZ,it.poz))+' hazırlanıyor… (1–2 dakika sürebilir)';mnRefresh();
+    try{
+      var url=await mnCall({mk:mk,mode:it.mode,sahne:it.sahne,poz:it.poz,alt:it.alt,ref:it.mode==='ref'?'':ref});
+      if(/^data:/.test(url)){toast('Fotoğraf üretildi ama kaydedilemedi');continue;}
+      var p={id:'m'+Date.now().toString(36)+Math.random().toString(36).slice(2,5),mk:mk,kind:it.mode,sahne:it.sahne||'',poz:it.poz||'',alt:it.alt||'',url:url,at:new Date().toISOString()};
+      MKS.d.photos.unshift(p);if(it.mode==='ref'&&!MKS.d.refs[mk])MKS.d.refs[mk]=url;
+      await mnSave();ok++;mnRefresh();
+    }catch(e){toast(e.message||'Üretilemedi');if(/bakiye|Oturum|yalnız/.test(String(e.message)))break;}
+  }
+  MKS.gen=0;MKS.genTxt='';mnRefresh();if(ok)toast(ok>1?ok+' fotoğraf hazır':'Fotoğraf hazır');
+}
+function mnView(){
+  if(MKS.d===null){if(!MKS.busy)setTimeout(mnLoad,0);return '<p class="note">Yükleniyor…</p>';}
+  var d=MKS.d,mk=MKS.sel,ref=d.refs[mk],kid=!!MK_KID[mk];
+  if(!MK_SAHNE.some(function(s){return s[0]===MKS.sahne&&mnSahneOk(s);}))MKS.sahne='studyo';
+  var h='<div class="alist mk">';
+  if(MKS.err)h+='<p class="note" style="color:var(--red);margin:0">'+esc(MKS.err)+'</p>';
+  h+='<p class="note" style="margin:0">Mankeni, mekânı ve pozu seç, tek tuşa bas. Kıyafet kuralları (düz beyaz tişört, koyu alt) kendiliğinden uygulanır. Beyaz tişört üretilir; renk ve gerçek tasarım sonra Wolflano sisteminde üstüne oturtulur.</p>';
+  h+='<div class="mk-chips">'+MK_LIST.map(function(m){var r=d.refs[m[0]];return '<button type="button" class="mk-chip'+(m[0]===mk?' on':'')+'" data-mk="sel" data-v="'+m[0]+'">'+(r?'<img src="'+esc(r)+'" alt="">':'<span class="mk-ini">'+m[1][0]+'</span>')+'<b>'+m[1]+'</b><small>'+m[2]+' · '+m[3]+'</small></button>';}).join('')+'</div>';
+  h+='<div class="aed"><b>'+esc(mnName(mk))+' · kimlik fotoğrafı</b>';
+  if(ref)h+='<img class="mk-ref" src="'+esc(ref)+'" alt="'+esc(mnName(mk))+' kimlik fotoğrafı"><p class="note" style="margin:0">Her yeni fotoğrafta bu yüz kullanılır.</p>';
+  else h+='<p class="note" style="margin:0">Henüz kimlik fotoğrafı yok. Önce bunu üret ya da elindeki uygun bir fotoğrafı yükle; sonraki tüm fotoğraflarda aynı yüz korunur.</p>';
+  h+='<div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn soft sm" data-mk="ref"'+(MKS.gen?' disabled':'')+'>'+(ref?'Yeni kimlik fotoğrafı üret':'Kimlik fotoğrafı üret')+'</button><label class="btn soft sm" for="mk-up" style="display:inline-flex">'+(MKS.up?'Yükleniyor…':'Fotoğraf yükle')+'</label><input class="sr" id="mk-up" type="file" accept="image/*"></div></div>';
+  h+='<div class="aed"><b>Yeni fotoğraf</b><div class="mk-sel">'+
+    '<label for="mk-s">Mekân<select id="mk-s" data-mkf="sahne">'+MK_SAHNE.filter(mnSahneOk).map(function(s){return '<option value="'+s[0]+'"'+(s[0]===MKS.sahne?' selected':'')+'>'+s[1]+'</option>';}).join('')+'</select></label>'+
+    '<label for="mk-p">Poz<select id="mk-p" data-mkf="poz">'+MK_POZ.map(function(s){return '<option value="'+s[0]+'"'+(s[0]===MKS.poz?' selected':'')+'>'+s[1]+'</option>';}).join('')+'</select></label>'+
+    '<label for="mk-a">Alt kıyafet<select id="mk-a" data-mkf="alt">'+MK_ALT.map(function(s){return '<option value="'+s[0]+'"'+(s[0]===MKS.alt?' selected':'')+'>'+s[1]+'</option>';}).join('')+'</select></label></div>';
+  if(MKS.gen)h+='<div class="mk-busy"><span class="mk-spin"></span>'+esc(MKS.genTxt)+'</div>';
+  else h+='<div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn" data-mk="one">Fotoğrafı üret</button><button class="btn soft" data-mk="four">4 açıyı birden üret</button></div>'+(ref?'':'<p class="note" style="margin:0">Kimlik fotoğrafı olmadan da üretir ama yüz her seferinde biraz farklı olabilir.</p>');
+  h+='<p class="note" style="margin:0">"4 açıyı birden üret": önden, arkadan, soldan ve sağdan, seçtiğin mekânda. Her fotoğraf OpenAI hesabından ücretlendirilir.</p></div>';
+  var ph=d.photos.filter(function(p){return p.mk===mk;});
+  h+='<b style="font-size:15px">'+esc(mnName(mk))+' fotoğrafları ('+ph.length+')</b>';
+  if(!ph.length)h+='<p class="note" style="margin:0">Henüz fotoğraf yok.</p>';
+  else h+='<div class="mk-grid">'+ph.map(function(p){var isRef=d.refs[mk]===p.url;
+    return '<div class="mk-ph"><a href="'+esc(p.url)+'" target="_blank" rel="noopener"><img src="'+esc(p.url)+'" alt="" loading="lazy"></a><small>'+(p.kind==='ref'?'Kimlik':esc(mnLabel(MK_SAHNE,p.sahne)+' · '+mnLabel(MK_POZ,p.poz)))+(isRef?' · <b style="color:var(--green)">kimlik</b>':'')+'</small><div class="mk-act"><a href="'+esc(p.url)+'" target="_blank" rel="noopener" download>İndir</a>'+(isRef?'':'<button data-mk="setref" data-id="'+p.id+'">Kimlik yap</button>')+'<button data-mk="del" data-id="'+p.id+'" style="color:var(--red)">'+(MKS.del===p.id?'Emin misin?':'Sil')+'</button></div></div>';}).join('')+'</div>';
+  h+='<p class="note" style="margin:0">Siteye ya da sosyal medyaya koyarken altına küçük bir "Yapay zekâ ile üretilmiş görseldir" notu ekle.</p>';
+  return h+'</div>';
+}
+document.addEventListener('change',async function(e){var t=e.target;if(!t)return;
+  if(t.dataset&&t.dataset.mkf){MKS[t.dataset.mkf]=t.value;return;}
+  if(t.id==='mk-up'&&t.files&&t.files[0]){if(MKS.up)return;MKS.up=true;mnRefresh();
+    try{var u=await udUpload(t.files[0]);MKS.d.photos.unshift({id:'m'+Date.now().toString(36),mk:MKS.sel,kind:'ref',url:u,at:new Date().toISOString()});MKS.d.refs[MKS.sel]=u;if(await mnSave())toast('Kimlik fotoğrafı kaydedildi');}
+    catch(err){toast(/auth/.test(String(err&&err.message))?'Oturum süresi doldu, yeniden giriş yap.':'Fotoğraf yüklenemedi, tekrar dene.');}
+    MKS.up=false;mnRefresh();}
+});
+document.addEventListener('click',async function(e){
+  var b=e.target.closest&&e.target.closest('[data-mk]');if(!b)return;e.preventDefault();var a=b.dataset.mk;
+  if(a==='sel'){MKS.sel=b.dataset.v;MKS.del=null;mnRefresh();return;}
+  if(MKS.gen&&(a==='ref'||a==='one'||a==='four'))return;
+  if(a==='ref'){mnGen([{mode:'ref'}]);return;}
+  if(a==='one'){mnGen([{mode:'photo',sahne:MKS.sahne,poz:MKS.poz,alt:MKS.alt}]);return;}
+  if(a==='four'){mnGen(['on','arka','sol','sag'].map(function(p){return {mode:'photo',sahne:MKS.sahne,poz:p,alt:MKS.alt};}));return;}
+  if(a==='setref'){var p=MKS.d.photos.filter(function(x){return x.id===b.dataset.id;})[0];if(!p)return;MKS.d.refs[MKS.sel]=p.url;if(await mnSave())toast('Kimlik fotoğrafı değişti');mnRefresh();return;}
+  if(a==='del'){var id=b.dataset.id;if(MKS.del!==id){MKS.del=id;mnRefresh();return;}MKS.del=null;
+    var q=MKS.d.photos.filter(function(x){return x.id===id;})[0];MKS.d.photos=MKS.d.photos.filter(function(x){return x.id!==id;});
+    if(q&&MKS.d.refs[MKS.sel]===q.url)delete MKS.d.refs[MKS.sel];if(await mnSave())toast('Silindi');mnRefresh();return;}
 });
 var ADX={rows:null,urls:{},err:'',busy:false,f:'hepsi',del:null,staff:null,sErr:''};
 var ADX_KIND={taslak:'Taslak',sablon:'Şablon',urun:'Ürün',baski:'Baskı'};
@@ -2923,7 +3033,7 @@ function vidEd(path,p){
 var PN_GROUPS=[
   ['Satış',[['crm','Siparişler ve müşteriler','M4 6h16l-2 9H7L5 3H2M9 20a1 1 0 1 0 0-.01M18 20a1 1 0 1 0 0-.01'],['ziyaret','Ziyaretçiler','M3 20h18M6 16v-5M11 16V7M16 16v-8M21 16V4'],['yorum','Yorumlar','M4 5h16v11H9l-5 4zM8 9h8M8 12h5'],['depo','Depo ve gönderim','M3 8l9-5 9 5v10l-9 5-9-5zM3 8l9 5 9-5M12 13v10'],['muhasebe','Muhasebe','M5 3h14v18H5zM8 7h8M8 11h8M8 15h5']]],
   ['Ürünler',[['urun','Koleksiyon ürünleri','M8 3l-5 3 2 5 3-1v11h8V10l3 1 2-5-5-3c-1 2-2 3-4 3S9 5 8 3z'],['kategori','Kategoriler','M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z'],['baski','Baskıya uygun ürünler','M6 9V3h12v6M6 18H4v-7h16v7h-2M7 14h10v7H7z'],['fiyat','Fiyatlandırma','M20 12l-8 8-9-9V3h8zM7.5 7.5h.01']]],
-  ['Tasarım',[['udepo','Ürün deposu','M3 8l9-5 9 5v10l-9 5-9-5zM8 6l9 5M12 13v10M7 15l3 1.5'],['admtas','Admin tasarımları','M12 3l7 3v5c0 4.5-3 8.3-7 10-4-1.7-7-5.5-7-10V6z'],['tasarim','Müşteri tasarımları','M4 20l4-1 11-11-3-3L5 16zM14 6l3 3'],['studyo','Tasarım stüdyosu ayarları','M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8zM12 2v3M12 19v3M2 12h3M19 12h3']]],
+  ['Tasarım',[['udepo','Ürün deposu','M3 8l9-5 9 5v10l-9 5-9-5zM8 6l9 5M12 13v10M7 15l3 1.5'],['admtas','Admin tasarımları','M12 3l7 3v5c0 4.5-3 8.3-7 10-4-1.7-7-5.5-7-10V6z'],['manken','Manken stüdyosu','M12 3a3 3 0 1 0 0 6 3 3 0 0 0 0-6zM8 21v-7l-3-3 4-2h6l4 2-3 3v7z'],['tasarim','Müşteri tasarımları','M4 20l4-1 11-11-3-3L5 16zM14 6l3 3'],['studyo','Tasarım stüdyosu ayarları','M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8zM12 2v3M12 19v3M2 12h3M19 12h3']]],
   ['Site',[['metin','Sayfa metinleri','M5 6V4h14v2M12 4v16M9 20h6'],['sayfa','Sayfalar','M6 3h9l4 4v14H6zM14 3v5h5'],['site','Site ve iletişim','M3 12a9 9 0 1 0 18 0 9 9 0 0 0-18 0M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18'],['seo','Google (SEO)','M11 4a7 7 0 1 0 0 14 7 7 0 0 0 0-14zM21 21l-5-5']]],
   ['Diğer',[['kanal','Satış kanalları','M4 12h16M14 6l6 6-6 6'],['tedarik','Tedarikçiler','M3 7h11v10H3zM14 10h4l3 3v4h-7M7 20a2 2 0 1 0 0-.01M17 20a2 2 0 1 0 0-.01'],['yetki','Yetkililer','M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM2 21c0-4 3-6 7-6s7 2 7 6M17 11h6M20 8v6'],['yedek','Yedek','M4 4h16v6H4zM4 14h16v6H4zM8 7h.01M8 17h.01']]]
 ];
@@ -3042,7 +3152,7 @@ function adminView(){
   if(!admOk())return admGate();
   try{localStorage.setItem('wf_nostat','1');}catch(_){}
   if(!A)A=newA();
-  var tabs=[['crm','Siparişler ve müşteriler'],['ziyaret','Ziyaretçiler'],['yorum','Yorumlar'],['admtas','Admin tasarımları'],['udepo','Ürün deposu'],['depo','Depo ve gönderim'],['metin','Sayfa metinleri'],['sayfa','Sayfalar'],['urun','Koleksiyon'],['kategori','Kategoriler'],['baski','Baskıya uygun'],['studyo','Tasarım stüdyosu'],['fiyat','Fiyatlandırma'],['kanal','Satış kanalları'],['tedarik','Tedarikçiler'],['site','Site ve iletişim'],['muhasebe','Muhasebe'],['tasarim','Müşteri tasarımları'],['seo','SEO'],['yedek','Yedek']];if(sbOwner()&&!ART)tabs.push(['yetki','Yetkililer']);
+  var tabs=[['crm','Siparişler ve müşteriler'],['ziyaret','Ziyaretçiler'],['yorum','Yorumlar'],['admtas','Admin tasarımları'],['manken','Manken stüdyosu'],['udepo','Ürün deposu'],['depo','Depo ve gönderim'],['metin','Sayfa metinleri'],['sayfa','Sayfalar'],['urun','Koleksiyon'],['kategori','Kategoriler'],['baski','Baskıya uygun'],['studyo','Tasarım stüdyosu'],['fiyat','Fiyatlandırma'],['kanal','Satış kanalları'],['tedarik','Tedarikçiler'],['site','Site ve iletişim'],['muhasebe','Muhasebe'],['tasarim','Müşteri tasarımları'],['seo','SEO'],['yedek','Yedek']];if(sbOwner()&&!ART)tabs.push(['yetki','Yetkililer']);
   if(A.tab==='qp'&&!QP)A.tab='urun';
   if(A.tab!=='home'&&A.tab!=='qp'&&!tabs.some(function(t){return t[0]===A.tab;}))A.tab='home';
   var h=pnHead(tabs);
@@ -3089,7 +3199,7 @@ function adminView(){
   }else if(A.tab==='crm'){h+=crmView().replace(/^<div class="wrap page( crm)?"><p class="eyebrow">Wolflano<\/p><h1 class="h2">Yönetim<\/h1>/,'<div class="crm">');
   }else if(A.tab==='kategori'){h+=catAdmin(d);
   }else if(A.tab==='studyo'){h+=studioAdmin(d);
-  }else if(A.tab==='ziyaret'){h+=vsView();}else if(A.tab==='yorum'){h+=raView();}else if(A.tab==='admtas'){h+=adxView();}else if(A.tab==='udepo'){h+=udView();}else if(A.tab==='yetki'){h+=adxStaff();}else if(A.tab==='tasarim'){h+=dsAdmin();}else if(A.tab==='muhasebe'){h+=accView();}else if(A.tab==='seo'){h+=seoAdmin();}else if(A.tab==='tedarik'){
+  }else if(A.tab==='ziyaret'){h+=vsView();}else if(A.tab==='yorum'){h+=raView();}else if(A.tab==='admtas'){h+=adxView();}else if(A.tab==='manken'){h+=mnView();}else if(A.tab==='udepo'){h+=udView();}else if(A.tab==='yetki'){h+=adxStaff();}else if(A.tab==='tasarim'){h+=dsAdmin();}else if(A.tab==='muhasebe'){h+=accView();}else if(A.tab==='seo'){h+=seoAdmin();}else if(A.tab==='tedarik'){
     d.suppliers=d.suppliers||[];
     h+='<div class="alist"><p class="note" style="margin:0">Yerli ve yabancı tedarikçileri burada tanımla. Anlaşma sonrası her tedarikçi için bir bağlantı (API, XML, CSV) kurulur, katalog, stok ve sipariş otomatik akar. Bağlantı gelene kadar tedarikçinin stok dosyasını aşağıya yapıştırıp stok ve maliyeti güncelleyebilirsin.</p>';
     d.suppliers.forEach(function(s,i){
