@@ -787,7 +787,7 @@ p,li,.lead{text-wrap:pretty}
 <footer><div class="wrap">
   <div class="fbrand"><a class="brand" href="#ana"><img data-logo alt=""><span class="word">WOLF<b>LANO</b></span></a></div>
   <div class="fmin" id="fdyn"></div>
-  <div class="copy"><span>© 2026 WOLFLANO. Tüm hakları saklıdır.</span><a href="#yorumlar">Yorumlar</a><a href="#sartlar">Kullanım şartları</a><a href="#yonetim">Yönetim</a></div>
+  <div class="copy"><span>© 2026 WOLFLANO. Tüm hakları saklıdır.</span><a href="#iletisim">İletişim</a><a href="#yorumlar">Yorumlar</a><a href="#sartlar">Kullanım şartları</a><a href="#yonetim">Yönetim</a></div>
 </div></footer>
 
 <div id="layer"></div>
@@ -2219,7 +2219,7 @@ function pCut(p){var c=(p.cat||[]).map(function(x){return String(x).toLocaleLowe
 function szBlock(zs,ch){if(!zs.length)return '';return '<div class="szs" data-ch="'+esc(JSON.stringify(ch||{}))+'"><p>Beden: <b id="szT">Seç</b><span id="szM" class="szm"></span></p><div role="radiogroup" aria-label="Beden">'+zs.map(function(z){return '<button type="button" class="sz" role="radio" aria-checked="false" data-sz="'+esc(z)+'">'+esc(z)+'</button>';}).join('')+'</div>'+(ch?'<details class="szt"><summary>Beden tablosu (cm)</summary><table><thead><tr><th>Beden</th><th>En</th><th>Boy</th></tr></thead><tbody>'+Object.keys(ch).map(function(z){return '<tr><td>'+esc(z)+'</td><td>'+ch[z][0]+'</td><td>'+ch[z][1]+'</td></tr>';}).join('')+'</tbody></table><p class="note">En: koltuk altından koltuk altına düz ölçülen göğüs genişliği. Boy: omuz dikişinden etek ucuna. Avrupa standart kalıp; ±1-2 cm fark olabilir.</p></details>':'')+'</div>';}
 function usedTokens(d){var o={};function add(s){if(s&&(s.indexOf('img/')===0||s.indexOf('vid/')===0))o[s]=1;}d.products.forEach(function(p){(p.imgs||[]).forEach(add);add(p.video);});d.blanks.forEach(function(p){(p.imgs||[]).forEach(add);(p.raw||[]).forEach(add);add(p.video);(p.colors||[]).forEach(function(c){if(c){add(c.front);add(c.back);}});});add(d.hero);add(d.logo);(d.cpages||[]).forEach(function(p){(p.imgs||[]).forEach(add);});((d.kolban||{}).imgs||[]).forEach(add);((d.makine||{}).imgs||[]).forEach(add);['clipCats','tplCats'].forEach(function(k){((d.studio||{})[k]||[]).forEach(function(c){(c.items||[]).forEach(function(it){add(it.img);});});});return o;}
 applyData();
-var PAGES=[['ana','Ana Sayfa'],['hazir','Koleksiyon'],['atolye','Baskı Atölyesi'],['kurumsal','Kurumsal'],['hakkimizda','Hakkımızda'],['iletisim','İletişim']];
+var PAGES=[['ana','Ana Sayfa'],['hazir','Koleksiyon'],['atolye','Baskı Atölyesi'],['kurumsal','Kurumsal'],['hakkimizda','Hakkımızda']];
 function pagesNow(){var l=PAGES.map(function(p){var m={hazir:'menuHazir',atolye:'menuAtolye',hakkimizda:'menuAbout'}[p[0]];return [p[0],m?TX(m):p[1]];});
   var cp=(D.cpages||[]).filter(function(x){return x&&x.show!==false&&x.menu!==false&&x.title;}).map(function(x){return ['p-'+x.id,x.title];});
   if(cp.length){var i=l.length-1;l=l.slice(0,i).concat(cp,l.slice(i));}return l;}
