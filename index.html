@@ -718,6 +718,14 @@ body.cko #nav,body.cko .menu-btn,body.cko .lang,body.cko #cartBtn,body.cko #ann{
 @media (max-width:700px){.lg-g{grid-template-columns:1fr}}
 
 p,li,.lead{text-wrap:pretty}
+.dd{position:relative;max-width:560px;margin:-8px 0 20px;z-index:15}
+.dd .ddb{display:flex;align-items:center;justify-content:space-between;width:100%;padding:11px 14px;background:var(--card);border:1px solid var(--green);border-radius:12px;font:600 14px var(--ui);color:var(--ink);text-align:left}
+.dd .cv{display:inline-flex;color:var(--green);transition:transform .15s}.dd.open .ddb .cv,.dd .ddh.open .cv{transform:rotate(180deg)}
+.dd.open .ddb{border-radius:12px 12px 0 0;border-bottom-color:var(--line)}
+.dd .ddl{position:absolute;left:0;right:0;top:100%;max-height:60vh;overflow:auto;background:var(--card);border:1px solid var(--green);border-top:0;border-radius:0 0 12px 12px;box-shadow:0 14px 30px rgba(16,26,20,.16);padding:4px 0;animation:cmIn .15s ease-out}
+.dd .ddl button{display:flex;align-items:center;justify-content:space-between;width:100%;border:0;background:none;text-align:left;padding:11px 16px;font:500 14px var(--ui);color:var(--ink)}
+.dd .ddl button.on{color:var(--green);font-weight:700}.dd .ddl .ok{color:var(--green)}
+.dd .ddh{font-weight:600!important;border-top:1px solid var(--line)!important}.dd .ddi button{padding-left:30px}
 </style>
 
 <header class="top"><div class="wrap">
@@ -2407,11 +2415,14 @@ yorumlar:function(){return rvPage();},
   var sobj=subs.filter(function(x){return x.id===subSel;})[0]||{},subs2=sobj.subs||[];if(sub2Sel&&!subs2.some(function(x){return x.id===sub2Sel;}))sub2Sel='';
   var list=PRODUCTS.filter(function(p){var ps=p.sub||[];return (p.cat||[]).indexOf(catSel)>=0&&(!subSel||ps.indexOf(subSel)>=0||(sobj.subs||[]).some(function(y){return ps.indexOf(y.id)>=0;}))&&(!sub2Sel||ps.indexOf(sub2Sel)>=0);});
   return '<div class="wrap page kolp"><h1 class="h2 kolh">'+esc(TX('kolTitle'))+'</h1>'+kolBan()+
-  '<div class="catbar"><div class="chips" role="tablist">'+CATS.map(function(c){var co=(D.cats||[]).filter(function(x){return x.id===c[0];})[0]||{},hs=(co.subs||[]).length,cl=(c[0]===catSel?'on':'')+(catOpen===c[0]?' open':'');return '<button role="tab" data-cat="'+c[0]+'"'+(cl?' class="'+cl.trim()+'"':'')+(c[0]===catSel?' aria-selected="true"':'')+(hs?' aria-expanded="'+(catOpen===c[0])+'"':'')+'>'+esc(c[1])+(hs?'<span class="cv"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></span>':'')+'</button>';}).join('')+'</div>'+
-  (catOpen===catSel&&subs.length?'<div class="catmenu">'+(subs.some(function(x){return (x.subs||[]).length;})?
-     '<div class="cgrid">'+subs.map(function(x){var go=grpOpen===x.id;return '<div class="cg"><button class="gt'+(go?' open':'')+(subSel===x.id?' on':'')+'" data-gtog="'+x.id+'" aria-expanded="'+go+'">'+esc(x.name||'')+'<span class="cv"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></span></button>'+(go?'<div class="its1">'+(x.subs||[]).map(function(y){return '<button data-pick="'+x.id+'" data-p2="'+y.id+'"'+(sub2Sel===y.id?' class="on"':'')+'>'+esc(y.name||'Adsız')+'</button>';}).join('')+'</div>':'')+'</div>';}).join('')+'</div>':
-     '<div class="its">'+subs.map(function(x){return '<button data-pick="'+x.id+'" data-p2=""'+(x.id===subSel?' class="on"':'')+'>'+esc(x.name||'Adsız')+'</button>';}).join('')+'</div>')+'</div>':'')+'</div>'+
-  (subSel&&catOpen!==catSel?'<div class="crumb">'+esc(cobj.name||'')+' › <b>'+esc((sobj.name||'')+(sub2Sel?' › '+(((sobj.subs||[]).filter(function(y){return y.id===sub2Sel;})[0]||{}).name||''):''))+'</b><button data-pick="" data-p2="">✕ Temizle</button></div>':'')+
+  '<div class="catbar"><div class="chips" role="tablist">'+CATS.map(function(c){return '<button role="tab" data-cat="'+c[0]+'"'+(c[0]===catSel?' class="on" aria-selected="true"':'')+'>'+esc(c[1])+'</button>';}).join('')+'</div>'+
+  (subs.length?(function(){var op=catOpen===catSel,CV='<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>',OK='<svg class="ok" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-10"/></svg>',
+    s2n=sub2Sel?(((sobj.subs||[]).filter(function(y){return y.id===sub2Sel;})[0]||{}).name||''):'',lbl=subSel?(sobj.name||'')+(s2n?' › '+s2n:''):'Tümü',
+    it=function(on,attrs,name){return '<button type="button" '+attrs+(on?' class="on" aria-checked="true"':' aria-checked="false"')+' role="menuitemradio"><span>'+esc(name)+'</span>'+(on?OK:'')+'</button>';};
+    return '<div class="dd'+(op?' open':'')+'"><button type="button" class="ddb" data-ddtog aria-haspopup="true" aria-expanded="'+op+'"><span>'+esc(lbl)+'</span><i class="cv">'+CV+'</i></button>'+
+    (op?'<div class="ddl" role="menu">'+it(!subSel,'data-pick="" data-p2=""','Tümü')+subs.map(function(x){var ss=x.subs||[];if(!ss.length)return it(subSel===x.id,'data-pick="'+x.id+'" data-p2=""',x.name||'Adsız');
+      var go=grpOpen===x.id||subSel===x.id;return '<div class="ddg"><button type="button" class="ddh'+(go?' open':'')+(subSel===x.id?' on':'')+'" data-gtog="'+x.id+'" aria-expanded="'+go+'"><span>'+esc(x.name||'')+'</span><i class="cv">'+CV+'</i></button>'+
+        (go?'<div class="ddi">'+it(subSel===x.id&&!sub2Sel,'data-pick="'+x.id+'" data-p2=""','Tümü')+ss.map(function(y){return it(sub2Sel===y.id,'data-pick="'+x.id+'" data-p2="'+y.id+'"',y.name||'Adsız');}).join('')+'</div>':'')+'</div>';}).join('')+'</div>':'')+'</div>';})():'')+'</div>'+
   (list.length?'<div class="grid">'+list.map(card).join('')+'</div>':'<p class="empty">Bu kategoride henüz ürün yok.</p>')+'</div>';
  },
  urun:function(id){
@@ -2760,7 +2771,8 @@ document.addEventListener('click',function(e){
   var scr=t.closest('[data-scrm]');if(scr){var sa=scItems();sa.splice(+scr.dataset.scrm,1);scSave(sa);syncCart();openCart();toast('Tasarım sepetten çıkarıldı');return;}
   var q=t.closest('[data-q]');if(q){var qp=ALLP.filter(function(x){return x.id===ckId(q.dataset.q);})[0],nq=Math.max(0,(cart[q.dataset.q]||0)+(+q.dataset.d));if(nq===0)delete cart[q.dataset.q];if(qp&&hasStock(qp)&&nq>(cart[q.dataset.q]||0)&&cartQtyOf(qp.id)-(cart[q.dataset.q]||0)+nq>+qp.stock){toast(soldOut(qp)?NOSTOCK:'Stok sınırına ulaşıldı');return;}cart[q.dataset.q]=nq;syncCart();openCart();return;}
   var hc=t.closest('[data-hcat]');if(hc){catSel=hc.dataset.hcat;subSel='';sub2Sel='';catOpen='';}
-  var c=t.closest('[data-cat]');if(c&&!c.closest('.ad')){if(catSel===c.dataset.cat){catOpen=catOpen===catSel?'':catSel;}else{catSel=c.dataset.cat;subSel='';sub2Sel='';catOpen=catSel;}var yc=window.scrollY;$('#main').innerHTML=VIEWS.hazir();window.scrollTo(0,yc);return;}
+  var c=t.closest('[data-cat]');if(c&&!c.closest('.ad')){if(catSel!==c.dataset.cat){catSel=c.dataset.cat;subSel='';sub2Sel='';}catOpen='';grpOpen='';var yc=window.scrollY;$('#main').innerHTML=VIEWS.hazir();window.scrollTo(0,yc);return;}
+  var dt=t.closest('[data-ddtog]');if(dt){catOpen=catOpen===catSel?'':catSel;grpOpen='';var yd=window.scrollY;$('#main').innerHTML=VIEWS.hazir();window.scrollTo(0,yd);return;}
   var gt=t.closest('[data-gtog]');if(gt&&!gt.closest('.ad')){grpOpen=grpOpen===gt.dataset.gtog?'':gt.dataset.gtog;var yg=window.scrollY;$('#main').innerHTML=VIEWS.hazir();window.scrollTo(0,yg);return;}
   var pk=t.closest('[data-pick]');if(pk&&!pk.closest('.ad')){subSel=pk.dataset.pick;sub2Sel=pk.dataset.p2||'';catOpen='';var yp=window.scrollY;$('#main').innerHTML=VIEWS.hazir();window.scrollTo(0,yp);return;}
   var sc=t.closest('[data-sub]');if(sc&&!sc.closest('.ad')){subSel=sc.dataset.sub;sub2Sel='';$('#main').innerHTML=VIEWS.hazir();return;}
