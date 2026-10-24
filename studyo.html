@@ -32,6 +32,7 @@ svg.i{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stro
 #app{height:100%;display:flex;flex-direction:column;min-height:0}
 
 .top{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 16px;background:var(--panel);border-bottom:1px solid var(--line)}
+.backb{flex:none;display:grid;place-items:center;width:38px;height:38px;margin-right:2px;border-radius:50%;border:1px solid var(--line);background:var(--panel);color:var(--ink);text-decoration:none}.backb svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}.backb:active{transform:scale(.94)}
 .brand{display:flex;flex-direction:column;line-height:1;min-width:0}
 .brand b{font:700 22px/1 var(--disp);letter-spacing:.16em}
 .brand span{font:600 11px/1.2 var(--disp);letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin-top:3px}
@@ -497,6 +498,7 @@ img{-webkit-touch-callout:none;-webkit-user-drag:none}
 
 <div id="app">
   <header class="top">
+    <a class="backb" id="backBtn" href="index.html#tasarla" aria-label="Ürünlere geri dön"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></a>
     <a class="brand" href="index.html#tasarla" style="color:inherit;text-decoration:none" aria-label="Ürünlere dön"><b>WOLFLANO</b><span>← Ürünlere dön</span></a>
     <div class="top-actions">
       <button class="ib" id="helpBtn" aria-label="Nasıl kullanılır?"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.6 9.3a2.5 2.5 0 0 1 4.8.9c0 1.7-2.4 2.1-2.4 3.6"/><circle cx="12" cy="17.2" r=".6" fill="currentColor"/></svg></button>
@@ -3988,4 +3990,11 @@ syncUndo();
 })();
 </script>
 
+<script>
+/* Üst sol geri tuşu: siteden gelindiyse aynı yere (ürün listesine) döner, yoksa Baskı Atölyesi ürünlerine gider */
+(function(){var b=document.getElementById('backBtn');if(!b)return;b.addEventListener('click',function(e){
+  var st=history.state||{};if(st.wfOrder||st.wf3d)return;
+  var r='';try{r=document.referrer?new URL(document.referrer).origin:'';}catch(_){}
+  if(r===location.origin&&history.length>1){e.preventDefault();history.back();}});})();
+</script>
 </body></html>
