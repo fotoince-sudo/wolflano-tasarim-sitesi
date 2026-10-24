@@ -1383,7 +1383,7 @@ function sbOwner(){return !!(SBS&&SBS.user&&String(SBS.user.email||'').toLowerCa
 /* ===== Ürün deposu: hayalet (ghost mannequin) ürün fotoğrafları =====
    Yalnız yönetici ve yetkililer görür (admin_kv / udepo). Stüdyoda Yönetici penceresinden depodan ürün seçilir,
    baskı duvarına gelir, üzerine tasarım yapılır ve "Ürün yap" ile istenen kategoriye ürün olarak eklenir. */
-var UD={items:null,busy:false,err:'',del:null,saving:false};
+var UD={items:null,busy:false,err:'',del:null,saving:false,up:null};
 var UD_PROD=[['tee','Tişört'],['sweat','Sweatshirt'],['polo','Polo tişört'],['hat','Şapka']];
 var UD_CUT={tee:[['erkek','Erkek'],['kadin','Kadın'],['cocuk','Çocuk']],sweat:[['erkek','Erkek'],['kadin','Kadın'],['cocuk','Çocuk']],polo:[['erkek','Erkek'],['kadin','Kadın'],['cocuk','Çocuk']],hat:[['std','Standart']]};
 function udRefresh(){if(cur==='yonetim'&&A&&A.tab==='udepo'){var y=window.scrollY;adRender();window.scrollTo(0,y);}}
@@ -1423,10 +1423,17 @@ function udView(){
   UD.items.forEach(function(x){var pn=(UD_PROD.filter(function(p){return p[0]===x.product;})[0]||['',x.product])[1],cn=((UD_CUT[x.product]||[]).filter(function(c){return c[0]===x.cut;})[0]||['',''])[1];
     h+='<div class="arow"><img src="'+esc(x.front)+'" alt="" style="object-fit:contain;background:#eef1ef"><div><b>'+esc(x.name||'Adsız')+'</b><small><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:'+esc(x.hex||'#fff')+';border:1px solid #0003;vertical-align:-1px"></span> '+esc(x.color||'')+' · '+esc(pn)+(cn&&x.product!=='hat'?' · '+esc(cn):'')+(x.back?' · ön + arka':' · yalnız ön')+'</small>'+
       '<span class="mini" style="gap:6px;flex-wrap:wrap"><select data-udfix="product" data-id="'+esc(x.id)+'" aria-label="Ürün türü" style="height:34px;font-size:14px">'+UD_PROD.map(function(q){return '<option value="'+q[0]+'"'+(q[0]===x.product?' selected':'')+'>'+q[1]+'</option>';}).join('')+'</select>'+
-      '<select data-udfix="cut" data-id="'+esc(x.id)+'" aria-label="Kesim" style="height:34px;font-size:14px">'+(UD_CUT[x.product]||[]).map(function(q){return '<option value="'+q[0]+'"'+(q[0]===x.cut?' selected':'')+'>'+q[1]+'</option>';}).join('')+'</select></span></div>'+
+      '<select data-udfix="cut" data-id="'+esc(x.id)+'" aria-label="Kesim" style="height:34px;font-size:14px">'+(UD_CUT[x.product]||[]).map(function(q){return '<option value="'+q[0]+'"'+(q[0]===x.cut?' selected':'')+'>'+q[1]+'</option>';}).join('')+'</select>'+
+      '<label class="btn soft sm" style="cursor:pointer">'+(UD.up===x.id?'Yükleniyor…':(x.back?'Arka fotoğrafı değiştir':'Arka fotoğraf ekle'))+'<input type="file" accept="image/*" data-udback="'+esc(x.id)+'" hidden></label></span></div>'+
       '<div class="mini" style="gap:6px"><a class="btn soft sm" href="studyo.html?depo='+encodeURIComponent(x.id)+'" target="_blank" rel="noopener">Stüdyoda aç</a><button data-ud="del" data-id="'+esc(x.id)+'" style="color:var(--red)">'+(UD.del===x.id?'Emin misin?':'Çıkar')+'</button></div></div>';});
   return h+'</div>';
 }
+/* Depodaki ürüne arka fotoğraf sonradan eklenir ya da değiştirilir */
+document.addEventListener('change',async function(e){var t=e.target;if(!t||!t.dataset||!t.dataset.udback)return;var f=t.files&&t.files[0];if(!f||UD.up)return;
+  var id=t.dataset.udback;UD.up=id;udRefresh();
+  try{var u=await udUpload(f);var items=(UD.items||[]).map(function(x){return x.id===id?Object.assign({},x,{back:u}):x;});if(await udSave(items))toast('Arka fotoğraf eklendi');}
+  catch(err){toast(/auth/.test(String(err&&err.message))?'Oturum süresi doldu, yeniden giriş yap.':'Fotoğraf yüklenemedi, tekrar dene.');}
+  UD.up=null;udRefresh();});
 /* Depodaki ürünün türü ya da kesimi yanlış girildiyse yerinde düzeltilir */
 document.addEventListener('change',async function(e){var t=e.target;if(!t||!t.dataset||!t.dataset.udfix)return;
   var id=t.dataset.id,k=t.dataset.udfix,items=(UD.items||[]).map(function(x){if(x.id!==id)return x;var y=Object.assign({},x);y[k]=t.value;
