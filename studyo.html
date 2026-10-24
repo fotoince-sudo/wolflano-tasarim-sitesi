@@ -293,6 +293,7 @@ svg.i{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stro
 .wolfp #wolfIn{min-height:44px;font-size:16px;resize:none}
 .wolfp #wolfGo{width:100%;padding:14px;font-size:16px}.wolfp #wolfGo:disabled{opacity:.6}
 .wch{margin-left:auto;display:flex;gap:2px;background:var(--panel2);border:1px solid var(--line2);border-radius:999px;padding:2px}.wch button{border:0;background:none;border-radius:999px;padding:4px 8px;font:600 11.5px var(--ui);color:var(--muted)}.wch button.on{background:#30703f;color:#fff}
+.wlay{margin-top:6px}
 .wcity{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;margin-top:-4px}.wcity button{flex:none;border:1px solid var(--line2);background:var(--panel2);border-radius:999px;padding:6px 11px;font:600 12.5px var(--ui);color:var(--ink)}
 .wphsel{display:flex;align-items:center;gap:10px}.wphsel img{width:52px;height:52px;object-fit:cover;border-radius:10px;border:1px solid var(--line2);background:var(--panel2)}.wphsel div{flex:1;display:grid;gap:4px;font:600 13px var(--ui)}.wphsel div span{display:flex;gap:6px}.wphsel button{border:1px solid var(--line2);background:var(--panel);border-radius:999px;padding:5px 10px;font:600 12px var(--ui);color:var(--ink)}
 .wolfp #wolfGo.pulse{animation:aipulse 1s ease 2}
@@ -2121,8 +2122,11 @@ function aiHint(){
   var b=$('#fxBtn');if(b){b.classList.remove('pulse');void b.offsetWidth;b.classList.add('pulse');}}
 function wolfPhRender(){var e=$('#wolfPh');if(!e)return;var o=selObj();
   if(o&&o.type==='image'){var a=assets[(o.base&&assets[o.base])?o.base:o.assetId]||{};
-    e.innerHTML='<div class="wphsel"><img src="'+String(a.url||'').replace(/"/g,'&quot;')+'" alt=""><div>Bu fotoğraf çizilecek<span><button type="button" id="wolfPhUp">Değiştir</button><button type="button" id="wolfPhX">Fotoğrafsız tasarla</button></span></div></div>';}
+    e.innerHTML='<div class="wphsel"><img src="'+String(a.url||'').replace(/"/g,'&quot;')+'" alt=""><div>Bu fotoğraf çizilecek<span><button type="button" id="wolfPhUp">Değiştir</button><button type="button" id="wolfPhX">Fotoğrafsız tasarla</button></span></div></div>'+
+      (mugWrap()?'<div class="fxc ai wlay"><button type="button" data-wlay="center"'+(wolfLay!=='double'?' class="on"':'')+'>Ortada, yanları süslü</button><button type="button" data-wlay="double"'+(wolfLay==='double'?' class="on"':'')+'>İki yanda, çiçek çerçeveli</button></div>':'');}
   else e.innerHTML='<button type="button" class="ghost" id="wolfPhUp">Fotoğraf ekle</button>';}
+var wolfLay='center';
+document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('[data-wlay]');if(!b)return;wolfLay=b.dataset.wlay;wolfPhRender();});
 document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('#wolfPhX');if(!b)return;try{select(null);}catch(_){}wolfPhRender();});
 document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('#wolfPhUp');if(!b)return;view.aiNext='wolf';var f=$('#fileIn');if(f)f.click();});
 function popClose(){view.pop=null;var p=$('#colorPop');if(p)p.hidden=true;}
@@ -2648,13 +2652,15 @@ $('#wolfGo').addEventListener('click',async function(){var t=($('#wolfIn').value
   AI_BUSY=true;var g=$('#wolfGo');g.disabled=true;
   try{var tk=await aiTok();if(!tk){aiLogin();return;}
     var A=areaBox(view.side,cur().area),so=selObj(),ph=(so&&so.type==='image')?so:null;closeTab();popClose();aiWait('Wolf çiziyor');
-    var mg=state.product==='mug',cvs=state.product==='canvas'||(mg&&mugWrap()),body={prompt:t,style:wolfSt,orient:A.w>A.h*1.15?'landscape':'portrait',shirt:(cvs||mg)?'':shirtName(),shirtHex:(cvs||mg)?'':(state.tee||'')};if(state.product==='canvas')body.canvas=true;if(mg)body.mug=mugWrap()?'wrap':'logo';if(cvs)body.transparent=false;
+    var mg=state.product==='mug',cvs=state.product==='canvas'||(mg&&mugWrap()),body={prompt:t,style:wolfSt,orient:A.w>A.h*1.15?'landscape':'portrait',shirt:(cvs||mg)?'':shirtName(),shirtHex:(cvs||mg)?'':(state.tee||'')};if(state.product==='canvas')body.canvas=true;if(mg)body.mug=mugWrap()?'wrap':'logo';var dbl=mg&&mugWrap()&&ph&&wolfLay==='double';if(dbl){body.layout='double';body.orient='portrait';}if(cvs&&!dbl)body.transparent=false;
     if(ph){if(!ph.base||!assets[ph.base])ph.base=ph.assetId;body.image=await aiPhotoData(ph.base);}
     var img=await aiCall(body);
     if(!img)return;var id=await aiAsset(img);
     /* Canvas ve saran kupada sonuç baskı alanını tamamen kaplar ve ortalanır (fotoğraf seçiliyse onun yerine geçer) */
     var fill=function(o){var na2=assets[id];if(!o||!na2)return;var k2=Math.max(A.w/na2.w,A.h/na2.h);o.w=na2.w*k2;o.h=na2.h*k2;o.x=A.cx;o.y=A.cy;o.rot=0;};
-    if(ph){var na=assets[id];ph.assetId=id;ph.phs='ai-'+wolfSt;ph.phe='none';ph.h=ph.w*na.h/na.w;if(cvs)fill(ph);renderObjects();updateSel();syncCtx();pushHist();}else{addImageObj(id);if(cvs){fill(selObj());renderObjects();updateSel();syncCtx();pushHist();}}closeTab();toast(state.product==='canvas'?'Wolf tabloyu çizdi. Kaydırarak konumunu ayarlayabilirsin.':'Wolf çizdi. Taşıyabilir, büyütebilirsin.');}
+    if(ph&&dbl){var nd=assets[id],hh=A.h*0.94,ww=hh*nd.w/nd.h;ph.assetId=id;ph.phs='ai-'+wolfSt;ph.phe='none';ph.rot=0;ph.h=hh;ph.w=ww;ph.x=A.cx-A.w*0.25;ph.y=A.cy;
+      var cp=JSON.parse(JSON.stringify(ph));cp.id=view.nextId++;cp.x=A.cx+A.w*0.25;cur().objs.push(cp);renderObjects();updateSel();syncCtx();pushHist();}
+    else if(ph){var na=assets[id];ph.assetId=id;ph.phs='ai-'+wolfSt;ph.phe='none';ph.h=ph.w*na.h/na.w;if(cvs)fill(ph);renderObjects();updateSel();syncCtx();pushHist();}else{addImageObj(id);if(cvs){fill(selObj());renderObjects();updateSel();syncCtx();pushHist();}}closeTab();toast(state.product==='canvas'?'Wolf tabloyu çizdi. Kaydırarak konumunu ayarlayabilirsin.':'Wolf çizdi. Taşıyabilir, büyütebilirsin.');}
   catch(_){longToast('Wolf şu an çizemedi. Biraz sonra yeniden dene.');}
   finally{AI_BUSY=false;g.disabled=false;aiDone();}
 });

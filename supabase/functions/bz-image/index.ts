@@ -77,7 +77,8 @@ Deno.serve(async (req) => {
     const size = orient === 'landscape' ? '1536x1024' : '1024x1536';
     const canvas = body.canvas === true; // canvas tablo: tam dolu resim, tişört rengi yok
     const mug = body.mug === 'wrap' || body.mug === 'logo' ? body.mug : ''; // kupa: çevresini saran baskı ya da tek taraflı logo
-    const full = canvas || mug === 'wrap'; // arka planı dolu, kenardan kenara resim
+    const double = mug === 'wrap' && body.layout === 'double' && typeof body.image === 'string' && !!body.image; // aynı fotoğraf kupanın iki yanında
+    const full = canvas || (mug === 'wrap' && !double); // kenardan kenara resim
     const transparent = !full && body.transparent !== false;
     const shirt = canvas || mug ? '' : shirtHint(String(body.shirt || '').slice(0, 40), String(body.shirtHex || '').slice(0, 7));
     const img = typeof body.image === 'string' && body.image ? dataUrlToBlob(body.image) : null;
@@ -95,6 +96,7 @@ Deno.serve(async (req) => {
 
     const parts: string[] = [];
     parts.push(canvas ? 'Print-ready artwork for a stretched canvas wall painting that will hang in a home.'
+      : double ? 'Print-ready framed portrait artwork that will be printed twice on a white ceramic mug, once on each side.'
       : mug === 'wrap' ? 'Print-ready wide panoramic artwork for a sublimation print that wraps all the way around a white ceramic mug.'
       : mug === 'logo' ? 'Print-ready compact artwork for a small print on one side of a white ceramic mug.'
       : 'Print-ready artwork for a garment print.');
@@ -104,8 +106,10 @@ Deno.serve(async (req) => {
       parts.push("If there are people, include EVERY person in the photo, in the same arrangement, and keep each one clearly recognizable: same face shape, eyes, nose, mouth, skin tone, age, expression and head shape. Keep each person's exact hairline and hair amount (if someone is bald, keep them bald; do not add hair or a beard that is not there).");
       parts.push('If there is an animal, keep its species, breed, coat colors and markings exactly. If it is a place or object, keep it recognizable.');
       parts.push('Draw clothing plain and simple; do NOT copy any logo, letters, numbers or print from the clothes or the background of the photo.');
-      parts.push(mug === 'wrap'
-        ? 'Composition for a mug that is wrapped all around: put the main subject in the center of the wide image, which is the side people see. Extend the scene of the photo naturally to the left and right in its own setting (for example the sea, a park, a garden or a cosy room, matching the photo) so it continues all the way around the mug without looking like a pasted rectangle. The background must be a rich, detailed continuation of that setting across the ENTIRE width, from the left edge to the right edge; never leave white, plain, empty or faded areas on either side.'
+      parts.push(double
+        ? 'Composition: a single upright portrait of the subject (people from the chest up, an animal whole or its head) inside an elegant decorative oval or arch frame made of flowers, leaves, small hearts and delicate ornamental flourishes; the frame is part of the artwork. Everything outside the frame is transparent.'
+        : mug === 'wrap'
+        ? 'Composition for a mug that is wrapped all around: put the main subject in the center of the wide image, inside an elegant decorative frame of flowers, leaves and ornaments. To the left and right of the frame, fill the space with matching decorations that flow out toward both edges: flowers, leaves, small hearts and delicate ornamental flourishes, balanced and symmetrical, in colors that suit the photo. Use a light, clean background (white or a very soft tint) so it looks elegant on a white mug; the decorations should reach both sides so no side looks bare.'
         : mug === 'logo'
           ? 'Composition for a small print on a mug: isolate the main subject from its background as a compact, centered portrait (people from the chest up, an animal whole or its head), optionally inside a soft round shape; nothing else around it.'
           : canvas
@@ -144,11 +148,13 @@ Deno.serve(async (req) => {
       ? `Do not add any other text, letters or captions except the topic "${topic}" or words inside quotation marks in the request; spell them exactly, including Turkish letters such as ç, ğ, ı, İ, ö, ş, ü.`
       : 'Do not add any text, letters, words or captions, unless the request contains words inside quotation marks; only then write exactly those quoted words, spelled correctly (including Turkish letters such as ç, ğ, ı, İ, ö, ş, ü).');
     parts.push(full ? 'Do not draw any brand logo.' : 'Do not draw any brand logo. Do not draw a T-shirt, mug or mockup; draw only the artwork itself.');
-    if (mug) parts.push(mug === 'wrap'
+    if (mug) parts.push(mug === 'wrap' && !double
       ? 'The mug is white and glossy. Use a rich, cheerful color palette that looks good on white ceramic. The image will wrap around the mug: let the left and right edges blend softly into each other, and keep the outer 8% at both left and right ends calm with no important details, because the handle covers the seam there.'
       : 'The mug is white and glossy: use deep, rich colors with strong contrast against white; avoid very pale areas. Keep the artwork compact and centered, readable at a small size of about 8 cm.');
-    if (mug === 'wrap') parts.push('Full-bleed panoramic image: the scene fills the entire image edge to edge with a complete background; no empty or transparent areas. No frame, no border, no mug, no mockup, no watermark.');
+    if (mug === 'wrap' && img && !double) parts.push('Wide panoramic image that uses the whole width from the left edge to the right edge. No outer border, no mug, no mockup, no watermark.');
+    else if (mug === 'wrap' && !double) parts.push('Full-bleed panoramic image: the scene fills the entire image edge to edge with a complete background; no empty or transparent areas. No frame, no border, no mug, no mockup, no watermark.');
     else if (canvas) parts.push('Full-bleed painting: the scene fills the entire image edge to edge with a complete background (sky, landscape, sea or interior); no empty, white or transparent areas. Keep important details and any text away from the outer 7% because those parts wrap around the canvas edges. No frame, no border, no wall, no mockup, no watermark.');
+    else if (double) parts.push('Transparent background outside the decorative floral frame. No card, no rectangular border, no mockup, no watermark.');
     else parts.push(transparent
       ? 'Isolated artwork on a fully transparent background. No background color, no card, no frame, no border, no vignette, no mockup, no watermark.'
       : 'Clean plain background. No frame, no mockup, no watermark.');
