@@ -1909,6 +1909,9 @@ function loadFile(file){
     renderUploads();addImageObj(id);
     var nq=qualityOf(selObj()||{});
     if(nq&&nq.cls==='low')longToast('Fotoğraf eklendi. Baskı kalitesi düşük ('+nq.ppi+' dpi), baskıda bulanık çıkabilir. Küçült ya da daha büyük bir fotoğraf yükle.');
+    else if(mugWrap()&&view.aiNext!=='wolf'){
+      /* Saran kupada düz fotoğraf kutu gibi durmasın: kenarlar kendiliğinden yumuşar (Wolf çizsin · Tarz → Kenar → Düz ile geri alınır) */
+      applyFx(null,'soft',null).then(function(){longToast('Fotoğraf kupaya uysun diye kenarları yumuşatıldı. İstemezsen "Wolf çizsin · Tarz" → Kenar → Düz.');});}
     else aiHint();
   };
   im.onerror=function(){toast('Bu dosya açılamadı. PNG veya JPG dene.');};

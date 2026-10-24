@@ -99,9 +99,18 @@ Deno.serve(async (req) => {
       : mug === 'logo' ? 'Print-ready compact artwork for a small print on one side of a white ceramic mug.'
       : 'Print-ready artwork for a garment print.');
     if (img) {
-      parts.push(`Redraw the person in the attached photo in this style: ${STY[style]}.`);
-      parts.push("Keep the person's identity clearly recognizable: same face shape, eyes, nose, mouth, skin tone, age, expression and head shape. Keep the exact hairline and hair amount (if the person is bald, keep them bald; do not add hair or a beard that is not there).");
-      parts.push('Head-and-shoulders composition, centered. Draw the clothing plain and simple; do NOT copy any logo, letters, numbers or print from the clothes or the background of the photo.');
+      parts.push(`Redraw the attached photo in this style: ${STY[style]}.`);
+      parts.push('First look at what the photo shows: one person, a couple, a family or group, a pet or other animal, or a place or object. Draw exactly that, nothing less.');
+      parts.push("If there are people, include EVERY person in the photo, in the same arrangement, and keep each one clearly recognizable: same face shape, eyes, nose, mouth, skin tone, age, expression and head shape. Keep each person's exact hairline and hair amount (if someone is bald, keep them bald; do not add hair or a beard that is not there).");
+      parts.push('If there is an animal, keep its species, breed, coat colors and markings exactly. If it is a place or object, keep it recognizable.');
+      parts.push('Draw clothing plain and simple; do NOT copy any logo, letters, numbers or print from the clothes or the background of the photo.');
+      parts.push(mug === 'wrap'
+        ? 'Composition for a mug that is wrapped all around: put the main subject in the center of the wide image, which is the side people see. Extend the scene of the photo naturally to the left and right in its own setting (for example the sea, a park, a garden or a cosy room, matching the photo) so it continues all the way around the mug without looking like a pasted rectangle.'
+        : mug === 'logo'
+          ? 'Composition for a small print on a mug: isolate the main subject from its background as a compact, centered portrait (people from the chest up, an animal whole or its head), optionally inside a soft round shape; nothing else around it.'
+          : canvas
+            ? 'Composition for a wall painting: keep the subject where it looks natural and paint a complete, matching background that fills the whole canvas.'
+            : 'Composition for a garment print: centered, people from the chest up (a whole animal or object), isolated from the photo background.');
     } else {
       parts.push(`Style: ${STY[style]}.`);
     }
