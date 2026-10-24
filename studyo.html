@@ -1287,10 +1287,10 @@ function deg(x){return x*180/PI;}
 function lum(hex){var h=hex.replace('#','');var r=parseInt(h.substr(0,2),16),gg=parseInt(h.substr(2,2),16),b=parseInt(h.substr(4,2),16);return (0.299*r+0.587*gg+0.114*b)/255;}
 function autoInk(){return lum(state.tee)>0.55?'#111111':'#ffffff';}
 
-function pushHist(){var s=JSON.stringify(state);if(hist[hpos]===s)return;hist=hist.slice(0,hpos+1);hist.push(s);if(hist.length>60){hist.shift();}hpos=hist.length-1;syncUndo();}
+function pushHist(){var s=JSON.stringify(state);if(hist[hpos]===s)return;hist=hist.slice(0,hpos+1);hist.push(s);if(hist.length>60){hist.shift();}hpos=hist.length-1;syncUndo();try{draftSoon();}catch(_){}}
 function syncUndo(){$('#undoBtn').disabled=hpos<=0;$('#redoBtn').disabled=hpos>=hist.length-1;}
-function undo(){if(hpos<=0)return;hpos--;state=JSON.parse(hist[hpos]);afterRestore();}
-function redo(){if(hpos>=hist.length-1)return;hpos++;state=JSON.parse(hist[hpos]);afterRestore();}
+function undo(){if(hpos<=0)return;hpos--;state=JSON.parse(hist[hpos]);afterRestore();try{draftSoon();}catch(_){}}
+function redo(){if(hpos>=hist.length-1)return;hpos++;state=JSON.parse(hist[hpos]);afterRestore();try{draftSoon();}catch(_){}}
 function afterRestore(){if(view.sel&&!objById(view.sel))view.sel=null;renderAll();syncUndo();}
 
 /* ---------- Ürün çizimi ---------- */
@@ -3362,6 +3362,34 @@ applyTemplate(TPLS.filter(function(t){return t.n==='Güneş kurdu';})[0]||TPLS[0
 (function(){try{var q=new URLSearchParams(location.search),u=q.get('urun'),k=q.get('kesim'),bd=q.get('beden');if(u&&PRODUCTS[u]){var cs=PRODUCTS[u].cuts;chooseProduct(u,cs.indexOf(k)>=0?k:cs[0]);if(bd&&sizeList().indexOf(bd)>=0){state.sizes={};state.sizes[bd]=1;renderAll();}else if(!isStd()&&(sizeList()||[]).length){setTimeout(function(){try{openTab('opt');toast('Bedenini seç. Rengi de buradan değiştirebilirsin.');}catch(_){}},700);}if(PRODUCTS[u].vb){['front','logo','back'].forEach(function(sd){if(state[sd]&&state[sd].objs)state[sd].objs=[];});view.sel=null;renderAll();}}
   if(q.get('vitrin')==='wolf'){if(!u&&PRODUCTS.tee)chooseProduct('tee',PRODUCTS.tee.cuts[0]);openWolf();}}catch(_){}})();
 syncUndo();
+/* ===== Taslak: sayfa yenilenince ekrandaki ürün, renk ve tasarım geri gelsin (yalnız bu cihazda, IndexedDB) =====
+   Her değişiklikte (pushHist) kısa gecikmeyle kaydedilir; yüklenen fotoğraflar da saklanır. 7 günden eski taslak kullanılmaz.
+   Bağlantı belirli bir şey açıyorsa (düzenle, şablon, favori, depo…) ya da başka bir ürün istiyorsa taslak açılmaz. */
+var DRAFT={db:null,t:null,ready:false};
+function draftDb(){return new Promise(function(res){if(DRAFT.db)return res(DRAFT.db);try{var r=indexedDB.open('wf_studio',1);r.onupgradeneeded=function(){r.result.createObjectStore('kv');};r.onsuccess=function(){DRAFT.db=r.result;res(DRAFT.db);};r.onerror=function(){res(null);};}catch(_){res(null);}});}
+function draftIO(mode,v){return draftDb().then(function(db){if(!db)return null;return new Promise(function(res){try{var tx=db.transaction('kv',mode==='get'?'readonly':'readwrite'),st=tx.objectStore('kv'),rq=mode==='get'?st.get('draft'):mode==='del'?st.delete('draft'):st.put(v,'draft');
+  rq.onsuccess=function(){res(mode==='get'?rq.result:null);};rq.onerror=function(){res(null);};}catch(_){res(null);}});});}
+async function draftSave(){if(!DRAFT.ready)return;try{
+  var ids={};['front','logo','back'].forEach(function(sd){((state[sd]&&state[sd].objs)||[]).forEach(function(o){if(o.type==='image'){if(o.assetId)ids[o.assetId]=1;if(o.base)ids[o.base]=1;}});});
+  var as={};for(var id in ids){var a=assets[id];if(!a)continue;var c={};for(var k in a)c[k]=a[k];
+    if(/^blob:/.test(a.url||'')){try{c.blob=await (await fetch(a.url)).blob();delete c.url;}catch(_){continue;}}as[id]=c;}
+  await draftIO('put',{at:Date.now(),state:JSON.stringify(state),side:view.side,assets:as,assetN:assetN,nextId:view.nextId});}catch(_){}}
+function draftSoon(){if(!DRAFT||!DRAFT.ready)return;clearTimeout(DRAFT.t);DRAFT.t=setTimeout(draftSave,700);}
+document.addEventListener('visibilitychange',function(){if(document.hidden){clearTimeout(DRAFT.t);draftSave();}});
+(async function(){try{
+  var q=new URLSearchParams(location.search),block=['duzenle','ad','fav','depo','sablon','vitrin','wolf','tasarim'].some(function(k){return q.get(k);});
+  var d=block?null:await draftIO('get');
+  if(d&&d.state&&Date.now()-(d.at||0)<7*864e5){var st=JSON.parse(d.state),u=q.get('urun');
+    if(st&&PRODUCTS[st.product]&&(!u||u===st.product)){
+      for(var id in (d.assets||{})){var a=d.assets[id];if(a.blob){a.url=URL.createObjectURL(a.blob);delete a.blob;}assets[id]=a;if(assetList.indexOf(id)<0)assetList.push(id);}
+      assetN=Math.max(assetN,d.assetN||0);
+      try{chooseProduct(st.product,st.cut);}catch(_){}
+      state=st;view.sel=null;view.nextId=Math.max(view.nextId,d.nextId||0);
+      if(d.side&&state[d.side]&&sidesOf().indexOf(d.side)>=0)view.side=d.side;else view.side='front';
+      try{closeProdPage();}catch(_){}try{closeTab();}catch(_){}
+      hist=[JSON.stringify(state)];hpos=0;renderAll();syncUndo();try{renderUploads();}catch(_){}
+      toast('Kaldığın yerden devam ediyorsun.');}}
+}catch(_){}DRAFT.ready=true;})();
 /* ===== Yönetim panelinden gelen stüdyo düğmeleri (Supabase site_content.studio) ===== */
 (function(){
   var SBX={url:'https://wgovwmeirlzwalelazfj.supabase.co',key:'sb_publishable_PP5xFd7ga61xaDOCHeET_Q_zfMaE_4G'};
