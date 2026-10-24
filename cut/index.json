@@ -48,5 +48,55 @@
 72,
 60
 ]
+},
+"img/mvmf7hcyyobd.png": {
+"color": "Beyaz",
+"file": "cut/mvmf7hcyyobd.webp",
+"ns": -0.1999,
+"rgb": [
+237,
+234,
+240
+]
+},
+"img/mvmf7ig5azfw.png": {
+"color": "Lacivert",
+"file": "cut/mvmf7ig5azfw.webp",
+"ns": -0.1351,
+"rgb": [
+39,
+40,
+70
+]
+},
+"img/mvmf7ig5b280.png": {
+"color": "Siyah",
+"file": "cut/mvmf7ig5b280.webp",
+"ns": -0.1277,
+"rgb": [
+27,
+25,
+28
+]
+},
+"img/mvmf7ig5mukl.png": {
+"color": "Lacivert",
+"file": "cut/mvmf7ig5mukl.webp",
+"ns": -0.1023,
+"rgb": [
+26,
+65,
+138
+]
+},
+"img/mvmf7ig5so7d.png": {
+"color": "Yeşil",
+"file": "cut/mvmf7ig5so7d.webp",
+"ns": -0.179,
+"rgb": [
+52,
+83,
+68
+]
 }
 }
