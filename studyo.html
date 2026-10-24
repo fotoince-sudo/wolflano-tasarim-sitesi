@@ -2503,7 +2503,7 @@ function openTab(name,focusInput){
   if(name==='tpl')renderTplPreviews();
   if(name==='opt')renderOpt();
   sheet.classList.toggle('tall',name==='wolf');
-  if(name==='wolf')try{wolfPhRender();}catch(_){}
+  if(name==='wolf')try{wolfStDefault();wolfPhRender();}catch(_){}
   syncOpt();
   if(name==='text')renderFxRows();
   if(name==='text'&&focusInput){setTimeout(function(){if(!textIn.disabled){textIn.focus();textIn.select();}},80);}
@@ -2625,7 +2625,10 @@ wolfStRender();
 var WOLF_CITY=['Çeşme','Bodrum','Antalya','Kapadokya','İstanbul','İzmir','Alaçatı','Fethiye'];
 (function(){var e=$('#wolfCity');if(e)e.innerHTML=WOLF_CITY.map(function(c){return '<button type="button" data-wcity="'+c+'">'+c+'</button>';}).join('');})();
 document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('[data-wcity]');if(!b)return;var i=$('#wolfIn');if(i)i.value=b.dataset.wcity;var g=$('#wolfGo');if(g){g.classList.remove('pulse');void g.offsetWidth;g.classList.add('pulse');}});
-document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('[data-wst]');if(!b)return;wolfSt=b.dataset.wst;wolfStRender();});
+var wolfStPicked=false;
+/* Canvas tabloda varsayılan tarz Yağlı boya; tişörte dönünce Tişört grafiği (müşteri kendisi seçmediyse) */
+function wolfStDefault(){if(wolfStPicked)return;wolfSt=state.product==='canvas'?'canvas':'tisort';wolfStRender();}
+document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('[data-wst]');if(!b)return;wolfSt=b.dataset.wst;wolfStPicked=true;wolfStRender();});
 $('#wolfGo').addEventListener('click',async function(){var t=($('#wolfIn').value||'').trim(),sp=selObj();if(t.length<2&&!(sp&&sp.type==='image')){toast('Fotoğraf ekle ya da fikrini yaz');$('#wolfIn').focus();return;}
   if(AI_BUSY)return;
   var so0=selObj();
@@ -2636,11 +2639,11 @@ $('#wolfGo').addEventListener('click',async function(){var t=($('#wolfIn').value
   AI_BUSY=true;var g=$('#wolfGo');g.disabled=true;
   try{var tk=await aiTok();if(!tk){aiLogin();return;}
     var A=areaBox(view.side,cur().area),so=selObj(),ph=(so&&so.type==='image')?so:null;closeTab();popClose();aiWait('Wolf çiziyor');
-    var body={prompt:t,style:wolfSt,orient:A.w>A.h*1.15?'landscape':'portrait',shirt:shirtName(),shirtHex:state.tee||''};
+    var cvs=state.product==='canvas',body={prompt:t,style:wolfSt,orient:A.w>A.h*1.15?'landscape':'portrait',shirt:cvs?'':shirtName(),shirtHex:cvs?'':(state.tee||'')};if(cvs){body.canvas=true;body.transparent=false;}
     if(ph){if(!ph.base||!assets[ph.base])ph.base=ph.assetId;body.image=await aiPhotoData(ph.base);}
     var img=await aiCall(body);
     if(!img)return;var id=await aiAsset(img);
-    if(ph){var na=assets[id];ph.assetId=id;ph.phs='ai-'+wolfSt;ph.phe='none';ph.h=ph.w*na.h/na.w;renderObjects();updateSel();syncCtx();pushHist();}else addImageObj(id);closeTab();toast('Wolf çizdi. Taşıyabilir, büyütebilirsin.');}
+    if(ph){var na=assets[id];ph.assetId=id;ph.phs='ai-'+wolfSt;ph.phe='none';ph.h=ph.w*na.h/na.w;renderObjects();updateSel();syncCtx();pushHist();}else{addImageObj(id);if(cvs){var no=selObj(),na2=assets[id];if(no&&na2){var k2=Math.max(A.w/na2.w,A.h/na2.h);no.w=na2.w*k2;no.h=na2.h*k2;no.x=A.cx;no.y=A.cy;renderObjects();updateSel();syncCtx();pushHist();}}}closeTab();toast(cvs?'Wolf tabloyu çizdi. Kaydırarak konumunu ayarlayabilirsin.':'Wolf çizdi. Taşıyabilir, büyütebilirsin.');}
   catch(_){longToast('Wolf şu an çizemedi. Biraz sonra yeniden dene.');}
   finally{AI_BUSY=false;g.disabled=false;aiDone();}
 });
