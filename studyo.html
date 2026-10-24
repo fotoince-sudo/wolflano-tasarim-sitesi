@@ -1408,8 +1408,13 @@ function phApplyColors(){
   var cs=phColors(phBlank(state.product,state.cut));TEES.length=0;
   if(P().draw&&cs.length){var bl=PH.teesBase.slice();cs.forEach(function(c){if(!bl.some(function(t){return String(t[1]).toLowerCase()===String(c.hex).toLowerCase();}))bl.push([c.name||c.hex,c.hex]);});cs=[];bl.forEach(function(t){TEES.push(t);});}
   else (cs.length?cs.map(function(c){return [c.name||c.hex,c.hex];}):PH.teesBase).forEach(function(t){TEES.push(t);});
-  if(!TEES.some(function(t){return String(t[1]).toLowerCase()===String(state.tee).toLowerCase();}))state.tee=TEES[0][1];
+  if(!TEES.some(function(t){return String(t[1]).toLowerCase()===String(state.tee).toLowerCase();}))state.tee=teeNear(state.tee);
 }
+/* Kayıtlı renk listede birebir yoksa (eski yeşil tonu gibi) en yakın standart renge oturur; çok uzaksa ilk renge düşer */
+function teeNear(hex){var rgb=function(h){h=String(h||'').replace('#','');if(!/^[0-9a-f]{6}$/i.test(h))return null;return [parseInt(h.slice(0,2),16),parseInt(h.slice(2,4),16),parseInt(h.slice(4,6),16)];};
+  var a=rgb(hex),best=TEES[0][1],bd=1e9;if(!a)return best;
+  TEES.forEach(function(t){var b=rgb(t[1]);if(!b)return;var d=Math.sqrt(Math.pow(a[0]-b[0],2)+Math.pow(a[1]-b[1],2)+Math.pow(a[2]-b[2],2));if(d<bd){bd=d;best=t[1];}});
+  return bd<=60?best:TEES[0][1];}
 window.phSite=function(d){PH.site=d;PH.media=d.media||'';PH.teesBase=TEES.slice();try{siteTiers();}catch(_){}
   try{var q=new URLSearchParams(location.search),rn=q.get('renk'),bd=q.get('beden');if(bd)PH.want=bd;
     phApplyColors();if(rn!=null){var cs=phColors(phBlank(state.product,state.cut)),c=(/^\d+$/.test(rn)?cs[+rn]:null)||cs.filter(function(x){return x.name===rn||String(x.hex).toLowerCase()===String(rn).toLowerCase();})[0];if(c)state.tee=c.hex;}}catch(_){}
@@ -3602,7 +3607,7 @@ syncUndo();
       C.objs=C.objs.filter(function(o){return o.lock;}).concat(objs);
       view.sel=null;view.grp=false;renderAll();layout();pushHist();return;
     }
-    if(full&&PRODUCTS[d.product]){var cs=PRODUCTS[d.product].cuts;chooseProduct(d.product,cs.indexOf(d.cut)>=0?d.cut:cs[0]);if(d.tee)state.tee=d.tee;state.brand=d.brand!==false;}
+    if(full&&PRODUCTS[d.product]){var cs=PRODUCTS[d.product].cuts;chooseProduct(d.product,cs.indexOf(d.cut)>=0?d.cut:cs[0]);if(d.tee){state.tee=d.tee;try{if(PH.site)phApplyColors();}catch(_){}}state.brand=d.brand!==false;}
     SS('logo').objs=[];
     /* Eski kayıtlar: önde logo alanı seçilmişse, logo katmanı olan üründe logoya taşınır */
     if(d.front&&d.front.area==='logo'&&!d.logo&&hasLogoSide()){d=Object.assign({},d,{logo:d.front,front:{area:P().sides.front[0],land:false,objs:[]}});}
