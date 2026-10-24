@@ -431,7 +431,8 @@ svg.i{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stro
 .atpl span{font:600 13px var(--ui);text-align:center}
 #admSheet{position:fixed;inset:0;z-index:80;background:rgba(0,0,0,.45);display:flex;align-items:flex-end;justify-content:center}
 #admSheet[hidden]{display:none}
-.am-card{width:100%;max-width:520px;max-height:88vh;overflow-y:auto;background:var(--panel,#fff);border-radius:18px 18px 0 0;padding:14px 16px calc(16px + env(safe-area-inset-bottom,0px));display:grid;gap:10px}
+.am-card>*,.am-dp>*,.am-dp details{min-width:0;max-width:100%}
+.am-card{width:100%;max-width:520px;max-height:88vh;overflow-y:auto;overflow-x:hidden;grid-template-columns:minmax(0,1fr);box-sizing:border-box;background:var(--panel,#fff);border-radius:18px 18px 0 0;padding:14px 16px calc(16px + env(safe-area-inset-bottom,0px));display:grid;gap:10px}
 .am-h{display:flex;align-items:center;justify-content:space-between}.am-h b{font:700 17px var(--ui)}
 .am-who{color:var(--muted);font:500 12px var(--ui);margin-top:-8px}
 .am-f{display:grid;gap:4px;font:600 12px var(--ui);color:var(--muted)}
