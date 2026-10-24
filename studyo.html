@@ -207,6 +207,17 @@ svg.i{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stro
 .sw.on{outline:3px solid var(--accent);outline-offset:2px}
 .sw.none{display:grid;place-items:center;font:700 16px var(--ui);color:var(--danger)}
 .sw.custom{background:conic-gradient(#e63946,#ffd23f,#3fae49,#1d70b8,#7b3fa0,#e63946)}
+.sw .swn{font:700 9px/1 var(--ui);font-style:normal;position:absolute;inset:0;display:grid;place-items:center;pointer-events:none;opacity:.85}
+.cp-row{flex:1 0 100%;display:flex;align-items:center;gap:8px;flex-wrap:wrap;font:600 12px var(--ui)}
+.cp-t{color:var(--muted);font-weight:600}
+.cp-row i{display:inline-block;width:14px;height:14px;border-radius:50%;border:1px solid var(--line2);vertical-align:-2px;margin-right:5px}
+.cp-sel b{font-weight:700}
+.cp-used{display:flex;gap:6px;overflow-x:auto;max-width:100%}
+.cp-u{flex:none;display:flex;align-items:center;border:1px solid var(--line2);background:var(--panel2);border-radius:999px;padding:4px 10px;font:600 12px var(--ui);color:inherit}
+.cp-u.on{border-color:var(--accent);color:var(--accent)}
+.cp-in input{flex:1;min-width:0;height:34px;border:1px solid var(--line2);border-radius:10px;padding:0 10px;font:600 16px var(--ui);background:var(--panel2);color:inherit;text-transform:uppercase}
+.cp-in input::placeholder{text-transform:none;font-weight:500}
+.cp-in button{height:34px;border:0;border-radius:10px;padding:0 14px;background:var(--accent);color:#fff;font:700 13px var(--ui)}
 .sw.custom input{position:absolute;inset:0;opacity:0;width:100%;height:100%;cursor:pointer}
 
 .sheet{position:relative;flex:0 0 auto;height:clamp(190px,34%,310px);background:var(--panel);border-top:1px solid var(--line)}
@@ -819,6 +830,15 @@ function cmText(key,land){return dimsOf(key,land).join(' × ').replace(/\./g,','
 
 var TEES=[['Beyaz','#f4f4f2'],['Lacivert','#2b3d82'],['Siyah','#1b1b1d'],['Mavi','#2a64c4'],['Yeşil','#2d5a43'],['Gri','#8f9598'],['Kahve','#5b3a29'],['Kiremit','#b2502d']];
 var PALETTE=['#111111','#ffffff','#e63946','#8b1e2d','#ff7a00','#f4a261','#ffd23f','#c9a227','#3fae49','#0f4c3a','#2fbf71','#159b91','#00a6d6','#1d70b8','#2f3e9e','#7b3fa0','#e75a9a','#7a5230','#f2e6d0','#b0b7bd','#8a8f94','#5a5f66'];
+/* Renk kodları: hazır paletteki her renk sabit bir numara taşır (W01, W02…). Özel renkler HEX koduyla tutulur.
+   Sipariş özetinde her yüzün renkleri kod ve HEX ile yazılır; baskıda ton tartışması olmaz. */
+function colHex(c){return String(c||'').toUpperCase();}
+function colCode(c){var i=PALETTE.indexOf(String(c||'').toLowerCase());return i<0?'':'W'+(i<9?'0':'')+(i+1);}
+function colLabel(c){if(!c)return '';var k=colCode(c);return (k?k+' · ':'Özel · ')+colHex(c);}
+function colInk(c){var h=String(c||'').replace('#','');if(h.length!==6)return '#111';var r=parseInt(h.slice(0,2),16),g=parseInt(h.slice(2,4),16),b=parseInt(h.slice(4,6),16);return (r*299+g*587+b*114)/1000>150?'#111':'#fff';}
+function colParse(v){v=String(v||'').trim().toUpperCase().replace(/\s/g,'');var m=v.match(/^W?0*(\d{1,2})$/);if(m){var n=+m[1];return n>=1&&n<=PALETTE.length?PALETTE[n-1]:null;}
+  m=v.replace(/^#/,'');if(/^[0-9A-F]{6}$/.test(m))return '#'+m.toLowerCase();if(/^[0-9A-F]{3}$/.test(m))return '#'+m.split('').map(function(x){return x+x;}).join('').toLowerCase();return null;}
+function usedColors(){var seen={},out=[];['front','logo','back'].forEach(function(sd){(state[sd]&&state[sd].objs||[]).forEach(function(o){if(o.type==='image')return;[o.color,o.stroke].forEach(function(c){if(!c)return;var k=String(c).toLowerCase();if(!seen[k]){seen[k]=1;out.push(k);}});});});return out;}
 var FONTS=[['Cormorant Garamond İnce',500,'Cormorant Garamond'],['Cormorant Garamond',700],['Manrope İnce',500,'Manrope'],['Manrope',800],['Bodoni Moda',700],['Marcellus',400],['DM Serif Display',400],['Big Shoulders Display',800],['Unbounded',700],['Saira Stencil One',400],['Great Vibes',400],['Allura',400],['Mrs Saint Delafield',400],['Rubik Spray Paint',400],['Shrikhand',400],['Anton',400],['Oswald',700],['Bebas Neue',400],['Staatliches',400],['Montserrat',800],['Poppins',800],['Archivo Black',400],['Alfa Slab One',400],['Playfair Display',800],['Abril Fatface',400],['Righteous',400],['Bangers',400],['Fredoka',600],['Black Ops One',400],['Press Start 2P',400],['Lobster',400],['Pacifico',400],['Dancing Script',700],['Caveat',700],['Barlow Condensed',700],['Rubik',800],['Teko',600],['Russo One',400],['Saira Condensed',800],['Exo 2',800],['Kanit',800],['Rajdhani',700],['Bungee',400],['Chakra Petch',700],['Lilita One',400],['Kaushan Script',400],['Sacramento',400],['Cinzel',700],['Merriweather',900]];
 function fw(f){for(var i=0;i<FONTS.length;i++){if(FONTS[i][0]===f)return FONTS[i][1];}return 700;}
 /* "İnce" gibi seçenekler aynı yazı ailesinin ince ağırlığıdır */
@@ -1821,8 +1841,12 @@ function showPop(mode){
   view.pop=mode;
   var pop=$('#colorPop'),cur_=mode==='stroke'?o.stroke:o.color,h='';
   if(mode==='stroke')h+='<button class="sw none'+(o.stroke?'':' on')+'" data-col="" aria-label="Kontur yok">×</button>';
-  PALETTE.forEach(function(c){h+='<button class="sw'+(cur_&&cur_.toLowerCase()===c?' on':'')+'" data-col="'+c+'" style="background:'+c+'" aria-label="'+c+'"></button>';});
+  PALETTE.forEach(function(c,i){h+='<button class="sw'+(cur_&&cur_.toLowerCase()===c?' on':'')+'" data-col="'+c+'" style="background:'+c+';color:'+colInk(c)+'" aria-label="'+colLabel(c)+'"><i class="swn">'+(i+1)+'</i></button>';});
   h+='<label class="sw custom" aria-label="Özel renk"><input type="color" id="colorCustom" value="'+(cur_||'#159b91')+'"></label>';
+  var us=usedColors();
+  if(us.length){h+='<div class="cp-row"><span class="cp-t">Bu tasarımdaki renkler</span><div class="cp-used">'+us.map(function(c){return '<button class="cp-u'+(cur_&&cur_.toLowerCase()===c?' on':'')+'" data-col="'+c+'"><i style="background:'+c+'"></i>'+colLabel(c)+'</button>';}).join('')+'</div></div>';}
+  h+='<div class="cp-row cp-sel"><span class="cp-t">Seçili</span><b>'+(cur_?'<i style="background:'+cur_+'"></i>'+colLabel(cur_):(mode==='stroke'?'Kontur yok':'—'))+'</b></div>';
+  h+='<form class="cp-row cp-in" id="colorCodeF"><input id="colorCode" type="text" inputmode="text" autocomplete="off" autocapitalize="characters" placeholder="Renk kodu: W12 ya da #159B91"><button type="submit">Uygula</button></form>';
   pop.innerHTML=h;pop.hidden=false;
 }
 function applyColor(c){
@@ -2699,6 +2723,7 @@ $('#ctxBar').addEventListener('click',ctxClick);
 $('#colorPop').addEventListener('click',function(e){var b=e.target.closest('[data-col]');if(!b)return;applyColor(b.dataset.col||null);pushHist();});
 $('#colorPop').addEventListener('input',function(e){if(e.target.id==='colorCustom'&&view.grp){applyColor(e.target.value);return;}if(e.target.id==='colorCustom'){var o=selObj();if(!o)return;if(view.pop==='stroke')o.stroke=e.target.value;else o.color=e.target.value;updateEl(els[o.id],o);$('#ctxDot').style.background=o.color;}});
 $('#colorPop').addEventListener('change',function(e){if(e.target.id==='colorCustom')pushHist();});
+$('#colorPop').addEventListener('submit',function(e){e.preventDefault();var inp=$('#colorCode'),c=colParse(inp&&inp.value);if(!c){toast('Kod bulunamadı. Örnek: W12 ya da #159B91');return;}applyColor(c);pushHist();toast('Renk uygulandı: '+colLabel(c));});
 document.addEventListener('keydown',function(e){
   var tag=(e.target.tagName||'').toLowerCase();
   if(tag==='input'||tag==='textarea')return;
@@ -3039,6 +3064,8 @@ function designLines(){
   var L=['Ürün: '+productLabel(),'Renk: '+nm];
   if(!P().draw&&!BRAND_OFF)L.push('Wolflano marka işareti: '+(brandOn()?'var (etek ucu, sol yan dikiş)':'yok (müşteri istemedi)'));
   sidesOf().forEach(function(s){var sd=state[s];L.push(SIDE_NAME[s]+': '+(sd.objs.length?areaTitle(s)+' ('+cmText(sd.area,isLand(s))+'), '+sd.objs.length+' öğe':'baskı yok'));});
+  sidesOf().forEach(function(s){var sd=state[s],seen={},cs=[],img=false;(sd.objs||[]).forEach(function(o){if(o.type==='image'){img=true;return;}[o.color,o.stroke].forEach(function(c){if(!c)return;var k=String(c).toLowerCase();if(!seen[k]){seen[k]=1;cs.push(colLabel(k));}});});
+    if(cs.length||img)L.push(SIDE_NAME[s]+' baskı renkleri: '+cs.join(', ')+(img?(cs.length?', ':'')+'görsel (fotoğraftaki renkler)':''));});
   var rr=rosterRows();
   if(rr&&rr.length){var full=rr.filter(function(r){return r.n||r.k;}),bos=rr.length-full.length;
     L.push('İsim/numara: '+(full.length?full.map(function(r){return r.s+' '+[r.n,r.k].filter(Boolean).join(' ');}).join(', '):'yazılmadı')+(bos&&full.length?' ('+bos+' boş)':''));}
