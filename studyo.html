@@ -809,7 +809,7 @@ function areaBox(side,key,land){
 }
 function cmText(key,land){return dimsOf(key,land).join(' × ').replace(/\./g,',')+' cm';}
 
-var TEES=[['Beyaz','#f6f6f4'],['Siyah','#17181a'],['Gri','#8f9598'],['Yeşil','#1f6b4a'],['Mavi','#2f6fb5'],['Lacivert','#1c2a4b'],['Kahve','#5b3a29'],['Kiremit','#b2502d']];
+var TEES=[['Beyaz','#f4f4f2'],['Lacivert','#2b3d82'],['Siyah','#1b1b1d'],['Mavi','#2a64c4'],['Yeşil','#2d5a43'],['Gri','#8f9598'],['Kahve','#5b3a29'],['Kiremit','#b2502d']];
 var PALETTE=['#111111','#ffffff','#e63946','#8b1e2d','#ff7a00','#f4a261','#ffd23f','#c9a227','#3fae49','#0f4c3a','#2fbf71','#159b91','#00a6d6','#1d70b8','#2f3e9e','#7b3fa0','#e75a9a','#7a5230','#f2e6d0','#b0b7bd','#8a8f94','#5a5f66'];
 var FONTS=[['Cormorant Garamond İnce',500,'Cormorant Garamond'],['Cormorant Garamond',700],['Manrope İnce',500,'Manrope'],['Manrope',800],['Bodoni Moda',700],['Marcellus',400],['DM Serif Display',400],['Big Shoulders Display',800],['Unbounded',700],['Saira Stencil One',400],['Great Vibes',400],['Allura',400],['Mrs Saint Delafield',400],['Rubik Spray Paint',400],['Shrikhand',400],['Anton',400],['Oswald',700],['Bebas Neue',400],['Staatliches',400],['Montserrat',800],['Poppins',800],['Archivo Black',400],['Alfa Slab One',400],['Playfair Display',800],['Abril Fatface',400],['Righteous',400],['Bangers',400],['Fredoka',600],['Black Ops One',400],['Press Start 2P',400],['Lobster',400],['Pacifico',400],['Dancing Script',700],['Caveat',700],['Barlow Condensed',700],['Rubik',800],['Teko',600],['Russo One',400],['Saira Condensed',800],['Exo 2',800],['Kanit',800],['Rajdhani',700],['Bungee',400],['Chakra Petch',700],['Lilita One',400],['Kaushan Script',400],['Sacramento',400],['Cinzel',700],['Merriweather',900]];
 function fw(f){for(var i=0;i<FONTS.length;i++){if(FONTS[i][0]===f)return FONTS[i][1];}return 700;}
@@ -1290,7 +1290,7 @@ function depoCols(d){var l=(d.colors&&d.colors.length)?d.colors:[{name:d.color,h
 function depoBlank(product,cut){var d=DEPO.cur;if(!d||d.product!==product||(d.cut||'')!==(cut||''))return null;return {id:'depo',p:product,cut:cut,colors:depoCols(d)};}
 function phBlank(product,cut){var db=depoBlank(product,cut);if(db)return db;var l=(PH.site&&PH.site.blanks)||[];var m=l.filter(function(b){return b.show!==false&&(b.p||b.id)===product&&(!b.cut||b.cut===cut);});return m.filter(function(b){return b.cut===cut;})[0]||m[0]||null;}
 /* Yönetimdeki "Ürün fotoğrafları (otomatik)": zemini temizlenmiş fotoğraflar standart renk sırasıyla (sitedeki kodun aynısı) */
-var STDC=[{name:'Beyaz',hex:'#f4f4f2'},{name:'Lacivert',hex:'#232a4a'},{name:'Siyah',hex:'#1b1b1d'},{name:'Mavi',hex:'#2a64c4'},{name:'Yeşil',hex:'#2d5a43'}];
+var STDC=[{name:'Beyaz',hex:'#f4f4f2'},{name:'Lacivert',hex:'#2b3d82'},{name:'Siyah',hex:'#1b1b1d'},{name:'Mavi',hex:'#2a64c4'},{name:'Yeşil',hex:'#2d5a43'}];
 function rawResolve(b,man){var fix=b.rawfix||{},by={},info={};
   (b.raw||[]).forEach(function(r){var m=man[r],f=fix[r]||{},col=f.color||(m&&m.color)||'';info[r]={ready:!!m,color:col,side:f.side||'',ns:m?+m.ns||0:0};if(col)(by[col]||(by[col]=[])).push(r);});
   var res={};STDC.forEach(function(c){var l=by[c.name];if(!l||!l.length)return;var o={front:'',back:''};
@@ -1301,7 +1301,9 @@ function rawResolve(b,man){var fix=b.rawfix||{},by={},info={};
 function cutMerge(d,man){man=man||{};((d&&d.blanks)||[]).forEach(function(b){if(!b||!(b.raw||[]).length)return;var R=rawResolve(b,man).by,cs=[];
   STDC.forEach(function(c){var o=R[c.name];if(!o)return;var f=o.front&&man[o.front]?man[o.front].file:'',k=o.back&&man[o.back]?man[o.back].file:'';if(!f&&!k)return;cs.push({name:c.name,hex:c.hex,front:f||k,back:f?k:''});});
   if(cs.length)b.colors=cs;});return d;}
-function phColors(b){return ((b&&b.colors)||[]).filter(function(c){return c&&(c.front||c.back)&&/^#[0-9a-f]{6}$/i.test(c.hex||'');});}
+/* Renkler her üründe aynı sırada ve aynı tonda: standart sıra (Beyaz, Lacivert, Siyah, Mavi, Yeşil), sonra diğerleri */
+function phColors(b){var L=((b&&b.colors)||[]).filter(function(c){return c&&(c.front||c.back)&&/^#[0-9a-f]{6}$/i.test(c.hex||'');}),ix=function(c){for(var i=0;i<STDC.length;i++)if(STDC[i].name===c.name)return i;return STDC.length;};
+  return L.map(function(c,k){var i=ix(c);return {c:i<STDC.length?Object.assign({},c,{hex:STDC[i].hex}):c,i:i,k:k};}).sort(function(a,z){return a.i-z.i||a.k-z.k;}).map(function(x){return x.c;});}
 function phSize(){var l=sizeList(),best=null,mx=0;if(PH.want&&l.indexOf(PH.want)>=0&&(state.sizes[PH.want]||0)>0)return PH.want;l.forEach(function(z){if((state.sizes[z]||0)>mx){mx=state.sizes[z];best=z;}});return best||(l.indexOf(PH.want)>=0?PH.want:'')||l[1]||l[0];}
 function phDims(product,cut){var m=(SZM[product]||{})[cut];if(!m)return null;var z=phSize();return m[z]||m.M||m['7-8']||null;}
 function phCalib(u){
