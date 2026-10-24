@@ -108,7 +108,11 @@ Deno.serve(async (req) => {
       : 'Clean plain background. No frame, no mockup, no watermark.');
     const prompt = parts.join(' ');
 
-    const model = Deno.env.get('OPENAI_IMAGE_MODEL') || 'gpt-image-1';
+    // OpenAI model adları zamanla değişiyor (gpt-image-1 kaldırıldı): sırayla dene, olmayan modeli atla
+    const envModel = Deno.env.get('OPENAI_IMAGE_MODEL') || '';
+    const models = [envModel, img ? 'gpt-image-2.5-sunburst' : 'gpt-image-2.5-flare', img ? 'gpt-image-2.5-flare' : 'gpt-image-2.5-sunburst', 'gpt-image-2', 'gpt-image-1.5', 'gpt-image-1']
+      .filter((m, i, a) => m && a.indexOf(m) === i);
+    let mi = 0;
     // Yönetici şablon ve ürün için yüksek kalite; müşteriler orta kalite
     const quality = isAdm ? (Deno.env.get('OPENAI_IMAGE_QUALITY_ADMIN') || 'high') : (Deno.env.get('OPENAI_IMAGE_QUALITY') || 'medium');
 
@@ -116,7 +120,7 @@ Deno.serve(async (req) => {
       const fmt = bg ? 'png' : 'jpeg';
       if (img) {
         const fd = new FormData();
-        fd.append('model', model);
+        fd.append('model', models[mi]);
         fd.append('prompt', prompt);
         fd.append('size', size);
         fd.append('quality', quality);
@@ -129,7 +133,7 @@ Deno.serve(async (req) => {
           method: 'POST', headers: { Authorization: `Bearer ${key}` }, body: fd, signal: AbortSignal.timeout(150000),
         });
       }
-      const pj: Record<string, unknown> = { model, prompt, size, quality, n: 1, output_format: fmt };
+      const pj: Record<string, unknown> = { model: models[mi], prompt, size, quality, n: 1, output_format: fmt };
       if (bg) pj.background = 'transparent'; else pj.output_compression = 90;
       return await fetch('https://api.openai.com/v1/images/generations', {
         method: 'POST',
@@ -141,12 +145,14 @@ Deno.serve(async (req) => {
 
     let fid = true, bg = transparent;
     let r = await call(fid, bg);
-    for (let k = 0; k < 2 && !r.ok && r.status === 400; k++) {
+    for (let k = 0; k < 10 && !r.ok && r.status === 400; k++) {
       const t = await r.clone().text();
+      if (/"param"\s*:\s*"model"|model .*(does not exist|not found|not supported)/i.test(t)) { if (++mi >= models.length) break; r = await call(fid, bg); continue; }
       if (fid && /input_fidelity/i.test(t)) { fid = false; r = await call(fid, bg); continue; }
       if (bg && /background|transparent/i.test(t)) { bg = false; r = await call(fid, bg); continue; }
       break;
     }
+    console.log('model', models[mi], r.status);
     const out = await r.json().catch(() => ({}));
     if (!r.ok) {
       const msg = JSON.stringify(out?.error || out).toLowerCase();
@@ -154,7 +160,7 @@ Deno.serve(async (req) => {
       if (/moderation|safety|content_policy/.test(msg)) {
         return j({ error: 'moderation', message: 'Bu istek için görsel üretilemedi. Farklı bir cümle dene.' }, 422);
       }
-      console.error('openai', r.status, msg.slice(0, 300));
+      console.error('openai', models[mi], r.status, msg.slice(0, 300));
       return j({ error: 'fail', message: 'Tasarım şu an hazırlanamadı. Biraz sonra yeniden dene.' }, 502);
     }
     const b64 = out?.data?.[0]?.b64_json;
