@@ -1524,7 +1524,9 @@ function renderShade(){
 /* Wolflano marka işareti: ürünün üstünde sabit durur, tasarımın parçası değildir, seçilemez ve taşınamaz.
    Giyenin solunda, yan dikişe yakın etek ucunda (karşıdan bakınca sağ alt). Polo tişörtte müşteri isterse kaldırılır. */
 var BRAND_CM=3.6;
-function brandOn(){return !!PRODUCTS[state.product]&&!P().draw&&!(state.product==='polo'&&state.brand===false);}
+/* Etek ucundaki küçük kurt işareti şimdilik tamamen kapalı (2026-10-25). Geri açmak için BRAND_OFF=false. */
+var BRAND_OFF=true;
+function brandOn(){if(BRAND_OFF)return false;return !!PRODUCTS[state.product]&&!P().draw&&!(state.product==='polo'&&state.brand===false);}
 function brandPos(side){side=face(side);
   if(side!=='front')return null;
   var b=phBlank(state.product,state.cut),cs=phColors(b);
@@ -2949,7 +2951,7 @@ async function openOrder(){
   closeTab();select(null);
   $('#order').hidden=false;
   try{if(!(history.state&&history.state.wfOrder))history.pushState({wfOrder:1},'');}catch(_){}
-  var bs=$('#brandSec');bs.hidden=state.product!=='polo';$('#brandChk').checked=state.brand!==false;
+  var bs=$('#brandSec');bs.hidden=BRAND_OFF||state.product!=='polo';$('#brandChk').checked=state.brand!==false;
   renderSizes();renderPrice();renderFiles();
   var th=$('#thumbs');th.textContent='';
   var sides=sidesOf();
@@ -3035,7 +3037,7 @@ function designSig(){return JSON.stringify([state.product,state.cut,state.tee,br
 function designLines(){
   var nm='Özel';TEES.forEach(function(x){if(x[1]===state.tee)nm=x[0];});
   var L=['Ürün: '+productLabel(),'Renk: '+nm];
-  if(!P().draw)L.push('Wolflano marka işareti: '+(brandOn()?'var (etek ucu, sol yan dikiş)':'yok (müşteri istemedi)'));
+  if(!P().draw&&!BRAND_OFF)L.push('Wolflano marka işareti: '+(brandOn()?'var (etek ucu, sol yan dikiş)':'yok (müşteri istemedi)'));
   sidesOf().forEach(function(s){var sd=state[s];L.push(SIDE_NAME[s]+': '+(sd.objs.length?areaTitle(s)+' ('+cmText(sd.area,isLand(s))+'), '+sd.objs.length+' öğe':'baskı yok'));});
   var rr=rosterRows();
   if(rr&&rr.length){var full=rr.filter(function(r){return r.n||r.k;}),bos=rr.length-full.length;
