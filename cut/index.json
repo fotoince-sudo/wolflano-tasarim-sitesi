@@ -98,5 +98,105 @@
 83,
 68
 ]
+},
+"img/mvmg1z46rmhr.png": {
+"color": "Beyaz",
+"file": "cut/mvmg1z46rmhr.webp",
+"ns": -0.3153,
+"rgb": [
+231,
+231,
+231
+]
+},
+"img/mvmg1z47a84o.png": {
+"color": "Siyah",
+"file": "cut/mvmg1z47a84o.webp",
+"ns": -0.2511,
+"rgb": [
+28,
+28,
+28
+]
+},
+"img/mvmg1zcc0ys1.png": {
+"color": "Yeşil",
+"file": "cut/mvmg1zcc0ys1.webp",
+"ns": -0.156,
+"rgb": [
+52,
+80,
+63
+]
+},
+"img/mvmg1zcc2wgd.png": {
+"color": "Siyah",
+"file": "cut/mvmg1zcc2wgd.webp",
+"ns": -0.2855,
+"rgb": [
+26,
+26,
+26
+]
+},
+"img/mvmg1zccotym.png": {
+"color": "Siyah",
+"file": "cut/mvmg1zccotym.webp",
+"ns": -0.2474,
+"rgb": [
+26,
+29,
+43
+]
+},
+"img/mvmg1zccrfw8.png": {
+"color": "Yeşil",
+"file": "cut/mvmg1zccrfw8.webp",
+"ns": -0.3195,
+"rgb": [
+34,
+64,
+50
+]
+},
+"img/mvmg1zccvuh6.png": {
+"color": "Beyaz",
+"file": "cut/mvmg1zccvuh6.webp",
+"ns": -0.2868,
+"rgb": [
+233,
+233,
+233
+]
+},
+"img/mvmg1zcdc4xo.png": {
+"color": "Mavi",
+"file": "cut/mvmg1zcdc4xo.webp",
+"ns": -0.3039,
+"rgb": [
+23,
+71,
+160
+]
+},
+"img/mvmg1zcdcxvc.png": {
+"color": "Lacivert",
+"file": "cut/mvmg1zcdcxvc.webp",
+"ns": -0.2852,
+"rgb": [
+27,
+37,
+62
+]
+},
+"img/mvmg1zcdu9id.png": {
+"color": "Mavi",
+"file": "cut/mvmg1zcdu9id.webp",
+"ns": -0.2609,
+"rgb": [
+13,
+77,
+164
+]
 }
 }
