@@ -1506,6 +1506,9 @@ async function adxLoad(){
   }catch(_){ADX.err='Bağlantı kurulamadı.';ADX.rows=[];}
   ADX.busy=false;adxRefresh();
 }
+var TPL_KATS=['Özel günler','İmza koleksiyonu','Wolf tasarımları','Türkiye','Şehirler ve köklerimiz','Spor ve kulüp','Okul ve sınıf','Şirket ve ekip','Aile ve aşk','Kutlama ve etkinlik','Doğa ve macera','Retro ve arma','Yazı ve söz','Minimal'];
+document.addEventListener('change',async function(e){var c=e.target.closest&&e.target.closest('[data-adxc]');if(!c)return;var id=c.dataset.adxc,v=c.value||null;
+  if(await adxPatch(id,{note:v})){(ADX.rows||[]).forEach(function(r){if(r.id===id)r.note=v;});toast('Kategori: '+(v||'Wolflano şablonları'));}});
 function adxView(){
   if(ADX.rows===null&&!ADX.busy)adxLoad();
   var h='<div class="alist"><div class="adx-top"><p class="note" style="margin:0;flex:1">Sitemiz için yapılan tasarımlar. Yalnız yönetici ve yetkililer görür. Stüdyoda yönetici olarak açınca üstteki kalkan düğmesiyle şablon, ürün, baskı veya taslak olarak kaydedersin; aynı işi Wolf panelinden yazarak da yaptırabilirsin.</p>'+
@@ -1518,12 +1521,12 @@ function adxView(){
   L.forEach(function(x){
     var sz=Object.keys(x.sizes||{}).filter(function(k){return x.sizes[k]>0;}).map(function(k){return k+' × '+x.sizes[k];}).join(', ');
     h+='<div class="adx-c"><img src="'+esc(x.thumb||'')+'" alt="" loading="lazy"><div class="adx-b"><div class="adx-t"><b>'+esc(x.title)+'</b><span class="adx-k k-'+esc(x.kind)+'">'+(ADX_KIND[x.kind]||x.kind)+'</span>'+(x.by_wolf?'<span class="adx-k k-wolf">Wolf</span>':'')+'</div>'+
-      '<small class="note" style="margin:0">'+esc(new Date(x.created_at).toLocaleString('tr-TR'))+' · '+esc(x.created_by||'')+(x.kind==='baski'?' · '+(+x.qty||0)+' adet'+(sz?' ('+esc(sz)+')':''):'')+(x.kind==='sablon'?' · '+(x.published?'Yayında':'Yayında değil'):'')+(x.kind==='baski'?' · Durum: <b>'+esc(x.status)+'</b>':'')+'</small>'+
-      (x.note?'<small class="note" style="margin:0">'+esc(x.note)+'</small>':'')+
+      '<small class="note" style="margin:0">'+esc(new Date(x.created_at).toLocaleString('tr-TR'))+' · '+esc(x.created_by||'')+(x.kind==='baski'?' · '+(+x.qty||0)+' adet'+(sz?' ('+esc(sz)+')':''):'')+(x.kind==='sablon'?' · '+(x.published?'Herkese açık':'Sadece Wolflano'):'')+(x.kind==='baski'?' · Durum: <b>'+esc(x.status)+'</b>':'')+'</small>'+
+      (x.note&&x.kind!=='sablon'?'<small class="note" style="margin:0">'+esc(x.note)+'</small>':'')+
       '<div class="adx-a"><a class="btn soft sm" href="studyo.html?ad='+esc(x.id)+'" target="_blank" rel="noopener">Stüdyoda aç</a>'+
       (x.kind==='baski'?(x.files||[]).map(function(f){var u=ADX.urls[f.path];return u?'<button type="button" class="btn sm" data-adx="dl" data-u="'+esc(u)+'" data-fn="'+esc((x.title||'baski').replace(/[^\wçğıöşüÇĞİÖŞÜ -]/g,'')+'-'+(f.side==='back'?'arka':'on')+'.png')+'">'+(f.side==='back'?'Arka':'Ön')+' baskı dosyası</button>':'';}).join('')+
         '<label class="adx-s">Durum<select data-adxs="'+esc(x.id)+'">'+ADX_ST.map(function(s){return '<option'+(s===x.status?' selected':'')+'>'+s+'</option>';}).join('')+'</select></label>':'')+
-      (x.kind==='sablon'?'<button type="button" class="btn soft sm" data-adx="pub" data-id="'+esc(x.id)+'" data-v="'+(x.published?'0':'1')+'">'+(x.published?'Yayından kaldır':'Yayınla')+'</button>':'')+
+      (x.kind==='sablon'?'<button type="button" class="btn soft sm" data-adx="pub" data-id="'+esc(x.id)+'" data-v="'+(x.published?'0':'1')+'">'+(x.published?'Sadece Wolflano yap':'Herkese aç')+'</button><label class="adx-s">Kategori<select data-adxc="'+esc(x.id)+'"><option value="">Wolflano şablonları</option>'+TPL_KATS.map(function(c){return '<option'+(c===x.note?' selected':'')+'>'+esc(c)+'</option>';}).join('')+'</select></label>':'')+
       (x.kind!=='baski'?'<button type="button" class="btn soft sm" data-adx="kind" data-id="'+esc(x.id)+'" data-v="sablon"'+(x.kind==='sablon'?' hidden':'')+'>Şablon yap</button>':'')+
       '<button type="button" class="btn soft sm adx-del" data-adx="del" data-id="'+esc(x.id)+'">'+(ADX.del===x.id?'Silmeyi onayla':'Sil')+'</button></div></div></div>';
   });
@@ -1535,7 +1538,7 @@ document.addEventListener('click',async function(e){
   if(a==='reload'){ADX.rows=null;adxLoad();adxRefresh();return;}
   if(a==='f'){ADX.f=b.dataset.v;adxRefresh();return;}
   if(a==='dl'){try{var bl=await (await fetch(b.dataset.u)).blob();bzAnchorSave(b.dataset.fn||'baski.png',bl);}catch(_){window.open(b.dataset.u,'_blank','noopener');}return;}
-  if(a==='pub'){if(await adxPatch(id,{published:b.dataset.v==='1'})){ADX.rows.forEach(function(r){if(r.id===id)r.published=b.dataset.v==='1';});toast(b.dataset.v==='1'?'Şablon yayında':'Şablon yayından kaldırıldı');adxRefresh();}return;}
+  if(a==='pub'){if(await adxPatch(id,{published:b.dataset.v==='1'})){ADX.rows.forEach(function(r){if(r.id===id)r.published=b.dataset.v==='1';});toast(b.dataset.v==='1'?'Şablon herkese açık':'Şablon artık sadece Wolflano\'ya özel');adxRefresh();}return;}
   if(a==='kind'){if(await adxPatch(id,{kind:'sablon',published:true,status:'yayında'})){ADX.rows.forEach(function(r){if(r.id===id){r.kind='sablon';r.published=true;}});toast('Şablon olarak yayında');adxRefresh();}return;}
   if(a==='del'){if(ADX.del!==id){ADX.del=id;adxRefresh();return;}ADX.del=null;var tk=await sbToken();var r=tk&&await sbReq('/rest/v1/admin_designs?id=eq.'+id,{method:'DELETE',token:tk,prefer:'return=minimal'});if(r&&r.ok){ADX.rows=ADX.rows.filter(function(x){return x.id!==id;});toast('Silindi');}else toast('Silinemedi');adxRefresh();return;}
   if(a==='sadd'){var em=($('#adxMail').value||'').trim().toLowerCase(),nm=($('#adxName').value||'').trim();if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(em)){toast('Geçerli bir e-posta yaz');return;}

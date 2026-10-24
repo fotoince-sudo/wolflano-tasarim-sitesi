@@ -3378,7 +3378,8 @@ syncUndo();
 (function(){
   var SBA={url:'https://wgovwmeirlzwalelazfj.supabase.co',key:'sb_publishable_PP5xFd7ga61xaDOCHeET_Q_zfMaE_4G'};
   var ADM={on:false,email:'',uid:'',site:null,tpls:[],busy:false};
-  var TPL_CAT_ADM='Wolflano şablonları';
+  var TPL_CAT_ADM='Wolflano şablonları',TPL_CAT_PRIV='Sadece Wolflano',tplVis='herkes',tplCat='';
+  function tplCatOf(t){return !t.published?TPL_CAT_PRIV:(t.note&&TPL_CATS.indexOf(t.note)>0?t.note:TPL_CAT_ADM);}
   function ea(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
   function rnd(){return Date.now().toString(36)+Math.random().toString(36).slice(2,7);}
   function sess(){try{return JSON.parse(localStorage.getItem('wf_sb')||'null');}catch(_){return null;}}
@@ -3469,11 +3470,13 @@ syncUndo();
 
   /* ---- İşlemler ---- */
   async function insertRow(row){var j=await rq('/rest/v1/admin_designs',{method:'POST',body:row,prefer:'return=representation'});return j&&j[0];}
-  async function doTemplate(title,byWolf){
-    if(!sidesWith().length)throw {msg:'Önce bir tasarım yap.'};
+  async function doTemplate(title,byWolf,o){
+    o=o||{};if(!sidesWith().length)throw {msg:'Önce bir tasarım yap.'};
+    var pub=o.vis!=='ozel',cat=TPL_CATS.indexOf(o.cat)>0?o.cat:'';
     var data=await collect(),th=await designThumb();
-    var r=await insertRow({title:title,kind:'sablon',status:'yayında',published:true,product:null,cut:null,color:null,data:data,thumb:th,by_wolf:!!byWolf});
-    await loadTpls();return 'Şablon kaydedildi ve Şablon panelinde "'+TPL_CAT_ADM+'" altında yayında.';
+    var r=await insertRow({title:title,kind:'sablon',status:'yayında',published:pub,product:null,cut:null,color:null,data:data,thumb:th,by_wolf:!!byWolf,note:cat||null});
+    await loadTpls();
+    return pub?'Şablon herkese açık: Şablon panelinde "'+(cat||TPL_CAT_ADM)+'" altında.':'Şablon kaydedildi. Yalnız sen ve yetkililer "'+TPL_CAT_PRIV+'" altında görürsün.';
   }
   async function doDraft(title,byWolf){
     var data=await collect(),th=await thumb();
@@ -3581,7 +3584,9 @@ syncUndo();
     var tabs=[['sablon','Şablon'],['urun','Ürün yap'],['baski','Baskıya gönder'],['taslak','Taslak']];if(ADM.edit)tabs.unshift(['guncelle','Güncelle']);else if(mode==='guncelle')mode='urun';
     var body='';
     if(mode==='guncelle')body='<p class="note">Düzenlenen ürün: <b>'+ea(ADM.edit.title||'')+'</b>. "Ürünü güncelle" yalnız ön ve arka görsellerini yeniler; ürün kodu, fiyat, kategori, açıklama ve stok aynı kalır.</p>';
-    if(mode==='sablon')body='<p class="note">Tasarım, müşterilerin Şablon panelinde "'+TPL_CAT_ADM+'" başlığında görünür. Müşteri seçince kendi ürününe uyarlanır.</p>';
+    if(mode==='sablon')body='<div class="am-two"><label class="am-f">Kimler görsün<select id="amVis"><option value="herkes"'+(tplVis==='herkes'?' selected':'')+'>Herkes (müşteriler de)</option><option value="ozel"'+(tplVis==='ozel'?' selected':'')+'>Sadece Wolflano</option></select></label>'+
+      '<label class="am-f">Kategori<select id="amTCat"><option value="">'+ea(TPL_CAT_ADM)+'</option>'+TPL_CATS.filter(function(c){return c!=='Tümü'&&c!==TPL_CAT_ADM&&c!==TPL_CAT_PRIV;}).map(function(c){return '<option'+(c===tplCat?' selected':'')+'>'+ea(c)+'</option>';}).join('')+'</select></label></div>'+
+      '<p class="note">'+(tplVis==='ozel'?'Yalnız sen ve yetkililer Şablon panelinde "'+TPL_CAT_PRIV+'" altında görürsünüz; müşterinin sayfasına hiç yüklenmez.':'Müşteriler Şablon panelinde seçtiğin kategoride görür; seçince kendi ürününe uyarlanır.')+'</p>';
     if(mode==='urun')body=prodInfo()+
       '<div class="am-two"><label class="am-f">Ürün türü<select id="amType">'+typeOpts()+'</select></label><label class="am-f">Renk<input id="amColor" maxlength="30" value="'+ea(colorName())+'"></label></div>'+
       '<label class="am-f">Kategori<select id="amCat">'+catOpts()+'</select></label>'+
@@ -3619,7 +3624,7 @@ syncUndo();
     var t=$('#amTitle');renderAdm();w.hidden=false;}
   function closeAdm(){var w=$('#admSheet');if(w)w.hidden=true;}
   function bindAdm(w){
-    w.addEventListener('change',function(e){if(e.target&&e.target.id==='amType')autoCat();});
+    w.addEventListener('change',function(e){if(e.target&&e.target.id==='amType')autoCat();if(e.target&&e.target.id==='amVis'){tplVis=e.target.value;renderAdm();}if(e.target&&e.target.id==='amTCat')tplCat=e.target.value;});
     w.addEventListener('click',function(e){
       if(e.target===w||e.target.closest('[data-amx]')){closeAdm();return;}
       var m=e.target.closest('[data-amm]');if(m){mode=m.dataset.amm;renderAdm();return;}
@@ -3629,7 +3634,7 @@ syncUndo();
       var g=e.target.closest('#amGo');if(!g)return;
       var title=($('#amTitle').value||'').trim()||(mode==='urun'&&DEPO.cur&&DEPO.cur.name?DEPO.cur.name:'Wolflano tasarımı');
       if(mode==='guncelle'){run(doUpdate,g);return;}
-      if(mode==='sablon')run(function(){return doTemplate(title);},g);
+      if(mode==='sablon')run(function(){return doTemplate(title,false,{vis:tplVis,cat:tplCat});},g);
       else if(mode==='taslak')run(function(){return doDraft(title);},g);
       else if(mode==='urun'){var cat=$('#amCat').value,pr=+$('#amPrice').value;if(!cat){toast('Kategori seç');return;}if(!(pr>0)){toast('Fiyat yaz');return;}
         var info={type:$('#amType').value,color:($('#amColor').value||'').trim(),old:+$('#amOld').value||0,tag:($('#amTag').value||'').trim(),desc:($('#amDesc').value||'').trim()};
@@ -3678,16 +3683,19 @@ syncUndo();
 
   /* ---- Yayındaki yönetici şablonları (herkese görünür) ---- */
   async function loadTpls(){
-    try{ADM.tpls=await rq('/rest/v1/admin_designs?select=id,title,thumb,data,product&kind=eq.sablon&published=eq.true&order=created_at.desc&limit=60',{anon:true})||[];}catch(_){ADM.tpls=[];}
+    try{ADM.tpls=await rq('/rest/v1/admin_designs?select=id,title,thumb,data,product,note,published&kind=eq.sablon&published=eq.true&order=created_at.desc&limit=300',{anon:true})||[];}catch(_){ADM.tpls=[];}
+    if(ADM.on){try{var pv=await rq('/rest/v1/admin_designs?select=id,title,thumb,data,product,note,published&kind=eq.sablon&published=eq.false&order=created_at.desc&limit=300')||[];ADM.tpls=pv.concat(ADM.tpls);}catch(_){}}
     try{renderTpl();if(view.tab==='tpl')renderTplPreviews();}catch(_){}
   }
   var baseTplA=renderTpl;
   renderTpl=function(){
-    if(ADM.tpls.length&&TPL_CATS.indexOf(TPL_CAT_ADM)<0)TPL_CATS.splice(1,0,TPL_CAT_ADM);
+    var cs={};ADM.tpls.forEach(function(t){cs[tplCatOf(t)]=1;});
+    [TPL_CAT_ADM,TPL_CAT_PRIV].forEach(function(c){var i=TPL_CATS.indexOf(c);if(cs[c]&&i<0)TPL_CATS.splice(1,0,c);else if(!cs[c]&&i>=0)TPL_CATS.splice(i,1);});
+    if(TPL_CATS.indexOf(view.tplCat)<0)view.tplCat='Tümü';
     baseTplA();
     var g=$('#tplGrid'),q=(($('#tplQ')&&$('#tplQ').value)||'').trim().toLocaleLowerCase('tr-TR');if(!g||!ADM.tpls.length)return;
-    if(view.tplCat===TPL_CAT_ADM&&!q)g.innerHTML='';
-    var l=ADM.tpls.filter(function(t){return q?String(t.title||'').toLocaleLowerCase('tr-TR').indexOf(q)>=0:(view.tplCat==='Tümü'||view.tplCat===TPL_CAT_ADM);});
+    if((view.tplCat===TPL_CAT_ADM||view.tplCat===TPL_CAT_PRIV)&&!q)g.innerHTML='';
+    var l=ADM.tpls.filter(function(t){return q?String(t.title||'').toLocaleLowerCase('tr-TR').indexOf(q)>=0:(view.tplCat==='Tümü'||view.tplCat===tplCatOf(t));});
     if(l.length)g.insertAdjacentHTML('afterbegin',l.map(function(t){return '<button class="atpl" data-adtpl="'+ea(t.id)+'"><div class="prev" style="background:#eef1ef"><img alt="" src="'+ea(t.thumb||'')+'" loading="lazy" style="width:100%;height:100%;object-fit:cover"></div><span>'+ea(t.title)+'</span></button>';}).join(''));
     $('#tplEmpty').hidden=g.children.length>0;
   };
@@ -3702,7 +3710,7 @@ syncUndo();
     if(ok!==true)return;
     var s=sess();ADM.on=true;ADM.email=(s&&s.user&&s.user.email)||'';
     try{var rows=await rq('/rest/v1/site_content?select=data&id=eq.main',{anon:true});ADM.site=rows&&rows[0]&&rows[0].data||null;}catch(_){}
-    var b=$('#admBtn');if(b)b.hidden=false;wolfBox();
+    var b=$('#admBtn');if(b)b.hidden=false;wolfBox();loadTpls();
     await loadDepo();
     var dq=new URLSearchParams(location.search).get('depo');if(dq)useDepo(dq,true);
     var dz=new URLSearchParams(location.search).get('duzenle');
