@@ -669,6 +669,7 @@ body.cko #nav,body.cko .menu-btn,body.cko .lang,body.cko #cartBtn,body.cko #ann{
 .tsp .catbar .dd{margin:10px 0 18px}
 .kpromo{padding:8px 0 4px;border-bottom:1px solid var(--line);margin-bottom:18px}.kpromo .lead{margin:6px 0 14px}
 .spt{width:100%;max-width:100%;min-width:0!important;border-collapse:collapse;table-layout:fixed;font-size:14px;display:table}.spt th,.spt td{border:1px solid var(--line);padding:7px 9px;text-align:left;vertical-align:top;white-space:normal!important;overflow-wrap:anywhere;text-transform:none!important;letter-spacing:normal!important}.spt th{width:36%;background:var(--mint);font-weight:600;font-size:13px}
+.adx-c.ksc{display:block;grid-template-columns:none}.ksc .adx-b{width:100%;display:grid;gap:6px}.ksc .adx-a{display:flex;flex-wrap:wrap;gap:8px}.ksn{margin:4px 0 0;white-space:pre-wrap;font-size:14px;color:var(--ink)}
 .catbar{position:relative}
 .catbar .catmenu{position:absolute;left:0;right:0;top:100%;margin:6px 0 0;z-index:15;box-shadow:0 14px 34px rgba(16,26,20,.18);animation:cmIn .15s ease-out}
 @keyframes cmIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
@@ -1660,6 +1661,59 @@ var ADX={rows:null,urls:{},err:'',busy:false,f:'hepsi',del:null,staff:null,sErr:
 var ADX_KIND={taslak:'Taslak',sablon:'Şablon',urun:'Ürün',baski:'Baskı'};
 var ADX_ST=['baskıda','basıldı','kargoda','teslim edildi'];
 function adxRefresh(){if(cur==='yonetim'&&A&&(A.tab==='admtas'||A.tab==='yetki')){var y=window.scrollY;adRender();window.scrollTo(0,y);}}
+/* ---------- Kasa: şirket evrakı, şartnameler, strateji notları. Yalnız site sahibi görür (wf_kasa tablosu + gizli "kasa" dosya alanı) ---------- */
+var KS={rows:null,busy:false,err:'',f:'Hepsi',urls:{},del:null,form:false,up:false,fv:{folder:'Şartnameler',title:'',note:''}},KS_FOLDERS=['Şartnameler','Strateji','Şirket evrakı','Sözleşmeler','Faturalar','Diğer'];
+function ksRe(){if(cur==='yonetim'&&A&&A.tab==='kasa'){var y=window.scrollY;adRender();window.scrollTo(0,y);}}
+async function ksLoad(){if(KS.busy)return;KS.busy=true;KS.err='';
+  try{var tk=await sbToken();if(!tk){KS.err='Kasa için site sahibi hesabıyla giriş yapmalısın.';KS.rows=[];}
+    else{var r=await sbReq('/rest/v1/wf_kasa?select=*&order=created_at.desc&limit=500',{token:tk});if(!r.ok){KS.err='Kasa okunamadı.';KS.rows=[];}else KS.rows=r.j||[];}}
+  catch(_){KS.err='Bağlantı kurulamadı.';KS.rows=[];}
+  KS.busy=false;ksRe();}
+function ksSize(n){n=+n||0;return n>1048576?(n/1048576).toFixed(1)+' MB':n>1024?Math.round(n/1024)+' KB':n?n+' B':'';}
+function ksView(){if(KS.rows===null&&!KS.busy)ksLoad();
+  var h='<div class="alist"><div class="adx-top"><p class="note" style="margin:0;flex:1">Şartnameler, strateji kararları ve şirket evrakı. Yalnız sen görürsün; site ziyaretçileri ve yetkililer göremez.</p><button type="button" class="btn sm" data-ks="form">'+(KS.form?'Vazgeç':'+ Yeni ekle')+'</button><button type="button" class="btn soft sm" data-ks="reload">Yenile</button></div>';
+  if(KS.form){var fv=KS.fv;h+='<div class="aed"><b>Kasaya ekle</b><div class="two"><label for="ksF">Klasör<select id="ksF" data-ksv="folder">'+KS_FOLDERS.map(function(f){return '<option'+(f===fv.folder?' selected':'')+'>'+f+'</option>';}).join('')+'</select></label><label for="ksT">Başlık<input id="ksT" data-ksv="title" value="'+esc(fv.title)+'" placeholder="Örn. Vergi levhası 2026"></label></div>'+
+    '<label for="ksN">Not (isteğe bağlı)<textarea id="ksN" data-ksv="note" style="min-height:90px" placeholder="Karar, açıklama, hatırlatma…">'+esc(fv.note)+'</textarea></label>'+
+    '<label for="ksFile">Dosya (isteğe bağlı: PDF, fotoğraf, Word, Excel; en fazla 25 MB)<input id="ksFile" type="file" accept="application/pdf,image/*,.doc,.docx,.xls,.xlsx,.txt"></label>'+
+    '<div><button type="button" class="btn" data-ks="save"'+(KS.up?' disabled':'')+'>'+(KS.up?'Kaydediliyor…':'Kasaya kaydet')+'</button></div></div>';}
+  var all=KS.rows||[];
+  h+='<div class="adx-f">'+['Hepsi'].concat(KS_FOLDERS).map(function(f){var n=all.filter(function(r){return f==='Hepsi'||r.folder===f;}).length+((f==='Hepsi'||f==='Şartnameler')?1:0);return '<button type="button" data-ks="f" data-v="'+esc(f)+'"'+(KS.f===f?' class="on"':'')+'>'+f+' <small>'+n+'</small></button>';}).join('')+'</div>';
+  if(KS.f==='Hepsi'||KS.f==='Şartnameler')h+='<div class="adx-c ksc"><div class="adx-b"><div class="adx-t"><b>Güncel teknik şartname</b><span class="adx-k">Şartnameler</span></div><small class="note" style="margin:0">Panelden düzenlenen canlı şartname; her zaman en son hali.</small><div class="adx-a"><button type="button" class="btn soft sm" data-ks="spec">Aç</button><button type="button" class="btn sm" data-ks="specpdf">PDF / Yazdır</button></div></div></div>';
+  if(KS.rows===null)return h+'<p class="note">Yükleniyor…</p></div>';
+  if(KS.err)h+='<p class="msg">'+esc(KS.err)+'</p>';
+  var L=all.filter(function(r){return KS.f==='Hepsi'||r.folder===KS.f;});
+  if(!L.length&&!KS.err&&KS.f!=='Hepsi'&&KS.f!=='Şartnameler')h+='<p class="note">Bu klasör boş.</p>';
+  L.forEach(function(x){h+='<div class="adx-c ksc"><div class="adx-b"><div class="adx-t"><b>'+esc(x.title||'Adsız')+'</b><span class="adx-k">'+esc(x.folder)+'</span></div>'+
+    '<small class="note" style="margin:0">'+esc(new Date(x.created_at).toLocaleDateString('tr-TR',{day:'numeric',month:'long',year:'numeric'}))+(x.file_name?' · '+esc(x.file_name)+(x.size?' ('+ksSize(x.size)+')':''):'')+'</small>'+
+    (x.note?'<p class="ksn">'+esc(x.note)+'</p>':'')+
+    '<div class="adx-a">'+(x.file_path?'<button type="button" class="btn sm" data-ks="open" data-id="'+esc(x.id)+'">Dosyayı aç</button>':'')+'<button type="button" class="btn soft sm adx-del" data-ks="del" data-id="'+esc(x.id)+'">'+(KS.del===x.id?'Silmeyi onayla':'Sil')+'</button></div></div></div>';});
+  return h+'</div>';}
+document.addEventListener('input',function(e){var t=e.target;if(t&&t.dataset&&t.dataset.ksv)KS.fv[t.dataset.ksv]=t.value;});
+document.addEventListener('change',function(e){var t=e.target;if(t&&t.dataset&&t.dataset.ksv)KS.fv[t.dataset.ksv]=t.value;});
+document.addEventListener('click',async function(e){var b=e.target.closest&&e.target.closest('[data-ks]');if(!b)return;var a=b.dataset.ks,id=b.dataset.id;
+  if(a==='form'){KS.form=!KS.form;ksRe();}
+  else if(a==='reload'){KS.rows=null;ksRe();}
+  else if(a==='f'){KS.f=b.dataset.v;KS.del=null;ksRe();}
+  else if(a==='spec'){A.tab='sartname';adRender();window.scrollTo(0,0);}
+  else if(a==='specpdf'){specPrint(A.draft);}
+  else if(a==='save'){if(KS.up)return;var fv=KS.fv,fi=document.getElementById('ksFile'),f=fi&&fi.files&&fi.files[0];
+    if(!fv.title.trim()&&!f){toast('Başlık yaz ya da dosya seç');return;}if(f&&f.size>25*1024*1024){toast('Dosya 25 MB\'ı geçmemeli');return;}
+    var tk=await sbToken();if(!tk){toast('Oturum süresi doldu, yeniden giriş yap');return;}KS.up=true;ksRe();
+    try{var row={folder:fv.folder,title:(fv.title.trim()||(f?f.name.replace(/\.[^.]+$/,''):'Adsız')),note:fv.note.trim()};
+      if(f){var ext=(f.name.match(/\.[a-z0-9]{1,5}$/i)||[''])[0].toLowerCase(),path=Date.now().toString(36)+Math.random().toString(36).slice(2,8)+ext;
+        var up=await fetch(SB.url+'/storage/v1/object/kasa/'+path,{method:'POST',headers:{apikey:SB.key,Authorization:'Bearer '+tk,'Content-Type':f.type||'application/octet-stream'},body:f});
+        if(!up.ok)throw new Error('up');row.file_path=path;row.file_name=f.name;row.mime=f.type||'';row.size=f.size;}
+      var r=await sbReq('/rest/v1/wf_kasa',{method:'POST',token:tk,body:row,prefer:'return=representation'});if(!r.ok)throw new Error('row');
+      (KS.rows||(KS.rows=[])).unshift((r.j&&r.j[0])||row);KS.form=false;KS.fv={folder:fv.folder,title:'',note:''};KS.f=fv.folder;toast('Kasaya kaydedildi');}
+    catch(_){toast('Kaydedilemedi. Site sahibi hesabıyla giriş yaptığından emin ol.');}
+    KS.up=false;ksRe();}
+  else if(a==='open'){var x=(KS.rows||[]).filter(function(r){return r.id===id;})[0];if(!x||!x.file_path)return;var w=window.open('','_blank');var tk2=await sbToken();if(!tk2){if(w)w.close();toast('Oturum süresi doldu');return;}
+    var sr=await fetch(SB.url+'/storage/v1/object/sign/kasa/'+encodeURIComponent(x.file_path),{method:'POST',headers:{apikey:SB.key,Authorization:'Bearer '+tk2,'Content-Type':'application/json'},body:JSON.stringify({expiresIn:600})}).then(function(q){return q.json();}).catch(function(){return {};});
+    var su=sr&&(sr.signedURL||sr.signedUrl);if(su){var full=SB.url+'/storage/v1'+su;if(w)w.location.href=full;else location.href=full;}else{if(w)w.close();toast('Dosya açılamadı');}}
+  else if(a==='del'){if(KS.del!==id){KS.del=id;ksRe();return;}var y=(KS.rows||[]).filter(function(r){return r.id===id;})[0],tk3=await sbToken();if(!tk3||!y)return;
+    if(y.file_path){try{await fetch(SB.url+'/storage/v1/object/kasa',{method:'DELETE',headers:{apikey:SB.key,Authorization:'Bearer '+tk3,'Content-Type':'application/json'},body:JSON.stringify({prefixes:[y.file_path]})});}catch(_){}}
+    var rd=await sbReq('/rest/v1/wf_kasa?id=eq.'+id,{method:'DELETE',token:tk3,prefer:'return=minimal'});if(rd.ok){KS.rows=KS.rows.filter(function(r){return r.id!==id;});toast('Silindi');}else toast('Silinemedi');KS.del=null;ksRe();}
+});
 async function adxLoad(){
   if(ADX.busy)return;ADX.busy=true;ADX.err='';
   try{var tk=await sbToken();if(!tk){ADX.err='Oturum süresi doldu, yeniden giriş yap.';ADX.rows=[];}
@@ -3190,6 +3244,7 @@ var PN_GROUPS=[
   ['Ürünler',[['urun','Koleksiyon ürünleri','M8 3l-5 3 2 5 3-1v11h8V10l3 1 2-5-5-3c-1 2-2 3-4 3S9 5 8 3z'],['kategori','Kategoriler','M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z'],['baski','Baskıya uygun ürünler','M6 9V3h12v6M6 18H4v-7h16v7h-2M7 14h10v7H7z'],['fiyat','Fiyatlandırma','M20 12l-8 8-9-9V3h8zM7.5 7.5h.01'],['sartname','Teknik şartname','M6 3h9l4 4v14H6zM14 3v5h5M9 12h7M9 16h7']]],
   ['Tasarım',[['udepo','Ürün deposu','M3 8l9-5 9 5v10l-9 5-9-5zM8 6l9 5M12 13v10M7 15l3 1.5'],['admtas','Admin tasarımları','M12 3l7 3v5c0 4.5-3 8.3-7 10-4-1.7-7-5.5-7-10V6z'],['manken','Manken stüdyosu','M12 3a3 3 0 1 0 0 6 3 3 0 0 0 0-6zM8 21v-7l-3-3 4-2h6l4 2-3 3v7z'],['tasarim','Müşteri tasarımları','M4 20l4-1 11-11-3-3L5 16zM14 6l3 3'],['studyo','Tasarım stüdyosu ayarları','M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8zM12 2v3M12 19v3M2 12h3M19 12h3']]],
   ['Site',[['metin','Sayfa metinleri','M5 6V4h14v2M12 4v16M9 20h6'],['sayfa','Sayfalar','M6 3h9l4 4v14H6zM14 3v5h5'],['site','Site ve iletişim','M3 12a9 9 0 1 0 18 0 9 9 0 0 0-18 0M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18'],['seo','Google (SEO)','M11 4a7 7 0 1 0 0 14 7 7 0 0 0 0-14zM21 21l-5-5']]],
+  ['Şirket',[['kasa','Kasa','M4 7h16v13H4zM9 7V4h6v3M4 12h16M11 12v3h2v-3']]],
   ['Diğer',[['kanal','Satış kanalları','M4 12h16M14 6l6 6-6 6'],['tedarik','Tedarikçiler','M3 7h11v10H3zM14 10h4l3 3v4h-7M7 20a2 2 0 1 0 0-.01M17 20a2 2 0 1 0 0-.01'],['yetki','Yetkililer','M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM2 21c0-4 3-6 7-6s7 2 7 6M17 11h6M20 8v6'],['yedek','Yedek','M4 4h16v6H4zM4 14h16v6H4zM8 7h.01M8 17h.01']]]
 ];
 function pnTitle(t){var r='';PN_GROUPS.forEach(function(g){g[1].forEach(function(x){if(x[0]===t)r=x[1];});});return r||({qp:'Ürün'})[t]||'';}
@@ -3307,7 +3362,7 @@ function adminView(){
   if(!admOk())return admGate();
   try{localStorage.setItem('wf_nostat','1');}catch(_){}
   if(!A)A=newA();
-  var tabs=[['crm','Siparişler ve müşteriler'],['ziyaret','Ziyaretçiler'],['yorum','Yorumlar'],['admtas','Admin tasarımları'],['manken','Manken stüdyosu'],['udepo','Ürün deposu'],['depo','Depo ve gönderim'],['metin','Sayfa metinleri'],['sayfa','Sayfalar'],['urun','Koleksiyon'],['kategori','Kategoriler'],['baski','Baskıya uygun'],['sartname','Teknik şartname'],['studyo','Tasarım stüdyosu'],['fiyat','Fiyatlandırma'],['kanal','Satış kanalları'],['tedarik','Tedarikçiler'],['site','Site ve iletişim'],['muhasebe','Muhasebe'],['tasarim','Müşteri tasarımları'],['seo','SEO'],['yedek','Yedek']];if(sbOwner()&&!ART)tabs.push(['yetki','Yetkililer']);
+  var tabs=[['crm','Siparişler ve müşteriler'],['ziyaret','Ziyaretçiler'],['yorum','Yorumlar'],['admtas','Admin tasarımları'],['manken','Manken stüdyosu'],['udepo','Ürün deposu'],['depo','Depo ve gönderim'],['metin','Sayfa metinleri'],['sayfa','Sayfalar'],['urun','Koleksiyon'],['kategori','Kategoriler'],['baski','Baskıya uygun'],['sartname','Teknik şartname'],['studyo','Tasarım stüdyosu'],['fiyat','Fiyatlandırma'],['kanal','Satış kanalları'],['tedarik','Tedarikçiler'],['site','Site ve iletişim'],['muhasebe','Muhasebe'],['tasarim','Müşteri tasarımları'],['seo','SEO'],['yedek','Yedek']];if(sbOwner()&&!ART)tabs.push(['yetki','Yetkililer']);if(sbOwner()&&!ART)tabs.push(['kasa','Kasa']);
   if(A.tab==='qp'&&!QP)A.tab='urun';
   if(A.tab!=='home'&&A.tab!=='qp'&&!tabs.some(function(t){return t[0]===A.tab;}))A.tab='home';
   var h=pnHead(tabs);
@@ -3357,7 +3412,7 @@ function adminView(){
   }else if(A.tab==='crm'){h+=crmView().replace(/^<div class="wrap page( crm)?"><p class="eyebrow">Wolflano<\/p><h1 class="h2">Yönetim<\/h1>/,'<div class="crm">');
   }else if(A.tab==='kategori'){h+=catAdmin(d);
   }else if(A.tab==='studyo'){h+=studioAdmin(d);
-  }else if(A.tab==='ziyaret'){h+=vsView();}else if(A.tab==='yorum'){h+=raView();}else if(A.tab==='admtas'){h+=adxView();}else if(A.tab==='manken'){h+=mnView();}else if(A.tab==='udepo'){h+=udView();}else if(A.tab==='yetki'){h+=adxStaff();}else if(A.tab==='tasarim'){h+=dsAdmin();}else if(A.tab==='muhasebe'){h+=accView();}else if(A.tab==='seo'){h+=seoAdmin();}else if(A.tab==='tedarik'){
+  }else if(A.tab==='ziyaret'){h+=vsView();}else if(A.tab==='yorum'){h+=raView();}else if(A.tab==='kasa'){h+=ksView();}else if(A.tab==='admtas'){h+=adxView();}else if(A.tab==='manken'){h+=mnView();}else if(A.tab==='udepo'){h+=udView();}else if(A.tab==='yetki'){h+=adxStaff();}else if(A.tab==='tasarim'){h+=dsAdmin();}else if(A.tab==='muhasebe'){h+=accView();}else if(A.tab==='seo'){h+=seoAdmin();}else if(A.tab==='tedarik'){
     d.suppliers=d.suppliers||[];
     h+='<div class="alist"><p class="note" style="margin:0">Yerli ve yabancı tedarikçileri burada tanımla. Anlaşma sonrası her tedarikçi için bir bağlantı (API, XML, CSV) kurulur, katalog, stok ve sipariş otomatik akar. Bağlantı gelene kadar tedarikçinin stok dosyasını aşağıya yapıştırıp stok ve maliyeti güncelleyebilirsin.</p>';
     d.suppliers.forEach(function(s,i){
