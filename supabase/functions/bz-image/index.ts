@@ -100,8 +100,21 @@ Deno.serve(async (req) => {
       parts.push(`Style: ${STY[style]}.`);
     }
     if (idea) parts.push(`The customer's request (this is an instruction describing what to draw, NOT text to write on the artwork): ${idea}`);
+    /* Şehir kısayolu: yalnız "Çeşme", "Antalya" ya da "Kapadokya kurt" gibi kısa bir yer adı yazılırsa, o yere özel şehir tasarımı yapılır */
+    const words = idea.split(/\s+/).filter(Boolean);
+    let place = '';
+    if (!img && words.length >= 1 && words.length <= 3 && !/["“”']/.test(idea)) {
+      const extra = /^(kurt|kurtlu|wolf|rozet|madalyon|logo|gece|gün|batımı|retro)$/i;
+      const nameWords = words.filter((w) => !extra.test(w));
+      if (nameWords.length) place = nameWords.join(' ').toLocaleUpperCase('tr-TR');
+    }
+    if (place) {
+      parts.push(`If the request is simply the name of a place in Türkiye or elsewhere (a city, town, district, region, island or landmark), create a premium city souvenir design for that place: show its single most iconic and recognizable landmark together with its local character (sea, coast, mountains, nature, historic architecture, typical boats, trees or details that people instantly associate with it), elegant balanced composition like a luxury travel brand print, limited refined color palette. Write the place name once, large and elegant, spelled exactly "${place}". If the request also mentions a wolf (kurt), place a noble wolf silhouette naturally in the scene; if it mentions a badge (rozet, madalyon, logo), make it a round emblem with the name around the edge. If the request is NOT a place name, ignore this paragraph and draw what was asked.`);
+    }
     if (shirt) parts.push(shirt);
-    parts.push('Do not add any text, letters, words or captions, unless the request contains words inside quotation marks; only then write exactly those quoted words, spelled correctly (including Turkish letters such as ç, ğ, ı, İ, ö, ş, ü).');
+    parts.push(place
+      ? `Do not add any other text, letters or captions except the place name "${place}" (if this is a place design) or words inside quotation marks in the request; spell them exactly, including Turkish letters such as ç, ğ, ı, İ, ö, ş, ü.`
+      : 'Do not add any text, letters, words or captions, unless the request contains words inside quotation marks; only then write exactly those quoted words, spelled correctly (including Turkish letters such as ç, ğ, ı, İ, ö, ş, ü).');
     parts.push('Do not draw any brand logo. Do not draw a T-shirt or mockup; draw only the artwork itself.');
     parts.push(transparent
       ? 'Isolated artwork on a fully transparent background. No background color, no card, no frame, no border, no vignette, no mockup, no watermark.'
