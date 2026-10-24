@@ -3941,12 +3941,14 @@ syncUndo();
     var dz=new URLSearchParams(location.search).get('duzenle');
     if(dz){var dp=((ADM.site&&ADM.site.products)||[]).filter(function(x){return x.id===dz;})[0];
       if(!dp||!dp.adesign)toast('Bu ürünün stüdyo tasarımı bulunamadı');
-      else{try{if(dp.depo)useDepo(dp.depo,true);var r0=await rq('/rest/v1/admin_designs?select=*&id=eq.'+dp.adesign);if(r0&&r0[0]){applyDesign(r0[0].data,true);ADM.edit={pid:dp.id,title:dp.name||r0[0].title};mode='guncelle';
+      else{try{if(dp.depo)useDepo(dp.depo,true);var r0=await rq('/rest/v1/admin_designs?select=*&id=eq.'+dp.adesign);if(r0&&r0[0]){applyDesign(r0[0].data,true);ADM.edit={pid:dp.id,title:dp.name||r0[0].title};mode='guncelle';var db0=$('#doneBtn');if(db0)db0.textContent='Güncelle';
         setTimeout(function(){longToast('"'+ADM.edit.title+'" düzenleniyor. Bitince Yönetici → Ürünü güncelle.');},400);}else toast('Tasarım bulunamadı');}catch(_){toast('Tasarım açılamadı');}}}
     var id=new URLSearchParams(location.search).get('ad');
     if(id&&/^[0-9a-f-]{36}$/i.test(id)){try{var r=await rq('/rest/v1/admin_designs?select=*&id=eq.'+id);if(r&&r[0]){applyDesign(r[0].data,true);var at=r[0].title;setTimeout(function(){toast('"'+at+'" açıldı');},300);}}catch(_){toast('Tasarım açılamadı');}}
   }
   $('#admBtn').addEventListener('click',openAdm);
+  /* Koleksiyon ürünü düzenlenirken Bitti yerine Güncelle: doğrudan ürünü güncelleme penceresi açılır */
+  document.addEventListener('click',function(e){if(!ADM.edit||!e.target.closest||!e.target.closest('#doneBtn'))return;e.preventDefault();e.stopPropagation();mode='guncelle';openAdm();},true);
   window.wfApplyDesign=applyDesign;
   try{var fv=new URLSearchParams(location.search).get('fav');if(fv){var fd=sfavGet().filter(function(x){return x.id===fv;})[0];if(fd)setTimeout(function(){try{applyDesign(fd.data,true);toast('Kayıtlı tasarımın açıldı');}catch(_){toast('Tasarım açılamadı');}},600);}}catch(_){}
   init();
