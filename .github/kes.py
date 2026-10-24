@@ -16,7 +16,8 @@ MODEL = os.environ.get('KES_MODEL', 'isnet.onnx')
 OUT = 'cut'
 CW, CH = 1200, 1500
 # Standart renkler (sitedeki STDC ile aynı sırada ve adla)
-STD = [('Beyaz', (244, 244, 242)), ('Lacivert', (35, 42, 74)), ('Siyah', (27, 27, 29)), ('Mavi', (42, 100, 196)), ('Yeşil', (45, 90, 67))]
+# Gerçek ürün fotoğraflarından ölçülen kumaş renkleri (gölgeli arka fotoğraflar da doğru renge düşsün diye)
+STD = [('Beyaz', (229, 229, 231)), ('Lacivert', (36, 38, 64)), ('Siyah', (24, 23, 25)), ('Mavi', (25, 68, 151)), ('Yeşil', (44, 72, 60))]
 
 _S = None
 def sess():
