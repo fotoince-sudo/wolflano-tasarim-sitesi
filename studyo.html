@@ -691,7 +691,7 @@ var REF_W=21*PPC, REF_H=29.7*PPC;
 var AREAS={
   a4:  {name:'A4 baskı',      chip:'A4',    cm:[21,29.7], rot:true,  fee:70},
   a3:  {name:'A3 baskı',      chip:'A3',    cm:[29.7,42], rot:false, fee:140},
-  logo:{name:'Sol göğüs logo',chip:'Logo',  cm:[8,8],     rot:false, fee:40, at:[372,176]},
+  logo:{name:'Sol göğüs logo',chip:'Logo',  cm:[8,8],     rot:false, fee:40},
   hat: {name:'Şapka ön baskı',chip:'Şapka', cm:[20,10],    rot:false, fee:40, at:[300,285]},
   mug: {name:'Kupa baskı',    chip:'Kupa 8×8',  cm:[8,8],  rot:false, fee:50, at:[296.4,305]},
   cv3550:{name:'Canvas 35 × 50',chip:'Canvas',cm:[43,58],rot:true,fee:0,at:[300,320]},
@@ -699,6 +699,9 @@ var AREAS={
   mugw:{name:'Kupa süblimasyon',chip:'Süblimasyon 20×10',cm:[20,10],rot:false, fee:75, at:[256.8,305]}
 };
 /* Kesin kurallar: A4/A3 boğaz (arkada ense) çizgisinden 8 cm aşağıda başlar. Logo 8×8 cm, sol göğüste (karşıdan bakınca sağ), hiçbir üründe yeri değişmez. */
+/* LOGO STANDARDI (tişört, polo, sweatshirt): ölçüler yakanın en üst noktasından (cetvelde 0 · omuz) ve ürünün dikey orta çizgisinden cm.
+   [yakadan aşağı: logonun üst kenarı, orta çizgiden giyenin sol göğsüne doğru: logonun ortası]. Her bedende aynı cm, ürün gerçek boyutunda olduğu için logo her bedene doğru oturur. */
+var LOGO_AT={erkek:[17,10],kadin:[15,9],cocuk:[11,7]};
 var NECK_Y={front:101,back:76}, DROP_CM=8;
 /* PRODUCTS: sides=yüzey → izinli alanlar, land={alan:true} o alan o üründe hep yatay,
              cuts=kesimler, price=kesim başına örnek fiyat, vb=sabit görünüm kutusu (giysi dışı ürünler), draw=çizim fonksiyonu */
@@ -755,6 +758,7 @@ function areaBox(side,key,land){
   if(land===undefined)land=landFor(side,key);
   var d=dimsOf(key,land),w=d[0]*PPC,h=d[1]*PPC,cx,top,at=AREAS[key].at;
   if(at){cx=at[0];top=at[1]-h/2;}
+  else if(key==='logo'){var LA=LOGO_AT[state.cut]||LOGO_AT.erkek;cx=300+LA[1]*PPC;top=((P().neck||NECK_Y).front-NECK_DROP.front)+LA[0]*PPC;at=true;}
   else{cx=300;top=((P().neck||NECK_Y)[face(side)])+DROP_CM*PPC;}
   return {l:cx-w/2,t:top,r:cx+w/2,b:top+h,w:w,h:h,cx:cx,cy:top+h/2,at:!!at};
 }
