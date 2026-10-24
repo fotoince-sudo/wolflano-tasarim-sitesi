@@ -3918,7 +3918,9 @@ syncUndo();
   }
   /* Kategori kendiliğinden: kesim + ürün türüne uyan alt kategori (ör. Erkek → Sweatshirt) */
   var SUBKEY={'TİŞÖRT':'tisort','SWEATSHIRT':'sweatshirt','POLO':'polo','EŞOFMAN':'esofman','ŞAPKA':'aksesuar'};
-  function autoCat(){var sel=$('#amCat'),ty=$('#amType');if(!sel||!ty)return;var k=SUBKEY[ty.value];if(!k)return;
+  function autoCat(){var sel=$('#amCat'),ty=$('#amType');if(!sel||!ty)return;
+    /* Kupa ve canvas kendiliğinden Hediye & Dekor altına */
+    var hd={mug:'hediye|hd-kupa',canvas:'hediye|hd-canvas'}[state.product];if(hd){if([].some.call(sel.options,function(o){return o.value===hd;}))sel.value=hd;return;}var k=SUBKEY[ty.value];if(!k)return;
     var want=state.cut==='kadin'?'kadin':state.cut==='erkek'?'erkek':'';if(!want)return;
     var opt=[].filter.call(sel.options,function(o){var a=o.value.split('|');return a[0]===want&&a.length===2&&new RegExp('-'+k+'$').test(a[1]);})[0];if(opt)sel.value=opt.value;}
   /* Pencere her açılışta Şablon sekmesiyle başlar (ürün düzenlenirken Güncelle); önceki sekme hatırlanıp yanlışlıkla ürün yayınlanmasın */
