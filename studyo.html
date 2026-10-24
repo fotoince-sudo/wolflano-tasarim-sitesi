@@ -603,7 +603,7 @@ img{-webkit-touch-callout:none;-webkit-user-drag:none}
   </div>
   <div class="o-body" id="pgBody">
     <section><h3>Renk <em id="pgColorName"></em></h3><div class="csw-row" id="pgColors"></div></section>
-    <p class="note" style="margin:0">A4 ve A3 baskı boğaz (arkada ense) çizgisinden 8 cm aşağıda başlar. Logo sol göğüste 8 × 8 cm, yakadan ve orta çizgiden her üründe aynı ölçüde. Ürüne dokununca tasarımına dönersin; tasarımın kaybolmaz.</p>
+    <p class="note" style="margin:0">A4 ve A3 baskı boğaz (arkada ense) çizgisinden 8 cm, çocuk bedenlerinde 6 cm aşağıda başlar. Logo sol göğüste 8 × 8 cm, yakadan ve orta çizgiden her üründe aynı ölçüde. Ürüne dokununca tasarımına dönersin; tasarımın kaybolmaz.</p>
     <div class="pg-list" id="pgList"></div>
   </div>
 </div>
@@ -706,7 +706,7 @@ var AREAS={
 /* LOGO STANDARDI (tişört, polo, sweatshirt): ölçüler yakanın en üst noktasından (cetvelde 0 · omuz) ve ürünün dikey orta çizgisinden cm.
    [yakadan aşağı: logonun üst kenarı, orta çizgiden giyenin sol göğsüne doğru: logonun ortası]. Her bedende aynı cm, ürün gerçek boyutunda olduğu için logo her bedene doğru oturur. */
 var LOGO_AT={erkek:[15,12],kadin:[14,11],cocuk:[10,8.5]};
-var NECK_Y={front:101,back:76}, DROP_CM=8;
+var NECK_Y={front:101,back:76}, DROP_CM=8, DROP_CM_COCUK=6; /* çocuk bedenlerinde A4/A3 boğazdan 6 cm aşağıda başlar */
 /* PRODUCTS: sides=yüzey → izinli alanlar, land={alan:true} o alan o üründe hep yatay,
              cuts=kesimler, price=kesim başına örnek fiyat, vb=sabit görünüm kutusu (giysi dışı ürünler), draw=çizim fonksiyonu */
 var PRODUCTS={
@@ -763,7 +763,7 @@ function areaBox(side,key,land){
   var d=dimsOf(key,land),w=d[0]*PPC,h=d[1]*PPC,cx,top,at=AREAS[key].at;
   if(at){cx=at[0];top=at[1]-h/2;}
   else if(key==='logo'){var LA=LOGO_AT[state.cut]||LOGO_AT.erkek;cx=300+LA[1]*PPC;top=((P().neck||NECK_Y).front-NECK_DROP.front)+LA[0]*PPC;at=true;}
-  else{cx=300;top=((P().neck||NECK_Y)[face(side)])+DROP_CM*PPC;}
+  else{cx=300;top=((P().neck||NECK_Y)[face(side)])+(state.cut==='cocuk'?DROP_CM_COCUK:DROP_CM)*PPC;}
   return {l:cx-w/2,t:top,r:cx+w/2,b:top+h,w:w,h:h,cx:cx,cy:top+h/2,at:!!at};
 }
 function cmText(key,land){return dimsOf(key,land).join(' × ').replace(/\./g,',')+' cm';}
