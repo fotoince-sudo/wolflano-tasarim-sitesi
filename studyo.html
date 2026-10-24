@@ -1320,6 +1320,10 @@ function depoBlank(product,cut){var d=DEPO.cur;if(!d||d.product!==product||(d.cu
 function phBlank(product,cut){var db=depoBlank(product,cut);if(db)return db;var l=(PH.site&&PH.site.blanks)||[];var m=l.filter(function(b){return b.show!==false&&(b.p||b.id)===product&&(!b.cut||b.cut===cut);});return m.filter(function(b){return b.cut===cut;})[0]||m[0]||null;}
 /* Yönetimdeki "Ürün fotoğrafları (otomatik)": zemini temizlenmiş fotoğraflar standart renk sırasıyla (sitedeki kodun aynısı) */
 var STDC=[{name:'Beyaz',hex:'#f4f4f2'},{name:'Lacivert',hex:'#2b3d82'},{name:'Siyah',hex:'#1b1b1d'},{name:'Mavi',hex:'#2a64c4'},{name:'Yeşil',hex:'#2d5a43'}];
+/* Ürün (kumaş) renk kodları: standart renk sırasıyla K01…K05. Üretimde ve teknik şartnamede bu numaralar kullanılır. */
+function kCode(name){for(var i=0;i<STDC.length;i++)if(STDC[i].name===name)return 'K0'+(i+1);return '';}
+function teeLabel(name){var k=kCode(name);return (k?k+' · ':'')+name;}
+function teeFull(name,hex){var k=kCode(name);return (k?k+' · ':'')+name+(hex?' · '+String(hex).toUpperCase():'');}
 function rawResolve(b,man){var fix=b.rawfix||{},by={},info={};
   (b.raw||[]).forEach(function(r){var m=man[r],f=fix[r]||{},col=f.color||(m&&m.color)||'';info[r]={ready:!!m,color:col,side:f.side||'',ns:m?+m.ns||0:0};if(col)(by[col]||(by[col]=[])).push(r);});
   var res={};STDC.forEach(function(c){var l=by[c.name];if(!l||!l.length)return;var o={front:'',back:''};
@@ -2230,7 +2234,7 @@ function pgGen(b){var t=b.p||b.id,n=String(b.name||'').toLocaleLowerCase('tr');i
 function pgKey(b){return b.id||((b.p||'')+'-'+(b.cut||''));}
 function renderProdPage(){
   var nm='',sw='',h='';
-  TEES.forEach(function(t){if(t[1]===state.tee)nm=t[0];sw+='<button class="csw'+(t[1]===state.tee?' on':'')+'" data-tee="'+t[1]+'" style="background:'+t[1]+'" aria-label="'+t[0]+'"></button>';});
+  TEES.forEach(function(t){if(t[1]===state.tee)nm=teeLabel(t[0]);sw+='<button class="csw'+(t[1]===state.tee?' on':'')+'" data-tee="'+t[1]+'" style="background:'+t[1]+'" aria-label="'+t[0]+'"></button>';});
   $('#pgColors').innerHTML=sw;$('#pgColorName').textContent=nm;
   var bl=((PH.site&&PH.site.blanks)||[]).filter(function(b){return b&&b.show!==false&&PRODUCTS[b.p||b.id]&&!(b.stock!=null&&b.stock!==''&&+b.stock<=0)&&(phColors(b).length||(b.imgs&&b.imgs.length));});
   if(bl.length){
@@ -2272,7 +2276,7 @@ function openWolf(){closeTab();select(null);closeProdPage();renderWolf();$('#wol
 function closeWolf(){$('#wolfPage').hidden=true;}
 function renderWolf(){
   var sw='',nm='',h='',ink=autoInk();
-  TEES.forEach(function(t){if(t[1]===state.tee)nm=t[0];sw+='<button class="csw'+(t[1]===state.tee?' on':'')+'" data-tee="'+t[1]+'" style="background:'+t[1]+'" aria-label="'+t[0]+'"></button>';});
+  TEES.forEach(function(t){if(t[1]===state.tee)nm=teeLabel(t[0]);sw+='<button class="csw'+(t[1]===state.tee?' on':'')+'" data-tee="'+t[1]+'" style="background:'+t[1]+'" aria-label="'+t[0]+'"></button>';});
   $('#wfColors').innerHTML=sw;$('#wfColorName').textContent=nm;
   TPLS.forEach(function(t,i){if(t.c==='Wolf tasarımları')h+='<button class="wcard" data-tpl="'+i+'"><div class="prev" style="background:'+state.tee+'"><div class="in"></div></div><b>'+t.n+'</b><small>A4 dikey · A4 yatay · A3</small></button>';});
   $('#wfGrid').innerHTML=h;
@@ -2547,7 +2551,7 @@ function syncTeeUI(){if(!$('#prodPage').hidden)renderProdPage();syncOpt();if(vie
 function curSize(){var l=sizeList()||[];if(!l.length||isStd())return '';try{var z=phSize();if(z&&l.indexOf(z)>=0)return z;}catch(_){}var best='',mx=0;l.forEach(function(z){if((state.sizes[z]||0)>mx){mx=state.sizes[z];best=z;}});return best||PH.want||'';}
 function syncOpt(){var d=$('#optDot'),z=$('#optSz');if(!d)return;$('#optBtn').hidden=state.product==='canvas';d.style.background=state.tee;var cs=curSize();z.textContent=cs;z.hidden=!cs;$('#optBtn').classList.toggle('on',view.tab==='opt');}
 function renderOpt(){
-  var nm='',sw='';TEES.forEach(function(t){if(t[1]===state.tee)nm=t[0];sw+='<button class="csw'+(t[1]===state.tee?' on':'')+'" data-tee="'+t[1]+'" style="background:'+t[1]+'" aria-label="'+t[0]+'"></button>';});
+  var nm='',sw='';TEES.forEach(function(t){if(t[1]===state.tee)nm=teeLabel(t[0]);sw+='<button class="csw'+(t[1]===state.tee?' on':'')+'" data-tee="'+t[1]+'" style="background:'+t[1]+'" aria-label="'+t[0]+'"></button>';});
   $('#optColors').innerHTML=sw;$('#optColorName').textContent=nm;
   var l=isStd()?[]:(sizeList()||[]),cz=curSize();$('#optSizeWrap').hidden=!l.length;
   $('#optSizes').innerHTML=l.map(function(z){return '<button type="button" data-oz="'+z+'"'+(z===cz?' class="on"':'')+'>'+z+'</button>';}).join('');
@@ -2953,7 +2957,7 @@ function renderPrice(){
 }
 function summaryText(){
   var p=priceInfo(),nm='Özel';TEES.forEach(function(t){if(t[1]===state.tee)nm=t[0];});
-  var L=['WOLFLANO tasarım siparişi','Ürün: '+productLabel(),'Renk: '+nm];
+  var L=['WOLFLANO tasarım siparişi','Ürün: '+productLabel(),'Ürün rengi: '+(nm==='Özel'?'Özel · '+String(state.tee).toUpperCase():teeFull(nm,state.tee))];
   sidesOf().forEach(function(s){
     var sd=state[s];L.push(SIDE_NAME[s]+': '+(sd.objs.length?areaTitle(s)+' ('+cmText(sd.area,isLand(s))+'), '+sd.objs.length+' öğe':'baskı yok'));
   });
@@ -3063,7 +3067,7 @@ function shipFee(sub){if(SHIP.free>0&&sub>=SHIP.free)return 0;return (shipQuote&
 function designSig(){return JSON.stringify([state.product,state.cut,state.tee,brandOn(),needSizesHere()?state.sizes:0,state.front,SS('logo').objs.length&&hasLogoSide()?state.logo:0,state.back,rosterRows()]);}
 function designLines(){
   var nm='Özel';TEES.forEach(function(x){if(x[1]===state.tee)nm=x[0];});
-  var L=['Ürün: '+productLabel(),'Renk: '+nm];
+  var L=['Ürün: '+productLabel(),'Ürün rengi: '+(nm==='Özel'?'Özel · '+String(state.tee).toUpperCase():teeFull(nm,state.tee))];
   if(!P().draw&&!BRAND_OFF)L.push('Wolflano marka işareti: '+(brandOn()?'var (etek ucu, sol yan dikiş)':'yok (müşteri istemedi)'));
   sidesOf().forEach(function(s){var sd=state[s];L.push(SIDE_NAME[s]+': '+(sd.objs.length?areaTitle(s)+' ('+cmText(sd.area,isLand(s))+'), '+sd.objs.length+' öğe':'baskı yok'));});
   sidesOf().forEach(function(s){var sd=state[s],seen={},cs=[],img=false;(sd.objs||[]).forEach(function(o){if(o.type==='image'){img=true;return;}[o.color,o.stroke].forEach(function(c){if(!c)return;var k=String(c).toLowerCase();if(!seen[k]){seen[k]=1;cs.push(colLabel(k));}});});
