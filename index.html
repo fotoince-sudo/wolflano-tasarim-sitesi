@@ -149,6 +149,7 @@ main{min-height:60vh}
 .ced input[type=color]{width:100%;height:42px;padding:2px;border-radius:10px}
 .ced .cph{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .ced .cslot{display:grid;gap:6px;justify-items:center;border:1px dashed var(--line);border-radius:10px;padding:8px;font:600 12px var(--ui)}
+.aig{border:1px solid var(--line);border-radius:12px;padding:10px;margin-top:4px}.aiw{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px}.aiw figure{margin:0;text-align:center;font-size:12px;color:var(--muted)}.aiw img{width:100%;aspect-ratio:2/3;object-fit:contain;background:#eee;border-radius:8px}.aib{display:flex;flex-wrap:wrap;gap:6px}
 .ced .rgrid{display:grid;gap:8px}.rrow .btn{grid-column:1/-1;justify-self:end}.rrow{display:grid;grid-template-columns:86px 1fr 1fr;gap:8px;align-items:center;border:1px solid var(--line);border-radius:12px;padding:8px}.rrow .rn{display:flex;gap:6px;align-items:center;font:600 13px var(--ui)}.rrow .rn i{width:16px;height:16px;border-radius:50%;border:1px solid #0003;flex:none}.rsl{display:grid;gap:2px;justify-items:center;font:600 11px var(--ui);color:var(--mute)}.rsl img,.rsl b{width:100%;height:96px;object-fit:contain;border-radius:8px;background:#e9ecea}.rsl b{display:grid;place-items:center;font-weight:500;border:1px dashed var(--line);background:none}.rlist{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px}.ritem{display:grid;gap:4px;border:1px solid var(--line);border-radius:10px;padding:6px;font:12px var(--ui)}.ritem img{width:100%;height:120px;object-fit:contain;border-radius:8px;background:#e9ecea}.ritem select{font:12px var(--ui);padding:4px;border-radius:8px}.ritem .st{font-weight:600}.ritem .st.w{color:#b26b00}.thumb .bkl{position:absolute;left:4px;bottom:4px;background:#000b;color:#fff;font:600 10px var(--ui);padding:1px 5px;border-radius:6px}.thumb{position:relative}
 .cslot img{width:100%;height:110px;object-fit:contain;background:repeating-conic-gradient(#eee 0 25%,#fff 0 50%) 0 0/14px 14px;border-radius:8px}
 .ced .cslot i{font-style:normal;color:var(--muted);height:110px;display:grid;place-items:center}
@@ -3214,7 +3215,50 @@ function rawEd(pa,b){var l=b.raw||[],R=rawResolve(b,MAN),pend0=l.some(function(r
     '<select data-rfix="'+pa+'" data-r="'+esc(r)+'" data-k="color" aria-label="Renk"><option value="">Renk: otomatik</option>'+STDC.map(function(c){return '<option'+(fx.color===c.name?' selected':'')+'>'+c.name+'</option>';}).join('')+'</select>'+
     '<select data-rfix="'+pa+'" data-r="'+esc(r)+'" data-k="side" aria-label="Ön veya arka"><option value="">Ön/arka: otomatik</option><option value="front"'+(fx.side==='front'?' selected':'')+'>Ön</option><option value="back"'+(fx.side==='back'?' selected':'')+'>Arka</option></select>'+
     '<button class="btn soft sm" data-ad="rdel" data-p="'+pa+'" data-j="'+j+'" style="color:var(--red)">Sil</button></div>';}).join('')+'</div>';}
-  return h+'<div style="margin-top:8px"><label class="btn sm" for="upr-'+aid(pa)+'" style="display:inline-flex">Ürün fotoğrafı yükle</label><input class="sr" id="upr-'+aid(pa)+'" type="file" accept="image/*" multiple data-upr="'+pa+'"></div></div>';}
+  return h+'<div style="margin-top:8px"><label class="btn sm" for="upr-'+aid(pa)+'" style="display:inline-flex">Ürün fotoğrafı yükle</label><input class="sr" id="upr-'+aid(pa)+'" type="file" accept="image/*" multiple data-upr="'+pa+'"></div>'+aiEd(pa,b)+'</div>';}
+/* Ürün fotoğrafını yapay zekâyla üret (sunucu: manken, mode urun). Önce beyaz ön ve arka; diğer renkler bu beyazdan boyanır,
+   böylece her renkte kesim, kıvrım ve çerçeve birebir aynı kalır. Üretilen fotoğraf o rengin eski fotoğraflarının yerine geçer,
+   renk ve ön/arka işaretli gelir, zemini her zamanki gibi birkaç dakikada temizlenir. */
+var AIG={pa:'',txt:''};
+var AI_DIGER=['Lacivert','Siyah','Mavi','Yeşil'];
+function aiTur(b){var t=bTypeOf(b);return t==='tee'||t==='polo'||t==='sweat'?t:'';}
+function aiUrl(tk){return SB.url+'/storage/v1/object/public/site/'+tk;}
+function aiEd(pa,b){if(!aiTur(b)||!sbAdmin())return '';var ai=b.ai||{},w=ai['Beyaz']||{},hasW=!!(w.front&&w.back),busy=!!AIG.pa,mine=AIG.pa===pa;
+  var h='<div class="aig"><b style="font-size:14px">Yapay zekâyla üret</b><p class="note" style="margin:4px 0 8px">Baskısız, görünmez manken tarzı ürün fotoğrafı. Önce beyaz ön ve arka üretilir; beğenirsen diğer 4 renk aynı beyazdan boyanır, böylece bütün renklerde kesim ve kıvrımlar birebir aynı olur. Üretilen fotoğraf o rengin eski fotoğraflarının yerine geçer ve kendiliğinden kaydedilir. Her fotoğraf 1-2 dakika sürer ve OpenAI hesabından ücretlendirilir.</p>';
+  if(hasW)h+='<div class="aiw"><figure><img src="'+aiUrl(w.front)+'" alt="Beyaz ön"><figcaption>Beyaz ön</figcaption></figure><figure><img src="'+aiUrl(w.back)+'" alt="Beyaz arka"><figcaption>Beyaz arka</figcaption></figure></div>';
+  h+='<div class="aib"><button class="btn sm" data-ad="aigen" data-p="'+pa+'" data-s="w"'+(busy?' disabled':'')+'>'+(hasW?'Beyazı yeniden üret (2 fotoğraf)':'1. Beyaz ön ve arka üret (2 fotoğraf)')+'</button>'+
+    '<button class="btn sm" data-ad="aigen" data-p="'+pa+'" data-s="c"'+(busy||!hasW?' disabled':'')+'>2. '+AI_DIGER.join(', ')+' üret (8 fotoğraf)</button></div>';
+  h+='<p class="note" id="aig-'+aid(pa)+'" style="margin:6px 0 0'+(mine?';color:var(--accent,#159b91);font-weight:600':'')+'">'+(mine?esc(AIG.txt):(busy?'Başka bir ürün için üretim sürüyor…':''))+'</p>';
+  return h+'</div>';}
+function aiSay(t){AIG.txt=t;var el=document.getElementById('aig-'+aid(AIG.pa));if(el)el.textContent=t;}
+async function aiGen(pa,step){
+  if(AIG.pa)return;var d=A.draft,b=getp(d,pa);if(!b)return;var tur=aiTur(b);if(!tur)return;
+  var cut=GENS.indexOf(b.cut)>=0?b.cut:'erkek';b.ai=b.ai||{};
+  var renkler=step==='w'?['Beyaz']:AI_DIGER.slice(),toplam=renkler.length*2,n=0,ok=0;
+  if(step==='c'&&!(b.ai['Beyaz']&&b.ai['Beyaz'].front&&b.ai['Beyaz'].back))return;
+  AIG.pa=pa;AIG.txt='';adRender();
+  async function one(body){for(var t=0;;t++){try{return await mnCall(body);}catch(e){if(t>=2||/bakiye|Oturum|yalnız|geçersiz/.test(String(e.message)))throw e;aiSay(e.message+' Yeniden deneniyor…');await new Promise(function(r){setTimeout(r,(t+1)*20000);});}}}
+  try{
+    for(var i=0;i<renkler.length;i++){var rk=renkler[i],W=b.ai['Beyaz']||{},got={};
+      for(var s=0;s<2;s++){var yuz=s?'back':'front',body={mode:'urun',tur:tur,kesim:cut,renk:rk,yuz:yuz};
+        if(rk==='Beyaz'){if(yuz==='back'){body.ref=aiUrl(got.front);body.ref_yuz='front';}}
+        else{body.ref=aiUrl(W[yuz]);body.ref_yuz=yuz;}
+        n++;aiSay(n+' / '+toplam+' · '+rk+' '+(yuz==='front'?'ön':'arka')+' hazırlanıyor… (1-2 dakika)');
+        if(n>1)await new Promise(function(r){setTimeout(r,8000);});
+        var url=await one(body),k=url.indexOf('/storage/v1/object/public/site/');
+        if(k<0)throw new Error('Fotoğraf kaydedilemedi.');
+        got[yuz]=url.slice(k+'/storage/v1/object/public/site/'.length);}
+      /* Bu rengin eski fotoğrafları çıkar, yenileri işaretli girer */
+      var R=rawResolve(b,MAN),fx=b.rawfix||(b.rawfix={});
+      b.raw=(b.raw||[]).filter(function(r){var c=(R.info[r]||{}).color||((b.rawguess||{})[r]);if(c===rk){delete fx[r];return false;}return true;});
+      b.raw.push(got.front,got.back);fx[got.front]={color:rk,side:'front'};fx[got.back]={color:rk,side:'back'};
+      b.ai[rk]={front:got.front,back:got.back};ok++;
+      dirty();await adSave();b=getp(A.draft,pa);
+    }
+    AIG.pa='';AIG.txt='';toast(step==='w'?'Beyaz ön ve arka hazır. Zemin birkaç dakikada temizlenir.':'Renkler hazır. Zeminler birkaç dakikada temizlenir.');
+  }catch(e){var m=(e&&e.message)||'Üretilemedi';AIG.pa='';AIG.txt='';toast(m+(ok?' ('+ok+' renk kaydedildi)':''));}
+  adRender();
+}
 /* Yönetim: baskıya uygun ürünün türü (stüdyoda hangi ürün olarak açılacağı) ve grubu (Kadın / Erkek / Çocuk sekmeleri) */
 var BTYPES=[['tee','Tişört'],['sweat','Sweatshirt'],['polo','Polo tişört'],['hat','Şapka'],['mug','Kupa'],['canvas','Canvas tablo']];
 function bTypeOf(b){var p=b.p||b.id;return BTYPES.some(function(t){return t[0]===p;})?p:'';}
@@ -4051,6 +4095,7 @@ document.addEventListener('click',function(e){
   else if(a==='delcp'){if(A.del===b.dataset.id){d.cpages=(d.cpages||[]).filter(function(x){return x.id!==b.dataset.id;});A.del=null;A.open=null;dirty();}else A.del=b.dataset.id;adRender();}
   else if(a==='mvcp'){var ci=+b.dataset.i,cj=ci+(+b.dataset.d),cl=d.cpages||[];if(cj>=0&&cj<cl.length){var cx=cl[ci];cl[ci]=cl[cj];cl[cj]=cx;dirty();adRender();}}
   else if(a==='txtreset'){if(confirm('Sayfa metinleri ilk haline dönsün mü?')){d.txt=clone(DEF.txt);dirty();adRender();}}
+  else if(a==='aigen'){aiGen(b.dataset.p,b.dataset.s);}
   else if(a==='rdel'){var rb=getp(d,b.dataset.p),rr=rb&&rb.raw&&rb.raw[+b.dataset.j];if(rr){rb.raw.splice(+b.dataset.j,1);if(rb.rawfix)delete rb.rawfix[rr];dirty();adRender();}}
   else if(a==='rswap'){var sb=getp(d,b.dataset.p),RR=rawResolve(sb,MAN).by[b.dataset.c];if(RR&&RR.front&&RR.back){var sx=sb.rawfix||(sb.rawfix={});(sx[RR.front]||(sx[RR.front]={})).side='back';(sx[RR.back]||(sx[RR.back]={})).side='front';dirty();adRender();}}
   else if(a==='cadd'){var cpa=b.dataset.p+'.colors',ca=getp(d,cpa);if(!ca){setp(d,cpa,[]);ca=getp(d,cpa);}ca.push({name:'Yeni renk',hex:'#ffffff',front:'',back:''});dirty();adRender();}

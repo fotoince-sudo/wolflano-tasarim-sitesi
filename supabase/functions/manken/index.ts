@@ -64,6 +64,26 @@ const STYLE = 'Photorealistic premium fashion e-commerce photo, shot on a full-f
 const KIDSTYLE = 'Family-friendly children\'s clothing catalog photo, photorealistic, fully and modestly dressed, age-appropriate natural pose and expression, no makeup, soft diffused light, true-to-life colors, no text, no logos, no watermark.';
 const TEE = 'a plain white crew-neck cotton T-shirt, perfectly ironed, no print, no logo, realistic fabric texture and natural folds, worn untucked';
 
+// Ürün fotoğrafı (baskısız, görünmez manken): ürün türü, kesim ve standart renkler
+const URUN: Record<string, string> = {
+  tee: 'a plain premium heavyweight 240 gsm cotton crew-neck T-shirt with short sleeves and a ribbed collar',
+  polo: 'a plain premium 280 gsm cotton piqué polo shirt with short sleeves, a ribbed flat-knit collar and a two-button placket',
+  sweat: 'a plain premium heavyweight 380 gsm cotton fleece crew-neck sweatshirt with long sleeves, ribbed collar, cuffs and hem',
+};
+const KESIM: Record<string, string> = {
+  erkek: "men's regular fit",
+  kadin: "women's regular fit, slightly shaped at the waist, slightly shorter body",
+  cocuk: "children's size for about an 8-year-old, child proportions",
+};
+const RENK: Record<string, string> = {
+  Beyaz: 'clean optical white (#f4f4f2)',
+  Lacivert: 'deep classic navy blue (#1f2a4f)',
+  Siyah: 'deep jet black (#1b1b1d)',
+  Mavi: 'royal blue (#2a64c4)',
+  'Yeşil': 'deep forest green (#2d5a43)',
+};
+const URUN_STYLE = 'Professional premium e-commerce product photo in ghost-mannequin (invisible mannequin) style: the garment looks worn, with natural 3D volume and soft realistic folds, the inside of the back neck visible through the collar opening; no person, no mannequin, no hanger visible. Perfectly straight-on and symmetrical, centered, sleeves relaxed, the whole garment visible with a generous empty margin on all sides. Seamless plain light-grey (#d6d6d6) background, soft even studio lighting, very soft shadow, sharp fabric texture, true-to-life color. Completely blank garment: no print, no logo, no label, no tag, no text, no watermark. Vertical 2:3 composition.';
+
 function blobFromB64(b64: string, type: string) {
   const bin = atob(b64);
   const a = new Uint8Array(bin.length);
@@ -89,17 +109,40 @@ Deno.serve(async (req) => {
     if (!isAdm) return j({ error: 'forbidden', message: 'Bu bölüm yalnız yöneticiye açık.' }, 403);
 
     const b = await req.json();
-    const mk = MK[String(b.mk)];
+    const isUrun = b.mode === 'urun';
+    const mk = isUrun ? MK.kerem : MK[String(b.mk)];
     if (!mk) return j({ error: 'bad', message: 'Manken seçilmedi.' }, 400);
     const pr = mk.kid ? 'the child' : (mk.he ? 'He' : 'She');
     const style = mk.kid ? KIDSTYLE : STYLE;
-    const mode = b.mode === 'ref' ? 'ref' : b.mode === 'mask' ? 'mask' : 'photo';
+    const mode = isUrun ? 'urun' : b.mode === 'ref' ? 'ref' : b.mode === 'mask' ? 'mask' : 'photo';
 
     let prompt = '';
     let size = '1024x1536';
     let refBlob: Blob | null = null;
 
-    if (mode === 'mask') {
+    if (mode === 'urun') {
+      // ref yoksa: beyaz ön sıfırdan; ref varsa: aynı ürünün arkası (yuz=back) ya da başka rengi (aynı yüz)
+      const gar = URUN[String(b.tur)];
+      const fit = KESIM[String(b.kesim)] || KESIM.erkek;
+      const col = RENK[String(b.renk)];
+      const back = b.yuz === 'back';
+      if (!gar || !col) return j({ error: 'bad', message: 'Ürün türü ya da renk geçersiz.' }, 400);
+      const u = String(b.ref || '');
+      if (u) {
+        if (!u.startsWith(`${SB_URL}/storage/v1/object/public/site/`)) return j({ error: 'bad', message: 'Kaynak fotoğraf geçersiz.' }, 400);
+        const rr = await fetch(u);
+        if (!rr.ok) return j({ error: 'bad', message: 'Kaynak fotoğraf okunamadı.' }, 400);
+        refBlob = new Blob([await rr.arrayBuffer()], { type: rr.headers.get('content-type') || 'image/jpeg' });
+      }
+      const g = `${gar}, ${fit}`;
+      if (!refBlob) {
+        prompt = `${URUN_STYLE} The product: ${g}, color ${col}. ${back ? 'Back view of the garment.' : 'Front view of the garment.'}`;
+      } else if (b.ref_yuz === 'front' && back) {
+        prompt = `The reference image is the FRONT of a garment (${g}). Create the BACK view of exactly the same garment: same fabric, same color and exact same tone (${col}), same fit and proportions, same size and position in the frame, same lighting, same shadow and the same plain light-grey background. Straight-on back view: the back neckline sits higher than the front, the whole back is smooth and fully visible${String(b.tur) === 'polo' ? ', the collar seen from behind, no placket or buttons on the back' : ''}. ${URUN_STYLE}`;
+      } else {
+        prompt = `Edit this product photo: change ONLY the garment's fabric color to ${col}, with natural realistic shading for that color. Keep everything else exactly identical: garment shape, folds, collar, seams, stitching, sleeves, size and position in the frame, lighting, shadow and the plain light-grey background. Do not move, crop, zoom or redraw anything. No print, no logo, no label, no text.`;
+      }
+    } else if (mode === 'mask') {
       // Giydirme için tişört haritası: aynı fotoğrafta yalnız tişört saf yeşile boyanır, panel bundan maskeyi çıkarır
       const u = String(b.url || '');
       if (!u.startsWith(`${SB_URL}/storage/v1/object/public/site/`)) return j({ error: 'bad', message: 'Fotoğraf geçersiz.' }, 400);
@@ -139,7 +182,8 @@ Deno.serve(async (req) => {
     const envModel = Deno.env.get('OPENAI_IMAGE_MODEL') || '';
     const models = [envModel, refBlob ? 'gpt-image-2.5-sunburst' : 'gpt-image-2.5-flare', refBlob ? 'gpt-image-2.5-flare' : 'gpt-image-2.5-sunburst', 'gpt-image-2', 'gpt-image-1.5', 'gpt-image-1']
       .filter((m, i, a) => m && a.indexOf(m) === i);
-    const opts: Record<string, string> = { size, quality: mode === 'mask' ? 'medium' : 'high', output_format: 'jpeg', output_compression: '90' };
+    const opts: Record<string, string> = { size: mode === 'urun' ? '1024x1536' : size, quality: mode === 'mask' ? 'medium' : 'high', output_format: mode === 'urun' ? 'png' : 'jpeg', output_compression: '90' };
+    if (mode === 'urun') delete opts.output_compression;
     if (refBlob) opts.input_fidelity = 'high';
     async function call(model: string) {
       if (refBlob) {
@@ -204,7 +248,7 @@ Deno.serve(async (req) => {
     const ext = isPng ? 'png' : isWebp ? 'webp' : 'jpg';
 
     // Sonucu site kovasına kaydet, panel yalnız adresi saklar
-    const path = `img/manken-${String(b.mk)}-${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}.${ext}`;
+    const path = mode === 'urun' ? `img/urun-${String(b.tur)}-${String(b.kesim)}-${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}.${ext}` : `img/manken-${String(b.mk)}-${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}.${ext}`;
     const up = await fetch(`${SB_URL}/storage/v1/object/site/${path}`, {
       method: 'POST',
       headers: { apikey: SRK, Authorization: `Bearer ${SRK}`, 'Content-Type': ct, 'x-upsert': 'true', 'cache-control': '31536000' },
@@ -214,7 +258,7 @@ Deno.serve(async (req) => {
       console.error('upload', up.status, (await up.text()).slice(0, 200));
       return j({ error: 'fail', message: 'Fotoğraf üretildi ama kaydedilemedi, yeniden dene.' }, 500);
     }
-    return j({ ok: true, url: `${SB_URL}/storage/v1/object/public/site/${path}`, saved: true });
+    return j({ ok: true, url: `${SB_URL}/storage/v1/object/public/site/${path}`, tok: path, saved: true });
   } catch (e) {
     console.error('manken', String(e));
     return j({ error: 'fail', message: 'Fotoğraf şu an üretilemedi, biraz sonra yeniden dene.' }, 500);
