@@ -182,6 +182,12 @@ svg.i{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stro
 .h-turn{left:100%;top:100%}
 .hint{position:absolute;left:50%;bottom:8px;transform:translateX(-50%);pointer-events:none;font:600 12px var(--ui);color:var(--muted);background:var(--panel);border:1px solid var(--line);padding:5px 12px;border-radius:999px;white-space:nowrap;transition:opacity .4s}
 .hint.gone{opacity:0}
+.stagebar{position:absolute;left:50%;bottom:10px;transform:translateX(-50%);z-index:6;display:flex;gap:4px;padding:4px;background:var(--panel);border:1px solid var(--line);border-radius:14px;box-shadow:0 6px 18px rgba(0,0,0,.12);touch-action:manipulation}
+.stagebar[hidden]{display:none}
+.stagebar button{flex:none;display:flex;align-items:center;gap:5px;border:0;background:var(--panel2);color:inherit;border-radius:10px;padding:0 12px;height:36px;font:600 13px var(--ui);white-space:nowrap}
+.stagebar button[hidden]{display:none}
+.stagebar svg.i{width:17px;height:17px}
+.stagebar:not([hidden])~.hint{display:none}
 .toast{position:absolute;left:50%;top:10px;transform:translateX(-50%);background:var(--ink);color:var(--bg);font:600 13px var(--ui);padding:8px 14px;border-radius:999px;pointer-events:none;max-width:90%;text-align:center;z-index:5}
 .ad-warn{margin:0 0 10px;color:var(--warn);font:600 13px/1.45 var(--ui)}
 .toast.top{position:fixed;top:calc(env(safe-area-inset-top,0px) + 64px);z-index:80}
@@ -533,6 +539,12 @@ img{-webkit-touch-callout:none;-webkit-user-drag:none}
       <div id="rulerHost" aria-hidden="true"></div>
       <div id="selLayer"></div>
     </div>
+    <div class="stagebar" id="stageBar" hidden>
+      <button data-c="center" data-t="text clip image"><svg class="i" viewBox="0 0 24 24"><path d="M12 3v18M3 12h18"/><rect x="7" y="7" width="10" height="10" rx="2"/></svg>Ortala</button>
+      <button data-c="gcenter" data-g="1"><svg class="i" viewBox="0 0 24 24"><path d="M12 3v18M3 12h18"/><rect x="7" y="7" width="10" height="10" rx="2"/></svg>Ortala</button>
+      <button data-c="fwd" data-t="text clip image"><svg class="i" viewBox="0 0 24 24"><path d="M12 19V5M5 12l7-7 7 7"/></svg>Öne</button>
+      <button data-c="bwd" data-t="text clip image"><svg class="i" viewBox="0 0 24 24"><path d="M12 5v14M5 12l7 7 7-7"/></svg>Arkaya</button>
+    </div>
     <div class="hint" id="hint">Sürükle: taşı · Köşedeki nokta: büyüt ve döndür · İki parmak: yakınlaştır</div>
     <div class="toast" id="toast" role="status" hidden></div>
   </main>
@@ -554,16 +566,12 @@ img{-webkit-touch-callout:none;-webkit-user-drag:none}
       <button data-c="nobg" data-t="image" id="nobgBtn"><svg class="i" viewBox="0 0 24 24"><path d="M4 20l10-10"/><path d="M15 3l1 2 2 1-2 1-1 2-1-2-2-1 2-1z"/><path d="M19 11l.6 1.4L21 13l-1.4.6L19 15l-.6-1.4L17 13l1.4-.6z"/></svg>Arka planı sil</button>
       <span class="pill" id="qPill" data-t="image"></span>
       <span class="pill mid" id="ovPill" data-t="text clip image" hidden>Taşan kısım basılmaz</span>
-      <button data-c="center" data-t="text clip image"><svg class="i" viewBox="0 0 24 24"><path d="M12 3v18M3 12h18"/><rect x="7" y="7" width="10" height="10" rx="2"/></svg>Ortala</button>
-      <button data-c="fwd" data-t="text clip image"><svg class="i" viewBox="0 0 24 24"><path d="M12 19V5M5 12l7-7 7 7"/></svg>Öne</button>
-      <button data-c="bwd" data-t="text clip image"><svg class="i" viewBox="0 0 24 24"><path d="M12 5v14M5 12l7 7 7-7"/></svg>Arkaya</button>
     
       <button data-c="gcolor" data-g="1"><i class="dot" id="gDot"></i>Renk</button>
       <button data-c="gdel" data-g="1" class="danger" id="gDel"><svg class="i" viewBox="0 0 24 24"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg><span>Sil</span></button>
       <span class="pill gsel" data-g="1">Tüm tasarım seçili</span>
       <button data-c="all" data-i="1"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" stroke-dasharray="3 2.4"/><rect x="8" y="8" width="8" height="8" rx="1"/></svg>Tümünü seç</button>
       <span class="pill gsel" data-i="1">ya da bir parçaya dokun</span>
-      <button data-c="gcenter" data-g="1"><svg class="i" viewBox="0 0 24 24"><path d="M12 3v18M3 12h18"/><rect x="7" y="7" width="10" height="10" rx="2"/></svg>Ortala</button>
       <button data-c="gdone" data-g="1"><svg class="i" viewBox="0 0 24 24"><path d="M5 12l5 5L20 7"/></svg>Bitti</button>
     </div>
   </div>
@@ -1776,25 +1784,26 @@ function qualityOf(o){
   var ppi=Math.round(a.w/((o.w/PPC)/2.54));
   return {ppi:ppi,cls:ppi>=200?'good':(ppi>=120?'mid':'low'),txt:ppi>=200?'İyi':(ppi>=120?'Orta':'Düşük')};
 }
-function syncCtx(){
+function syncCtx(){syncCtx0();var sb=$('#stageBar');if(sb)sb.hidden=ctx.hidden||!$$('#stageBar button').some(function(b){return !b.hidden;});}
+function syncCtx0(){
   var o=selObj();
-  $$('#ctxBar [data-g]').forEach(function(b){b.hidden=!view.grp;});
-  var idle=!o&&!view.grp&&grpObjs().length>0;$$('#ctxBar [data-i]').forEach(function(b){b.hidden=!idle;});
-  if(idle){ctx.hidden=false;$('#colorPop').hidden=true;view.pop=null;$$('#ctxBar [data-t]').forEach(function(b){b.hidden=true;});return;}
-  if(view.grp){ctx.hidden=false;$('#colorPop').hidden=!view.pop;$$('#ctxBar [data-t]').forEach(function(b){b.hidden=true;});
+  $$('#ctxBar [data-g],#stageBar [data-g]').forEach(function(b){b.hidden=!view.grp;});
+  var idle=!o&&!view.grp&&grpObjs().length>0;$$('#ctxBar [data-i],#stageBar [data-i]').forEach(function(b){b.hidden=!idle;});
+  if(idle){ctx.hidden=false;$('#colorPop').hidden=true;view.pop=null;$$('#ctxBar [data-t],#stageBar [data-t]').forEach(function(b){b.hidden=true;});return;}
+  if(view.grp){ctx.hidden=false;$('#colorPop').hidden=!view.pop;$$('#ctxBar [data-t],#stageBar [data-t]').forEach(function(b){b.hidden=true;});
     var gc=grpObjs().filter(function(q){return q.type!=='image';})[0];$('#gDot').style.background=gc?gc.color:'transparent';
     var gd=$('#gDel span');if(gd)gd.textContent=view.gdel?'Emin misin? Tekrar dokun':'Sil';return;}
   view.gdel=false;
   ctx.hidden=!o;
   var pop=$('#colorPop');
   if(!o){pop.hidden=true;return;}
-  $$('#ctxBar [data-t]').forEach(function(b){b.hidden=b.dataset.t.split(' ').indexOf(o.type)<0;});
+  $$('#ctxBar [data-t],#stageBar [data-t]').forEach(function(b){b.hidden=b.dataset.t.split(' ').indexOf(o.type)<0;});
   liveWarn(o);
   $('#ctxDot').style.background=o.color||'transparent';
   var q=$('#qPill');
   if(o.type==='image'){var r=qualityOf(o);if(r){q.className='pill '+r.cls;q.textContent='Baskı kalitesi: '+r.txt+' · '+r.ppi+' dpi';}}
   if(o.type==='image'){var na=assets[o.assetId];$('#nobgBtn').hidden=!!(na&&na.nobg);$('#nobgBtn').disabled=!!bgBusy;}
-  if(o.lock)$$('#ctxBar [data-t]').forEach(function(b){b.hidden=b.id!=='lockBtn';});
+  if(o.lock)$$('#ctxBar [data-t],#stageBar [data-t]').forEach(function(b){b.hidden=b.id!=='lockBtn';});
   $('#lockBtn span').textContent=o.lock?'Kilidi aç':'Kilitle';
   $$('#ctxBar [data-c="stroke"]').forEach(function(b){b.classList.toggle('on',!!o.stroke);});
   pop.hidden=!view.pop;
@@ -2653,7 +2662,7 @@ $('#tplQ').addEventListener('input',function(){renderTpl();renderTplPreviews();}
 $('#tplQ').addEventListener('keydown',function(e){if(e.key==='Enter')this.blur();});
 $('#tplQx').addEventListener('click',function(){$('#tplQ').value='';renderTpl();renderTplPreviews();});
 $('#tplGrid').addEventListener('click',function(e){var b=e.target.closest('[data-tpl]');if(b)applyTemplate(TPLS[+b.dataset.tpl]);});
-$('#ctxBar').addEventListener('click',function(e){
+function ctxClick(e){
   var b=e.target.closest('[data-c]');if(!b)return;
   var c=b.dataset.c;
   if(c==='all'){if(enterGroup())toast('Tüm tasarım seçildi. Köşedeki noktayla hepsini birlikte büyüt, küçült.');return;}
@@ -2677,7 +2686,9 @@ $('#ctxBar').addEventListener('click',function(e){
   else if(c==='nobg')removeBg();
   else if(c==='fx')showFx();
   else if(c==='del')deleteSel();
-});
+}
+$('#ctxBar').addEventListener('click',ctxClick);
+(function(){var sb=$('#stageBar');sb.addEventListener('click',ctxClick);['pointerdown','pointerup'].forEach(function(t){sb.addEventListener(t,function(e){e.stopPropagation();},{passive:true});});})();
 $('#colorPop').addEventListener('click',function(e){var b=e.target.closest('[data-col]');if(!b)return;applyColor(b.dataset.col||null);pushHist();});
 $('#colorPop').addEventListener('input',function(e){if(e.target.id==='colorCustom'&&view.grp){applyColor(e.target.value);return;}if(e.target.id==='colorCustom'){var o=selObj();if(!o)return;if(view.pop==='stroke')o.stroke=e.target.value;else o.color=e.target.value;updateEl(els[o.id],o);$('#ctxDot').style.background=o.color;}});
 $('#colorPop').addEventListener('change',function(e){if(e.target.id==='colorCustom')pushHist();});
