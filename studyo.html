@@ -2187,7 +2187,7 @@ function renderProdPage(){
   var nm='',sw='',h='';
   TEES.forEach(function(t){if(t[1]===state.tee)nm=t[0];sw+='<button class="csw'+(t[1]===state.tee?' on':'')+'" data-tee="'+t[1]+'" style="background:'+t[1]+'" aria-label="'+t[0]+'"></button>';});
   $('#pgColors').innerHTML=sw;$('#pgColorName').textContent=nm;
-  var bl=((PH.site&&PH.site.blanks)||[]).filter(function(b){return b&&b.show!==false&&PRODUCTS[b.p||b.id];});
+  var bl=((PH.site&&PH.site.blanks)||[]).filter(function(b){return b&&b.show!==false&&PRODUCTS[b.p||b.id]&&!(b.stock!=null&&b.stock!==''&&+b.stock<=0)&&(phColors(b).length||(b.imgs&&b.imgs.length));});
   if(bl.length){
     var inTab=bl.filter(function(b){return !PG.tab||pgGen(b).indexOf(PG.tab)>=0;}),types=[];
     inTab.forEach(function(b){var t=b.p||b.id;if(types.indexOf(t)<0)types.push(t);});types.sort(function(a,b){return PG_ORD.indexOf(a)-PG_ORD.indexOf(b);});

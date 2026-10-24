@@ -2218,7 +2218,7 @@ function seedBlanks(){D.seeded=D.seeded||{};if(!Array.isArray(D.blanks))return;v
 function applyData(){seedBlanks();autoSub(D);if(!D.vat)D.vat={mode:'excl',ready:20,blank:20,print:20};
  pNums(D.products);ALLP=D.products.map(function(p){return Object.assign({},p,{price:vp(p.price,'ready'),old:vp(p.old,'ready')});});
  PRODUCTS=ALLP.filter(function(p){return p.show!==false;});
- CATS=(D.cats||[]).filter(function(c){return c.show!==false;}).map(function(c){return [c.id,c.name||'Adsız'];});if(CATS.length&&!CATS.some(function(c){return c[0]===catSel;})){catSel=CATS[0][0];subSel='';}
+ CATS=(D.cats||[]).filter(function(c){if(c.show===false)return false;if(/hediye|dekor/i.test(c.name||''))return PRODUCTS.some(function(p){return (p.cat||[]).indexOf(c.id)>=0;});return true;}).map(function(c){return [c.id,c.name||'Adsız'];});if(CATS.length&&!CATS.some(function(c){return c[0]===catSel;})){catSel=CATS[0][0];subSel='';}
  BLANKS=D.blanks.filter(function(b){return b.show!==false;}).map(function(b){return Object.assign({},b,{price:vp(b.price,'blank'),old:vp(b.old,'blank'),a4:vp(b.a4,'print'),logo:vp(b.logo,'print'),hat:vp(b.hat,'print'),wrap:vp(b.wrap!=null?b.wrap:((b.p||b.id)==='mug'?75:null),'print')});});
  A3_KAT=+D.a3||2;TIERS=D.tiers;setTimeout(function(){if(window.seoUpdate)seoUpdate();},0);PRICE_NOTE=(D.note||[]).concat(['Tüm fiyatlara KDV dahildir.']);CONTACT=D.contact;applyLogo();bzMerge();}
 function prBig(x){if(x.old&&x.old>x.price){var pc=Math.round((1-x.price/x.old)*100);return '<s class="old">'+tl(x.old)+'</s><span class="now">'+tl(x.price)+'</span>'+(pc>0?'<em class="pct">%'+pc+' indirim</em>':'');}return '<span class="now">'+tl(x.price)+'</span>';}
@@ -2744,7 +2744,7 @@ yorumlar:function(){return rvPage();},
     (op?'<div class="ddl" role="menu">'+it(!subSel,'data-pick="" data-p2=""','Tümü')+subs.map(function(x){var ss=x.subs||[];if(!ss.length)return it(subSel===x.id,'data-pick="'+x.id+'" data-p2=""',x.name||'Adsız');
       var go=grpOpen===x.id||subSel===x.id;return '<div class="ddg"><button type="button" class="ddh'+(go?' open':'')+(subSel===x.id?' on':'')+'" data-gtog="'+x.id+'" aria-expanded="'+go+'"><span>'+esc(x.name||'')+'</span><i class="cv">'+CV+'</i></button>'+
         (go?'<div class="ddi">'+it(subSel===x.id&&!sub2Sel,'data-pick="'+x.id+'" data-p2=""','Tümü')+ss.map(function(y){return it(sub2Sel===y.id,'data-pick="'+x.id+'" data-p2="'+y.id+'"',y.name||'Adsız');}).join('')+'</div>':'')+'</div>';}).join('')+'</div>':'')+'</div>';})():'')+'</div>'+
-  (function(){var hd=isHdCat(catSel)?hdCards(subSel?(sobj.name||''):''):'';return (list.length||hd)?'<div class="grid">'+list.map(card).join('')+hd+'</div>':'<p class="empty">Bu kategoride henüz ürün yok.</p>';})()+'</div>';
+  (function(){var hd='';return (list.length||hd)?'<div class="grid">'+list.map(card).join('')+hd+'</div>':'<p class="empty">Bu kategoride henüz ürün yok.</p>';})()+'</div>';
  },
  urun:function(id){
   var p=PRODUCTS.filter(function(x){return x.id===id;})[0];szPick='';
@@ -2755,7 +2755,7 @@ yorumlar:function(){return rvPage();},
  baski:function(){return VIEWS.tasarla();},
  tasarla:function(){
   /* Sekmeler: Tümü · Kadın · Erkek · Çocuk · Kupa · Canvas; giyim sekmelerinde tür kutusu (Tişört, Sweatshirt, Polo, Şapka) */
-  var all=BLANKS.filter(function(b){var t=b.p||b.id;return t!=='mug'&&t!=='canvas'&&!/kupa|canvas|tablo/i.test(b.name||'');}),inTab=all.filter(function(b){return !tsSel||bGen(b).indexOf(tsSel)>=0;}),types=[];
+  var all=BLANKS.filter(function(b){var t=b.p||b.id;return t!=='mug'&&t!=='canvas'&&!/kupa|canvas|tablo/i.test(b.name||'')&&bVisible(b);}),inTab=all.filter(function(b){return !tsSel||bGen(b).indexOf(tsSel)>=0;}),types=[];
   inTab.forEach(function(b){var t=bTypeOf(b)||'diger';if(types.indexOf(t)<0)types.push(t);});
   types.sort(function(a,b){return TS_ORD.indexOf(a)-TS_ORD.indexOf(b);});if(tsType&&types.indexOf(tsType)<0)tsType='';
   var list=inTab.filter(function(b){return !tsType||(bTypeOf(b)||'diger')===tsType;}),
@@ -2831,6 +2831,8 @@ function kurHTML(full){
 var tsSel='',bcSel=0;
 var tsType='',tsOpen=false,tcSel={};
 var TS_TABS=[['','Tümü'],['kadin','Kadın'],['erkek','Erkek'],['cocuk','Çocuk']],TS_ORD=['tee','sweat','polo','hat','mug','canvas','diger'];
+/* Sitede görünmez: stoğu bitmiş (stok takibi açık ve 0) ya da hiç fotoğrafı yüklenmemiş baskıya uygun ürün */
+function bVisible(b){if(soldOut(b))return false;return !!(bColors(b).length||(b.imgs&&b.imgs.length));}
 function tsName(t){var x=BTYPES.filter(function(y){return y[0]===t;})[0];return x?x[1]:'Diğer';}
 /* Baskıya uygun ürün kartı: yüklenen renklerin ön fotoğrafı; renk noktasına dokununca yalnız bu kartın fotoğrafı değişir */
 function tsCard(b){var cs=bColors(b),j=Math.min(tcSel[b.id]||0,Math.max(cs.length-1,0)),c=cs[j],nm=String(b.name||'').toLocaleUpperCase('tr').replace(/SWEATSHİRT/g,'SWEATSHIRT'),
