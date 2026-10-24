@@ -126,33 +126,48 @@ Deno.serve(async (req) => {
       prompt = `${who} ${sc.t}. ${subj} wears ${TEE}, with ${alt}. ${pz}. Use only the person from the reference; do not copy any other clothing from it. ${style} Vertical 2:3 composition.`;
     }
 
-    const model = Deno.env.get('OPENAI_IMAGE_MODEL') || 'gpt-image-1';
-    async function call(fid: boolean) {
+    // OpenAI model adları zamanla değişiyor: sırayla dene, olmayan modeli ve desteklenmeyen ayarı atla
+    const envModel = Deno.env.get('OPENAI_IMAGE_MODEL') || '';
+    const models = [envModel, refBlob ? 'gpt-image-2.5-sunburst' : 'gpt-image-2.5-flare', refBlob ? 'gpt-image-2.5-flare' : 'gpt-image-2.5-sunburst', 'gpt-image-2', 'gpt-image-1.5', 'gpt-image-1']
+      .filter((m, i, a) => m && a.indexOf(m) === i);
+    const opts: Record<string, string> = { size, quality: 'high', output_format: 'jpeg', output_compression: '90' };
+    if (refBlob) opts.input_fidelity = 'high';
+    async function call(model: string) {
       if (refBlob) {
         const fd = new FormData();
         fd.append('model', model);
         fd.append('prompt', prompt);
-        fd.append('size', size);
-        fd.append('quality', 'high');
         fd.append('n', '1');
-        fd.append('output_format', 'jpeg');
-        fd.append('output_compression', '90');
-        if (fid) fd.append('input_fidelity', 'high');
+        for (const k in opts) fd.append(k, opts[k]);
         fd.append('image', refBlob, 'ref.' + ((refBlob.type.split('/')[1] || 'jpeg').replace('jpeg', 'jpg')));
         return await fetch('https://api.openai.com/v1/images/edits', { method: 'POST', headers: { Authorization: `Bearer ${key}` }, body: fd, signal: AbortSignal.timeout(140000) });
       }
+      const pj: Record<string, unknown> = { model, prompt, n: 1 };
+      for (const k in opts) pj[k] = k === 'output_compression' ? Number(opts[k]) : opts[k];
       return await fetch('https://api.openai.com/v1/images/generations', {
         method: 'POST',
         headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ model, prompt, size, quality: 'high', n: 1, output_format: 'jpeg', output_compression: 90 }),
+        body: JSON.stringify(pj),
         signal: AbortSignal.timeout(140000),
       });
     }
-    let r = await call(true);
-    if (!r.ok && r.status === 400 && refBlob) {
-      const t = await r.clone().text();
-      if (/input_fidelity/i.test(t)) r = await call(false);
+    let mi = 0;
+    let r = await call(models[mi]);
+    for (let k = 0; k < 10 && !r.ok && r.status === 400; k++) {
+      const e = (await r.clone().json().catch(() => ({})))?.error || {};
+      const m = String(e.message || '').toLowerCase();
+      const p = String(e.param || '');
+      if (p === 'model' || /model .*(does not exist|not found|not supported)/.test(m)) {
+        if (++mi >= models.length) break;
+        r = await call(models[mi]);
+        continue;
+      }
+      const drop = p && p in opts ? p : Object.keys(opts).find((o) => m.includes(o));
+      if (drop && drop !== 'size') { delete opts[drop]; r = await call(models[mi]); continue; }
+      if (drop === 'size' || p === 'size') { opts.size = 'auto'; r = await call(models[mi]); continue; }
+      break;
     }
+    console.log('model', models[mi], r.status);
     const out = await r.json().catch(() => ({}));
     if (!r.ok) {
       const msg = JSON.stringify(out?.error || out).toLowerCase();
@@ -161,19 +176,27 @@ Deno.serve(async (req) => {
       if (/billing|quota|insufficient/.test(msg)) return j({ error: 'quota', message: 'OpenAI hesabında bakiye yok. Hesaba bakiye yüklenince çalışır.' }, 402);
       return j({ error: 'fail', message: 'Fotoğraf şu an üretilemedi, biraz sonra yeniden dene.' }, 502);
     }
+    let blob: Blob | null = null;
     const b64 = out?.data?.[0]?.b64_json;
-    if (!b64) return j({ error: 'fail', message: 'Fotoğraf şu an üretilemedi.' }, 502);
+    if (b64) blob = blobFromB64(b64, 'application/octet-stream');
+    else if (out?.data?.[0]?.url) { const ir = await fetch(out.data[0].url); if (ir.ok) blob = await ir.blob(); }
+    if (!blob) { console.error('no image', JSON.stringify(out).slice(0, 300)); return j({ error: 'fail', message: 'Fotoğraf şu an üretilemedi.' }, 502); }
+    const head = new Uint8Array(await blob.slice(0, 4).arrayBuffer());
+    const isPng = head[0] === 0x89 && head[1] === 0x50;
+    const isWebp = head[0] === 0x52 && head[1] === 0x49;
+    const ct = isPng ? 'image/png' : isWebp ? 'image/webp' : 'image/jpeg';
+    const ext = isPng ? 'png' : isWebp ? 'webp' : 'jpg';
 
     // Sonucu site kovasına kaydet, panel yalnız adresi saklar
-    const path = `img/manken-${String(b.mk)}-${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}.jpg`;
+    const path = `img/manken-${String(b.mk)}-${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}.${ext}`;
     const up = await fetch(`${SB_URL}/storage/v1/object/site/${path}`, {
       method: 'POST',
-      headers: { apikey: SRK, Authorization: `Bearer ${SRK}`, 'Content-Type': 'image/jpeg', 'x-upsert': 'true', 'cache-control': '31536000' },
-      body: blobFromB64(b64, 'image/jpeg'),
+      headers: { apikey: SRK, Authorization: `Bearer ${SRK}`, 'Content-Type': ct, 'x-upsert': 'true', 'cache-control': '31536000' },
+      body: blob,
     });
     if (!up.ok) {
       console.error('upload', up.status, (await up.text()).slice(0, 200));
-      return j({ ok: true, image: `data:image/jpeg;base64,${b64}`, saved: false });
+      return j({ error: 'fail', message: 'Fotoğraf üretildi ama kaydedilemedi, yeniden dene.' }, 500);
     }
     return j({ ok: true, url: `${SB_URL}/storage/v1/object/public/site/${path}`, saved: true });
   } catch (e) {
