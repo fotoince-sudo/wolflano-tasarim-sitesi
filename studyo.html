@@ -92,6 +92,9 @@ svg.i{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stro
 .pcard.on{border-color:var(--accent);box-shadow:inset 0 0 0 1.5px var(--accent)}
 .pth{display:block;width:100%;background:var(--stage);border-radius:10px;padding:4px}
 .pth svg{display:block;width:100%;height:auto}
+.pth img{display:block;width:100%;aspect-ratio:1/1;object-fit:contain}
+.pgr{grid-template-columns:repeat(2,minmax(0,1fr))}@media (min-width:700px){.pgr{grid-template-columns:repeat(4,minmax(0,1fr))}}
+.pgr .pcard b{font-size:13px;text-align:center;line-height:1.25}
 .pcard b{font:700 14px var(--ui)}
 .pcard small{font:600 12px var(--ui);color:var(--muted);font-variant-numeric:tabular-nums}
 .ib.on{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
@@ -107,7 +110,8 @@ svg.i{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stro
 .stagewrap{position:relative;flex:1;min-height:0;overflow:hidden;background:var(--stage);touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
 #stage{position:absolute;left:0;top:0;width:600px;height:640px;transform-origin:0 0;transition:transform .3s cubic-bezier(.2,.7,.2,1);--inv:1;--area:#111}
 #shirtHost svg{display:block;pointer-events:none}
-#clipLayer,#objLayer,#passLayer{position:absolute;inset:0}
+#clipLayer,#objLayer,#passClip,#passLayer{position:absolute;inset:0}
+#passClip{pointer-events:none}
 #passLayer{pointer-events:none}#passLayer .obj{pointer-events:none}
 #logoZone{position:absolute;pointer-events:none;border:calc(1.2px*var(--inv)) dashed #2f8f4e;background:rgba(47,143,78,.06)}#logoZone span{position:absolute;left:0;top:100%;margin-top:calc(2px*var(--inv));font:700 calc(9px*var(--inv)) var(--ui);color:#2f8f4e;white-space:nowrap}
 #shadeHost,#shadeHost>div{position:absolute;inset:0;pointer-events:none}#shadeHost svg{display:block}#shadeHost .sh-m{mix-blend-mode:multiply}#shadeHost .sh-s{mix-blend-mode:screen}
@@ -495,7 +499,7 @@ img{-webkit-touch-callout:none;-webkit-user-drag:none}
       <div id="gridHost" aria-hidden="true"></div>
       <div id="shirtHost"></div>
       <img id="brandMark" src="img/wolflano-logo.png" alt="" aria-hidden="true" hidden>
-      <div id="passLayer" aria-hidden="true"></div><div id="clipLayer"><div id="objLayer"></div></div>
+      <div id="passClip" aria-hidden="true"><div id="passLayer"></div></div><div id="clipLayer"><div id="objLayer"></div></div>
       <div id="shadeHost" aria-hidden="true"></div>
       <div id="areaBox"><span id="areaLabel"></span><i class="cg cgV"></i><i class="cg cgH"></i></div>
       <div id="logoZone" hidden><span>Logo</span></div><div id="faceBox" hidden><span id="faceLabel"></span></div>
@@ -599,7 +603,7 @@ img{-webkit-touch-callout:none;-webkit-user-drag:none}
   </div>
   <div class="o-body" id="pgBody">
     <section><h3>Renk <em id="pgColorName"></em></h3><div class="csw-row" id="pgColors"></div></section>
-    <p class="note" style="margin:0">A4 ve A3 baskı boğaz (arkada ense) çizgisinden 8 cm aşağıda başlar. Logo her üründe sol göğüste, 8 × 8 cm. Ürüne dokununca baskı alanına geçersin.</p>
+    <p class="note" style="margin:0">A4 ve A3 baskı boğaz (arkada ense) çizgisinden 8 cm aşağıda başlar. Logo sol göğüste 8 × 8 cm, yakadan ve orta çizgiden her üründe aynı ölçüde. Ürüne dokununca tasarımına dönersin; tasarımın kaybolmaz.</p>
     <div class="pg-list" id="pgList"></div>
   </div>
 </div>
@@ -1531,15 +1535,19 @@ function renderRuler(){
 /* Ön tasarım alanı, logo varken logonun kapladığı kare çıkarılarak kırpılır (logo öncelikli). */
 function rectPath(b){return 'M'+b.l+' '+b.t+'H'+b.r+'V'+b.b+'H'+b.l+'Z';}
 function logoBox(){return areaBox('logo','logo');}
-function layerClip(side){var A=areaBox(side,SS(side).area);
-  if(side==='front'&&logoOn())return "path(evenodd, '"+rectPath(A)+rectPath(logoBox())+"')";
+function interBox(a,b){var l=Math.max(a.l,b.l),t=Math.max(a.t,b.t),r=Math.min(a.r,b.r),bb=Math.min(a.b,b.b);return (r>l&&bb>t)?{l:l,t:t,r:r,b:bb,w:r-l,h:bb-t}:null;}
+/* Ön alandan logonun kapladığı kare çıkarılmış hâli (yoksa null) */
+function logoHole(A){return logoOn()?interBox(A,logoBox()):null;}
+function layerClip(side){var A=areaBox(side,SS(side).area),H=side==='front'?logoHole(A):null,P2=function(x,y){return x.toFixed(1)+'px '+y.toFixed(1)+'px';};
+  if(H)return 'polygon(evenodd, '+[P2(A.l,A.t),P2(A.r,A.t),P2(A.r,A.b),P2(A.l,A.b),P2(A.l,A.t),P2(H.l,H.t),P2(H.l,H.b),P2(H.r,H.b),P2(H.r,H.t),P2(H.l,H.t)].join(', ')+')';
   return 'inset('+A.t+'px '+(STAGE_W-A.r)+'px '+(STAGE_H-A.b)+'px '+A.l+'px)';}
+function setClip(el,v){el.style.clipPath=v;el.style.webkitClipPath=v;}
 function renderPassive(){
-  var pl=$('#passLayer'),lz=$('#logoZone');if(!pl)return;pl.textContent='';pl.style.clipPath='';
+  var pl=$('#passLayer'),pc=$('#passClip'),lz=$('#logoZone');if(!pl)return;pl.textContent='';setClip(pc,'none');
   var on=hasLogoSide()&&(view.side==='front'||view.side==='logo'),other=view.side==='front'?'logo':'front';
   if(lz){var sh=on&&view.side==='front'&&logoOn();lz.hidden=!sh;if(sh){var L=logoBox();lz.style.left=L.l+'px';lz.style.top=L.t+'px';lz.style.width=L.w+'px';lz.style.height=L.h+'px';}}
   if(!on)return;var objs=SS(other).objs;if(!objs.length)return;
-  pl.style.clipPath=layerClip(other);
+  setClip(pc,layerClip(other));
   objs.forEach(function(o){var el=makeEl(o);el.classList.add('pas');pl.appendChild(el);});
 }
 function updateArea(){
@@ -1549,7 +1557,7 @@ function updateArea(){
   var fb=$('#faceBox'),cv=state.product==='canvas';b.classList.toggle('bleed',cv);fb.hidden=!cv;
   if(cv){var bp=4*PPC;fb.style.left=(A.l+bp)+'px';fb.style.top=(A.t+bp)+'px';fb.style.width=(A.w-2*bp)+'px';fb.style.height=(A.h-2*bp)+'px';
     var fd=dimsOf(cur().area,isLand(view.side));$('#areaLabel').textContent='Baskı sınırı · '+(fd[0]+'').replace('.',',')+' × '+(fd[1]+'').replace('.',',')+' cm (her yanda 4 cm kenar)';$('#faceLabel').textContent='Ön yüz · '+(fd[0]-8)+' × '+(fd[1]-8)+' cm';}
-  $('#clipLayer').style.clipPath=layerClip(view.side);
+  setClip($('#clipLayer'),layerClip(view.side));
   renderPassive();
   try{renderRuler();}catch(_){}
 }
@@ -2075,6 +2083,13 @@ function renderProdPage(){
     sw+='<button class="csw'+(t[1]===state.tee?' on':'')+'" data-tee="'+t[1]+'" style="background:'+t[1]+'" aria-label="'+t[0]+'"></button>';
   });
   $('#pgColors').innerHTML=sw;$('#pgColorName').textContent=nm;
+  /* Sitedeki "Baskıya uygun ürünler" sayfasıyla aynı: gerçek ürün fotoğrafları */
+  var bl=((PH.site&&PH.site.blanks)||[]).filter(function(b){return b&&b.show!==false&&PRODUCTS[b.p||b.id];});
+  if(bl.length){
+    h='<div class="pgrid pgr">'+bl.map(function(b){var p=b.p||b.id,q=PRODUCTS[p],c=(b.cut&&q.cuts.indexOf(b.cut)>=0)?b.cut:q.cuts[0],cs=phColors(b),
+      co=cs.filter(function(x){return String(x.hex).toLowerCase()===String(state.tee).toLowerCase();})[0]||cs[0],u=co?(co.front||co.back||''):((b.imgs||[])[0]||''),on=state.product===p&&state.cut===c;
+      return '<button class="pcard'+(on?' on':'')+'" data-p="'+p+'" data-c="'+c+'" aria-label="'+escX(b.name||q.name)+'"><span class="pth">'+(u?'<img src="'+escX(phSrc(u))+'" alt="" loading="lazy">':productSVG('front',state.tee,p,c,true))+'</span><b>'+escX(b.name||q.name)+'</b><small>'+fmt(q.price[c])+'</small></button>';}).join('')+'</div>';
+    $('#pgList').innerHTML=h;return;}
   PRODUCT_ORDER.forEach(function(p){
     var q=PRODUCTS[p];
     h+='<section><h3>'+q.name+'</h3><p class="note" style="margin:0 0 8px">'+q.rule+'</p><div class="pgrid">';
@@ -2400,7 +2415,7 @@ function syncChips(){
   $('#sideSeg').hidden=Object.keys(q.sides).length<2||mugWrap();
 }
 function renderAll(){
-  renderShirt();updateArea();renderObjects();buildSel();syncCtx();syncTextInput();syncChips();syncTeeUI();syncProduct();layout();
+  renderShirt();updateArea();renderObjects();renderPassive();buildSel();syncCtx();syncTextInput();syncChips();syncTeeUI();syncProduct();layout();
   if(view.tab==='tpl')renderTplPreviews();
 }
 
@@ -2589,7 +2604,7 @@ async function printFlat(side,k){
   var x=c.getContext('2d'),objs=state[side].objs;for(var i=0;i<objs.length;i++){await drawObj(x,objs[i],k,A.l,A.t);}return c;
 }
 /* Bir yüzün tüm katmanları: önde önce ön tasarım (logo karesi hariç), sonra logo. */
-async function drawLayer(x,sd,k){var A=areaBox(sd,SS(sd).area),L=(sd==='front'&&logoOn())?logoBox():null;
+async function drawLayer(x,sd,k){var A=areaBox(sd,SS(sd).area),L=sd==='front'?logoHole(A):null;
   x.save();x.beginPath();x.rect(A.l*k,A.t*k,A.w*k,A.h*k);if(L){x.rect(L.l*k,L.t*k,L.w*k,L.h*k);x.clip('evenodd');}else x.clip();
   var objs=SS(sd).objs;for(var i=0;i<objs.length;i++){await drawObj(x,objs[i],k,0,0);}x.restore();}
 async function drawFace(x,side,k){var f=face(side);await drawLayer(x,f,k);if(f==='front'&&hasLogoSide())await drawLayer(x,'logo',k);}
@@ -2636,7 +2651,7 @@ async function renderPrint(side){
   var x=c.getContext('2d'),objs=state[side].objs;
   for(var i=0;i<objs.length;i++){await drawObj(x,objs[i],S,A.l,A.t);}
   /* Logo öncelikli: ön baskı dosyasında logonun kapladığı kare boş bırakılır */
-  if(side==='front'&&logoOn()){var L=logoBox();x.clearRect((L.l-A.l)*S,(L.t-A.t)*S,L.w*S,L.h*S);}
+  if(side==='front'&&logoHole(A)){var L=logoHole(A);x.clearRect((L.l-A.l)*S,(L.t-A.t)*S,L.w*S,L.h*S);}
   return {canvas:c,dpi:Math.round(dpi)};
 }
 var dl=null;
