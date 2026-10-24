@@ -2352,7 +2352,7 @@ var PADV=[{z:1.9,x:50,y:30},{z:1.9,x:50,y:72},{z:1.9,x:22,y:50},{z:1.9,x:78,y:50
 function galViews(p){
   if(p.cv)return p.cv;
   var im=((p.imgs&&p.imgs.length)?p.imgs:[null]).slice(0,5),vs=im.map(function(s){return {s:s,z:1,x:50,y:50};}),k=0;
-  while(vs.length<5){var w=PADV[k++%PADV.length];vs.push({s:im[0],z:w.z,x:w.x,y:w.y});}
+  /* Yakınlaştırılmış kopyalarla doldurma yok: yalnız gerçek görseller (ön, arka, ekler) görünür */
   vs.push({s:im[0],z:1,x:50,y:50,video:p.video||null});
   return vs;
 }
