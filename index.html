@@ -2796,7 +2796,7 @@ document.addEventListener('input',function(e){if(e.target.closest&&e.target.clos
 document.addEventListener('change',function(e){var t=e.target;if(!t.closest||!t.closest('#coForm'))return;if(t.id==='oFs'){var fb=document.getElementById('oFab');fb.hidden=t.checked;fb.style.display=t.checked?'none':'grid';}if(t.name==='oT')updShip();coBtn();});
 document.addEventListener('click',function(e){var t=e.target;if(!t.closest)return;var og=t.closest('.sums a[href="#odeme"]');if(og&&scEmpty()>=0){e.preventDefault();toast('Tasarımın için beden ve adet seç.');var g=document.querySelectorAll('.sci .scg2')[scEmpty()];if(g){g.classList.remove('need');void g.offsetWidth;g.classList.add('need');g.scrollIntoView({block:'center',behavior:'smooth'});}return;}if(og){var zp=szMissing();if(zp){e.preventDefault();toast('“'+zp.name+'” için beden seç.');var sl=document.querySelector('[data-csz="'+ckId(Object.keys(cart).filter(function(k){return ckId(k)===zp.id&&!ckSz(k);})[0]||'')+'"]');if(sl){sl.classList.add('need');sl.scrollIntoView({block:'center',behavior:'smooth'});}return;}}var st=t.closest('[data-step]');if(st&&st.closest('#coForm')){e.preventDefault();goStep(+st.dataset.step);return;}var gb=t.closest('.stepbar [data-go],#coForm [data-go]');if(gb){e.preventDefault();var n=+gb.dataset.go;if(n<=coStep())goStep(n);else goStep(n);}});
 function cartRows(){var ids=Object.keys(cart).filter(function(k){return cart[k]>0;}),tot=0,n=0,h='';
-  ids.forEach(function(id){var p=ALLP.filter(function(x){return x.id===ckId(id);})[0];if(!p){delete cart[id];return;}tot+=p.price*cart[id];n+=cart[id];
+  ids.forEach(function(id){var p=ALLP.filter(function(x){return x.id===ckId(id);})[0];if(!p){if(DLOADED)delete cart[id];return;}tot+=p.price*cart[id];n+=cart[id];
     h+='<div class="ci"><a href="#urun-'+ckId(id)+'"><img src="'+IMG(p)+'" alt=""></a><div><small class="ty">'+pTypeColor(p)+'</small><b>'+esc(p.name)+'</b>'+(soldOut(p)?'<span class="soldnote">Stokta yok, siparişe eklenemez. Lütfen kaldır.</span>':(hasStock(p)&&cartQtyOf(p.id)>+p.stock?'<span class="soldnote">Stokta yalnız '+(+p.stock)+' adet var. Adedi azalt.</span>':''))+(function(){var zs=pSizes(p),z=ckSz(id);if(!zs.length&&!z)return '';if(z&&zs.indexOf(z)<0)zs=zs.concat([z]);return '<label class="csz">Beden<select data-csz="'+esc(id)+'" aria-label="Beden">'+(z?'':'<option value="">Seç</option>')+zs.map(function(x){return '<option'+(x===z?' selected':'')+'>'+esc(x)+'</option>';}).join('')+'</select></label>';})()+'<div class="qty"><button data-q="'+id+'" data-d="-1" aria-label="Azalt">−</button><span>'+cart[id]+'</span><button data-q="'+id+'" data-d="1" aria-label="Artır">+</button><button class="rm" data-q="'+id+'" data-d="-999" aria-label="Kaldır">Kaldır</button></div></div><b class="pz">'+tl(p.price*cart[id])+'</b></div>';});
   var sc=scItems();sc.forEach(function(it,i){var q=scQty(it),t=scTot(it);tot+=t;n+=q;
     h+='<div class="ci sci"><button type="button" class="scimg" data-scview="'+i+'" aria-label="Tasarımı büyüt"><img src="'+esc(it.thumb||'')+'" alt=""><i aria-hidden="true">'+IC.zoom+'</i></button><div><small class="ty">Baskı Atölyesi · Senin tasarımın</small><b>'+esc(it.label||'Tasarım')+'</b><small class="note" style="display:block;margin-top:4px">'+(q?'<b class="scm">'+q+' adet × '+tl(+it.unit||0)+(scDisc(q)?' − %'+Math.round(scDisc(q)*100)+' adet indirimi':'')+' = '+tl(t)+'</b>':((it.szList||[]).length===1?'Adet seç':'Beden ve adet seç'))+'</small>'+scGrid(it,i)+'<div class="qty"><button class="rm" data-scrm="'+i+'" aria-label="Kaldır">Kaldır</button><b class="pz">'+tl(t)+'</b></div></div></div>';});
@@ -3734,12 +3734,14 @@ document.addEventListener('change',function(e){var id=e.target.id;if(id==='cP')c
 document.addEventListener('input',function(e){if(e.target.id==='cQ')calc();});
 window.addEventListener('hashchange',route);
 document.addEventListener('keydown',function(e){if(e.key==='Escape')closeLayer();});
+/* Ürün verisi sunucudan gelmeden sepetteki Koleksiyon ürünleri silinmesin */
+var DLOADED=false;
 route();syncCart();
 var DATA_P=(async function(){
   var j=null;
   try{var r=await fetch(SB.url+'/rest/v1/site_content?select=data&id=eq.main',{headers:{apikey:SB.key},cache:'no-store'});if(r.ok){var a=await r.json();if(a&&a[0]&&a[0].data)j=a[0].data;}}catch(_){}
   if(!j){try{var r2=await fetch('data.json',{cache:'no-store'});if(r2.ok)j=await r2.json();}catch(_){}}
-  if(j&&j.v===1){try{cutMerge(j,await loadMan());}catch(_){}D=Object.assign(clone(DEF),j);applyData();SAVEDTOK=usedTokens(D);if(cur!=='yonetim')route();}
+  if(j&&j.v===1){try{cutMerge(j,await loadMan());}catch(_){}D=Object.assign(clone(DEF),j);applyData();SAVEDTOK=usedTokens(D);DLOADED=true;if(cur!=='yonetim')route();}
 })();
 (async function(){
   try{if(window.claude&&window.claude.use){var u=await window.claude.use('user');ART=await window.claude.use('artifact');
