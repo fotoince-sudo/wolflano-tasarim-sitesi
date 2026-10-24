@@ -3397,6 +3397,19 @@ syncUndo();
     if(!d||!d.front)return;
     var map={};
     Object.keys(d.assets||{}).forEach(function(k){var a=d.assets[k],nid='a'+(++assetN);assets[nid]={url:a.url,w:a.w||1,h:a.h||1};map[k]=nid;});
+    /* Şablon: yalnız şu an açık yüze (Ön, Logo ya da Arka) yerleşir; diğer yüzlerdeki tasarımlar olduğu gibi kalır.
+       Kaynak alan yeni alandan büyükse (ör. A4 şablon logoya) tasarım alana sığacak kadar küçültülür. */
+    if(!full){
+      var sd=view.side,ks=[sd,'front','logo','back'],src=null,sk=null;
+      for(var qi=0;qi<ks.length;qi++){var z=d[ks[qi]];if(z&&z.objs&&z.objs.length){src=z;sk=ks[qi];break;}}
+      if(!src)return;
+      var C=cur(),nb=areaBox(sd,C.area),ob=null;try{ob=areaBox(sk,src.area||C.area,!!src.land);}catch(_){ob=nb;}
+      var k=Math.min(1,nb.w/ob.w,nb.h/ob.h);
+      var objs=(src.objs||[]).map(function(o){var n=JSON.parse(JSON.stringify(o));n.id=view.nextId++;if(n.assetId&&map[n.assetId])n.assetId=map[n.assetId];
+        n.x=nb.cx+(n.x-ob.cx)*k;n.y=(k<1?nb.cy+(n.y-ob.cy)*k:(!ob.at&&!nb.at?nb.t+(n.y-ob.t):nb.cy+(n.y-ob.cy)));n.w*=k;n.h*=k;if(n.size)n.size*=k;return n;});
+      C.objs=C.objs.filter(function(o){return o.lock;}).concat(objs);
+      view.sel=null;view.grp=false;renderAll();layout();pushHist();return;
+    }
     if(full&&PRODUCTS[d.product]){var cs=PRODUCTS[d.product].cuts;chooseProduct(d.product,cs.indexOf(d.cut)>=0?d.cut:cs[0]);if(d.tee)state.tee=d.tee;state.brand=d.brand!==false;}
     SS('logo').objs=[];
     /* Eski kayıtlar: önde logo alanı seçilmişse, logo katmanı olan üründe logoya taşınır */
