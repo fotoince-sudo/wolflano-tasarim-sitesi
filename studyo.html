@@ -2652,7 +2652,9 @@ $('#wolfGo').addEventListener('click',async function(){var t=($('#wolfIn').value
     if(ph){if(!ph.base||!assets[ph.base])ph.base=ph.assetId;body.image=await aiPhotoData(ph.base);}
     var img=await aiCall(body);
     if(!img)return;var id=await aiAsset(img);
-    if(ph){var na=assets[id];ph.assetId=id;ph.phs='ai-'+wolfSt;ph.phe='none';ph.h=ph.w*na.h/na.w;renderObjects();updateSel();syncCtx();pushHist();}else{addImageObj(id);if(cvs){var no=selObj(),na2=assets[id];if(no&&na2){var k2=Math.max(A.w/na2.w,A.h/na2.h);no.w=na2.w*k2;no.h=na2.h*k2;no.x=A.cx;no.y=A.cy;renderObjects();updateSel();syncCtx();pushHist();}}}closeTab();toast(state.product==='canvas'?'Wolf tabloyu çizdi. Kaydırarak konumunu ayarlayabilirsin.':'Wolf çizdi. Taşıyabilir, büyütebilirsin.');}
+    /* Canvas ve saran kupada sonuç baskı alanını tamamen kaplar ve ortalanır (fotoğraf seçiliyse onun yerine geçer) */
+    var fill=function(o){var na2=assets[id];if(!o||!na2)return;var k2=Math.max(A.w/na2.w,A.h/na2.h);o.w=na2.w*k2;o.h=na2.h*k2;o.x=A.cx;o.y=A.cy;o.rot=0;};
+    if(ph){var na=assets[id];ph.assetId=id;ph.phs='ai-'+wolfSt;ph.phe='none';ph.h=ph.w*na.h/na.w;if(cvs)fill(ph);renderObjects();updateSel();syncCtx();pushHist();}else{addImageObj(id);if(cvs){fill(selObj());renderObjects();updateSel();syncCtx();pushHist();}}closeTab();toast(state.product==='canvas'?'Wolf tabloyu çizdi. Kaydırarak konumunu ayarlayabilirsin.':'Wolf çizdi. Taşıyabilir, büyütebilirsin.');}
   catch(_){longToast('Wolf şu an çizemedi. Biraz sonra yeniden dene.');}
   finally{AI_BUSY=false;g.disabled=false;aiDone();}
 });

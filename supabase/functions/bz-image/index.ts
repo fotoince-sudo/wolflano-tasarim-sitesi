@@ -105,7 +105,7 @@ Deno.serve(async (req) => {
       parts.push('If there is an animal, keep its species, breed, coat colors and markings exactly. If it is a place or object, keep it recognizable.');
       parts.push('Draw clothing plain and simple; do NOT copy any logo, letters, numbers or print from the clothes or the background of the photo.');
       parts.push(mug === 'wrap'
-        ? 'Composition for a mug that is wrapped all around: put the main subject in the center of the wide image, which is the side people see. Extend the scene of the photo naturally to the left and right in its own setting (for example the sea, a park, a garden or a cosy room, matching the photo) so it continues all the way around the mug without looking like a pasted rectangle.'
+        ? 'Composition for a mug that is wrapped all around: put the main subject in the center of the wide image, which is the side people see. Extend the scene of the photo naturally to the left and right in its own setting (for example the sea, a park, a garden or a cosy room, matching the photo) so it continues all the way around the mug without looking like a pasted rectangle. The background must be a rich, detailed continuation of that setting across the ENTIRE width, from the left edge to the right edge; never leave white, plain, empty or faded areas on either side.'
         : mug === 'logo'
           ? 'Composition for a small print on a mug: isolate the main subject from its background as a compact, centered portrait (people from the chest up, an animal whole or its head), optionally inside a soft round shape; nothing else around it.'
           : canvas
