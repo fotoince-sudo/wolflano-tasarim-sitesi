@@ -2222,7 +2222,11 @@ applyData();
 var PAGES=[['ana','Ana Sayfa'],['hazir','Koleksiyon'],['atolye','Baskı Atölyesi'],['kurumsal','Kurumsal'],['hakkimizda','Hakkımızda']];
 function pagesNow(){var l=PAGES.map(function(p){var m={hazir:'menuHazir',atolye:'menuAtolye',hakkimizda:'menuAbout'}[p[0]];return [p[0],m?TX(m):p[1]];});
   var cp=(D.cpages||[]).filter(function(x){return x&&x.show!==false&&x.menu!==false&&x.title;}).map(function(x){return ['p-'+x.id,x.title];});
-  if(cp.length){var i=l.length-1;l=l.slice(0,i).concat(cp,l.slice(i));}return l;}
+  if(cp.length){var i=l.length-1;l=l.slice(0,i).concat(cp,l.slice(i));}
+  /* "Hediye & Dekor" kategorisi yönetimde "Sitede göster" açılınca menüde Baskı Atölyesi'nden sonra kendiliğinden çıkar */
+  var hd=CATS.filter(function(c){return /hediye|dekor/i.test(c[1]);})[0];
+  if(hd){var ai=-1;l.forEach(function(x,k){if(x[0]==='atolye')ai=k;});l.splice(ai+1,0,['kat-'+hd[0],hd[1]]);}
+  return l;}
 var CATS=[['kadin','Kadın'],['erkek','Erkek'],['cocuk','Çocuk']],subSel='',sub2Sel='',catOpen='',grpOpen='';
 var SIDES={tee:{front:['a4','a3','logo'],back:['a4','a3']},sweat:{front:['a4','a3','logo'],back:['a4','a3']},polo:{front:['logo'],back:['a4','a3']},hat:{front:['hat'],back:[]}};
 var PNAME={a4:'A4 baskı',a3:'A3 baskı',logo:'Sol göğüs logo',hat:'Şapka ön baskı'};
@@ -2954,10 +2958,11 @@ function route(){
   if(h.indexOf('urun-')===0){pid=h.slice(5);h='urun';}
   else if(h.indexOf('p-')===0){pid=h.slice(2);h='cp';}
   else if(h.indexOf('bu-')===0){pid=h.slice(3);h='bu';}
+  var katId='';if(h.indexOf('kat-')===0){katId=h.slice(4);if(CATS.some(function(c){return c[0]===katId;})){catSel=katId;subSel='';sub2Sel='';}else katId='';h='hazir';}
   if(h==='biz'){location.replace('studyo.html?wolf=1');return;}
   if(h==='baski')h='tasarla';if(!VIEWS[h])h='ana';
   var fromUrun=rPrev==='urun',fromBu=rPrev==='bu';if(h!=='hazir'){catOpen='';grpOpen='';}
-  var act=h==='urun'?'hazir':h==='bu'?'atolye':h==='cp'?'p-'+pid:(/^(tasarla|biz|fiyatlar)$/.test(h)?'atolye':h);cur=act;
+  var act=h==='urun'?'hazir':h==='bu'?'atolye':h==='cp'?'p-'+pid:(/^(tasarla|biz|fiyatlar)$/.test(h)?'atolye':h);if(katId)act='kat-'+katId;cur=act;
   $('#main').innerHTML=VIEWS[h](pid);try{stPage(h);}catch(_){}
   if(h==='tasarla')calc('p');if(h!=='hesabim')accMode='login';if(h==='yonetim'){if(!A||!A.dirty)A=newA();}
   var links=pagesNow().map(function(p){return '<a href="#'+p[0]+'"'+(p[0]===act?' class="on" aria-current="page"':'')+'>'+p[1]+'</a>';}).join('');
