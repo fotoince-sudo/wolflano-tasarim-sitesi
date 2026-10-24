@@ -1909,8 +1909,8 @@ function loadFile(file){
     renderUploads();addImageObj(id);
     var nq=qualityOf(selObj()||{});
     if(nq&&nq.cls==='low')longToast('Fotoğraf eklendi. Baskı kalitesi düşük ('+nq.ppi+' dpi), baskıda bulanık çıkabilir. Küçült ya da daha büyük bir fotoğraf yükle.');
-    else if(mugWrap()&&view.aiNext!=='wolf'){
-      /* Saran kupada düz fotoğraf kutu gibi durmasın: kenarlar kendiliğinden yumuşar (Wolf çizsin · Tarz → Kenar → Düz ile geri alınır) */
+    else if(mugWrap()&&view.aiNext!=='wolf'&&/jpe?g|hei[cf]/i.test(file.type||file.name||'')){
+      /* Saran kupada düz fotoğraf kutu gibi durmasın: yalnız fotoğraflarda (JPG/HEIC) kenarlar kendiliğinden yumuşar; PNG logo ve çizimlere dokunulmaz (Wolf çizsin · Tarz → Kenar → Düz ile geri alınır) */
       applyFx(null,'soft',null).then(function(){longToast('Fotoğraf kupaya uysun diye kenarları yumuşatıldı. İstemezsen "Wolf çizsin · Tarz" → Kenar → Düz.');});}
     else aiHint();
   };
