@@ -1329,7 +1329,7 @@ function rawResolve(b,man){var fix=b.rawfix||{},by={},info={};
   (b.raw||[]).forEach(function(r){var m=man[r],f=fix[r]||{},col=f.color||(m&&m.color)||'';info[r]={ready:!!m,color:col,side:f.side||'',ns:m?+m.ns||0:0};if(col)(by[col]||(by[col]=[])).push(r);});
   var res={};STDC.forEach(function(c){var l=by[c.name];if(!l||!l.length)return;var o={front:'',back:''};
     l.filter(function(r){return info[r].side;}).forEach(function(r){if(!o[info[r].side])o[info[r].side]=r;});
-    l.filter(function(r){return !info[r].side;}).sort(function(a,z){return info[z].ns-info[a].ns;}).forEach(function(r){if(!o.front)o.front=r;else if(!o.back)o.back=r;});
+    /* Etiketsiz fotoğraflar: ön = en "ön görünümlü", arka = en "arka görünümlü" (aynı renk iki kez yüklenince ikinci ön fotoğraf arkaya düşmesin) */var un=l.filter(function(r){return !info[r].side;}).sort(function(a,z){return info[z].ns-info[a].ns;});if(un.length){if(!o.front)o.front=un[0];if(!o.back){var bk=un[un.length-1];if(bk!==o.front&&info[bk].ns!==info[o.front].ns)o.back=bk;else if(un.length>1&&un[1]!==o.front)o.back=un[1];}}
     res[c.name]=o;});
   return {by:res,info:info};}
 function cutMerge(d,man){man=man||{};((d&&d.blanks)||[]).forEach(function(b){if(!b||!(b.raw||[]).length)return;var R=rawResolve(b,man).by,cs=[];
