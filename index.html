@@ -605,9 +605,9 @@ body.cko #nav,body.cko .menu-btn,body.cko .lang,body.cko #cartBtn,body.cko #ann{
 .tsp .tsc button{min-width:0;border:1px solid var(--green);background:transparent;color:var(--ink)}
 .tsp .tsc button.on{background:var(--green);border-color:#000;color:#fff}
 .tsph{display:block;width:100%;padding:0;border:0;background:none;cursor:pointer}
-.tsp .card .row{align-items:flex-start}
-.tsp .card .row small{white-space:nowrap;min-width:0;letter-spacing:.01em!important;font-size:clamp(10.5px,3vw,12.5px)!important;overflow:hidden;text-overflow:ellipsis}
-.tsp .card .row .price{white-space:nowrap}
+.tsp .card .row,.hdg .card .row{align-items:flex-start}
+.tsp .card .row small,.hdg .card .row small{white-space:nowrap;min-width:0;letter-spacing:.01em!important;font-size:clamp(10.5px,3vw,12.5px)!important;overflow:hidden;text-overflow:ellipsis}
+.tsp .card .row .price,.hdg .card .row .price{white-space:nowrap}
 .tsp .wolfban{margin-top:28px}
 /* Baskı Atölyesi giriş: başlık tek satır, sıkı yerleşim */
 /* Açıklama yazılarının hizası (Yönetim > Sayfa metinleri > Ana sayfa · görselin altı) */
@@ -669,7 +669,8 @@ body.cko #nav,body.cko .menu-btn,body.cko .lang,body.cko #cartBtn,body.cko #ann{
 .tdots{display:flex;flex-wrap:wrap;gap:7px;margin:6px 0 2px}.tdot{width:20px;height:20px;border-radius:50%;border:1px solid rgba(0,0,0,.25);padding:0;box-shadow:0 0 0 2px var(--card);cursor:pointer}.tdot.on{box-shadow:0 0 0 2px var(--card),0 0 0 4px var(--green)}
 .tsp .catbar .dd{margin:10px 0 18px}
 /* Baskılı ürün kartı: "Tasarla" ince, kartın en altında; renk noktalarıyla arasında boşluk (telefonda yanlışlıkla dokunmasın) */
-.tsp .card .meta,.hdc .meta{flex:1 1 auto}
+.tsp .card .meta,.hdc .meta,.hdg .card .meta{flex:1 1 auto}
+.cpg .hdg{margin-top:18px}
 .card .add[data-tcgo],.hdc .add{margin-top:18px;padding:5px 10px;min-height:30px;font:600 12.5px/1 var(--ui);letter-spacing:.04em;border-width:1px}
 .kpromo{padding:8px 0 4px;border-bottom:1px solid var(--line);margin-bottom:18px}.kpromo .lead{margin:6px 0 14px}
 .spt{width:100%;max-width:100%;min-width:0!important;border-collapse:collapse;table-layout:fixed;font-size:14px;display:table}.spt th,.spt td{border:1px solid var(--line);padding:7px 9px;text-align:left;vertical-align:top;white-space:normal!important;overflow-wrap:anywhere;text-transform:none!important;letter-spacing:normal!important}.spt th{width:36%;background:var(--mint);font-weight:600;font-size:13px}
@@ -2498,7 +2499,11 @@ function cpBody(t){var h='',ul=false,para=[];function flush(){if(para.length){h+
     if(/^##\s+/.test(l)){flush();h+='<h2 class="h2">'+esc(l.replace(/^##\s+/,''))+'</h2>';return;}
     para.push(l);});
   flush();if(ul)h+='</ul>';return h;}
-function cpHTML(x){var im=(x.imgs||[])[0];return '<div class="wrap page cpg">'+(x.eyebrow?'<p class="eyebrow">'+esc(x.eyebrow)+'</p>':'')+'<h1 class="h2">'+esc(x.title||'')+'</h1>'+(im?'<img class="cpim" src="'+src(im)+'" alt="'+esc(x.title||'')+'">':'')+cpBody(x.body)+'</div>';}
+/* Hediye & Dekor sayfası: kupa ve canvas, Baskı Atölyesi'ndeki gibi kart olarak (fotoğraf, isim, fiyat, renk, "Tasarla"); varsa hazır baskılı ürünler de yanında */
+function hdGrid(){var bl=BLANKS.filter(function(b){var t=b.p||b.id;return (t==='mug'||t==='canvas')&&!soldOut(b);});
+  var hc=(D.cats||[]).filter(function(c){return /hediye|dekor/i.test(c.name||'');})[0],rd=hc?PRODUCTS.filter(function(p){return (p.cat||[]).indexOf(hc.id)>=0;}):[];
+  if(!bl.length&&!rd.length)return '';return '<div class="grid hdg">'+rd.map(card).join('')+bl.map(tsCard).join('')+'</div>';}
+function cpHTML(x){var im=(x.imgs||[])[0],hg=/hediye|dekor/i.test(x.title||'')?hdGrid():'';return '<div class="wrap page cpg">'+(x.eyebrow?'<p class="eyebrow">'+esc(x.eyebrow)+'</p>':'')+'<h1 class="h2">'+esc(x.title||'')+'</h1>'+(hg||(im?'<img class="cpim" src="'+src(im)+'" alt="'+esc(x.title||'')+'">':''))+cpBody(x.body)+'</div>';}
 function socURL(v,base){v=String(v||'').trim();if(!v)return '';if(/^https?:\/\//i.test(v))return v;return base+v.replace(/^@/,'').replace(/^(www\.)?(instagram|tiktok)\.com\/@?/i,'');}
 document.addEventListener('contextmenu',function(e){var t=e.target;if(t&&t.tagName==='IMG'&&!(t.closest&&t.closest('.ad')))e.preventDefault();});
 document.addEventListener('dragstart',function(e){var t=e.target;if(t&&t.tagName==='IMG')e.preventDefault();});
