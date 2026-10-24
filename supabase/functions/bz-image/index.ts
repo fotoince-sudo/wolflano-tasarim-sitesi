@@ -76,8 +76,10 @@ Deno.serve(async (req) => {
     const orient = body.orient === 'landscape' ? 'landscape' : 'portrait';
     const size = orient === 'landscape' ? '1536x1024' : '1024x1536';
     const canvas = body.canvas === true; // canvas tablo: tam dolu resim, tişört rengi yok
-    const transparent = !canvas && body.transparent !== false;
-    const shirt = canvas ? '' : shirtHint(String(body.shirt || '').slice(0, 40), String(body.shirtHex || '').slice(0, 7));
+    const mug = body.mug === 'wrap' || body.mug === 'logo' ? body.mug : ''; // kupa: çevresini saran baskı ya da tek taraflı logo
+    const full = canvas || mug === 'wrap'; // arka planı dolu, kenardan kenara resim
+    const transparent = !full && body.transparent !== false;
+    const shirt = canvas || mug ? '' : shirtHint(String(body.shirt || '').slice(0, 40), String(body.shirtHex || '').slice(0, 7));
     const img = typeof body.image === 'string' && body.image ? dataUrlToBlob(body.image) : null;
     if (!idea && !img) return j({ error: 'empty', message: 'Ne tasarlayalım? Bir cümle yaz ya da fotoğraf ekle.' }, 400);
     if (img && img.size > 6_000_000) return j({ error: 'big', message: 'Fotoğraf çok büyük.' }, 400);
@@ -92,7 +94,10 @@ Deno.serve(async (req) => {
     }
 
     const parts: string[] = [];
-    parts.push(canvas ? 'Print-ready artwork for a stretched canvas wall painting that will hang in a home.' : 'Print-ready artwork for a garment / mug print.');
+    parts.push(canvas ? 'Print-ready artwork for a stretched canvas wall painting that will hang in a home.'
+      : mug === 'wrap' ? 'Print-ready wide panoramic artwork for a sublimation print that wraps all the way around a white ceramic mug.'
+      : mug === 'logo' ? 'Print-ready compact artwork for a small print on one side of a white ceramic mug.'
+      : 'Print-ready artwork for a garment print.');
     if (img) {
       parts.push(`Redraw the person in the attached photo in this style: ${STY[style]}.`);
       parts.push("Keep the person's identity clearly recognizable: same face shape, eyes, nose, mouth, skin tone, age, expression and head shape. Keep the exact hairline and hair amount (if the person is bald, keep them bald; do not add hair or a beard that is not there).");
@@ -103,23 +108,38 @@ Deno.serve(async (req) => {
     if (idea) parts.push(`The customer's request (this is an instruction describing what to draw, NOT text to write on the artwork): ${idea}`);
     /* Şehir kısayolu: yalnız "Çeşme", "Antalya" ya da "Kapadokya kurt" gibi kısa bir yer adı yazılırsa, o yere özel şehir tasarımı yapılır */
     const words = idea.split(/\s+/).filter(Boolean);
-    let place = '';
-    if (!img && words.length >= 1 && words.length <= 3 && !/["“”']/.test(idea)) {
+    let topic = '';
+    if (!img && words.length >= 1 && words.length <= 4 && !/["“”']/.test(idea)) {
       const extra = /^(kurt|kurtlu|wolf|rozet|madalyon|logo|gece|gün|batımı|retro)$/i;
       const nameWords = words.filter((w) => !extra.test(w));
-      if (nameWords.length) place = nameWords.join(' ').toLocaleUpperCase('tr-TR');
+      if (nameWords.length) topic = nameWords.join(' ').toLocaleUpperCase('tr-TR');
     }
-    if (place && canvas) {
-      parts.push(`If the request is simply the name of a place in Türkiye or elsewhere (a city, town, district, region, island or landmark), paint a beautiful scenic wall painting of that place: its most iconic and recognizable view or landmark in its natural setting (sea, coast, mountains, streets, historic architecture, boats, trees), with atmospheric light such as golden hour or a soft sunset, rich depth and a complete sky and landscape, like a fine art piece people hang in a living room. If the request also mentions a wolf (kurt), place a noble wolf naturally in the landscape. If the request is NOT a place name, ignore this paragraph and paint what was asked.`);
-    } else if (place) {
-      parts.push(`If the request is simply the name of a place in Türkiye or elsewhere (a city, town, district, region, island or landmark), create a premium city souvenir design for that place: show its single most iconic and recognizable landmark together with its local character (sea, coast, mountains, nature, historic architecture, typical boats, trees or details that people instantly associate with it), elegant balanced composition like a luxury travel brand print, limited refined color palette. Write the place name once, large and elegant, spelled exactly "${place}". If the request also mentions a wolf (kurt), place a noble wolf silhouette naturally in the scene; if it mentions a badge (rozet, madalyon, logo), make it a round emblem with the name around the edge. If the request is NOT a place name, ignore this paragraph and draw what was asked.`);
+    if (topic) {
+      const place = canvas
+        ? 'paint a beautiful scenic wall painting of that place: its most iconic view or landmark in its natural setting (sea, coast, mountains, streets, historic architecture, boats, trees), atmospheric light such as golden hour, rich depth and a complete sky and landscape, like a fine art piece for a living room'
+        : mug === 'wrap'
+          ? 'paint a wide panoramic scene of that place that flows around the mug: its most iconic landmarks spread from left to right with its sea, coast, nature or streets connecting them'
+          : 'create a premium city souvenir design: its single most iconic landmark with its local character (sea, coast, mountains, nature, historic architecture, typical boats, trees), elegant balanced composition like a luxury travel brand print, limited refined color palette';
+      const day = canvas
+        ? 'paint a warm, heartfelt artwork for that day with its well-known symbols and feelings (for example flowers and a mother and child for Mother\'s Day, an apple and books for Teachers\' Day, hearts for Valentine\'s Day), suitable as a meaningful gift'
+        : 'create a warm, heartfelt gift design for that day with its well-known symbols (for example flowers and a mother and child silhouette for Mother\'s Day, a father and child or a tie for Father\'s Day, an apple, books and a chalkboard for Teachers\' Day, hearts for Valentine\'s Day, balloons and a cake for a birthday, a pine tree and stars for New Year, a graduation cap for graduation)';
+      const job = 'create a proud, stylish design that celebrates that profession with its typical tools and symbols (for example a stethoscope and heart for a doctor, a nurse cap and cross for a nurse, a chalkboard and books for a teacher, a hard hat, gears and blueprints for an engineer, a chef hat and knives for a cook, a scissors and comb for a hairdresser, scales of justice for a lawyer), with a touch of warm humor and respect, suitable as a gift for someone in that job';
+      const writeIt = canvas
+        ? 'Do not write the topic as text on the painting.'
+        : `Write the topic once, elegant and well integrated, spelled exactly "${topic}".`;
+      const badge = canvas ? '' : ' If the request mentions a badge (rozet, madalyon, logo), make it a round emblem with the text around the edge.';
+      parts.push(`If the request is just a short topic, first decide what it is. If it is a place in Türkiye or elsewhere (city, town, district, region, island or landmark), ${place}. If it is a special day or occasion (Anneler Günü, Babalar Günü, Öğretmenler Günü, Sevgililer Günü, doğum günü, yılbaşı, mezuniyet, bayram, düğün, emeklilik and similar), ${day}. If it is a profession or job (öğretmen, doktor, hemşire, mühendis, aşçı, avukat, polis, itfaiyeci, kuaför and similar), ${job}. If it is anything else (a hobby, sport, animal, team or idea), design around it in the same spirit. ${writeIt} If the request also mentions a wolf (kurt), place a noble wolf naturally in the design.${badge} If the request is a full description rather than a short topic, ignore this paragraph and draw what was asked.`);
     }
     if (shirt) parts.push(shirt);
-    parts.push(place && !canvas
-      ? `Do not add any other text, letters or captions except the place name "${place}" (if this is a place design) or words inside quotation marks in the request; spell them exactly, including Turkish letters such as ç, ğ, ı, İ, ö, ş, ü.`
+    parts.push(topic && !canvas
+      ? `Do not add any other text, letters or captions except the topic "${topic}" or words inside quotation marks in the request; spell them exactly, including Turkish letters such as ç, ğ, ı, İ, ö, ş, ü.`
       : 'Do not add any text, letters, words or captions, unless the request contains words inside quotation marks; only then write exactly those quoted words, spelled correctly (including Turkish letters such as ç, ğ, ı, İ, ö, ş, ü).');
-    parts.push(canvas ? 'Do not draw any brand logo.' : 'Do not draw any brand logo. Do not draw a T-shirt or mockup; draw only the artwork itself.');
-    if (canvas) parts.push('Full-bleed painting: the scene fills the entire image edge to edge with a complete background (sky, landscape, sea or interior); no empty, white or transparent areas. Keep important details and any text away from the outer 7% because those parts wrap around the canvas edges. No frame, no border, no wall, no mockup, no watermark.');
+    parts.push(full ? 'Do not draw any brand logo.' : 'Do not draw any brand logo. Do not draw a T-shirt, mug or mockup; draw only the artwork itself.');
+    if (mug) parts.push(mug === 'wrap'
+      ? 'The mug is white and glossy. Use a rich, cheerful color palette that looks good on white ceramic. The image will wrap around the mug: let the left and right edges blend softly into each other, and keep the outer 8% at both left and right ends calm with no important details, because the handle covers the seam there.'
+      : 'The mug is white and glossy: use deep, rich colors with strong contrast against white; avoid very pale areas. Keep the artwork compact and centered, readable at a small size of about 8 cm.');
+    if (mug === 'wrap') parts.push('Full-bleed panoramic image: the scene fills the entire image edge to edge with a complete background; no empty or transparent areas. No frame, no border, no mug, no mockup, no watermark.');
+    else if (canvas) parts.push('Full-bleed painting: the scene fills the entire image edge to edge with a complete background (sky, landscape, sea or interior); no empty, white or transparent areas. Keep important details and any text away from the outer 7% because those parts wrap around the canvas edges. No frame, no border, no wall, no mockup, no watermark.');
     else parts.push(transparent
       ? 'Isolated artwork on a fully transparent background. No background color, no card, no frame, no border, no vignette, no mockup, no watermark.'
       : 'Clean plain background. No frame, no mockup, no watermark.');

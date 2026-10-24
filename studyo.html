@@ -292,6 +292,7 @@ svg.i{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stro
 .wstep{display:flex;align-items:center;gap:8px;font:700 13.5px var(--ui);margin-top:2px}.wstep i{font-style:normal;width:22px;height:22px;border-radius:50%;background:#30703f;color:#fff;display:grid;place-items:center;font:700 12px var(--ui)}.wstep em{font:500 12px var(--ui);color:var(--muted);font-style:normal}
 .wolfp #wolfIn{min-height:44px;font-size:16px;resize:none}
 .wolfp #wolfGo{width:100%;padding:14px;font-size:16px}.wolfp #wolfGo:disabled{opacity:.6}
+.wch{margin-left:auto;display:flex;gap:2px;background:var(--panel2);border:1px solid var(--line2);border-radius:999px;padding:2px}.wch button{border:0;background:none;border-radius:999px;padding:4px 8px;font:600 11.5px var(--ui);color:var(--muted)}.wch button.on{background:#30703f;color:#fff}
 .wcity{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;margin-top:-4px}.wcity button{flex:none;border:1px solid var(--line2);background:var(--panel2);border-radius:999px;padding:6px 11px;font:600 12.5px var(--ui);color:var(--ink)}
 .wphsel{display:flex;align-items:center;gap:10px}.wphsel img{width:52px;height:52px;object-fit:cover;border-radius:10px;border:1px solid var(--line2);background:var(--panel2)}.wphsel div{flex:1;display:grid;gap:4px;font:600 13px var(--ui)}.wphsel div span{display:flex;gap:6px}.wphsel button{border:1px solid var(--line2);background:var(--panel);border-radius:999px;padding:5px 10px;font:600 12px var(--ui);color:var(--ink)}
 .wolfp #wolfGo.pulse{animation:aipulse 1s ease 2}
@@ -632,8 +633,8 @@ img{-webkit-touch-callout:none;-webkit-user-drag:none}
       <div class="wolfph" id="wolfPh"></div>
       <div class="wstep"><i>2</i>Tarz seç</div>
       <div class="fxc ai" id="wolfSt"></div>
-      <div class="wstep"><i>3</i>Fikrin <em>isteğe bağlı</em></div>
-      <textarea id="wolfIn" rows="1" enterkeyhint="done" placeholder="Örn. ay ışığında uluyan kurt ya da Çeşme"></textarea>
+      <div class="wstep"><i>3</i>Fikrin <em>isteğe bağlı</em><span class="wch"><button type="button" data-wch="sehir" class="on">Şehir</button><button type="button" data-wch="gun">Özel gün</button><button type="button" data-wch="meslek">Meslek</button></span></div>
+      <textarea id="wolfIn" rows="1" enterkeyhint="done" placeholder="Örn. ay ışığında uluyan kurt, Çeşme ya da Öğretmen"></textarea>
       <div class="wcity" id="wolfCity"></div>
       <button class="primary" id="wolfGo" type="button">Tasarla</button>
       <p class="note" id="wolfNote">30-60 saniye sürer, üyelikle günde 3 hak. Tasarıma yazı istersen tırnak içinde yaz: "WOLFLANO". İstersen <a href="#" id="wolfWa" style="color:var(--accent);font-weight:600">fikrini ekibimize gönder</a>, biz hazırlayalım.</p></div>
@@ -2622,12 +2623,17 @@ function shirtName(){var h=String(state.tee||'').toLowerCase(),n='';TEES.forEach
 function wolfStRender(){var e=$('#wolfSt');if(e)e.innerHTML=WOLF_ST.map(function(s){return '<button type="button" data-wst="'+s[0]+'"'+(s[0]===wolfSt?' class="on"':'')+'>'+s[1]+'</button>';}).join('');}
 wolfStRender();
 /* Şehir kısayolları: dokununca kutuya yazılır, Tasarla ile o şehrin tasarımı yapılır */
-var WOLF_CITY=['Çeşme','Bodrum','Antalya','Kapadokya','İstanbul','İzmir','Alaçatı','Fethiye'];
-(function(){var e=$('#wolfCity');if(e)e.innerHTML=WOLF_CITY.map(function(c){return '<button type="button" data-wcity="'+c+'">'+c+'</button>';}).join('');})();
+var WOLF_CH={sehir:['Çeşme','Bodrum','Antalya','Kapadokya','İstanbul','İzmir','Alaçatı','Fethiye'],
+  gun:['Anneler Günü','Babalar Günü','Öğretmenler Günü','Sevgililer Günü','Doğum günü','Yılbaşı','Mezuniyet','Emeklilik'],
+  meslek:['Öğretmen','Doktor','Hemşire','Mühendis','Aşçı','Avukat','Kuaför','Polis','İtfaiyeci','Muhasebeci']},wolfCh='sehir';
+function wolfChRender(){var e=$('#wolfCity');if(e)e.innerHTML=WOLF_CH[wolfCh].map(function(c){return '<button type="button" data-wcity="'+c+'">'+c+'</button>';}).join('');
+  $$('[data-wch]').forEach(function(b){b.classList.toggle('on',b.dataset.wch===wolfCh);});}
+wolfChRender();
+document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('[data-wch]');if(!b)return;wolfCh=b.dataset.wch;wolfChRender();var c=$('#wolfCity');if(c)c.scrollLeft=0;});
 document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('[data-wcity]');if(!b)return;var i=$('#wolfIn');if(i)i.value=b.dataset.wcity;var g=$('#wolfGo');if(g){g.classList.remove('pulse');void g.offsetWidth;g.classList.add('pulse');}});
 var wolfStPicked=false;
 /* Canvas tabloda varsayılan tarz Yağlı boya; tişörte dönünce Tişört grafiği (müşteri kendisi seçmediyse) */
-function wolfStDefault(){if(wolfStPicked)return;wolfSt=state.product==='canvas'?'canvas':'tisort';wolfStRender();}
+function wolfStDefault(){if(wolfStPicked)return;wolfSt=state.product==='canvas'?'canvas':state.product==='mug'?'illus':'tisort';wolfStRender();}
 document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('[data-wst]');if(!b)return;wolfSt=b.dataset.wst;wolfStPicked=true;wolfStRender();});
 $('#wolfGo').addEventListener('click',async function(){var t=($('#wolfIn').value||'').trim(),sp=selObj();if(t.length<2&&!(sp&&sp.type==='image')){toast('Fotoğraf ekle ya da fikrini yaz');$('#wolfIn').focus();return;}
   if(AI_BUSY)return;
@@ -2639,11 +2645,11 @@ $('#wolfGo').addEventListener('click',async function(){var t=($('#wolfIn').value
   AI_BUSY=true;var g=$('#wolfGo');g.disabled=true;
   try{var tk=await aiTok();if(!tk){aiLogin();return;}
     var A=areaBox(view.side,cur().area),so=selObj(),ph=(so&&so.type==='image')?so:null;closeTab();popClose();aiWait('Wolf çiziyor');
-    var cvs=state.product==='canvas',body={prompt:t,style:wolfSt,orient:A.w>A.h*1.15?'landscape':'portrait',shirt:cvs?'':shirtName(),shirtHex:cvs?'':(state.tee||'')};if(cvs){body.canvas=true;body.transparent=false;}
+    var mg=state.product==='mug',cvs=state.product==='canvas'||(mg&&mugWrap()),body={prompt:t,style:wolfSt,orient:A.w>A.h*1.15?'landscape':'portrait',shirt:(cvs||mg)?'':shirtName(),shirtHex:(cvs||mg)?'':(state.tee||'')};if(state.product==='canvas')body.canvas=true;if(mg)body.mug=mugWrap()?'wrap':'logo';if(cvs)body.transparent=false;
     if(ph){if(!ph.base||!assets[ph.base])ph.base=ph.assetId;body.image=await aiPhotoData(ph.base);}
     var img=await aiCall(body);
     if(!img)return;var id=await aiAsset(img);
-    if(ph){var na=assets[id];ph.assetId=id;ph.phs='ai-'+wolfSt;ph.phe='none';ph.h=ph.w*na.h/na.w;renderObjects();updateSel();syncCtx();pushHist();}else{addImageObj(id);if(cvs){var no=selObj(),na2=assets[id];if(no&&na2){var k2=Math.max(A.w/na2.w,A.h/na2.h);no.w=na2.w*k2;no.h=na2.h*k2;no.x=A.cx;no.y=A.cy;renderObjects();updateSel();syncCtx();pushHist();}}}closeTab();toast(cvs?'Wolf tabloyu çizdi. Kaydırarak konumunu ayarlayabilirsin.':'Wolf çizdi. Taşıyabilir, büyütebilirsin.');}
+    if(ph){var na=assets[id];ph.assetId=id;ph.phs='ai-'+wolfSt;ph.phe='none';ph.h=ph.w*na.h/na.w;renderObjects();updateSel();syncCtx();pushHist();}else{addImageObj(id);if(cvs){var no=selObj(),na2=assets[id];if(no&&na2){var k2=Math.max(A.w/na2.w,A.h/na2.h);no.w=na2.w*k2;no.h=na2.h*k2;no.x=A.cx;no.y=A.cy;renderObjects();updateSel();syncCtx();pushHist();}}}closeTab();toast(state.product==='canvas'?'Wolf tabloyu çizdi. Kaydırarak konumunu ayarlayabilirsin.':'Wolf çizdi. Taşıyabilir, büyütebilirsin.');}
   catch(_){longToast('Wolf şu an çizemedi. Biraz sonra yeniden dene.');}
   finally{AI_BUSY=false;g.disabled=false;aiDone();}
 });
