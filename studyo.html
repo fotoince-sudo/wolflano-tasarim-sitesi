@@ -327,6 +327,7 @@ svg.i{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stro
 .thumbs figure:active{transform:scale(.97)}
 .thumbs .sideHint{position:absolute;left:50%;top:44%;transform:translate(-50%,-50%);white-space:nowrap;background:rgba(255,255,255,.88);color:#333;border-radius:999px;padding:6px 12px;font:600 12px var(--ui);pointer-events:none;box-shadow:0 1px 4px rgba(0,0,0,.08)}
 .thumbs canvas{width:100%;height:auto;display:block}
+.thumbs figure.wide{grid-column:1/-1}
 .thumbs figcaption{font:600 12px var(--ui);color:var(--muted);padding:2px 0 4px}
 .size-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:8px}
 .step{display:flex;align-items:center;gap:8px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:6px 8px}
@@ -2054,8 +2055,8 @@ async function mugLiveDraw(cv,left){var A=areaBox('front',state.front.area),out=
     x.drawImage(fc,lo*k,0,Math.max(.5,(hi-lo)*k),fc.height,dx,(pt-(v.cy-v.h/2))*k,1,ph*k);}
   var sh='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 640" width="600" height="640"><defs><linearGradient id="g" x1="0" x2="1"><stop offset="0" stop-color="#000" stop-opacity=".26"/><stop offset=".3" stop-color="#fff" stop-opacity=".2"/><stop offset=".5" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".28"/></linearGradient></defs><path d="M270 272V333Q270 338 275 338H317.8Q322.8 338 322.8 333V272Z" fill="url(#g)"/></svg>';
   if(left){x.translate(out,0);x.scale(-1,1);}x.translate(-(v.cx-v.w/2)*k,-(v.cy-v.h/2)*k);x.drawImage(await loadImg(svgUrl(sh)),0,0,STAGE_W*k,STAGE_H*k);x.restore();}
-async function mugLive(){var m=$('#mugLive');if(!m)return;var on=mugWrap()&&state.front.area==='mugw';m.hidden=!on;if(!on)return;
-  try{await mugLiveDraw($('#mlR'),false);await mugLiveDraw($('#mlL'),true);}catch(_){}}
+async function mugLive(){var m=$('#mugLive');if(!m)return;/* Tasarım ekranında gösterilmez (baskının önünü kapatıyordu); gerçek kupa görünümü Bitti sonrası önizlemede */
+  m.hidden=true;}
 /* ---------- Kupa sunum sahnesi (yönetici önizlemesi ve kupa ürün görselleri) ----------
    Arka plan her kupa için aynıdır (krem duvar, pencere ışığı, yaprak gölgesi, ahşap masa, okaliptüs vazo, kahve çekirdekleri);
    yalnız kupa ve üstündeki baskı değişir. hs=+1 kulp sağda (Ön), hs=-1 kulp solda (Arka).
@@ -3286,18 +3287,23 @@ async function openOrder(){
   renderSizes();renderPrice();renderFiles();
   var th=$('#thumbs');th.textContent='';
   var sides=sidesOf();
-  var views=[];sides.forEach(function(sd){views.push([sd,false]);});if(mugWrap())views.push(['front',true]);
+  var views=[];if(mugWrap()){await orderMugViews(th);views.push(['front',true]);}else sides.forEach(function(sd){views.push([sd,false]);});
   for(var i=0;i<views.length;i++){
     try{
       var sd0=views[i][0],fl=views[i][1],c=await renderPreview(sd0,0.5,fl),f=document.createElement('figure');
       f.dataset.side=sd0;f.setAttribute('role','button');f.setAttribute('aria-label',SIDE_NAME[sd0]+' tasarımını düzenle');
-      f.appendChild(c);var cap=document.createElement('figcaption');cap.textContent=mugWrap()?(fl?'Açılmış baskı · 20 × 9 cm':'Kupada'):SIDE_NAME[sd0];f.appendChild(cap);
+      if(fl)f.className='wide';f.appendChild(c);var cap=document.createElement('figcaption');cap.textContent=mugWrap()?(fl?'Açılmış baskı · 20 × 9 cm':'Kupada'):SIDE_NAME[sd0];f.appendChild(cap);
       if(!state[sd0].objs.length){var hn=document.createElement('span');hn.className='sideHint';hn.textContent='+ '+SIDE_NAME[sd0]+' baskı ekle';f.appendChild(hn);}
       th.appendChild(f);
     }catch(_){}
   }
 }
 $('#brandChk').addEventListener('change',function(){state.brand=this.checked;pushHist();renderShirt();renderPrice();toast(this.checked?'Wolflano işareti eklendi':'Wolflano işareti kaldırıldı');});
+/* Süblimasyon kupa önizlemesi: tasarım bitince kupaya basılmış gibi, sağ elde (kulp sağda) ve sol elde (kulp solda) */
+async function orderMugViews(th){
+  for(var hs of [[1,'Sağ elde'],[-1,'Sol elde']]){try{var c=await mugScene('front',hs[0],640),f=document.createElement('figure');
+    f.dataset.side='front';f.setAttribute('role','button');f.setAttribute('aria-label','Kupa tasarımını düzenle');
+    f.appendChild(c);var cap=document.createElement('figcaption');cap.textContent=hs[1];f.appendChild(cap);th.appendChild(f);}catch(e){try{console.error('Kupa önizleme',e);}catch(_){}}}}
 function closeOrder(){$('#order').hidden=true;}
 $('#doneBtn').addEventListener('click',openOrder);
 /* Önizlemeden tasarıma dönüş: geri tuşu, kapat düğmesi veya ön/arka görsele dokunma */
