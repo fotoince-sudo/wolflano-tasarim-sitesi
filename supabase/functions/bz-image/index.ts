@@ -10,8 +10,8 @@ const j = (o: unknown, s = 200) =>
 
 const STY: Record<string, string> = {
   tisort: 'premium streetwear T-shirt graphic: dramatic, highly detailed realistic digital illustration (not a photo), cinematic lighting, rich texture, ink-splash and dry-brush edges that fade out softly, strong silhouette, cohesive limited color palette, bold modern composition like a high-end apparel brand print',
-  kurt: 'premium streetwear T-shirt graphic: dramatic, highly detailed realistic digital illustration (not a photo), dark moody cinematic lighting, muted earthy palette of charcoal, black, warm brown and amber accents, rich fur and hair texture, ink-splash and dry-brush edges that fade out softly into the background (adapt the palette to the shirt color if one is given below)',
-  tarih: 'premium streetwear T-shirt graphic: highly detailed realistic illustration in a double-exposure style, charcoal and graphite tones with soft sepia and stone colors and a single amber accent in the wolf eye, fine engraving-like detail, weathered ancient stone texture, ink-splash and dry-brush edges with small flying flecks that fade out softly (adapt the palette to the shirt color if one is given below)',
+  kurt: 'premium streetwear T-shirt graphic: dramatic, highly detailed realistic digital illustration (not a photo), dramatic cinematic lighting, muted earthy palette with amber accents (exact lightness set by the shirt-color rule below), rich fur and hair texture, ink-splash and dry-brush edges that fade out softly into the background (adapt the palette to the shirt color if one is given below)',
+  tarih: 'premium streetwear T-shirt graphic: highly detailed realistic illustration in a double-exposure style, soft graphite, sepia and stone colors with a single amber accent in the wolf eye (exact lightness set by the shirt-color rule below), fine engraving-like detail, weathered ancient stone texture, ink-splash and dry-brush edges with small flying flecks that fade out softly (adapt the palette to the shirt color if one is given below)',
   real: 'photorealistic, natural light, premium photography look',
   cartoon: 'fun hand-drawn caricature, slightly exaggerated features, bold clean outlines, vivid flat colors',
   pencil: 'detailed hand-drawn graphite pencil portrait sketch, fine hatching and shading, high contrast, monochrome',
@@ -36,6 +36,19 @@ function dataUrlToBlob(u: string): Blob | null {
   return new Blob([a], { type: m[1] });
 }
 
+function shirtDark(hex: string): boolean | null {
+  const m = /^#?([0-9a-f]{6})$/i.exec(hex || '');
+  if (!m) return null;
+  const n = parseInt(m[1], 16), r = (n >> 16) & 255, g = (n >> 8) & 255, b = n & 255;
+  return (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255 < 0.5;
+}
+
+/* Kurtla portre ve Kurt ve tarih: ton tamamen tişört rengine göre (açık tişörtte açık, havadar; koyuda ışıltılı) */
+function wolfTone(dark: boolean | null): string {
+  if (dark === true) return 'TONE RULE (most important, overrides any other color words): the shirt is dark, so invert the tonality: draw the artwork mainly in luminous light grey, bone white, cream and pale warm stone tones with bright highlights, mid tones only for depth and the amber eye as the accent; no black or very dark areas at all, because they would vanish into the dark fabric. The edges fade out in light dry-brush flecks.';
+  return 'TONE RULE (most important, overrides any other color words): the shirt is light (white, cream or pastel), so keep the artwork LIGHT and airy like a vintage engraving printed on cream paper: mostly soft light-to-mid grey, warm sepia and pale stone tones with plenty of light areas, fine line detail, and deep dark shadows only in small accents (eye, nose, the deepest folds and column gaps). Never a heavy, dark, mostly black image; overall the artwork should read clearly lighter than mid-grey. The edges fade out into light ink washes and small flecks.';
+}
+
 /* Tişört rengi: ad ve açık/koyu bilgisi, tasarımın renklerini buna göre seçmesi için */
 function shirtHint(name: string, hex: string): string {
   const m = /^#?([0-9a-f]{6})$/i.exec(hex || '');
@@ -48,7 +61,7 @@ function shirtHint(name: string, hex: string): string {
   if (!nm) return '';
   const tone = dark === null ? '' : dark
     ? 'The shirt is dark: use luminous, light and mid tones with bright highlights so the artwork glows on the dark fabric; avoid large black areas that would disappear into the shirt.'
-    : 'The shirt is light: use deep, rich dark tones and strong shadows so the artwork stands out on the light fabric; avoid large white or very pale areas that would disappear into the shirt.';
+    : 'The shirt is light: use clear mid and dark tones with good contrast so the artwork stands out on the light fabric, without making the whole image heavy or black; avoid large white areas that would disappear into the shirt.';
   return `This artwork will be printed on a ${nm} T-shirt. Choose a color palette that harmonizes with that shirt color and gives strong contrast against it. ${tone} Never paint a background in the shirt color; the shirt fabric itself is the background.`;
 }
 
@@ -167,6 +180,7 @@ Deno.serve(async (req) => {
       parts.push(`If the request is just a short topic, first decide what it is. If it is a place in Türkiye or elsewhere (city, town, district, region, island or landmark), ${place}. If it is a special day or occasion (Anneler Günü, Babalar Günü, Öğretmenler Günü, Sevgililer Günü, doğum günü, yılbaşı, mezuniyet, bayram, düğün, emeklilik and similar), ${day}. If it is a profession or job (öğretmen, doktor, hemşire, mühendis, aşçı, avukat, polis, itfaiyeci, kuaför and similar), ${job}. If it is anything else (a hobby, sport, animal, team or idea), design around it in the same spirit. ${writeIt} If the request also mentions a wolf (kurt), place a noble wolf naturally in the design.${badge} If the request is a full description rather than a short topic, ignore this paragraph and draw what was asked.`);
     }
     if (shirt) parts.push(shirt);
+    if ((style === 'kurt' || style === 'tarih') && !canvas && !mug) parts.push(wolfTone(shirtDark(String(body.shirtHex || ''))));
     parts.push(topic && !canvas
       ? `Do not add any other text, letters or captions except the topic "${topic}" or words inside quotation marks in the request; spell them exactly, including Turkish letters such as ç, ğ, ı, İ, ö, ş, ü.`
       : 'Do not add any text, letters, words or captions, unless the request contains words inside quotation marks; only then write exactly those quoted words, spelled correctly (including Turkish letters such as ç, ğ, ı, İ, ö, ş, ü).');
