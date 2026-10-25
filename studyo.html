@@ -899,9 +899,9 @@ function colHex(c){return String(c||'').toUpperCase();}
 function colCode(c){var i=PALETTE.indexOf(String(c||'').toLowerCase());return i<0?'':'W'+(i<9?'0':'')+(i+1);}
 function colLabel(c){if(!c)return '';var k=colCode(c);return (k?k+' · ':'Özel · ')+colHex(c);}
 function colInk(c){var h=String(c||'').replace('#','');if(h.length!==6)return '#111';var r=parseInt(h.slice(0,2),16),g=parseInt(h.slice(2,4),16),b=parseInt(h.slice(4,6),16);return (r*299+g*587+b*114)/1000>150?'#111':'#fff';}
-function colParse(v){v=String(v||'').trim().toUpperCase().replace(/\s/g,'');var m=v.match(/^W?0*(\d{1,2})$/);if(m){var n=+m[1];return n>=1&&n<=PALETTE.length?PALETTE[n-1]:null;}
+function colParse(v){v=String(v||'').trim().toUpperCase().replace(/\s/g,'');var hx=v.match(/#[0-9A-F]{6}\b|#[0-9A-F]{3}\b/),wk=v.match(/^W0*\d{1,2}/);if(v.length>7&&(hx||wk))v=hx?hx[0]:wk[0];var m=v.match(/^W?0*(\d{1,2})$/);if(m){var n=+m[1];return n>=1&&n<=PALETTE.length?PALETTE[n-1]:null;}
   m=v.replace(/^#/,'');if(/^[0-9A-F]{6}$/.test(m))return '#'+m.toLowerCase();if(/^[0-9A-F]{3}$/.test(m))return '#'+m.split('').map(function(x){return x+x;}).join('').toLowerCase();return null;}
-function usedColors(){var seen={},out=[];['front','logo','back'].forEach(function(sd){(state[sd]&&state[sd].objs||[]).forEach(function(o){if(o.type==='image')return;[o.color,o.stroke].forEach(function(c){if(!c)return;var k=String(c).toLowerCase();if(!seen[k]){seen[k]=1;out.push(k);}});});});return out;}
+function usedColors(){var seen={},out=[];['front','logo','back'].forEach(function(sd){(state[sd]&&state[sd].objs||[]).forEach(function(o){if(o.type==='image'||(o.type==='clip'&&clipFixed(o.key)))return;[o.color,o.stroke].forEach(function(c){if(!c)return;var k=String(c).toLowerCase();if(!seen[k]){seen[k]=1;out.push(k);}});});});return out;}
 var FONTS=[['Cormorant Garamond İnce',500,'Cormorant Garamond'],['Cormorant Garamond',700],['Manrope İnce',500,'Manrope'],['Manrope',800],['Bodoni Moda',700],['Marcellus',400],['DM Serif Display',400],['Big Shoulders Display',800],['Unbounded',700],['Saira Stencil One',400],['Great Vibes',400],['Allura',400],['Mrs Saint Delafield',400],['Rubik Spray Paint',400],['Shrikhand',400],['Anton',400],['Oswald',700],['Bebas Neue',400],['Staatliches',400],['Montserrat',800],['Poppins',800],['Archivo Black',400],['Alfa Slab One',400],['Playfair Display',800],['Abril Fatface',400],['Righteous',400],['Bangers',400],['Fredoka',600],['Black Ops One',400],['Press Start 2P',400],['Lobster',400],['Pacifico',400],['Dancing Script',700],['Caveat',700],['Barlow Condensed',700],['Rubik',800],['Teko',600],['Russo One',400],['Saira Condensed',800],['Exo 2',800],['Kanit',800],['Rajdhani',700],['Bungee',400],['Chakra Petch',700],['Lilita One',400],['Kaushan Script',400],['Sacramento',400],['Cinzel',700],['Merriweather',900]];
 function fw(f){for(var i=0;i<FONTS.length;i++){if(FONTS[i][0]===f)return FONTS[i][1];}return 700;}
 /* "İnce" gibi seçenekler aynı yazı ailesinin ince ağırlığıdır */
@@ -1068,6 +1068,8 @@ var clipUid=0;
 function clipRow(key){for(var i=0;i<CLIPS.length;i++){if(CLIPS[i][0]===key)return CLIPS[i];}return null;}
 /* İç kimlikler (maske, geçiş) her çizimde benzersiz olur ki aynı sahne iki yerde bozulmasın */
 function clipInner(key){var r=clipRow(key);return r?String(r[3]).replace(/__U/g,'_u'+(++clipUid)):'';}
+/* Renkleri sabit çizimler (kupa sahneleri gibi): renk değiştirilemez, renk düğmesi gösterilmez */
+function clipFixed(key){var r=clipRow(key);if(!r)return false;var x=String(r[3]);return x.indexOf('currentColor')<0&&/fill="#/.test(x);}
 function clipVB(key){var r=clipRow(key);return (r&&r[4])||'0 0 100 100';}
 function clipAsp(key){var v=clipVB(key).split(' ');return (+v[3]||100)/(+v[2]||100);}
 function clipSVG(key){return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="'+clipVB(key)+'" fill="currentColor">'+clipInner(key)+'</svg>';}
@@ -1928,6 +1930,7 @@ function syncCtx0(){
   var pop=$('#colorPop');
   if(!o){pop.hidden=true;return;}
   $$('#ctxBar [data-t],#stageBar [data-t]').forEach(function(b){b.hidden=b.dataset.t.split(' ').indexOf(o.type)<0;});
+  if(o.type==='clip'&&clipFixed(o.key)){$$('#ctxBar [data-c="color"],#stageBar [data-c="color"]').forEach(function(b){b.hidden=true;});if(view.pop==='color')view.pop=null;}
   liveWarn(o);
   $('#ctxDot').style.background=o.color||'transparent';
   var q=$('#qPill');
@@ -3092,10 +3095,10 @@ function ctxClick(e){
 $('#ctxBar').addEventListener('click',ctxClick);
 (function(){var sb=$('#stageBar');sb.addEventListener('click',ctxClick);['pointerdown','pointerup'].forEach(function(t){sb.addEventListener(t,function(e){e.stopPropagation();},{passive:true});});})();
 $('#colorPop').addEventListener('click',function(e){var cp=e.target.closest('[data-copy]');if(cp){var tx=cp.dataset.copy;(navigator.clipboard&&navigator.clipboard.writeText?navigator.clipboard.writeText(tx):Promise.reject()).then(function(){toast('Kopyalandı: '+tx);},function(){var ta=document.createElement('textarea');ta.value=tx;ta.setAttribute('readonly','');ta.style.position='fixed';ta.style.opacity='0';document.body.appendChild(ta);ta.select();try{document.execCommand('copy');toast('Kopyalandı: '+tx);}catch(_){toast(tx);}ta.remove();});return;}
-  var b=e.target.closest('[data-col]');if(!b)return;applyColor(b.dataset.col||null);pushHist();});
+  var b=e.target.closest('[data-col]');if(!b)return;applyColor(b.dataset.col||null);pushHist();popClose();});
 $('#colorPop').addEventListener('input',function(e){if(e.target.id==='colorCustom'&&view.grp){applyColor(e.target.value);return;}if(e.target.id==='colorCustom'){var o=selObj();if(!o)return;if(view.pop==='stroke')o.stroke=e.target.value;else o.color=e.target.value;updateEl(els[o.id],o);$('#ctxDot').style.background=o.color;}});
 $('#colorPop').addEventListener('change',function(e){if(e.target.id==='colorCustom')pushHist();});
-$('#colorPop').addEventListener('submit',function(e){e.preventDefault();var inp=$('#colorCode'),c=colParse(inp&&inp.value);if(!c){toast('Kod bulunamadı. Örnek: W12 ya da #159B91');return;}applyColor(c);pushHist();toast('Renk uygulandı: '+colLabel(c));});
+$('#colorPop').addEventListener('submit',function(e){e.preventDefault();var inp=$('#colorCode'),c=colParse(inp&&inp.value);if(!c){toast('Kod bulunamadı. Örnek: W12 ya da #159B91');return;}if(inp)inp.blur();applyColor(c);pushHist();popClose();toast('Renk uygulandı: '+colLabel(c));});
 document.addEventListener('keydown',function(e){
   var tag=(e.target.tagName||'').toLowerCase();
   if(tag==='input'||tag==='textarea')return;
