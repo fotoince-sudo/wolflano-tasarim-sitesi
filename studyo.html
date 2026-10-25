@@ -4444,17 +4444,51 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
      Tablonun yeri, mekân fotoğrafındaki en büyük parlak beyaz dikdörtgen bulunarak çıkarılır; ışık ve gölge korunur. */
   var SCN_BOX={};
   function loadCors(u){return new Promise(function(res,rej){var im=new Image();im.crossOrigin='anonymous';im.onload=function(){res(im);};im.onerror=rej;im.src=u;});}
-  function findWhiteBox(im){var W=200,H=Math.round(200*im.naturalHeight/im.naturalWidth),c=document.createElement('canvas');c.width=W;c.height=H;var x=c.getContext('2d');x.drawImage(im,0,0,W,H);
-    var d=x.getImageData(0,0,W,H).data,lum=new Float32Array(W*H),i,mx=0;
-    for(i=0;i<W*H;i++){var r=d[i*4],g=d[i*4+1],b=d[i*4+2],l=(r+g+b)/3,sat=Math.max(r,g,b)-Math.min(r,g,b);lum[i]=sat<26?l:0;if(lum[i]>mx)mx=lum[i];}
-    var th=Math.max(180,mx-38),seen=new Uint8Array(W*H),best=null;
-    for(var y0=0;y0<H;y0++)for(var x0=0;x0<W;x0++){var k=y0*W+x0;if(seen[k]||lum[k]<th)continue;
-      var st=[k],n=0,l=W,t=H,rr=0,bb=0;seen[k]=1;
-      while(st.length){var q=st.pop(),qx=q%W,qy=(q/W)|0;n++;if(qx<l)l=qx;if(qx>rr)rr=qx;if(qy<t)t=qy;if(qy>bb)bb=qy;
-        [q-1,q+1,q-W,q+W].forEach(function(z){if(z<0||z>=W*H||seen[z])return;var zx=z%W;if(Math.abs(zx-qx)>1)return;if(lum[z]>=th){seen[z]=1;st.push(z);}});}
-      var bw=rr-l+1,bh=bb-t+1,fill=n/(bw*bh),cx=(l+rr)/2/W,cy=(t+bb)/2/H;
-      var score=n*fill*(1-Math.abs(cx-0.5));if(bw>8&&bh>8&&fill>0.75&&(!best||score>best.s))best={s:score,l:l/W,t:t/H,w:bw/W,h:bh/H};}
-    if(!best)return null;var ins=0.004;return {l:best.l+ins,t:best.t+ins,w:best.w-2*ins,h:best.h-2*ins};}
+  /* Mekândaki beyaz tabloyu bul: farklı parlaklık eşikleri denenir; resmin kenarına değmeyen, dolu, beklenen en/boy oranındaki en büyük açık dikdörtgen tablodur.
+     (Eskisi tek eşik kullanıyordu; kırık beyaz duvarlı salonda duvar ile tablo birleşip tablo bulunamıyordu.) Tablo duvara çok yakın tondaysa kenar çizgilerinden bulunur. */
+  function findWhiteBox(im,land){var W=200,H=Math.round(200*im.naturalHeight/im.naturalWidth),c=document.createElement('canvas');c.width=W;c.height=H;var x=c.getContext('2d');x.drawImage(im,0,0,W,H);
+    return wbCore(x.getImageData(0,0,W,H).data,W,H,land?1.43:0.7);}
+  /* Tablo bulucu çekirdeği: d=RGBA dizisi, W×H, asp=beklenen en/boy (yatay ~1.43, dikey ~0.7) */
+  function wbCore(d,W,H,asp){
+    var N=W*H,lum=new Float32Array(N),ok=new Uint8Array(N),i,vals=[];
+    for(i=0;i<N;i++){var r=d[i*4],g=d[i*4+1],b=d[i*4+2],sat=Math.max(r,g,b)-Math.min(r,g,b);lum[i]=(r+g+b)/3;ok[i]=sat<34?1:0;if(ok[i])vals.push(lum[i]);}
+    if(!vals.length)return null;vals.sort(function(a,b){return a-b;});var mx=vals[Math.floor(vals.length*0.995)];
+    var best=null,lab=new Int32Array(N);
+    for(var th=mx-3;th>=Math.max(120,mx-90);th-=3){
+      lab.fill(0);var id=0;
+      for(var k0=0;k0<N;k0++){if(lab[k0]||!ok[k0]||lum[k0]<th)continue;id++;
+        var st=[k0],n=0,l=W,t=H,rr=0,bb=0,edge=false;lab[k0]=id;
+        while(st.length){var q=st.pop(),qx=q%W,qy=(q/W)|0;n++;if(qx<l)l=qx;if(qx>rr)rr=qx;if(qy<t)t=qy;if(qy>bb)bb=qy;
+          if(qx===0||qy===0||qx===W-1||qy===H-1)edge=true;
+          if(qx>0){var z=q-1;if(!lab[z]&&ok[z]&&lum[z]>=th){lab[z]=id;st.push(z);}}
+          if(qx<W-1){z=q+1;if(!lab[z]&&ok[z]&&lum[z]>=th){lab[z]=id;st.push(z);}}
+          if(qy>0){z=q-W;if(!lab[z]&&ok[z]&&lum[z]>=th){lab[z]=id;st.push(z);}}
+          if(qy<H-1){z=q+W;if(!lab[z]&&ok[z]&&lum[z]>=th){lab[z]=id;st.push(z);}}}
+        if(edge)continue;                                  /* duvar resmin kenarına değer, tablo değmez */
+        var bw=rr-l+1,bh=bb-t+1;if(bw<W*0.12||bh<H*0.12||bw*bh>N*0.6)continue;
+        var fill=n/(bw*bh);if(fill<0.82)continue;
+        var ar=bw/bh,am=Math.min(ar,asp)/Math.max(ar,asp);if(am<0.72)continue;
+        var cx=(l+rr)/2/W,score=n*fill*fill*am*(1-0.6*Math.abs(cx-0.5));
+        if(!best||score>best.s)best={s:score,l:l/W,t:t/H,w:bw/W,h:bh/H};}
+    }
+    if(!best)best=wbEdges(lum,W,H,asp);
+    if(!best)return null;var ins=0.004;return {l:best.l+ins,t:best.t+ins,w:best.w-2*ins,h:best.h-2*ins};
+  }
+  /* Yedek: tablo duvardan ancak çok az farklıysa kenar çizgileri (dikey ve yatay keskin geçişler) sayılarak bulunur */
+  function wbEdges(lum,W,H,asp){
+    var cx=new Float32Array(W),cy=new Float32Array(H),x,y,i;
+    for(y=1;y<H-1;y++)for(x=1;x<W-1;x++){i=y*W+x;var gx=Math.abs(lum[i+1]-lum[i-1]),gy=Math.abs(lum[i+W]-lum[i-W]);
+      if(gx>2.5&&gx>gy*1.5)cx[x]+=1;if(gy>2.5&&gy>gx*1.5)cy[y]+=1;}
+    var best=null;
+    for(var l=Math.round(W*0.05);l<W*0.5;l++)for(var r=l+Math.round(W*0.15);r<W*0.95;r++){
+      var mid=(l+r)/2/W;if(Math.abs(mid-0.5)>0.12)continue;var sc=Math.min(cx[l],cx[r]);
+      if(!best||sc>best.s)best={s:sc,l:l,r:r};}
+    if(!best||best.s<H*0.08)return null;var bw=best.r-best.l,eh=bw/asp,top=null;
+    for(var t=1;t+eh*0.75<H-1;t++)for(var b=Math.round(t+eh*0.75);b<=Math.min(H-2,t+eh*1.3);b++){var s2=Math.min(cy[t],cy[b]);if(!top||s2>top.s)top={s:s2,t:t,b:b};}
+    if(!top||top.s<bw*0.3)return null;
+    return {s:0,l:(best.l+1)/W,t:(top.t+1)/H,w:(bw-1)/W,h:(top.b-top.t-1)/H};
+  }
+
   async function printFace(){var pr=await renderPrint('front'),c=pr.canvas,cm=dimsOf(state.front.area,isLand('front')),fx=4/cm[0],fy=4/cm[1];
     var sx=Math.round(c.width*fx),sy=Math.round(c.height*fy),o=document.createElement('canvas');o.width=c.width-2*sx;o.height=c.height-2*sy;var x=o.getContext('2d');
     x.fillStyle='#ffffff';x.fillRect(0,0,o.width,o.height);x.drawImage(c,-sx,-sy);return o;}
@@ -4463,7 +4497,7 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
     var r=await fetch(SBA.url+'/functions/v1/manken',{method:'POST',headers:{'Content-Type':'application/json',apikey:SBA.key,Authorization:'Bearer '+t},body:JSON.stringify({mode:'sahne',sahne:sahne,yon:land?'yatay':'dikey'})});
     var jj=await r.json().catch(function(){return {};});if(!r.ok||!jj.url){if(jj&&jj.message)longToast(jj.message);return null;}
     if(btn)btn.textContent='Tasarım mekâna yerleştiriliyor…';
-    var im=await loadCors(jj.url+(jj.cached?'':'?v='+Date.now())),bx=SCN_BOX[jj.url]||findWhiteBox(im);if(!bx)return null;SCN_BOX[jj.url]=bx;
+    var im=await loadCors(jj.url+(jj.cached?'':'?v='+Date.now())),bx=SCN_BOX[jj.url]||findWhiteBox(im,land);if(!bx)return null;SCN_BOX[jj.url]=bx;
     var W=im.naturalWidth,H=im.naturalHeight,X=Math.round(bx.l*W),Y=Math.round(bx.t*H),BW=Math.round(bx.w*W),BH=Math.round(bx.h*H);
     var face=await printFace(),c=document.createElement('canvas');c.width=W;c.height=H;var x=c.getContext('2d');x.drawImage(im,0,0);
     /* ışık haritası: beyaz tablonun kendi aydınlık farkları (gölge, köşe kararması) tasarımın üstüne çarpılır */
