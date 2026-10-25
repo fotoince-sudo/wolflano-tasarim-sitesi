@@ -10,6 +10,7 @@ const j = (o: unknown, s = 200) =>
 
 const STY: Record<string, string> = {
   tisort: 'premium streetwear T-shirt graphic: dramatic, highly detailed realistic digital illustration (not a photo), cinematic lighting, rich texture, ink-splash and dry-brush edges that fade out softly, strong silhouette, cohesive limited color palette, bold modern composition like a high-end apparel brand print',
+  kurt: 'premium streetwear T-shirt graphic: dramatic, highly detailed realistic digital illustration (not a photo), dark moody cinematic lighting, muted earthy palette of charcoal, black, warm brown and amber accents, rich fur and hair texture, ink-splash and dry-brush edges that fade out softly into the background (adapt the palette to the shirt color if one is given below)',
   real: 'photorealistic, natural light, premium photography look',
   cartoon: 'fun hand-drawn caricature, slightly exaggerated features, bold clean outlines, vivid flat colors',
   pencil: 'detailed hand-drawn graphite pencil portrait sketch, fine hatching and shading, high contrast, monochrome',
@@ -100,7 +101,15 @@ Deno.serve(async (req) => {
       : mug === 'wrap' ? 'Print-ready wide panoramic artwork for a sublimation print that wraps all the way around a white ceramic mug.'
       : mug === 'logo' ? 'Print-ready compact artwork for a small print on one side of a white ceramic mug.'
       : 'Print-ready artwork for a garment print.');
-    if (img) {
+    const wolfPortrait = style === 'kurt' && !canvas && !mug;
+    if (img && wolfPortrait) {
+      /* Kurtla portre: müşterinin fotoğrafındaki kişi, asil bir kurtla yan yana dramatik tişört grafiği */
+      parts.push(`Create a dramatic wolf-and-portrait garment graphic in this style: ${STY.kurt}.`);
+      parts.push('The person (or people) from the attached photo is the hero of the artwork. Keep each face clearly recognizable as the same real person: same face shape, eyes, eyebrows, nose, mouth, skin tone, age, expression lines and head shape; keep their exact hairline, hair amount, hair color and facial hair (if someone is bald keep them bald, if clean-shaven keep them clean-shaven; never add hair or a beard that is not there).');
+      parts.push('Composition: the person shown from the chest up in a three-quarter view, looking proudly and calmly into the distance, slightly lower right of center. Behind them and to the upper left, a large majestic grey wolf head in profile facing the same direction, its fur flowing into the person\'s shoulders so wolf and person feel like one strong silhouette. Dress the person in a dark rugged coat with a thick fur collar. The bottom and outer edges dissolve into black ink splashes, dry-brush strokes and small flying flecks; no hard rectangular edge.');
+      parts.push('If there are several people, place them side by side in front of the same wolf. If the photo shows an animal instead of a person, draw that animal with its exact breed, colors and markings next to the wolf in the same way.');
+      parts.push('Do NOT copy any logo, letters, numbers or print from the photo.');
+    } else if (img) {
       parts.push(`Redraw the attached photo in this style: ${STY[style]}.`);
       parts.push('First look at what the photo shows: one person, a couple, a family or group, a pet or other animal, or a place or object. Draw exactly that, nothing less.');
       parts.push("If there are people, include EVERY person in the photo, in the same arrangement, and keep each one clearly recognizable: same face shape, eyes, nose, mouth, skin tone, age, expression and head shape. Keep each person's exact hairline and hair amount (if someone is bald, keep them bald; do not add hair or a beard that is not there).");
@@ -115,6 +124,8 @@ Deno.serve(async (req) => {
           : canvas
             ? 'Composition for a wall painting: keep the subject where it looks natural and paint a complete, matching background that fills the whole canvas.'
             : 'Composition for a garment print: centered, people from the chest up (a whole animal or object), isolated from the photo background.');
+    } else if (wolfPortrait) {
+      parts.push(`Create a dramatic wolf-and-portrait garment graphic in this style: ${STY.kurt}. A proud rugged man with a beard, chest up in a three-quarter view, looking into the distance, wearing a dark coat with a thick fur collar; behind him to the upper left a large majestic grey wolf head in profile facing the same direction, their silhouettes merging. Edges dissolve into black ink splashes and dry-brush strokes.`);
     } else {
       parts.push(`Style: ${STY[style]}.`);
     }
