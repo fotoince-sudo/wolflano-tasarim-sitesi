@@ -618,5 +618,35 @@
 34,
 59
 ]
+},
+"img/mvn1w7asri0f.jpg": {
+"color": "Beyaz",
+"file": "cut/mvn1w7asri0f.webp",
+"ns": -0.1007,
+"rgb": [
+237,
+237,
+242
+]
+},
+"img/mvn4n3c8fnml.jpg": {
+"color": "Beyaz",
+"file": "cut/mvn4n3c8fnml.webp",
+"ns": -0.1007,
+"rgb": [
+237,
+237,
+242
+]
+},
+"img/mvn4q93kbqkm.jpg": {
+"color": "Beyaz",
+"file": "cut/mvn4q93kbqkm.webp",
+"ns": -0.1007,
+"rgb": [
+237,
+237,
+242
+]
 }
 }
