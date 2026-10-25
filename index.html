@@ -745,9 +745,9 @@ body.cko #nav,body.cko .menu-btn,body.cko .lang,body.cko #cartBtn,body.cko #ann{
 .ptop h1{margin:0}
 .info{gap:10px}
 .info .ptype{display:block;width:100%;text-align:center;margin:0}
-.card .pnm{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;font:600 14.5px/1.3 var(--ui);color:var(--ink);margin:2px 0 3px}
+.card .pnm{display:block;white-space:nowrap;text-overflow:ellipsis;height:1.35em;overflow:hidden;font:600 14.5px/1.3 var(--ui);color:var(--ink);margin:2px 0 3px}
 .ph img.dimg{transform:scale(1.18);transform-origin:50% 26%}
-.grid .card .meta{flex:1 1 auto}.card .pnm{min-height:2.6em}.cgd i{width:14px;height:14px;border-radius:50%;border:1px solid rgba(0,0,0,.22);margin:2px 0}.cgd{display:flex;gap:7px;flex-wrap:wrap;margin-top:7px}.cgd button{width:18px;height:18px;border-radius:50%;border:1px solid rgba(0,0,0,.22);padding:0;cursor:pointer;position:relative}.cgd button.on{box-shadow:0 0 0 2px var(--bg,#fff),0 0 0 3.5px var(--green)}.cgd button::after{content:"";position:absolute;inset:-7px}
+.card .pnm{min-height:0}.cgd i{width:14px;height:14px;border-radius:50%;border:1px solid rgba(0,0,0,.22);margin:2px 0}.cgd{position:absolute;left:8px;bottom:8px;display:flex;gap:6px;padding:5px 7px;border-radius:999px;background:rgba(255,255,255,.88);box-shadow:0 2px 8px rgba(0,0,0,.12);z-index:2}.cgd button{width:18px;height:18px;border-radius:50%;border:1px solid rgba(0,0,0,.22);padding:0;cursor:pointer;position:relative}.cgd button.on{box-shadow:0 0 0 2px var(--bg,#fff),0 0 0 3.5px var(--green)}.cgd button::after{content:"";position:absolute;inset:-7px}
 .card .cedit{border:0!important;padding:4px 6px!important;margin-top:4px!important;font:600 12.5px var(--ui)!important;background:none!important;text-decoration:underline;text-underline-offset:3px;text-decoration-color:rgba(47,107,69,.35)}.card .cedit svg{width:13px;height:13px}
 .pclr{text-transform:none;letter-spacing:0;color:var(--muted)}
 .cdot{display:inline-block;width:10px;height:10px;border-radius:50%;border:1px solid rgba(0,0,0,.25);margin:0 5px 0 2px;vertical-align:-1px}
@@ -2851,13 +2851,13 @@ function grpP(list){var by={},out=[];list.forEach(function(p){var k=dKey(p),c=St
 var NEWN=6,NEWSET=null,NEWSRC=null,NEWLEN=-1;
 function isNewP(p){if(!NEWSET||NEWSRC!==PRODUCTS||NEWLEN!==PRODUCTS.length){NEWSRC=PRODUCTS;NEWLEN=PRODUCTS.length;NEWSET={};grpP(PRODUCTS.filter(function(x){return x.tag==='Yeni';})).sort(function(a,b){return (+b.no||0)-(+a.no||0);}).slice(0,NEWN).forEach(function(x){(x._vars||[x]).forEach(function(v){NEWSET[v.id]=1;});});}return !!NEWSET[p.id];}
 function pTag(p){if(!p.tag||/çok\s*satan/i.test(p.tag))return '';if(p.tag==='Yeni'&&!isNewP(p))return '';return '<span class="tag">'+esc(p.tag)+'</span>';}
-function pName(p){var n=String(p.name||'').trim(),t=String(p.type||'').trim();if(!n||n.toLocaleLowerCase('tr')===t.toLocaleLowerCase('tr'))return '';return n;}
+function pName(p){var n=String(p.name||'').trim(),t=String(p.type||'').trim();return n||t;}
 function pImgCls(p){return p.dsg&&!/kupa|canvas/i.test(p.type||'')&&/\/?img\/tas-/.test(String(p.imgs&&p.imgs[0]||''))?' class="dimg"':'';}
 function card(p){
   var V=p._vars||null,nm=pName(p);
-  return '<article class="card'+(V?' cg':'')+'"'+(V?' data-cg="'+esc(JSON.stringify(V.map(function(v){return {i:v.id,u:IMG(v),p:pr(v),c:v.color||'',d:v.dsg?1:0,s:soldOut(v)?1:0,f:pImgCls(v)?1:0};})))+'"':'')+'><div class="phw"><a class="ph" href="#urun-'+p.id+'" aria-label="'+esc(p.name)+' detay"><img src="'+IMG(p)+'"'+pImgCls(p)+' alt="'+esc(p.name)+'" loading="lazy">'+pTag(p)+'</a>'+favBtn(p.id)+'</div>'+
+  return '<article class="card'+(V?' cg':'')+'"'+(V?' data-cg="'+esc(JSON.stringify(V.map(function(v){return {i:v.id,u:IMG(v),p:pr(v),c:v.color||'',d:v.dsg?1:0,s:soldOut(v)?1:0,f:pImgCls(v)?1:0};})))+'"':'')+'><div class="phw"><a class="ph" href="#urun-'+p.id+'" aria-label="'+esc(p.name)+' detay"><img src="'+IMG(p)+'"'+pImgCls(p)+' alt="'+esc(p.name)+'" loading="lazy">'+pTag(p)+'</a>'+favBtn(p.id)+(V?'<div class="cgd" role="radiogroup" aria-label="Renk">'+V.map(function(v,i){var h=cHex(v.color)||'#ccc';return '<button type="button" data-cgi="'+i+'"'+(i?'':' class="on"')+' role="radio" aria-checked="'+(i?'false':'true')+'" aria-label="'+esc(v.color||'Renk')+'" style="background:'+h+'"></button>';}).join('')+'</div>':'')+'</div>'+
   '<div class="meta">'+'<b class="pnm">'+esc(nm)+'</b>'+'<div class="row"><small>'+p.type+'</small><span class="price">'+pr(p)+'</span></div>'+
-  (V?'<div class="cgd" role="radiogroup" aria-label="Renk">'+V.map(function(v,i){var h=cHex(v.color)||'#ccc';return '<button type="button" data-cgi="'+i+'"'+(i?'':' class="on"')+' role="radio" aria-checked="'+(i?'false':'true')+'" aria-label="'+esc(v.color||'Renk')+'" style="background:'+h+'"></button>';}).join('')+'</div>':(cHex(p.color)?'<div class="cgd one"><i style="background:'+cHex(p.color)+'" title="'+esc(p.color)+'"></i></div>':''))+stk(p)+'</div>'+
+  stk(p)+'</div>'+
   (soldOut(p)?'<button type="button" class="btn sm add sold" data-soldout="'+p.id+'">Sepete ekle</button>':'<button class="btn sm add" data-add="'+p.id+'">Sepete ekle</button>')+(p.dsg?'<a class="cedit" href="studyo.html?hazir='+encodeURIComponent(p.id)+'"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13.5 6.5l4 4"/></svg>Düzenle, ismini ekle</a>':'')+'</article>';
 }
 /* renk noktasına dokununca kart o rengin ürününe geçer */
