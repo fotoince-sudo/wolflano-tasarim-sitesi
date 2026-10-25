@@ -1,0 +1,9 @@
+name: gecici-kontrol
+on: push
+jobs:
+  k:
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          curl -s "https://wolflano.com.tr/index.html?x=$RANDOM" -o i.html; echo "boyut $(wc -c < i.html)"; grep -c "pdel" i.html || true; grep -o "WF_ADM" i.html | head -1 || true
+          curl -sI "https://wolflano.com.tr/index.html" | grep -i "cache\|last-mod\|etag" || true
