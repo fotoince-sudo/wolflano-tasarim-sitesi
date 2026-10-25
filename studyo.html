@@ -841,7 +841,7 @@ var AREAS={
    [yakadan aşağı: logonun üst kenarı, orta çizgiden giyenin sol göğsüne doğru: logonun ortası]. Her bedende aynı cm, ürün gerçek boyutunda olduğu için logo her bedene doğru oturur. */
 var LOGO_AT={erkek:[15,12],kadin:[14,11],cocuk:[10,8.5]};
 /* Ürüne özel: kadın tişört ve sweatshirt'te logo yakadan 12 cm (kadın polo genel ölçüde kalır) */
-var LOGO_AT_P={tee:{kadin:[12,11]},sweat:{kadin:[12,11]}};
+var LOGO_AT_P={tee:{kadin:[12,11]},sweat:{kadin:[12,11]},hood:{kadin:[12,11]},zip:{kadin:[12,11]}};
 var NECK_Y={front:101,back:76}, DROP_CM=8, DROP_CM_COCUK=6; /* çocuk bedenlerinde A4/A3 boğazdan 6 cm aşağıda başlar */
 /* PRODUCTS: sides=yüzey → izinli alanlar, land={alan:true} o alan o üründe hep yatay,
              cuts=kesimler, price=kesim başına örnek fiyat, vb=sabit görünüm kutusu (giysi dışı ürünler), draw=çizim fonksiyonu */
@@ -852,6 +852,14 @@ var PRODUCTS={
   sweat:{name:'Sweatshirt', cuts:['erkek','kadin','cocuk'],price:{erkek:399,kadin:399,cocuk:329},
          sides:{front:['a4','a3'],logo:['logo'],back:['a4','a3']},
          rule:'Önde A4 (yatay veya dikey) ya da A3 dikey, ayrıca sol göğüse logo. Arkada A4 ya da A3.'},
+  /* Kapüşonlu: önde kanguru cep var, A3 cebe taşar; önde yalnız A4 ve logo */
+  hood: {name:'Kapüşonlu sweatshirt',cuts:['erkek','kadin','cocuk'],price:{erkek:449,kadin:449,cocuk:369},
+         sides:{front:['a4'],logo:['logo'],back:['a4','a3']},
+         rule:'Önde A4 (yatay veya dikey, kanguru cebin üstünde) ve sol göğüse logo. Arkada A4 ya da A3.'},
+  /* Fermuarlı kapüşonlu: ön fermuarla ikiye bölünür; önde yalnız sol göğüs logo */
+  zip:  {name:'Fermuarlı kapüşonlu',cuts:['erkek','kadin','cocuk'],price:{erkek:479,kadin:479,cocuk:399},
+         sides:{front:['logo'],back:['a4','a3']},
+         rule:'Önde yalnız sol göğüs logo (fermuar önü böler). Arkada A4 ya da A3.'},
   polo: {name:'Polo tişört',cuts:['erkek','kadin','cocuk'],price:{erkek:329,kadin:329,cocuk:269},
          sides:{front:['logo'],back:['a4','a3']},land:{a4:true},
          rule:'Önde yalnız sol göğüs logo. Arkada A4 yatay veya A3 dikey.'},
@@ -865,7 +873,7 @@ var PRODUCTS={
          sides:{front:['cv3550','cv5070']},vb:{cx:300,cy:320,w:420,h:520},
          rule:'Ön yüz ve her yanda 4 cm kenar (tuvalin yanlarına sarılır). Dikey ya da yatay.',draw:function(side,tee,cut,thumb){return canvasSVG(cut,thumb);}}
 };
-var PRODUCT_ORDER=['tee','sweat','polo','hat','mug','canvas'];
+var PRODUCT_ORDER=['tee','sweat','hood','zip','polo','hat','mug','canvas'];
 var SIDE_NAME={front:'Ön',logo:'Logo',back:'Arka'};
 /* Logo katmanı: ön yüze basılır, sol göğüste sabit 8×8 cm. Ön tasarımla çakışırsa logo önceliklidir, ön tasarımın o kısmı basılmaz. */
 function face(s){return s==='logo'?'front':s;}
@@ -1409,6 +1417,8 @@ function poloExtras(side,tee){
   }
   return f;
 }
+/* sweatshirt ailesi: çizimde manşet, bel lastiği ve kalın yaka */
+var SWEATY={sweat:1,hood:1,zip:1};
 function sweatExtras(side,tee){
   var ink=lum(tee)<0.35?'#ffffff':'#000000',nc=side==='front'?140:90,neck='M232 62Q300 '+nc+' 368 62',f='',i;
   var parts=['M548 384L496 400L488 371L540 355Z','M52 384L104 400L112 371L60 355Z','M132 566Q300 588 468 566L468 596Q300 618 132 596Z'];
@@ -1428,7 +1438,7 @@ function productSVG(side,tee,product,cut,thumb){side=face(side);var q=PRODUCTS[p
 var SZM={
  tee:{erkek:{XS:[47,68],S:[50,70],M:[53,72],L:[56,74],XL:[59,76],XXL:[62,78],'2XL':[62,78],'3XL':[65,80]},kadin:{XS:[42,60],S:[44,62],M:[47,64],L:[50,66],XL:[53,68],XXL:[56,70],'2XL':[56,70]},cocuk:{'3-4':[32,44],'5-6':[35,48],'7-8':[38,52],'9-10':[41,56],'11-12':[44,60],'13-14':[47,64]}},
  sweat:{erkek:{XS:[50,66],S:[53,68],M:[56,70],L:[59,72],XL:[62,74],XXL:[65,76],'2XL':[65,76],'3XL':[68,78]},kadin:{XS:[45,60],S:[48,62],M:[51,64],L:[54,66],XL:[57,68],XXL:[60,70],'2XL':[60,70]},cocuk:{'3-4':[34,44],'5-6':[37,48],'7-8':[40,52],'9-10':[43,56],'11-12':[46,60],'13-14':[49,63]}}
-};SZM.polo=SZM.tee;
+};SZM.polo=SZM.tee;SZM.hood=SZM.sweat;SZM.zip=SZM.sweat;
 var NECK_DROP={front:39,back:14};
 var PH={site:null,media:'',cal:{},want:'',teesBase:null};
 function phSrc(t){if(!t)return '';if(/^(https?:|data:|blob:)/.test(t))return t;if(PH.media==='sb'&&/^(img|vid)\//.test(t))return 'https://wgovwmeirlzwalelazfj.supabase.co/storage/v1/object/public/site/'+t;return t;}
@@ -1611,7 +1621,7 @@ function hatSVG(tee,thumb){
   '<circle cx="300" cy="116" r="9" fill="'+tee+'"/><circle cx="300" cy="116" r="9" fill="#000" fill-opacity=".18"/></svg>';
 }
 function shirtBody(side,product,cut){
-  var nc=side==='front'?(product==='polo'?112:140):90,sw=product==='sweat',kd=cut==='kadin';
+  var nc=side==='front'?(product==='polo'?112:140):90,sw=SWEATY[product],kd=cut==='kadin';
   return sw?(kd?'M232 62Q300 '+nc+' 368 62L468 88L548 384L496 400L468 268Q444 340 444 420Q446 510 458 596Q300 618 142 596Q154 510 156 420Q156 340 132 268L104 400L52 384L132 88Z'
                  :'M232 62Q300 '+nc+' 368 62L468 88L548 384L496 400L468 268L468 596Q300 618 132 596L132 268L104 400L52 384L132 88Z')
     :(kd?'M232 62Q300 '+nc+' 368 62L468 88L554 176L510 240L468 232Q440 330 442 410Q444 500 458 596Q300 618 142 596Q156 500 158 410Q160 330 132 232L90 240L46 176L132 88Z'
@@ -1619,7 +1629,7 @@ function shirtBody(side,product,cut){
 }
 function shirtSVG(side,tee,product,cut){
   var nc=side==='front'?(product==='polo'?112:140):90;
-  var sw=product==='sweat';
+  var sw=SWEATY[product];
   var body=shirtBody(side,product,cut);
   var seams=sw?'<path d="M468 88Q452 180 468 268"/><path d="M132 88Q148 180 132 268"/>'
     :'<path d="M468 88Q450 170 468 228"/><path d="M132 88Q150 170 132 228"/><path d="M132 578Q300 600 468 578"/>';
@@ -1645,7 +1655,7 @@ function fabricURL(){
 }
 function shadeLayers(side,tee,product,cut){side=face(side);
   if(PRODUCTS[product].draw)return null;if(phSVG(side,tee,product,cut))return null;
-  var body=shirtBody(side,product,cut),tf=cutTf(side,cut),L=lum(tee),sw=product==='sweat';
+  var body=shirtBody(side,product,cut),tf=cutTf(side,cut),L=lum(tee),sw=SWEATY[product];
   /* Hafif, doğal kırışıklar: koltuk altından inen dökümler ve etek dalgaları */
   var folds=side==='front'
     ?'<path d="M140 236Q168 300 176 380"/><path d="M460 236Q432 300 424 380"/><path d="M182 520Q214 556 236 590"/><path d="M418 520Q386 556 364 590"/><path d="M300 512Q296 556 300 596" stroke-width="10"/>'
@@ -2666,7 +2676,7 @@ function openProdPage(){closeTab();select(null);renderProdPage();$('#prodPage').
 function closeProdPage(){$('#prodPage').hidden=true;}
 /* Ürün seç: sitedeki "Baskıya uygun ürünler" ile aynı düzen. Sekmeler Tümü · Kadın · Erkek · Çocuk · Kupa · Canvas,
    giyim sekmelerinde tür kutusu; her kartta o ürünün renkleri (yalnız o kartın fotoğrafını değiştirir) */
-var PG={tab:'',type:'',open:false,col:{}},PG_TABS=[['','Tümü'],['kadin','Kadın'],['erkek','Erkek'],['cocuk','Çocuk'],['kupa','Kupa'],['canvas','Canvas']],PG_ORD=['tee','sweat','polo','hat','mug','canvas'],PG_G=['erkek','kadin','cocuk'];
+var PG={tab:'',type:'',open:false,col:{}},PG_TABS=[['','Tümü'],['kadin','Kadın'],['erkek','Erkek'],['cocuk','Çocuk'],['kupa','Kupa'],['canvas','Canvas']],PG_ORD=['tee','sweat','hood','zip','polo','hat','mug','canvas'],PG_G=['erkek','kadin','cocuk'];
 function pgGen(b){var t=b.p||b.id,n=String(b.name||'').toLocaleLowerCase('tr');if(t==='mug')return ['kupa'];if(t==='canvas')return ['canvas'];
   if(b.gen&&b.gen!=='kupa'&&b.gen!=='canvas')return b.gen==='hepsi'?PG_G.slice():[b.gen];if(PG_G.indexOf(b.cut)>=0)return [b.cut];
   var c=String(b.cuts||'').toLocaleLowerCase('tr'),r=[];if(/erkek/.test(c))r.push('erkek');if(/kadın|kadin/.test(c))r.push('kadin');if(/çocuk|cocuk/.test(c))r.push('cocuk');if(r.length)return r;
@@ -4192,7 +4202,7 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
      Ad yazmak zorunlu değil: tasarımdaki en büyük yazıdan (yoksa sahne/şekil adından) + ürün türünden ad üretilir, aynı ad varsa sonuna numara eklenir.
      Ürün kodu sitedeki kuralla aynı: renk baş harfi + tür baş harfi + ürün no (ör. BK-012).
      Şablon kodu: S + ürün grubu (G giyim, S şapka, K kupa, C canvas) + sıra no (ör. SK-004). */
-  var PWORD={tee:'Tişört',sweat:'Sweatshirt',polo:'Polo',hat:'Şapka',mug:'Kupa',canvas:'Canvas Tablo'};
+  var PWORD={tee:'Tişört',sweat:'Sweatshirt',hood:'Kapüşonlu Sweatshirt',zip:'Fermuarlı Kapüşonlu',polo:'Polo',hat:'Şapka',mug:'Kupa',canvas:'Canvas Tablo'};
   function trTitle(t){return String(t||'').toLocaleLowerCase('tr').replace(/(^|[\s\-'’])(\S)/g,function(m,a,b){return a+b.toLocaleUpperCase('tr');});}
   function autoName(){
     var txt=[],clip='';
@@ -4224,7 +4234,7 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
     await insertRow({title:title,kind:'taslak',product:state.product,cut:state.cut,color:state.tee,data:data,thumb:th,by_wolf:!!byWolf});
     return 'Tasarım "Admin tasarımları"na taslak olarak kaydedildi.';
   }
-  var TYPE_OF={tee:'TİŞÖRT',sweat:'SWEATSHIRT',polo:'POLO',hat:'ŞAPKA',mug:'KUPA',canvas:'CANVAS TABLO'};
+  var TYPE_OF={tee:'TİŞÖRT',sweat:'SWEATSHIRT',hood:'KAPÜŞONLU',zip:'FERMUARLI KAPÜŞONLU',polo:'POLO',hat:'ŞAPKA',mug:'KUPA',canvas:'CANVAS TABLO'};
   function colorName(){if(DEPO.cur&&depoBlank(state.product,state.cut)){var dc=depoCols(DEPO.cur).filter(function(c){return c.hex.toLowerCase()===String(state.tee).toLowerCase();})[0];return dc?dc.name:(DEPO.cur.color||'');}var n='';TEES.forEach(function(t){if(t[1]===state.tee)n=t[0];});return n;}
   /* Kategori seçimi "ana|alt|alt-alt" yolu olarak gelir: ürün ana kategoriye ve seçilen alt kategorilere eklenir */
   function catPath(v){var a=String(v||'').split('|').filter(Boolean);return {cat:a[0]?[a[0]]:[],sub:a.slice(1)};}
@@ -4367,7 +4377,7 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
   var MNV={d:null,busy:false,sel:null,hex:null,out:null,outUrl:'',msg:''};
   var MN_CUT={kerem:'erkek',emre:'erkek',murat:'erkek',elif:'kadin',deniz:'kadin',selin:'kadin',leyla:'kadin',ada:'cocuk',can:'cocuk',arda:'cocuk'};
   var MN_NAME={kerem:'Kerem',emre:'Emre',murat:'Murat',elif:'Elif',deniz:'Deniz',selin:'Selin',leyla:'Leyla',ada:'Ada',can:'Can',arda:'Arda'};
-  function mnOkProduct(){return ['tee','sweat','polo'].indexOf(state.product)>=0;}
+  function mnOkProduct(){return ['tee','sweat','hood','zip','polo'].indexOf(state.product)>=0;}
   async function mnLoad(){if(MNV.busy)return;MNV.busy=true;
     try{var r=await rq('/rest/v1/admin_kv?select=data&id=eq.manken');var dd=r&&r[0]&&r[0].data;MNV.d={refs:(dd&&dd.refs)||{},photos:(dd&&dd.photos)||[]};}
     catch(_){MNV.d={refs:{},photos:[]};MNV.msg='Manken fotoğrafları okunamadı.';}
@@ -4593,7 +4603,7 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
     dsvFill();
   }
   /* Ürün yap: seçili ürünün bilgisi (fotoğraf, tür, kesim, renk) ve tür/kategori seçenekleri */
-  var TYPE_LIST=[['TİŞÖRT','Tişört'],['SWEATSHIRT','Sweatshirt'],['POLO','Polo tişört'],['EŞOFMAN','Eşofman'],['ŞAPKA','Şapka'],['KUPA','Kupa'],['CANVAS','Canvas tablo']];
+  var TYPE_LIST=[['TİŞÖRT','Tişört'],['SWEATSHIRT','Sweatshirt'],['KAPÜŞONLU','Kapüşonlu sweatshirt'],['FERMUARLI KAPÜŞONLU','Fermuarlı kapüşonlu'],['POLO','Polo tişört'],['EŞOFMAN','Eşofman'],['ŞAPKA','Şapka'],['KUPA','Kupa'],['CANVAS','Canvas tablo']];
   var CUT_TR={erkek:'Erkek',kadin:'Kadın',cocuk:'Çocuk'};
   function curType(){return TYPE_OF[state.product]||(state.product==='canvas'?'CANVAS':'TİŞÖRT');}
   function typeOpts(){var c=curType();return TYPE_LIST.map(function(t){return '<option value="'+t[0]+'"'+(t[0]===c?' selected':'')+'>'+t[1]+'</option>';}).join('');}
@@ -4605,7 +4615,7 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
     return '<div class="am-info"><div>'+ea(parts.join(' · '))+(DEPO.cur?' <small>(depodan: '+ea(DEPO.cur.name||'')+')</small>':'')+'<small>Baskı: '+(ss.length?ea(ss.join(', ')):'henüz tasarım yok')+'</small></div></div>';
   }
   /* Kategori kendiliğinden: kesim + ürün türüne uyan alt kategori (ör. Erkek → Sweatshirt) */
-  var SUBKEY={'TİŞÖRT':'tisort','SWEATSHIRT':'sweatshirt','POLO':'polo','EŞOFMAN':'esofman','ŞAPKA':'aksesuar'};
+  var SUBKEY={'TİŞÖRT':'tisort','SWEATSHIRT':'sweatshirt','KAPÜŞONLU':'sweatshirt','FERMUARLI KAPÜŞONLU':'sweatshirt','POLO':'polo','EŞOFMAN':'esofman','ŞAPKA':'aksesuar'};
   function autoCat(){var sel=$('#amCat'),ty=$('#amType');if(!sel||!ty)return;
     /* Kupa ve canvas kendiliğinden Hediye & Dekor altına */
     var hd={mug:'hediye|hd-kupa',canvas:'hediye|hd-canvas'}[state.product];if(hd){if([].some.call(sel.options,function(o){return o.value===hd;}))sel.value=hd;return;}var k=SUBKEY[ty.value];if(!k)return;

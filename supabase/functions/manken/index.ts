@@ -70,6 +70,13 @@ const URUN: Record<string, string> = {
   tee: 'a plain premium heavyweight 240 gsm cotton crew-neck T-shirt with short sleeves and a ribbed collar',
   polo: 'a plain premium 280 gsm cotton piqué polo shirt with short sleeves, a ribbed flat-knit collar and a two-button placket',
   sweat: 'a plain premium heavyweight 380 gsm cotton fleece crew-neck sweatshirt with long sleeves, ribbed collar, cuffs and hem',
+  hood: 'a plain premium heavyweight 380 gsm cotton fleece pullover hoodie with a lined double-layer hood and flat drawstrings, a front kangaroo pocket, long sleeves, ribbed cuffs and hem, no zipper',
+  zip: 'a plain premium heavyweight 380 gsm cotton fleece full-zip hoodie with a full-length front zipper (closed to the top), a lined double-layer hood with flat drawstrings, two front side pockets, long sleeves, ribbed cuffs and hem',
+};
+// Arka görünüşte ürüne özel ayrıntı (kapüşon arkada nasıl durur)
+const ARKA: Record<string, string> = {
+  hood: ', the hood lies flat and neatly on the upper back, the whole back panel below it smooth and fully visible, no pocket on the back',
+  zip: ', the hood lies flat and neatly on the upper back, the whole back panel below it smooth and fully visible, no zipper and no pockets on the back',
 };
 const KESIM: Record<string, string> = {
   erkek: "men's regular fit",
@@ -202,7 +209,7 @@ Deno.serve(async (req) => {
       if (!refBlob) {
         prompt = `${URUN_STYLE} The product: ${g}, color ${col}. ${back ? 'Back view of the garment.' : 'Front view of the garment.'}`;
       } else if (b.ref_yuz === 'front' && back) {
-        prompt = `The reference image is the FRONT of a garment (${g}). Create the BACK view of exactly the same garment: same fabric, same color and exact same tone (${col}), same fit and proportions, same size and position in the frame, same lighting, same shadow and the same plain light-grey background. Straight-on back view: the back neckline sits higher than the front, the whole back is smooth and fully visible${String(b.tur) === 'polo' ? ', the collar seen from behind, no placket or buttons on the back' : ''}. ${URUN_STYLE}`;
+        prompt = `The reference image is the FRONT of a garment (${g}). Create the BACK view of exactly the same garment: same fabric, same color and exact same tone (${col}), same fit and proportions, same size and position in the frame, same lighting, same shadow and the same plain light-grey background. Straight-on back view: ${ARKA[String(b.tur)] ? 'seen from directly behind' + ARKA[String(b.tur)] : 'the back neckline sits higher than the front, the whole back is smooth and fully visible' + (String(b.tur) === 'polo' ? ', the collar seen from behind, no placket or buttons on the back' : '')}. ${URUN_STYLE}`;
       } else {
         prompt = `Edit this product photo: change ONLY the garment's fabric color to ${col}, with natural realistic shading for that color. Keep everything else exactly identical: garment shape, folds, collar, seams, stitching, sleeves, size and position in the frame, lighting, shadow and the plain light-grey background. Do not move, crop, zoom or redraw anything. No print, no logo, no label, no text.`;
       }

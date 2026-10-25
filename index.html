@@ -1550,8 +1550,8 @@ function sbOwner(){return !!(SBS&&SBS.user&&String(SBS.user.email||'').toLowerCa
    Yalnız yönetici ve yetkililer görür (admin_kv / udepo). Stüdyoda Yönetici penceresinden depodan ürün seçilir,
    baskı duvarına gelir, üzerine tasarım yapılır ve "Ürün yap" ile istenen kategoriye ürün olarak eklenir. */
 var UD={items:null,busy:false,err:'',del:null,saving:false,up:null,addc:null};
-var UD_PROD=[['tee','Tişört'],['sweat','Sweatshirt'],['polo','Polo tişört'],['hat','Şapka']];
-var UD_CUT={tee:[['erkek','Erkek'],['kadin','Kadın'],['cocuk','Çocuk']],sweat:[['erkek','Erkek'],['kadin','Kadın'],['cocuk','Çocuk']],polo:[['erkek','Erkek'],['kadin','Kadın'],['cocuk','Çocuk']],hat:[['std','Standart']]};
+var UD_PROD=[['tee','Tişört'],['sweat','Sweatshirt'],['hood','Kapüşonlu sweatshirt'],['zip','Fermuarlı kapüşonlu'],['polo','Polo tişört'],['hat','Şapka']];
+var UD_CUT={tee:[['erkek','Erkek'],['kadin','Kadın'],['cocuk','Çocuk']],sweat:[['erkek','Erkek'],['kadin','Kadın'],['cocuk','Çocuk']],hood:[['erkek','Erkek'],['kadin','Kadın'],['cocuk','Çocuk']],zip:[['erkek','Erkek'],['kadin','Kadın'],['cocuk','Çocuk']],polo:[['erkek','Erkek'],['kadin','Kadın'],['cocuk','Çocuk']],hat:[['std','Standart']]};
 function udRefresh(){if(cur==='yonetim'&&A&&A.tab==='udepo'){var y=window.scrollY;adRender();window.scrollTo(0,y);}}
 async function udLoad(){
   if(UD.busy)return;UD.busy=true;UD.err='';
@@ -2326,13 +2326,15 @@ var DESC_DEF={
  r_genel:'Seçilmiş kumaş, özenli işçilik ve zamansız sportif kesim. Wolflano\'da para logoya değil, ürünün kendisine ödenir.',
  b_tee:'%100 pamuk penye, en az 240 gram ağırlıkta, baskıya hazır Wolflano tişört. Önde ve arkada A4 ya da A3 baskı, sol göğüste 8 × 8 cm logo alanı. Tasarımın, premium kumaşın hakkını veren kalıcı bir baskıyla hayat bulur.',
  b_sweat:'%100 pamuk, içi şardonlu üç iplik, en az 380 gram ağırlıkta baskıya hazır Wolflano sweatshirt. Önde ve arkada A4 ya da A3 baskı, sol göğüste logo alanı. Okul, takım ve şirketler için yıllarca giyilecek bir parça.',
+ b_hood:'%100 pamuk, içi şardonlu üç iplik, en az 380 gram ağırlıkta baskıya hazır Wolflano kapüşonlu sweatshirt. Çift kat kapüşon, ayarlanabilir ip ve önde kanguru cep. Önde A4 baskı ve sol göğüste logo, arkada A4 ya da A3. Takımlar, okullar ve ekipler için sıcak ve sağlam.',
+ b_zip:'%100 pamuk, içi şardonlu üç iplik, en az 380 gram ağırlıkta baskıya hazır Wolflano fermuarlı kapüşonlu sweatshirt. Boydan fermuar, çift kat kapüşon ve iki yan cep. Önde sol göğüste logo, arkada A4 ya da A3 baskı. Kat kat giyime uygun, şık ve kullanışlı.',
  b_polo:'%100 pamuk pike, en az 280 gram ağırlıkta baskıya hazır Wolflano polo. Önde sol göğüste logo, arkada A4 yatay ya da A3 dikey baskı. Şirket ve ekip kıyafetinde şıklığın ölçüsü.',
  b_hat:'%100 pamuk gabardin, arkası ayarlanabilir Wolflano şapka; önde 20 × 10 cm baskı alanı. Takımının, şirketinin ya da kendi imzanı taşımak için.',
  b_mug:'Kulpun iki yanına 8 × 8 cm baskı ya da çevresini saran 20 × 9 cm süblimasyon. Canlı renkli, kalıcı baskısıyla kişiye özel bir hediye; ofiste ve evde her gün hatırlatan bir detay.',
  b_canvas:'Gerçek ahşap kasaya gerilmiş pamuk-polyester tuval; baskı yanlara sararak her kenarda 4 cm devam eder. Fotoğrafın, çizimin ya da Wolf tasarımın, galeri kalitesinde duvarında.',
  b_genel:'Baskıya hazır Wolflano ürünü. Tasarımını stüdyoda kendin yap ya da Wolf\'a çizdir; premium ürün, kalıcı baskı.'};
 var DESC_LBL=[['r_tisort','Koleksiyon · Tişört'],['r_polo','Koleksiyon · Polo'],['r_sweatshirt','Koleksiyon · Sweatshirt'],['r_esofman','Koleksiyon · Eşofman'],['r_jeans','Koleksiyon · Jeans'],['r_ayakkabi','Koleksiyon · Ayakkabı'],['r_aksesuar','Koleksiyon · Aksesuar'],['r_kupa','Koleksiyon · Baskılı kupa'],['r_canvas','Koleksiyon · Baskılı canvas'],['r_genel','Koleksiyon · Diğer ürünler'],
- ['b_tee','Baskıya uygun · Tişört'],['b_sweat','Baskıya uygun · Sweatshirt'],['b_polo','Baskıya uygun · Polo'],['b_hat','Baskıya uygun · Şapka'],['b_mug','Baskıya uygun · Kupa'],['b_canvas','Baskıya uygun · Canvas'],['b_genel','Baskıya uygun · Diğer ürünler']];
+ ['b_tee','Baskıya uygun · Tişört'],['b_sweat','Baskıya uygun · Sweatshirt'],['b_hood','Baskıya uygun · Kapüşonlu'],['b_zip','Baskıya uygun · Fermuarlı kapüşonlu'],['b_polo','Baskıya uygun · Polo'],['b_hat','Baskıya uygun · Şapka'],['b_mug','Baskıya uygun · Kupa'],['b_canvas','Baskıya uygun · Canvas'],['b_genel','Baskıya uygun · Diğer ürünler']];
 function dscTX(k){var v=((D.txt||{})['dsc_'+k]);return (v!=null&&String(v).trim())?String(v):DESC_DEF[k]||'';}
 /* Baskı tekniği notu: türüne göre standart metin (Yönetim > Metinler), ürüne özel yazılabilir ya da "-" ile gizlenir */
 var BT_DEF={sub:'Süblimasyon baskı tekniği ile basılır, ısı transferinden dolayı renk tonunda hafif değişim olabilir.',logo:'Süblimasyon baskı tekniği ile basılır, ısı transferinden dolayı renk tonunda hafif değişim olabilir.',canvas:'Tuval üzerine yüksek çözünürlüklü dijital baskı; ekran ve ışık farkından dolayı renk tonunda hafif değişim olabilir.',giyim:''};
@@ -2461,7 +2463,7 @@ function pagesNow(){var l=PAGES.map(function(p){var m={hazir:'menuHazir',atolye:
   if(hi>=0){var it=l.splice(hi,1)[0],ki=-1;l.forEach(function(x,k){if(x[0]==='hazir')ki=k;});l.splice(ki+1,0,it);}
   return l;}
 var CATS=[['erkek','Erkek'],['kadin','Kadın'],['cocuk','Çocuk']],subSel='',sub2Sel='',catOpen='',grpOpen='',typSel='',typOpen=false;
-var SIDES={tee:{front:['a4','a3','logo'],back:['a4','a3']},sweat:{front:['a4','a3','logo'],back:['a4','a3']},polo:{front:['logo'],back:['a4','a3']},hat:{front:['hat'],back:[]}};
+var SIDES={tee:{front:['a4','a3','logo'],back:['a4','a3']},sweat:{front:['a4','a3','logo'],back:['a4','a3']},hood:{front:['a4','logo'],back:['a4','a3']},zip:{front:['logo'],back:['a4','a3']},polo:{front:['logo'],back:['a4','a3']},hat:{front:['hat'],back:[]}};
 var PNAME={a4:'A4 baskı',a3:'A3 baskı',logo:'Sol göğüs logo',hat:'Şapka ön baskı'};
 /* ---------- Otomatik fiyat ----------
    Fiyat = baskısız ürün fiyatı (Fiyatlandırma → taban fiyatlar) + baskı ücretleri (tüm ürünlerde aynı: logo, ön/arka A4, A3, şapka, kupa).
@@ -3041,7 +3043,7 @@ yorumlar:function(){return rvPage();},
   '</div>';
  },
  bu:function(id){var b=BLANKS.filter(function(x){return x.id===id;})[0];szPick='';bcSel=tcSel[id]||0;if(!b)return '<div class="wrap page">'+backLink('#tasarla','← Giyim & Moda')+'<p class="empty">Ürün bulunamadı.</p></div>';gv=0;
-  return '<div class="wrap page bup">'+backLink('#tasarla','← Giyim & Moda')+'<div class="pd"><div class="gal" id="gal">'+galHTML(buGal(b))+'</div><div class="info"><small class="ptype">'+esc(String(b.name||'').toLocaleUpperCase('tr').replace(/SWEATSHİRT/g,'SWEATSHIRT'))+'</small>'+bcBlock(b)+(function(){var zs=bSizes(b);if(!zs.length||soldOut(b))return '';return szBlock(zs,szTable({tee:'tee',sweat:'sweat',polo:'polo'}[b.p||b.id]||szKind(b.name),bCut(b),zs));})()+'<div class="ptop"><div class="pbig">'+prBig(b)+'</div><small class="pcode">'+((isMugB(b)?!+b.wrap:(b.hat===0||b.hat==='0'))?'Baskı dahil fiyat · ön yüz ve kenarlar':'Baskısız fiyat · baskı ücreti tasarımda eklenir · <a href="#fiyatlar">Baskı fiyatları</a>')+'</small></div>'+stk(b)+(soldOut(b)?'<p class="note" style="margin:0">Bu ürün şu an stokta yok. Tasarımını yine de yapabilirsin; kaydederiz, stoğa gelince e-postana haber veririz.</p>':'')+'<a class="btn" data-tasarla="'+b.id+'" href="'+studioURL(b.p||b.id,b.cut)+'">Tasarla</a>'+(bDesc(b)?'<p style="margin:0;color:var(--muted)">'+esc(bDesc(b))+'</p>':'')+btHTML(btNote(b,btKindB(b),bDesc(b)))+blankInfo(b)+'</div></div></div>';
+  return '<div class="wrap page bup">'+backLink('#tasarla','← Giyim & Moda')+'<div class="pd"><div class="gal" id="gal">'+galHTML(buGal(b))+'</div><div class="info"><small class="ptype">'+esc(String(b.name||'').toLocaleUpperCase('tr').replace(/SWEATSHİRT/g,'SWEATSHIRT'))+'</small>'+bcBlock(b)+(function(){var zs=bSizes(b);if(!zs.length||soldOut(b))return '';return szBlock(zs,szTable({tee:'tee',sweat:'sweat',hood:'sweat',zip:'sweat',polo:'polo'}[b.p||b.id]||szKind(b.name),bCut(b),zs));})()+'<div class="ptop"><div class="pbig">'+prBig(b)+'</div><small class="pcode">'+((isMugB(b)?!+b.wrap:(b.hat===0||b.hat==='0'))?'Baskı dahil fiyat · ön yüz ve kenarlar':'Baskısız fiyat · baskı ücreti tasarımda eklenir · <a href="#fiyatlar">Baskı fiyatları</a>')+'</small></div>'+stk(b)+(soldOut(b)?'<p class="note" style="margin:0">Bu ürün şu an stokta yok. Tasarımını yine de yapabilirsin; kaydederiz, stoğa gelince e-postana haber veririz.</p>':'')+'<a class="btn" data-tasarla="'+b.id+'" href="'+studioURL(b.p||b.id,b.cut)+'">Tasarla</a>'+(bDesc(b)?'<p style="margin:0;color:var(--muted)">'+esc(bDesc(b))+'</p>':'')+btHTML(btNote(b,btKindB(b),bDesc(b)))+blankInfo(b)+'</div></div></div>';
  },
  biz:function(){return bizGate()?gateHTML():bzView();},
  kurumsal:function(){return '<div class="wrap page">'+
@@ -3101,7 +3103,7 @@ function kurHTML(full){
 }
 var tsSel='',bcSel=0;
 var tsType='',tsOpen=false,tcSel={};
-var TS_TABS=[['','Tümü'],['kadin','Kadın'],['erkek','Erkek'],['cocuk','Çocuk']],TS_ORD=['tee','sweat','polo','hat','mug','canvas','diger'];
+var TS_TABS=[['','Tümü'],['kadin','Kadın'],['erkek','Erkek'],['cocuk','Çocuk']],TS_ORD=['tee','sweat','hood','zip','polo','hat','mug','canvas','diger'];
 /* Sitede görünmez: stoğu bitmiş (stok takibi açık ve 0) ya da hiç fotoğrafı yüklenmemiş baskıya uygun ürün */
 function bVisible(b){if(soldOut(b))return false;return !!(bColors(b).length||(b.imgs&&b.imgs.length));}
 function tsName(t){var x=BTYPES.filter(function(y){return y[0]===t;})[0];return x?x[1]:'Diğer';}
@@ -3344,6 +3346,8 @@ var SPEC_DEF=[
  ['tisort','Tişört',['Kumaş: %100 pamuk penye','Gramaj: en az 240 g/m²','Yaka: ribanalı, yıkamada formunu koruyan','Çekme: çekmeye karşı işlem görmüş kumaş (çekme payı en aza indirilmiş)','Kesim: sade, sportif; erkek, kadın ve çocuk kalıbı ayrı','Baskı alanı (ön): A4 (21 × 29,7 cm, dikey veya yatay), A3 (29,7 × 42 cm, dikey), sol göğüs logo 8 × 8 cm','Baskı alanı (arka): A4 (dikey veya yatay), A3 (dikey)']],
  ['polo','Polo',['Kumaş: %100 pamuk pike','Gramaj: en az 280 g/m²','Yaka ve kol ağzı: ribanalı, gün boyu formunu koruyan','Kalıp: kadın, erkek ve çocuk ayrı','Logo: Wolflano logosu standart; müşteri kendi logosunu bastırıyorsa isterse kaldırılır','Baskı alanı (ön): yalnız sol göğüs logo, 8 × 8 cm','Baskı alanı (arka): A4 yatay (29,7 × 21 cm) veya A3 dikey (29,7 × 42 cm)','Açık soru: yazlık hafif polo (240–250 g) yapılacak mı?']],
  ['sweatshirt','Sweatshirt',['Kumaş: %100 pamuk, içi şardonlu üç iplik','Gramaj: en az 380 g/m²','Form: sık yıkamada formunu kaybetmeyen, dolgun duruş','Baskı alanı (ön): A4 (dikey veya yatay), A3 (dikey), sol göğüs logo 8 × 8 cm','Baskı alanı (arka): A4 (dikey veya yatay), A3 (dikey)','Not: üretici karışım kumaş (ör. %80 pamuk, %20 polyester) önerirse sitedeki metin de değişmeli']],
+ ['kapusonlu','Kapüşonlu sweatshirt',['Kumaş: %100 pamuk, içi şardonlu üç iplik','Gramaj: en az 380 g/m²','Kapüşon: çift kat, ayarlanabilir ip; önde kanguru cep','Baskı alanı (ön): A4 (dikey veya yatay), kanguru cebin üstünde kalır; A3 cebe taştığı için yok; sol göğüs logo 8 × 8 cm','Baskı alanı (arka): A4 (dikey veya yatay), A3 (dikey)']],
+ ['fermuarli','Fermuarlı kapüşonlu sweatshirt',['Kumaş: %100 pamuk, içi şardonlu üç iplik','Gramaj: en az 380 g/m²','Ön: boydan fermuar, iki yan cep; kapüşon çift kat, ayarlanabilir ip','Baskı alanı (ön): yalnız sol göğüs logo 8 × 8 cm (fermuar önü ikiye böler)','Baskı alanı (arka): A4 (dikey veya yatay), A3 (dikey)']],
  ['sapka','Şapka',['Malzeme: %100 pamuk gabardin','Arka: ayarlanabilir','Baskı alanı: yalnız ön, 20 cm en × 10 cm boy; arkada baskı yok']],
  ['kupa','Kupa',['Baskı: kulpun iki yanına 8 × 8 cm, ya da çevresini saran 20 × 9 cm süblimasyon','Açık soru: malzeme (porselen / seramik) ve hacim (ör. 330 ml)']],
  ['canvas','Canvas tablo',['Malzeme: gerçek ahşap kasa, pamuk-polyester tuval','35 × 50: ön yüz 35 × 50 cm, her kenarda 4 cm yana sarma, baskı sınırı 43 × 58 cm','50 × 70: ön yüz 50 × 70 cm, her kenarda 4 cm yana sarma, baskı sınırı 58 × 78 cm']],
@@ -3495,7 +3499,9 @@ function rawEd(pa,b){var l=b.raw||[],R=rawResolve(b,MAN),pend0=l.some(function(r
    renk ve ön/arka işaretli gelir, zemini her zamanki gibi birkaç dakikada temizlenir. */
 var AIG={pa:'',txt:''};
 var AI_DIGER=['Lacivert','Siyah','Mavi','Yeşil'];
-function aiTur(b){var t=bTypeOf(b);return t==='tee'||t==='polo'||t==='sweat'?t:'';}
+function aiTur(b){var t=bTypeOf(b);return GAR_T.test(t)?t:'';}
+/* giyim türleri (baskı alanı A4/A3/logo, beden, kesim ve yapay zekâ ürün fotoğrafı olan ürünler) */
+var GAR_T=/^(tee|sweat|hood|zip|polo)$/;
 function aiUrl(tk){return SB.url+'/storage/v1/object/public/site/'+tk;}
 function aiEd(pa,b){if(!aiTur(b)||!sbAdmin())return '';var ai=b.ai||{},w=ai['Beyaz']||{},hasW=!!(w.front&&w.back),busy=!!AIG.pa,mine=AIG.pa===pa;
   var h='<div class="aig"><b style="font-size:14px">Yapay zekâyla üret</b><p class="note" style="margin:4px 0 8px">Baskısız, görünmez manken tarzı ürün fotoğrafı. Önce beyaz ön ve arka üretilir; beğenirsen diğer 4 renk aynı beyazdan boyanır, böylece bütün renklerde kesim ve kıvrımlar birebir aynı olur. Üretilen fotoğraf o rengin eski fotoğraflarının yerine geçer ve kendiliğinden kaydedilir. Her fotoğraf 1-2 dakika sürer ve OpenAI hesabından ücretlendirilir.</p>';
@@ -3534,7 +3540,7 @@ async function aiGen(pa,step){
   adRender();
 }
 /* Yönetim: baskıya uygun ürünün türü (stüdyoda hangi ürün olarak açılacağı) ve grubu (Kadın / Erkek / Çocuk sekmeleri) */
-var BTYPES=[['tee','Tişört'],['sweat','Sweatshirt'],['polo','Polo tişört'],['hat','Şapka'],['mug','Kupa'],['canvas','Canvas tablo']];
+var BTYPES=[['tee','Tişört'],['sweat','Sweatshirt'],['hood','Kapüşonlu sweatshirt'],['zip','Fermuarlı kapüşonlu'],['polo','Polo tişört'],['hat','Şapka'],['mug','Kupa'],['canvas','Canvas tablo']];
 /* Ürün düzenlemede otomatik fiyat kutusu */
 function pcBox(d,p,i){var pc=p.pc||{},bl=(d.blanks||[]).filter(function(b){return b&&b.id;});
   var h='<div class="pcb"><label>Fiyat · ürün ve baskı yerleri<select data-pc="b" data-i="'+i+'"><option value="">Elle fiyat gireceğim</option>'+bl.map(function(b){return '<option value="'+esc(b.id)+'"'+(pc.b===b.id?' selected':'')+'>'+esc(b.name||b.id)+' · baskısız '+tl(pfNum(b.price)||0)+'</option>';}).join('')+'</select></label>';
@@ -3558,7 +3564,7 @@ function bTypeEd(i,b){var t=bTypeOf(b),g=b.gen||(GENS.indexOf(b.cut)>=0?b.cut:(b
     (t==='canvas'?'<label for="bs-'+i+'">Ebat<select id="bs-'+i+'" data-bsize="'+i+'">'+o('c3550','35 × 50',b.cut!=='c5070')+o('c5070','50 × 70',b.cut==='c5070')+'</select></label>':'<span></span>')+'</div>'+
     (t?'':'<p class="note" style="margin:0;color:var(--red)">Ürün türünü seç: türü olmayan ürün "Kendin tasarla" ve stüdyoda görünmez.</p>');
   return h;}
-function bSetType(b,t){b.p=t;var gar=t==='tee'||t==='sweat'||t==='polo';
+function bSetType(b,t){b.p=t;var gar=GAR_T.test(t);
   if(gar){delete b.hat;delete b.fixname;delete b.fixcm;if(b.a4==null)b.a4=0;if(b.logo==null)b.logo=0;var g=b.gen&&b.gen!=='hepsi'?b.gen:(GENS.indexOf(b.cut)>=0?b.cut:'erkek');b.cut=g;b.gen=g;}
   else{if(b.hat==null)b.hat=0;if(t==='canvas'){b.cut=b.cut==='c5070'?'c5070':'c3550';b.fixname=b.fixname||'Baskı';}else delete b.cut;if(t==='hat'){if(!b.gen||b.gen==='kupa'||b.gen==='canvas')b.gen='hepsi';}else delete b.gen;}}
 function colorEd(pa,b){if((b.raw||[]).length||!(b.colors||[]).length)return '';var l=b.colors||[];
@@ -4370,7 +4376,7 @@ document.addEventListener('change',function(e){
   var t=e.target;if(!A)return;
   if(t.id==='kSel'){A.kch=t.value;adRender();return;}
   if(t.dataset&&t.dataset.btype!==undefined){var bb=A.draft.blanks[+t.dataset.btype];if(bb&&t.value){bSetType(bb,t.value);dirty();var yb=window.scrollY;adRender();window.scrollTo(0,yb);}return;}
-  if(t.dataset&&t.dataset.bgen!==undefined){var bg=A.draft.blanks[+t.dataset.bgen];if(bg){bg.gen=t.value;var tt=bTypeOf(bg);if((tt==='tee'||tt==='sweat'||tt==='polo')){if(t.value==='hepsi'){toast('Giyim ürünü tek gruba ait olmalı; her grup için ayrı ürün ekle');bg.gen=bg.cut||'erkek';adRender();return;}bg.cut=t.value;}dirty();}return;}
+  if(t.dataset&&t.dataset.bgen!==undefined){var bg=A.draft.blanks[+t.dataset.bgen];if(bg){bg.gen=t.value;var tt=bTypeOf(bg);if(GAR_T.test(tt)){if(t.value==='hepsi'){toast('Giyim ürünü tek gruba ait olmalı; her grup için ayrı ürün ekle');bg.gen=bg.cut||'erkek';adRender();return;}bg.cut=t.value;}dirty();}return;}
   if(t.dataset&&t.dataset.bsize!==undefined){var bz=A.draft.blanks[+t.dataset.bsize];if(bz){bz.cut=t.value;dirty();}return;}
   if(t.dataset&&t.dataset.pch!==undefined){var pp=A.draft.products[+t.dataset.pch],ll=pp.ch||(pp.ch=[]),ii=ll.indexOf(t.dataset.c);if(t.checked&&ii<0)ll.push(t.dataset.c);if(!t.checked&&ii>=0)ll.splice(ii,1);dirty();return;}
   if(t.dataset&&t.dataset.psub!==undefined){var ps=A.draft.products[+t.dataset.psub],ls=ps.sub||(ps.sub=[]),xs=ls.indexOf(t.dataset.c);if(t.checked&&xs<0)ls.push(t.dataset.c);if(!t.checked&&xs>=0)ls.splice(xs,1);dirty();var yy=window.scrollY;adRender();window.scrollTo(0,yy);return;}
