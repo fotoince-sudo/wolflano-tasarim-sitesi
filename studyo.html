@@ -2629,8 +2629,10 @@ function applyTemplate(t,silent){
 
 /* ---------- İşaretçi etkileşimi ---------- */
 function toL(cx,cy){var r=stage.getBoundingClientRect(),s=r.width/STAGE_W;return {x:(cx-r.left)/s,y:(cy-r.top)/s};}
+/* En küçük boy: nesnenin dar kenarı 0,5 cm'ye kadar küçülebilir (eskiden ~2 cm'de duruyordu; kupa gibi dar alanlarda yetmiyordu) */
+var MIN_PX=PPC*0.5;
 function limitScale(o0w,o0h,k){
-  var A=areaBox(view.side,cur().area),kmax=Math.max(A.w,A.h)*1.6/Math.max(o0w,o0h),kmin=14/Math.min(o0w,o0h);
+  var A=areaBox(view.side,cur().area),kmax=Math.max(A.w,A.h)*1.6/Math.max(o0w,o0h),kmin=MIN_PX/Math.min(o0w,o0h);
   return clamp(k,kmin,Math.max(kmin,kmax));
 }
 function applySize(o,k,base){
@@ -2738,7 +2740,7 @@ function onMove(e){
     var A=areaBox(view.side,cur().area),k=1,dr=0,mx=p.x-(g.px||0),my=p.y-(g.py||0);
     if(g.kind==='gmove'){if(!g.moved&&Math.hypot(mx,my)*view.s<4)return;}
     else{dr=deg(ang(g.cx,g.cy,p.x,p.y)-g.a0);var sn=Math.round(dr/45)*45;if(Math.abs(dr-sn)<4)dr=sn;
-      k=dist(g.cx,g.cy,p.x,p.y)/g.d0;k=clamp(k,16/Math.max(4,Math.min(g.bw,g.bh)),Math.max(A.w,A.h)*1.6/Math.max(4,Math.max(g.bw,g.bh)));}
+      k=dist(g.cx,g.cy,p.x,p.y)/g.d0;k=clamp(k,MIN_PX/Math.max(1,Math.min(g.bw,g.bh)),Math.max(A.w,A.h)*1.6/Math.max(4,Math.max(g.bw,g.bh)));}
     g.moved=true;var ca=Math.cos(dr*PI/180),sa=Math.sin(dr*PI/180);
     g.snap.forEach(function(q){var ob=objById(q.id);if(!ob)return;
       if(g.kind==='gmove'){ob.x=q.x+mx;ob.y=q.y+my;place(els[ob.id],ob);return;}
