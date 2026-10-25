@@ -91,6 +91,8 @@ svg.i{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stro
 .csw{width:30px;height:30px;border-radius:50%;border:2px solid var(--line2);padding:0}
 .csw.on{outline:3px solid var(--accent);outline-offset:2px}
 .pg-list{display:flex;flex-direction:column;gap:22px}
+.pg-back{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;height:52px;margin:4px 0 calc(8px + env(safe-area-inset-bottom));background:transparent;color:var(--accent);border:1.5px solid var(--accent);border-radius:14px;font:700 15px var(--ui);flex-shrink:0;cursor:pointer}
+.pg-back:active{background:var(--accent-soft)}
 .pgf{display:grid;gap:8px}
 .pgtabs{display:flex;flex-wrap:wrap;gap:6px}.pgtabs::-webkit-scrollbar{display:none}
 .pgtabs button{flex:none;border:1px solid var(--accent);background:transparent;color:var(--ink);border-radius:999px;padding:7px 13px;font:600 13px var(--ui)}
@@ -711,6 +713,7 @@ img{-webkit-touch-callout:none;-webkit-user-drag:none}
     <div class="pgf" id="pgFilter"></div><div hidden><em id="pgColorName"></em><div id="pgColors"></div></div>
     <p class="note" style="margin:0">A4 ve A3 baskı boğaz (arkada ense) çizgisinden 8 cm, çocuk bedenlerinde 6 cm aşağıda başlar. Logo sol göğüste 8 × 8 cm, yakadan ve orta çizgiden her üründe aynı ölçüde. Ürüne dokununca tasarımına dönersin; tasarımın kaybolmaz.</p>
     <div class="pg-list" id="pgList"></div>
+    <button class="pg-back" id="pgBack" type="button"><svg class="i" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>Atölyeye geri dön</button>
   </div>
 </div>
 
@@ -2948,6 +2951,7 @@ $('#sideB').addEventListener('click',function(){if(mugWrap()){toast('Süblimasyo
 function switchSide(s){if(view.side===s)return;if(s==='logo'&&!hasLogoSide())return;view.side=s;view.sel=null;view.grp=false;renderAll();}
 $('#areaChips').addEventListener('click',function(e){if(e.target.closest('[data-rmlogo]')){SS('logo').objs=[];view.sel=null;view.grp=false;renderAll();pushHist();toast('Logo kaldırıldı. Ön tasarım artık kesilmeden basılır.');return;}var b=e.target.closest('[data-a]');if(b)selectArea(b.dataset.a,b.dataset.l==='1');});
 $('#pgClose').addEventListener('click',closeProdPage);
+$('#pgBack').addEventListener('click',closeProdPage);
 $('#wfClose').addEventListener('click',closeWolf);
 $('#wfColors').addEventListener('click',function(e){var b=e.target.closest('[data-tee]');if(!b)return;state.tee=b.dataset.tee;renderShirt();renderWolf();pushHist();});
 $('#wfGrid').addEventListener('click',function(e){
