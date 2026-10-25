@@ -649,6 +649,17 @@ img{-webkit-touch-callout:none;-webkit-user-drag:none}
           <p class="note" id="kolajNote">Tabloya en fazla 15 (35 × 50) ya da 30 (50 × 70), süblimasyon kupaya en fazla 7 fotoğraf. Wolf, fotoğrafların dikey ya da yatay oluşuna göre karışık bir kolaj kurar: kimi hafif sola, kimi hafif sağa eğik, kimi düz. Zemin açık krem, fotoğraflar ince siyah çerçeveli. Beğenmezsen yeniden dokun, Wolf başka bir yerleşim dener.</p>
         </div>
       </div>
+      <div class="kolaj" id="kosBox" hidden>
+        <button class="primary wide" id="kosBtn" type="button"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="9" r="4"/><path d="M5 20c1.2-3.6 3.8-5.4 7-5.4s5.8 1.8 7 5.4"/><path d="M18 3l.7 1.6 1.6.7-1.6.7L18 7.6l-.7-1.6-1.6-.7 1.6-.7z"/></svg>Fotoğrafını çizdir, kupaya ekle</button>
+        <div class="kjin" id="kosIn" hidden>
+          <div class="wstep"><i>1</i>Tarz seç</div>
+          <div class="fxc ai" id="kosSt"></div>
+          <div class="wstep"><i>2</i>Fotoğrafını seç</div>
+          <label class="primary wide kjadd" for="kosFile"><svg class="i" viewBox="0 0 24 24"><path d="M12 16V4M7 9l5-5 5 5"/><path d="M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"/></svg>Fotoğraf seç ve çizdir</label>
+          <input id="kosFile" type="file" accept="image/*" hidden>
+          <p class="note">Wolf fotoğrafını seçtiğin tarza çevirir, etrafına köşeleri hafif yuvarlak beyaz kontür atar ve küçük boyutta kupayı kulpundan tutunca görünen köşeye (baskı alanının sağ üstü) yerleştirir. Şehir tasarımın ya da kendi tasarımın yerinde kalır. Çizimi parmağınla istediğin yere taşıyıp büyütebilirsin. 30-60 saniye sürer, üyelikle günde 3 hak.</p>
+        </div>
+      </div>
       <div class="wolfp"><b>Wolf tasarlasın</b>
       <div class="wstep"><i>1</i>Fotoğraf <em>isteğe bağlı</em></div>
       <div class="wolfph" id="wolfPh"></div>
@@ -2015,6 +2026,35 @@ $('#kolajBtn').addEventListener('click',function(){var w=$('#kolajIn');w.hidden=
 $('#kolajFile').addEventListener('change',function(){var f=this.files;kolajAdd(f).then(function(){});this.value='';});
 $('#kolajGo').addEventListener('click',kolajMake);
 document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('[data-kjx]');if(!b)return;KOLAJ.splice(+b.dataset.kjx,1);kolajSync();});
+/* ---------- Wolf · Köşe portresi (kupa) ----------
+   Müşterinin fotoğrafı karikatür / illüstrasyon gibi bir tarza çevrilir, beyaz kontürlü küçük bir çıkartma gibi
+   kupayı kulpundan tutunca görünen köşeye (baskı alanının sağ üstü) eklenir. Mevcut tasarım (şehir vb.) silinmez. */
+var KOS_ST='cartoon',KOS_ORD=['cartoon','illus','pencil','canvas'];
+function kosSync(){var b=$('#kosBox');if(!b)return;b.hidden=state.product!=='mug';
+  $('#kosSt').innerHTML=KOS_ORD.map(function(k){var s=AI_ST.filter(function(x){return x[0]===k;})[0];return s?'<button type="button" data-kos="'+k+'"'+(KOS_ST===k?' class="on"':'')+'>'+s[1]+'</button>':'';}).join('');}
+/* Beyaz kontür: çizimin çevresinde köşeleri çok hafif yuvarlak beyaz çerçeve; altında çok hafif gölge (beyaz kupada da seçilsin) */
+function kosOutline(url){return new Promise(function(res){var im=new Image();im.onload=function(){try{
+  var W=im.naturalWidth,H=im.naturalHeight,b=Math.max(8,Math.round(Math.min(W,H)*0.045)),sh=Math.round(b*0.9),R=Math.round(Math.min(W,H)*0.035),ri=Math.max(2,Math.round(R*0.55));
+  var o=document.createElement('canvas');o.width=W+2*b+2*sh;o.height=H+2*b+2*sh;var x=o.getContext('2d');
+  function rr(X,Y,w,h,r){x.beginPath();x.moveTo(X+r,Y);x.arcTo(X+w,Y,X+w,Y+h,r);x.arcTo(X+w,Y+h,X,Y+h,r);x.arcTo(X,Y+h,X,Y,r);x.arcTo(X,Y,X+w,Y,r);x.closePath();}
+  x.save();x.shadowColor='rgba(0,0,0,.2)';x.shadowBlur=sh*0.9;x.shadowOffsetY=sh*0.3;x.fillStyle='#fff';rr(sh,sh,W+2*b,H+2*b,R);x.fill();x.restore();
+  x.save();rr(sh+b,sh+b,W,H,ri);x.clip();x.drawImage(im,sh+b,sh+b);x.restore();res(o.toDataURL('image/png'));}catch(_){res(url);}};im.onerror=function(){res(url);};im.src=url;});}
+function kosPlace(id){var A=areaBox(view.side,cur().area),a=assets[id],asp=a.w/a.h,cm=PPC,m=0.35*cm,o=newBase('image');
+  var h=mugWrap()?Math.min(A.h*0.52,4.6*cm):A.h*0.46,w=h*asp;if(w>A.w*(mugWrap()?0.3:0.5)){w=A.w*(mugWrap()?0.3:0.5);h=w/asp;}
+  o.assetId=id;o.w=w;o.h=h;o.x=A.r-w/2-m;o.y=A.t+h/2+m;o.kos=1;o.phe='none';
+  cur().objs.push(o);renderObjects();select(o.id);pushHist();return o;}
+async function kosRun(file){if(AI_BUSY)return;var tk=await aiTok();if(!tk){aiLogin();return;}
+  if(state.product!=='mug')return;if(mugWrap())view.side='front';
+  var id0=await kolajLoad(file);if(!id0){toast('Bu dosya açılamadı. PNG veya JPG dene.');return;}
+  var nm=(AI_ST.filter(function(x){return x[0]===KOS_ST;})[0]||[])[1]||'';AI_BUSY=true;try{closeTab();}catch(_){}
+  try{aiWait('Wolf çiziyor: '+nm);var a=assets[id0],img=await aiCall({style:KOS_ST,orient:a.w>a.h*1.15?'landscape':'portrait',image:await aiPhotoData(id0)});
+    if(!img)return;var dataUrl=await kosOutline(await aiTrim(img));var id=await aiAsset(dataUrl);assets[id].base0=id0;
+    kosPlace(id);longToast('Wolf çizdi ve kupayı kulpundan tutunca görünen köşeye ekledi. İstersen parmağınla taşıyıp büyütebilirsin.');}
+  catch(_){longToast('Wolf şu an çizemedi. Biraz sonra yeniden dene.');}
+  finally{AI_BUSY=false;aiDone();}}
+$('#kosBtn').addEventListener('click',function(){var w=$('#kosIn');w.hidden=!w.hidden;kosSync();});
+$('#kosFile').addEventListener('change',function(){var f=this.files&&this.files[0];this.value='';if(f)kosRun(f);});
+document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('[data-kos]');if(!b)return;KOS_ST=b.dataset.kos;kosSync();});
 /* ---------- Arka plan silme ----------
    1) Yapay zekâ ile (tarayıcıda çalışır, fotoğraf hiçbir sunucuya gönderilmez; model ilk kullanımda bir kez indirilir).
    2) Yapay zekâ yüklenemezse: kenarlardan başlayıp düz renkli arka planı silen hızlı yöntem. */
@@ -2608,7 +2648,7 @@ function openTab(name,focusInput){
   if(name==='tpl')renderTplPreviews();
   if(name==='opt')renderOpt();
   sheet.classList.toggle('tall',name==='wolf');
-  if(name==='wolf')try{wolfStDefault();wolfPhRender();kolajSync();}catch(_){}
+  if(name==='wolf')try{wolfStDefault();wolfPhRender();kolajSync();kosSync();}catch(_){}
   syncOpt();
   if(name==='text')renderFxRows();
   if(name==='text'&&focusInput){setTimeout(function(){if(!textIn.disabled){textIn.focus();textIn.select();}},80);}
