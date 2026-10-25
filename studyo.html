@@ -4585,7 +4585,7 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
     title=uniqName(title,(d.products||[]).map(function(x){return x.name;}));
     var rec=await insertRow({title:title,kind:'urun',status:'yayında',product:state.product,cut:state.cut,color:state.tee,data:data,thumb:pubUrl(imgs[0]),by_wolf:!!byWolf});
     d.products=d.products||[];
-    d.products.unshift({id:id,no:no,name:title,type:ptype,color:pcol,price:Math.round((+price||0)/vatK('ready')*100)/100,pc:pc||undefined,old:(+o.old>0?+o.old:null),stock:null,tag:o.tag!=null?o.tag:'Yeni',cat:cp.cat,sub:cp.sub,imgs:imgs,desc:o.desc||'',show:true,adesign:rec&&rec.id,dsg:data,depo:(DEPO.cur&&depoBlank(state.product,state.cut))?DEPO.cur.id:undefined});
+    d.products.unshift({id:id,no:no,name:title,type:ptype,color:pcol,price:Math.round((+price||0)/vatK('ready')*100)/100,pc:pc||undefined,old:(+o.old>0?+o.old:null),stock:null,tag:o.tag||'',cat:cp.cat,sub:cp.sub,imgs:imgs,desc:o.desc||'',show:true,adesign:rec&&rec.id,dsg:data,depo:(DEPO.cur&&depoBlank(state.product,state.cut))?DEPO.cur.id:undefined});
     await rq('/rest/v1/site_content?on_conflict=id',{method:'POST',body:{id:'main',data:d,updated_at:new Date().toISOString()},prefer:'resolution=merge-duplicates,return=minimal'});
     if(rec)await rq('/rest/v1/admin_designs?id=eq.'+rec.id,{method:'PATCH',body:{note:'Ürün: '+id}});
     var cn=catLabel(catId);return 'Ürün sitede yayında: "'+title+'" · Kod: '+code+(cn?' → '+cn:'')+'. Fiyatını ve açıklamasını yönetim panelindeki Koleksiyon sekmesinden değiştirebilirsin.';
@@ -4887,7 +4887,7 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
       '<div class="am-two"><label class="am-f">Ürün türü<select id="amType">'+typeOpts()+'</select></label><label class="am-f">Renk<input id="amColor" maxlength="30" value="'+ea(colorName())+'"></label></div>'+
       '<label class="am-f">Kategori<select id="amCat">'+catOpts()+'</select></label>'+
       '<div class="am-two"><label class="am-f">Satış fiyatı (₺)<input id="amPrice" type="number" inputmode="decimal" min="0" value="'+defPrice()+'"></label><label class="am-f">Eski fiyat (isteğe bağlı)<input id="amOld" type="number" inputmode="decimal" min="0" placeholder="İndirim için"></label></div>'+priceNote()+
-      '<label class="am-f">Etiket<input id="amTag" maxlength="20" value="Yeni"></label>'+ortBox()+
+      '<label class="am-f">Etiket<input id="amTag" maxlength="20" placeholder="Boş bırakabilirsin"></label>'+ortBox()+
       '<label class="am-f">Açıklama<textarea id="amDesc" maxlength="1200" placeholder="Kumaş, kalıp, baskı tekniği…"></textarea></label>'+
       '<p class="note">Ürün, tasarımın ürün üstündeki görüntüsüyle (ön ve arka) Koleksiyon\'a eklenir. Sonra panelden de düzenleyebilirsin.</p>';
     if(mode==='baski')body='<div class="am-grid">'+sizeGrid()+'</div><p class="note">Sepet ve ödeme olmadan baskıya gider; baskı dosyaları (300 dpi PNG) kaydedilir ve panelde "Baskıda" olarak görünür.</p>';
