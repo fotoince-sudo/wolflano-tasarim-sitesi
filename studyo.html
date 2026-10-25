@@ -183,6 +183,12 @@ svg.i{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stro
 .h{position:absolute;width:44px;height:44px;margin:-22px 0 0 -22px;display:grid;place-items:center;transform:scale(var(--inv));pointer-events:auto;touch-action:none;cursor:nwse-resize}
 .h i{width:16px;height:16px;border-radius:50%;background:#141816;box-shadow:0 0 0 2px #fff,0 1px 6px rgba(0,0,0,.4)}
 .h-turn{left:100%;top:100%}
+#sheetBg{position:absolute;background:#fff;box-shadow:0 0 0 calc(.6px*var(--inv)) rgba(0,0,0,.12),0 calc(3px*var(--inv)) calc(10px*var(--inv)) rgba(16,26,20,.14);pointer-events:none}
+.mugw #shirtHost,.mugw #shadeHost,.mugw #brandMark{visibility:hidden}
+.mlive{position:absolute;right:10px;bottom:46px;z-index:6;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:7px 8px 6px;box-shadow:0 8px 22px rgba(16,26,20,.14);pointer-events:none}
+.mlive b{display:block;font:700 10.5px var(--ui);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0 2px 4px}
+.mlive>div{display:flex;gap:6px}.mlive figure{margin:0;text-align:center}.mlive canvas{display:block;width:96px;height:96px;border-radius:10px;background:#f1f3f2}
+.mlive figcaption{font:600 11px var(--ui);color:var(--ink);margin-top:3px}
 .hint{position:absolute;left:50%;bottom:8px;transform:translateX(-50%);pointer-events:none;font:600 12px var(--ui);color:var(--muted);background:var(--panel);border:1px solid var(--line);padding:5px 12px;border-radius:999px;white-space:nowrap;transition:opacity .4s}
 .hint.gone{opacity:0}
 .stagebar{position:absolute;left:50%;bottom:10px;transform:translateX(-50%);z-index:6;display:flex;gap:4px;padding:4px;background:var(--panel);border:1px solid var(--line);border-radius:14px;box-shadow:0 6px 18px rgba(0,0,0,.12);touch-action:manipulation}
@@ -565,7 +571,7 @@ img{-webkit-touch-callout:none;-webkit-user-drag:none}
   <main class="stagewrap" id="wrap">
     <div id="stage">
       <div id="gridHost" aria-hidden="true"></div>
-      <div id="shirtHost"></div>
+      <div id="shirtHost"></div><div id="sheetBg" hidden aria-hidden="true"></div>
       <img id="brandMark" src="img/wolflano-logo.png" alt="" aria-hidden="true" hidden>
       <div id="passClip" aria-hidden="true"><div id="passLayer"></div></div><div id="clipLayer"><div id="objLayer"></div></div>
       <div id="shadeHost" aria-hidden="true"></div>
@@ -580,6 +586,7 @@ img{-webkit-touch-callout:none;-webkit-user-drag:none}
       <button data-c="fwd" data-t="text clip image"><svg class="i" viewBox="0 0 24 24"><path d="M12 19V5M5 12l7-7 7 7"/></svg>Öne</button>
       <button data-c="bwd" data-t="text clip image"><svg class="i" viewBox="0 0 24 24"><path d="M12 5v14M5 12l7 7 7-7"/></svg>Arkaya</button>
     </div>
+    <div class="mlive" id="mugLive" hidden aria-label="Kupada gerçek görünüm"><b>Kupada gerçek görünüm</b><div><figure><canvas id="mlR" width="300" height="300"></canvas><figcaption>Sağ elde</figcaption></figure><figure><canvas id="mlL" width="300" height="300"></canvas><figcaption>Sol elde</figcaption></figure></div></div>
     <div class="hint" id="hint">Sürükle: taşı · Köşedeki nokta: büyüt ve döndür · İki parmak: yakınlaştır</div>
     <div class="toast" id="toast" role="status" hidden></div>
   </main>
@@ -1318,7 +1325,7 @@ function deg(x){return x*180/PI;}
 function lum(hex){var h=hex.replace('#','');var r=parseInt(h.substr(0,2),16),gg=parseInt(h.substr(2,2),16),b=parseInt(h.substr(4,2),16);return (0.299*r+0.587*gg+0.114*b)/255;}
 function autoInk(){return lum(state.tee)>0.55?'#111111':'#ffffff';}
 
-function pushHist(){var s=JSON.stringify(state);if(hist[hpos]===s)return;hist=hist.slice(0,hpos+1);hist.push(s);if(hist.length>60){hist.shift();}hpos=hist.length-1;syncUndo();try{draftSoon();}catch(_){}}
+function pushHist(){try{mugLiveSoon();}catch(_){}var s=JSON.stringify(state);if(hist[hpos]===s)return;hist=hist.slice(0,hpos+1);hist.push(s);if(hist.length>60){hist.shift();}hpos=hist.length-1;syncUndo();try{draftSoon();}catch(_){}}
 function syncUndo(){$('#undoBtn').disabled=hpos<=0;$('#redoBtn').disabled=hpos>=hist.length-1;}
 function undo(){if(hpos<=0)return;hpos--;state=JSON.parse(hist[hpos]);afterRestore();try{draftSoon();}catch(_){}}
 function redo(){if(hpos>=hist.length-1)return;hpos++;state=JSON.parse(hist[hpos]);afterRestore();try{draftSoon();}catch(_){}}
@@ -1753,6 +1760,9 @@ function updateArea(){
   var A=areaBox(view.side,cur().area),b=$('#areaBox');
   b.style.left=A.l+'px';b.style.top=A.t+'px';b.style.width=A.w+'px';b.style.height=A.h+'px';
   $('#areaLabel').textContent=areaTitle(view.side)+' · '+cmText(cur().area,isLand(view.side));
+  /* Süblimasyon kupa: düz kupa fotoğrafı baskının arkasında kaybolmasın; baskı açılmış beyaz bir kâğıt gibi görünür, kupanın gerçek görünümü köşede canlı çizilir */
+  var mw=mugWrap(),sb=$('#sheetBg');$('#wrap').classList.toggle('mugw',mw);if(sb){sb.hidden=!mw;if(mw){sb.style.left=A.l+'px';sb.style.top=A.t+'px';sb.style.width=A.w+'px';sb.style.height=A.h+'px';}}
+  if(mw)setTimeout(function(){$('#areaLabel').textContent='Açılmış baskı · kupanın çevresi · 20 × 9 cm';},0);mugLiveSoon();
   var fb=$('#faceBox'),cv=state.product==='canvas';b.classList.toggle('bleed',cv);fb.hidden=!cv;
   if(cv){var bp=4*PPC;fb.style.left=(A.l+bp)+'px';fb.style.top=(A.t+bp)+'px';fb.style.width=(A.w-2*bp)+'px';fb.style.height=(A.h-2*bp)+'px';
     var fd=dimsOf(cur().area,isLand(view.side));$('#areaLabel').textContent='Baskı sınırı · '+(fd[0]+'').replace('.',',')+' × '+(fd[1]+'').replace('.',',')+' cm (her yanda 4 cm kenar)';$('#faceLabel').textContent='Ön yüz · '+(fd[0]-8)+' × '+(fd[1]-8)+' cm';}
@@ -2026,6 +2036,26 @@ $('#kolajBtn').addEventListener('click',function(){var w=$('#kolajIn');w.hidden=
 $('#kolajFile').addEventListener('change',function(){var f=this.files;kolajAdd(f).then(function(){});this.value='';});
 $('#kolajGo').addEventListener('click',kolajMake);
 document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('[data-kjx]');if(!b)return;KOLAJ.splice(+b.dataset.kjx,1);kolajSync();});
+/* ---------- Kupada gerçek görünüm (süblimasyon) ----------
+   Gerçek ölçü: kupa 8 cm çapında (çevresi ~25 cm), baskı 20 × 9 cm; baskının iki ucu kulpta buluşur, arada ~5 cm beyaz kalır.
+   Kulp sağdayken (sağ elde) baskının sağ yarısı, kulp soldayken (sol elde) sol yarısı görünür. */
+var mlT=null;function mugLiveSoon(){clearTimeout(mlT);mlT=setTimeout(mugLive,260);}
+async function mugLiveDraw(cv,left){var A=areaBox('front',state.front.area),out=cv.width,v=MUG_VB,k=out/v.w,x=cv.getContext('2d');
+  x.setTransform(1,0,0,1,0,0);x.clearRect(0,0,cv.width,cv.height);x.fillStyle='#f1f3f2';x.fillRect(0,0,cv.width,cv.height);
+  var vh=v.h*k,oy=(cv.height-vh)/2;x.save();x.translate(0,oy);if(left){x.translate(out,0);x.scale(-1,1);}x.translate(-(v.cx-v.w/2)*k,-(v.cy-v.h/2)*k);
+  x.drawImage(await loadImg(svgUrl(productSVG('front',state.tee,state.product,state.cut))),0,0,STAGE_W*k,STAGE_H*k);x.restore();
+  var fc=await printFlat('front',k),R=26.4,cxm=296.4,bodyTop=272,bodyH=66,ph=A.h,pt=bodyTop+(bodyH-ph)/2,Q=R*Math.PI/2,gap=(2*Math.PI*R-A.w)/2;
+  x.save();x.translate(0,oy);
+  for(var px=Math.ceil((cxm-R)*k);px<Math.floor((cxm+R)*k);px++){var d=(px+.5)/k-cxm;if(Math.abs(d)>=R)continue;
+    var sA=R*Math.asin(d/R),sB=R*Math.asin(Math.min(.9999,Math.max(-.9999,(d+1/k)/R)));
+    var xs=left?(-sA+Q-gap):(A.w+gap-Q+sA),xe=left?(-sB+Q-gap):(A.w+gap-Q+sB),lo=Math.min(xs,xe),hi=Math.max(xs,xe);
+    if(hi<=0||lo>=A.w)continue;lo=Math.max(0,lo);hi=Math.min(A.w,hi);
+    var dx=left?(out-(px-(v.cx-v.w/2)*k)-1):(px-(v.cx-v.w/2)*k);
+    x.drawImage(fc,lo*k,0,Math.max(.5,(hi-lo)*k),fc.height,dx,(pt-(v.cy-v.h/2))*k,1,ph*k);}
+  var sh='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 640" width="600" height="640"><defs><linearGradient id="g" x1="0" x2="1"><stop offset="0" stop-color="#000" stop-opacity=".26"/><stop offset=".3" stop-color="#fff" stop-opacity=".2"/><stop offset=".5" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".28"/></linearGradient></defs><path d="M270 272V333Q270 338 275 338H317.8Q322.8 338 322.8 333V272Z" fill="url(#g)"/></svg>';
+  if(left){x.translate(out,0);x.scale(-1,1);}x.translate(-(v.cx-v.w/2)*k,-(v.cy-v.h/2)*k);x.drawImage(await loadImg(svgUrl(sh)),0,0,STAGE_W*k,STAGE_H*k);x.restore();}
+async function mugLive(){var m=$('#mugLive');if(!m)return;var on=mugWrap()&&state.front.area==='mugw';m.hidden=!on;if(!on)return;
+  try{await mugLiveDraw($('#mlR'),false);await mugLiveDraw($('#mlL'),true);}catch(_){}}
 /* ---------- Wolf · Köşe portresi (kupa) ----------
    Müşterinin fotoğrafı karikatür / illüstrasyon gibi bir tarza çevrilir, beyaz kontürlü küçük bir çıkartma gibi
    kupayı kulpundan tutunca görünen köşeye (baskı alanının sağ üstü) eklenir. Mevcut tasarım (şehir vb.) silinmez. */
