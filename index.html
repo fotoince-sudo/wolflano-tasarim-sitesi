@@ -1788,7 +1788,7 @@ document.addEventListener('click',async function(e){var b=e.target.closest&&e.ta
 async function adxLoad(){
   if(ADX.busy)return;ADX.busy=true;ADX.err='';
   try{var tk=await sbToken();if(!tk){ADX.err='Oturum süresi doldu, yeniden giriş yap.';ADX.rows=[];}
-    else{var r=await sbReq('/rest/v1/admin_designs?select=id,title,kind,status,product,cut,color,qty,sizes,thumb,files,published,by_wolf,note,created_by,created_at&order=created_at.desc&limit=120',{token:tk});
+    else{var r=await sbReq('/rest/v1/admin_designs?select=id,title,code:data->>code,kind,status,product,cut,color,qty,sizes,thumb,files,published,by_wolf,note,created_by,created_at&order=created_at.desc&limit=120',{token:tk});
       if(!r.ok){ADX.err='Admin tasarımları okunamadı.';ADX.rows=[];}else ADX.rows=r.j||[];
       var ps=[];ADX.rows.forEach(function(x){(x.files||[]).forEach(function(f){if(f.path&&!ADX.urls[f.path])ps.push(f.path);});});
       if(ps.length){var sg=await fetch(SB.url+'/storage/v1/object/sign/designs',{method:'POST',headers:{apikey:SB.key,Authorization:'Bearer '+tk,'Content-Type':'application/json'},body:JSON.stringify({expiresIn:3600,paths:ps})}).then(function(x){return x.json();}).catch(function(){return [];});
@@ -1810,7 +1810,7 @@ function adxView(){
   if(!L.length&&!ADX.err)h+='<p class="note">Bu başlıkta tasarım yok.</p>';
   L.forEach(function(x){
     var sz=Object.keys(x.sizes||{}).filter(function(k){return x.sizes[k]>0;}).map(function(k){return k+' × '+x.sizes[k];}).join(', ');
-    h+='<div class="adx-c"><img src="'+esc(x.thumb||'')+'" alt="" loading="lazy"><div class="adx-b"><div class="adx-t"><b>'+esc(x.title)+'</b><span class="adx-k k-'+esc(x.kind)+'">'+(ADX_KIND[x.kind]||x.kind)+'</span>'+(x.by_wolf?'<span class="adx-k k-wolf">Wolf</span>':'')+'</div>'+
+    h+='<div class="adx-c"><img src="'+esc(x.thumb||'')+'" alt="" loading="lazy"><div class="adx-b"><div class="adx-t"><b>'+esc(x.title)+'</b>'+(x.code?'<span class="adx-k">'+esc(x.code)+'</span>':'')+'<span class="adx-k k-'+esc(x.kind)+'">'+(ADX_KIND[x.kind]||x.kind)+'</span>'+(x.by_wolf?'<span class="adx-k k-wolf">Wolf</span>':'')+'</div>'+
       '<small class="note" style="margin:0">'+esc(new Date(x.created_at).toLocaleString('tr-TR'))+' · '+esc(x.created_by||'')+(x.kind==='baski'?' · '+(+x.qty||0)+' adet'+(sz?' ('+esc(sz)+')':''):'')+(x.kind==='sablon'?' · '+(x.published?'Herkese açık':'Sadece Wolflano'):'')+(x.kind==='baski'?' · Durum: <b>'+esc(x.status)+'</b>':'')+'</small>'+
       (x.note&&x.kind!=='sablon'?'<small class="note" style="margin:0">'+esc(x.note)+'</small>':'')+
       '<div class="adx-a"><a class="btn soft sm" href="studyo.html?ad='+esc(x.id)+'" target="_blank" rel="noopener">Stüdyoda aç</a>'+
