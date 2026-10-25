@@ -2326,9 +2326,34 @@ function mscBox(x){
   x.beginPath();x.ellipse(0,-1,11,9,0,0,Math.PI*2);g=x.createRadialGradient(-3,-4,1,0,0,12);g.addColorStop(0,'#f2696e');g.addColorStop(1,'#a3242b');x.fillStyle=g;x.fill();
   x.restore();
 }
+/* ---------- Kupa kutulu sunum fotoğrafı ----------
+   Sabit gerçek fotoğraf (img/kupa-sahne.jpg, 4:5): Wolflano kutusu solda arkada, baskısız beyaz kupa sağ önde (kulp sağda).
+   Tasarım bu kupaya gerçek ölçüsüyle (8 cm çap, 9,5 cm boy, 20 × 9 cm süblimasyon) silindir gibi sarılır; ışık ve gölge fotoğraftaki kupanın kendisinden alınır.
+   Ölçüler fotoğraf pikseliyle: kupanın ortası cx, yarıçapı R, ağız elipsinin merkezi yT (ry), dip elipsinin merkezi yB (ryB). Fotoğraf değişirse yalnız bunlar yeniden ölçülür. */
+var MUG_PH={src:'img/kupa-sahne.jpg',W:1122,H:1402,cx:803,R:164,yT:588,ry:26,yB:949,ryB:34};
+async function mugPhotoScene(side,S){var P=MUG_PH,im=await loadImg(P.src),k=S/P.W,cw=S,ch=Math.round(P.H*k);
+  var c=document.createElement('canvas');c.width=cw;c.height=ch;var x=c.getContext('2d');x.drawImage(im,0,0,cw,ch);
+  var A=areaBox(side,state[side].area),Wcm=A.w/PPC,Pcm=A.h/PPC,wrap=state[side].area==='mugw',Rcm=4,Hcm=9.5,pc=P.R/Rcm,pv=(P.yB-P.yT)/Hcm,kf=pc*k*1.6,fc=null;
+  try{if(state[side].objs.length)fc=await printFlat(side,kf/PPC);}catch(_){fc=null;}
+  if(!fc)return c;
+  var C=2*Math.PI*Rcm,eB=0.15,uAt=function(d){var f=Math.asin(Math.max(-1,Math.min(1,d)));if(!wrap)return Wcm/2+f*Rcm;return (f+1.5*Math.PI)*Rcm+Wcm+eB-C;};
+  var top0=P.yT+(Hcm-Pcm)/2*pv,pl=document.createElement('canvas');pl.width=cw;pl.height=ch;var plx=pl.getContext('2d');
+  var xa=Math.floor((P.cx-P.R)*k),xb=Math.ceil((P.cx+P.R)*k);
+  for(var px=xa;px<xb;px++){var dm=((px+.5)/k-P.cx)/P.R;if(Math.abs(dm)>=1)continue;var d0=(px/k-P.cx)/P.R,d1=((px+1)/k-P.cx)/P.R;
+    var u0=uAt(d0),u1=uAt(d1),lo=Math.max(0,Math.min(u0,u1)),hi=Math.min(Wcm,Math.max(u0,u1));if(hi<=lo)continue;
+    var yo=P.ry*Math.sqrt(Math.max(0,1-dm*dm));plx.drawImage(fc,lo*kf,0,Math.max(.5,(hi-lo)*kf),fc.height,px,(top0+yo)*k,1,Pcm*pv*k);}
+  /* fotoğraftaki beyaz kupanın ışığı baskıya işlenir: koyu kenarlar koyulaşır, parlak çizgiler parlar */
+  var ya=Math.floor((P.yT-P.ry)*k),yb=Math.ceil((P.yB+P.ryB)*k),bw=xb-xa,bh=yb-ya,ph=x.getImageData(xa,ya,bw,bh),pr=plx.getImageData(xa,ya,bw,bh),a=ph.data,q=pr.data,i,L;
+  var ref=0,n=0;for(var yy=Math.round(bh*0.35);yy<bh*0.65;yy+=3)for(var xx=Math.round(bw*0.1);xx<bw*0.3;xx+=3){i=(yy*bw+xx)*4;ref+=(a[i]+a[i+1]+a[i+2])/3;n++;}ref=n?Math.max(200,ref/n):240;
+  for(var yy2=0;yy2<bh;yy2++)for(var xx2=0;xx2<bw;xx2++){i=(yy2*bw+xx2)*4;var al=q[i+3]/255;if(!al)continue;
+    var dx=((xa+xx2+.5)/k-P.cx)/P.R,Y=(ya+yy2+.5)/k;if(Math.abs(dx)>0.992||Y>P.yB+P.ryB*Math.sqrt(Math.max(0,1-dx*dx))-1.5){continue;}
+    L=(a[i]+a[i+1]+a[i+2])/3;var f=Math.min(1.04,L/ref),sp=Math.max(0,(L-ref-2)/(255-ref))*0.55;
+    for(var ch2=0;ch2<3;ch2++){var v=q[i+ch2]*f;v=v+(255-v)*sp;a[i+ch2]=Math.round(a[i+ch2]*(1-al)+v*al);}}
+  x.putImageData(ph,xa,ya);return c;}
 /* side: 'front' | 'back'; hs: kulp yönü (+1 sağ, -1 sol); bx: kutulu görünüm (kupa sağda, kutusu solda arkada) */
 async function mugScene(side,hs,S,bx){S=S||1000;var c=document.createElement('canvas');c.width=c.height=S;var x=c.getContext('2d');x.drawImage(mscBg(S),0,0);x.scale(S/1000,S/1000);
   var tee=state.tee||'#f6f6f4',Rcm=4,Hcm=9.5,R=bx?120:185,pc=R/Rcm,H=Hcm*pc,ry=R*0.17,cx=bx?742:500-hs*60,yT=bx?585:330,yB=yT+H;
+  if(bx){try{return await mugPhotoScene(side,S);}catch(e){try{console.error('Kupa fotoğrafı',e);}catch(_){}}}
   if(bx){try{await document.fonts.load('italic 500 38px "Cormorant Garamond"');await document.fonts.load('800 25px Manrope');}catch(_){}
     try{x.save();mscBox(x);x.restore();}catch(e){try{console.error('Kupa kutusu',e);}catch(_){}}}
   /* masadaki gölge */
