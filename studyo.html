@@ -657,6 +657,7 @@ img{-webkit-touch-callout:none;-webkit-user-drag:none}
       <label class="fld"><span>Yazıyı düzenle</span><input id="textIn" type="text" maxlength="40" disabled placeholder="Önce bir yazı ekle veya seç" autocomplete="off"></label>
       <div class="mini-title">Şekil</div>
       <div class="fxrow" id="warpRow"></div>
+      <label class="fld rng" id="lsWrap" hidden><span>Harf aralığı <b id="lsOut"></b></span><input type="range" id="lsAmt" min="0" max="100" step="1" value="0"></label>
       <label class="fld rng" id="warpAmtWrap" hidden><span>Eğim <b id="warpAmtOut"></b></span><input type="range" id="warpAmt" min="10" max="100" step="1" value="50"></label>
       <div class="mini-title">Görünüm</div>
       <div class="fxrow" id="lookRow"></div>
@@ -1729,15 +1730,17 @@ function place(el,o){
 var WARPS=[['none','Düz'],['arc','Kemer'],['smile','Gülümse'],['wave','Dalga'],['bulge','Balon'],['rise','Perspektif'],['dikey','Dikey']];
 var LOOKS=[['fill','Dolu'],['hollow','İçi boş'],['shadow','Gölgeli']];
 var mctx=document.createElement('canvas').getContext('2d');
-function isWarped(o){return !!o.warp&&o.warp!=='none';}
+function isWarped(o){return (!!o.warp&&o.warp!=='none')||!!o.ls;} /* harf aralığı açık yazı da harf harf dizilir */
 function lookOf(o){return o.look||'fill';}
 function fontStr(f,sz){return fw(f)+' '+sz+'px '+fontStack(f);}
 function shadowCol(o){return o.stroke||(String(o.color).toLowerCase()==='#159b91'?'#111111':'#159b91');}
 function escX(t){return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function w0dikey(o){return o.warp==='dikey';}
 function warpLayout(o,sz){
   mctx.font=fontStr(o.font,sz);
   var chars=Array.from(o.value||' '),ws=chars.map(function(c){return mctx.measureText(c).width;});
-  var L=ws.reduce(function(a,b){return a+b;},0)||1,a=(o.wamt==null?50:o.wamt)/100,w=o.warp||'none';
+  var gap=w0dikey(o)?0:(+o.ls||0)*sz;
+  var L=(ws.reduce(function(a,b){return a+b;},0)+gap*Math.max(0,chars.length-1))||1,a=(o.wamt==null?50:o.wamt)/100,w=o.warp||'none';
   var m=mctx.measureText('ÂĞÇÖİgjpy'),asc=m.actualBoundingBoxAscent||sz*0.8,desc=m.actualBoundingBoxDescent||sz*0.25;
   var th=a*PI,R=L/Math.max(th,0.0001),A=a*sz*0.42,by=(asc-desc)/2,hh=(asc+desc)/2;
   var out=[],s=-L/2,minX=1e9,maxX=-1e9,minY=1e9,maxY=-1e9;
@@ -1747,7 +1750,7 @@ function warpLayout(o,sz){
     if(w==='dikey'){var sp=/\s/.test(chars[i]),yy=vy+(sp?lh*0.25:lh/2);vy+=sp?lh*0.5:lh;
       if(!sp){var hw0=ws[i]/2;minX=Math.min(minX,-hw0);maxX=Math.max(maxX,hw0);minY=Math.min(minY,yy-hh);maxY=Math.max(maxY,yy+hh);}
       out.push({ch:sp?'':chars[i],x:0,y:yy,r:0,sy:1});continue;}
-    var c=s+ws[i]/2,x=c,y=0,r=0,sy=1,phi;s+=ws[i];
+    var c=s+ws[i]/2,x=c,y=0,r=0,sy=1,phi;s+=ws[i]+gap;
     if(w==='arc'){phi=c/R;x=R*Math.sin(phi);y=R*(1-Math.cos(phi));r=phi;}
     else if(w==='smile'){phi=c/R;x=R*Math.sin(phi);y=-R*(1-Math.cos(phi));r=-phi;}
     else if(w==='wave'){y=A*Math.sin(2*PI*c/L);r=Math.atan(A*2*PI/L*Math.cos(2*PI*c/L));}
@@ -3082,7 +3085,8 @@ function renderFxRows(){
   LOOKS.forEach(function(l){h+='<button class="fx'+(l[0]===lv?' on':'')+'" data-look="'+l[0]+'" aria-label="Görünüm: '+l[1]+'" aria-pressed="'+(l[0]===lv)+'"><span class="pv">'+warpSVG({value:'Ag',font:f,size:30,color:'currentColor',stroke:l[0]==='shadow'?'#159b91':null,warp:'none',look:l[0]})+'</span><small>'+l[1]+'</small></button>';});
   $('#lookRow').innerHTML=h;
   $('#warpRow').classList.toggle('off',!isT);$('#lookRow').classList.toggle('off',!isT);
-  $('#warpAmtWrap').hidden=!(isT&&isWarped(o));
+  $('#warpAmtWrap').hidden=!(isT&&o.warp&&o.warp!=='none');
+  $('#lsWrap').hidden=!isT||o.warp==='dikey';if(isT){var lv2=Math.round((+o.ls||0)*100);$('#lsAmt').value=lv2;$('#lsOut').textContent=lv2?'%'+lv2:'normal';}
   if(isT){var v=o.wamt==null?50:o.wamt;$('#warpAmt').value=v;$('#warpAmtOut').textContent='%'+v;}
   $('#lookNote').hidden=!(isT&&lv==='shadow');
 }
@@ -3279,6 +3283,11 @@ $('#warpAmt').addEventListener('input',function(){
   var o=selObj();if(!o||o.type!=='text')return;
   o.wamt=+this.value;$('#warpAmtOut').textContent='%'+o.wamt;updateEl(els[o.id],o);measureText(o);updateSel();
 });
+$('#lsAmt').addEventListener('input',function(){
+  var o=selObj();if(!o||o.type!=='text')return;var v=+this.value;
+  if(v)o.ls=v/100;else delete o.ls;$('#lsOut').textContent=v?'%'+v:'normal';updateEl(els[o.id],o);measureText(o);updateSel();
+});
+$('#lsAmt').addEventListener('change',function(){var o=selObj();if(o&&o.type==='text'){fitText(o);updateSel();renderFxRows();pushHist();}});
 $('#warpAmt').addEventListener('change',function(){var o=selObj();if(o&&o.type==='text'){fitText(o);updateSel();renderFxRows();pushHist();}});
 $('#clipCats').addEventListener('click',function(e){
   var b=e.target.closest('[data-cat]');if(!b)return;
