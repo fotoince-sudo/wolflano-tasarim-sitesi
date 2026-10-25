@@ -2241,14 +2241,96 @@ function mscBg(S){if(MSC_BG[S])return MSC_BG[S];var c=document.createElement('ca
     x.shadowColor='transparent';x.beginPath();x.moveTo(-11,0);x.quadraticCurveTo(0,4,11,0);x.strokeStyle='#24130a';x.lineWidth=2;x.stroke();x.restore();});
   MSC_BG[S]=c;return c;}
 function mscBody(x,cx,yT,R,ry,H){x.beginPath();x.ellipse(cx,yT,R,ry,0,Math.PI,0);x.lineTo(cx+R,yT+H);x.ellipse(cx,yT+H,R,ry,0,0,Math.PI);x.closePath();}
-/* Standart Wolflano kupa kutusu (teknik şartname: Kupa kutusu). 12 × 9 × 10,5 cm karton; kutulu görünümde kupayla aynı ölçekte (1 cm = 30) çizilir. */
-var MUG_BOX_SVG="<svg xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" width=\"1040\" height=\"860\" viewBox=\"0 0 520 430\"><defs><path id=\"h\" d=\"M0,3 C0,-1 -6,-1 -6,3 C-6,6 0,9 0,11 C0,9 6,6 6,3 C6,-1 0,-1 0,3Z\"/></defs><polygon points=\"140,100 10,30 10,345 140,415\" fill=\"#262626\" stroke=\"#7cc36a\" stroke-width=\"1\"/><polygon points=\"140,367 10,297 10,345 140,415\" fill=\"#7cc36a\"/><polygon points=\"140,367 10,297 10,303 140,373\" fill=\"#d9363e\"/><polygon points=\"111.4,144.6 38.6,105.4 38.6,265.4 111.4,304.6\" fill=\"#b8925f\" stroke=\"#7cc36a\" stroke-width=\"1\"/><polygon points=\"111.4,268.6 38.6,229.4 38.6,265.4 111.4,304.6\" fill=\"#a17c4c\"/><use xlink:href=\"#h\" transform=\"translate(32,318) scale(1.3)\" fill=\"#d9363e\"/><polygon points=\"140,100 10,30 370,30 500,100\" fill=\"#1c1c1c\" stroke=\"#7cc36a\" stroke-width=\"1\"/><line x1=\"75\" y1=\"65\" x2=\"435\" y2=\"65\" stroke=\"#d9363e\" stroke-width=\"7\"/><line x1=\"320\" y1=\"100\" x2=\"190\" y2=\"30\" stroke=\"#d9363e\" stroke-width=\"7\"/><g transform=\"translate(255,63) scale(2) translate(-185,-81)\"><path d=\"M183,83 L170,100 L176,99 L178,105 L188,85Z\" fill=\"#b82a31\"/><path d=\"M187,83 L202,98 L196,98 L195,104 L182,85Z\" fill=\"#b82a31\"/><path d=\"M185,81 C170,64 150,66 155,79 C159,90 175,87 185,81Z\" fill=\"#d9363e\" stroke=\"#9e2229\" stroke-width=\"0.8\"/><path d=\"M185,81 C200,64 220,66 215,79 C211,90 195,87 185,81Z\" fill=\"#d9363e\" stroke=\"#9e2229\" stroke-width=\"0.8\"/><path d=\"M181,80 C172,72 162,72 161,78\" fill=\"none\" stroke=\"#9e2229\" stroke-width=\"0.8\"/><path d=\"M189,80 C198,72 208,72 209,78\" fill=\"none\" stroke=\"#9e2229\" stroke-width=\"0.8\"/><ellipse cx=\"185\" cy=\"81\" rx=\"5\" ry=\"4\" fill=\"#c42f37\" stroke=\"#9e2229\" stroke-width=\"0.8\"/></g><g transform=\"translate(140,100) scale(2) translate(-50,-110)\"><rect x=\"50\" y=\"110\" width=\"180\" height=\"158\" fill=\"#111111\" stroke=\"#7cc36a\" stroke-width=\"1\"/><rect x=\"136\" y=\"110\" width=\"8\" height=\"12\" fill=\"#d9363e\"/><use xlink:href=\"#h\" transform=\"translate(72,128) scale(1.2)\" fill=\"#d9363e\"/><use xlink:href=\"#h\" transform=\"translate(96,140) scale(0.7)\" fill=\"none\" stroke=\"#7cc36a\" stroke-width=\"1.2\"/><use xlink:href=\"#h\" transform=\"translate(66,155) scale(0.6)\" fill=\"none\" stroke=\"#d9363e\" stroke-width=\"1.4\"/><use xlink:href=\"#h\" transform=\"translate(116,132) scale(0.45)\" fill=\"#7cc36a\"/><use xlink:href=\"#h\" transform=\"translate(207,128) scale(1)\" fill=\"none\" stroke=\"#d9363e\" stroke-width=\"1.2\"/><use xlink:href=\"#h\" transform=\"translate(186,146) scale(0.5)\" fill=\"#7cc36a\"/><use xlink:href=\"#h\" transform=\"translate(212,156) scale(0.4)\" fill=\"#d9363e\"/><text x=\"140\" y=\"188\" text-anchor=\"middle\" fill=\"#e8e8e2\" font-family=\"Cormorant Garamond,Georgia,serif\" font-style=\"italic\" font-size=\"17\">Sevgiyle hazırlandı</text><line x1=\"118\" y1=\"200\" x2=\"162\" y2=\"200\" stroke=\"#d9363e\" stroke-width=\"1\"/><text x=\"140\" y=\"222\" text-anchor=\"middle\" fill=\"#7cc36a\" font-family=\"Manrope,Helvetica,Arial,sans-serif\" font-weight=\"700\" font-size=\"12\" letter-spacing=\"2\">WOLFLANO</text><text x=\"140\" y=\"236\" text-anchor=\"middle\" fill=\"#9a9a94\" font-family=\"Cormorant Garamond,Georgia,serif\" font-size=\"9\">İzmir’den</text><rect x=\"50\" y=\"244\" width=\"180\" height=\"24\" fill=\"#7cc36a\"/><rect x=\"50\" y=\"244\" width=\"180\" height=\"3\" fill=\"#d9363e\"/><text x=\"140\" y=\"261\" text-anchor=\"middle\" fill=\"#111111\" font-family=\"Manrope,Helvetica,Arial,sans-serif\" font-size=\"9\" letter-spacing=\"1\">wolflano.com.tr</text></g></svg>";
+/* Standart Wolflano kupa kutusu (teknik şartname: Kupa kutusu): 12 × 9 × 10,5 cm karton, siyah gövde ve kapak, yeşil kenarlar,
+   kapakta kırmızı saten kurdele ve fiyonk, önde kalpler · "Sevgiyle hazırlandı" · WOLFLANO · İzmir'den, altta yeşil şerit ve wolflano.com.tr,
+   yanda pencere. Kutulu görünümde kupayla aynı ölçekte (1 cm = 30) gerçekçi ışık ve gölgeyle çizilir: ışık soldaki pencereden gelir. */
+function mscBox(x){
+  var X0=190,X1=550,T=488,B=805,LH=74,O=5,dx=54,dy=-36,r=mscRand(11),i,g;
+  function poly(p){x.beginPath();x.moveTo(p[0],p[1]);for(var k=2;k<p.length;k+=2)x.lineTo(p[k],p[k+1]);x.closePath();}
+  function heart(cx,cy,s){x.beginPath();x.moveTo(cx,cy+s*0.35);x.bezierCurveTo(cx,cy-s*0.05,cx-s*0.55,cy-s*0.15,cx-s*0.55,cy+s*0.3);x.bezierCurveTo(cx-s*0.55,cy+s*0.6,cx-s*0.1,cy+s*0.8,cx,cy+s*1.05);
+    x.bezierCurveTo(cx+s*0.1,cy+s*0.8,cx+s*0.55,cy+s*0.6,cx+s*0.55,cy+s*0.3);x.bezierCurveTo(cx+s*0.55,cy-s*0.15,cx,cy-s*0.05,cx,cy+s*0.35);x.closePath();}
+  function grain(p,a){x.save();poly(p);x.clip();for(var k=0;k<900;k++){x.fillStyle=(k%2?'rgba(255,255,255,':'rgba(0,0,0,')+(a*r()).toFixed(3)+')';x.fillRect(150+r()*520,420+r()*400,1.4,1.4);}x.restore();}
+  var GR='#7cc36a',RD='#d9363e';
+  /* masadaki yumuşak gölge ve temas çizgisi */
+  x.save();x.translate(0,B-6);x.scale(1,0.16);g=x.createRadialGradient(420,0,20,420,0,300);g.addColorStop(0,'rgba(45,26,10,.55)');g.addColorStop(.5,'rgba(45,26,10,.2)');g.addColorStop(1,'rgba(45,26,10,0)');
+  x.fillStyle=g;x.beginPath();x.arc(420,0,300,0,Math.PI*2);x.fill();x.restore();
+  x.save();x.filter='blur(3px)';x.fillStyle='rgba(25,14,5,.45)';poly([X0+4,B-3,X1,B-3,X1+dx,B+dy-3,X1+dx+6,B+dy+2,X1+4,B+5,X0+6,B+5]);x.fill();x.restore();
+  /* gövde: sağ yan */
+  var SB=[X1,T+LH,X1+dx,T+LH+dy,X1+dx,B+dy,X1,B];poly(SB);g=x.createLinearGradient(X1,0,X1+dx,0);g.addColorStop(0,'#0c0c0c');g.addColorStop(1,'#050505');x.fillStyle=g;x.fill();
+  /* yan şerit */
+  poly([X1,B-38,X1+dx,B-38+dy,X1+dx,B+dy,X1,B]);x.fillStyle='#4f8a43';x.fill();
+  poly([X1,B-38,X1+dx,B-38+dy,X1+dx,B-35+dy,X1,B-35]);x.fillStyle='#a4272d';x.fill();
+  x.save();x.translate(X1+dx*0.5,B-20+dy*0.5);x.transform(1,dy/dx,0,1,0,0);heart(0,-5,10);x.fillStyle='#b72d34';x.fill();x.restore();
+  /* yan pencere: içinde kutudaki kupanın beyazı, üstünde şeffaf plastiğin parlaması */
+  var wy0=T+LH+24,wy1=B-54,wx0=X1+9,wx1=X1+dx-9,wd=dy*(9/dx),wdd=dy*((dx-9)/dx);
+  var WP=[wx0,wy0+wd,wx1,wy0+wdd,wx1,wy1+wdd,wx0,wy1+wd];poly(WP);g=x.createLinearGradient(wx0,0,wx1,0);g.addColorStop(0,'#d9d4cb');g.addColorStop(.5,'#f3f0ea');g.addColorStop(1,'#b9b3a8');x.fillStyle=g;x.fill();
+  x.save();poly(WP);x.clip();g=x.createLinearGradient(0,wy0,0,wy1);g.addColorStop(0,'rgba(0,0,0,.35)');g.addColorStop(.25,'rgba(0,0,0,0)');g.addColorStop(.85,'rgba(0,0,0,0)');g.addColorStop(1,'rgba(0,0,0,.3)');x.fillStyle=g;x.fillRect(wx0,wy0-60,dx,wy1-wy0+120);
+    x.globalAlpha=.55;x.beginPath();x.moveTo(wx0,wy0+60);x.lineTo(wx1,wy0-10);x.lineTo(wx1,wy0+10);x.lineTo(wx0,wy0+90);x.closePath();x.fillStyle='#ffffff';x.fill();x.globalAlpha=1;x.restore();
+  poly(WP);x.strokeStyle=GR;x.lineWidth=1.6;x.stroke();
+  grain(SB,.05);
+  /* gövde: ön yüz (soldaki pencereden hafif ışık) */
+  var FB=[X0,T+LH,X1,T+LH,X1,B,X0,B];poly(FB);g=x.createLinearGradient(X0,T,X1,B);g.addColorStop(0,'#232323');g.addColorStop(.55,'#161616');g.addColorStop(1,'#101010');x.fillStyle=g;x.fill();
+  grain(FB,.06);
+  /* kapağın gövdeye düşen gölgesi */
+  g=x.createLinearGradient(0,T+LH,0,T+LH+16);g.addColorStop(0,'rgba(0,0,0,.6)');g.addColorStop(1,'rgba(0,0,0,0)');x.fillStyle=g;x.fillRect(X0,T+LH,X1-X0,16);
+  /* ön tasarım: kalpler */
+  [[226,T+LH+22,11,RD,1],[262,T+LH+50,6,GR,0],[292,T+LH+24,4,GR,1],[214,T+LH+60,5,RD,0],[512,T+LH+20,10,RD,0],[482,T+LH+46,4,GR,1],[526,T+LH+58,4,RD,1],[456,T+LH+22,3.5,GR,1]].forEach(function(h){
+    heart(h[0],h[1],h[2]*2);if(h[4]){x.fillStyle=h[3];x.fill();}else{x.strokeStyle=h[3];x.lineWidth=1.8;x.stroke();}});
+  var mx=(X0+X1)/2;x.textAlign='center';x.textBaseline='alphabetic';
+  x.fillStyle='#ece9e2';x.font='italic 500 34px "Cormorant Garamond", Georgia, serif';x.fillText('Sevgiyle hazırlandı',mx,T+LH+108);
+  x.fillStyle=RD;x.fillRect(mx-40,T+LH+122,80,2);
+  x.fillStyle=GR;x.font='800 22px Manrope, Helvetica, Arial, sans-serif';try{x.letterSpacing='5px';}catch(_){}x.fillText('WOLFLANO',mx+2,T+LH+156);try{x.letterSpacing='0px';}catch(_){}
+  x.fillStyle='#a6a39b';x.font='500 16px "Cormorant Garamond", Georgia, serif';x.fillText('İzmir’den',mx,T+LH+177);
+  /* alt yeşil şerit, ince kırmızı çizgi ve adres */
+  g=x.createLinearGradient(0,B-38,0,B);g.addColorStop(0,'#86cc74');g.addColorStop(1,'#6fb15e');x.fillStyle=g;x.fillRect(X0,B-38,X1-X0,38);
+  x.fillStyle=RD;x.fillRect(X0,B-38,X1-X0,3);
+  x.fillStyle='#121212';x.font='500 15px Manrope, Helvetica, Arial, sans-serif';try{x.letterSpacing='2px';}catch(_){}x.fillText('wolflano.com.tr',mx,B-13);try{x.letterSpacing='0px';}catch(_){}
+  /* gövde kenarları: yeşil ince çizgi */
+  x.strokeStyle='rgba(124,195,106,.85)';x.lineWidth=1.4;x.beginPath();x.moveTo(X0,T+LH);x.lineTo(X0,B);x.moveTo(X1,T+LH);x.lineTo(X1,B);x.moveTo(X1+dx,T+LH+dy);x.lineTo(X1+dx,B+dy);x.stroke();
+  /* kapak: sağ yan, üst, ön (gövdeden biraz taşar) */
+  var L0=X0-O,L1=X1+O,SL=[L1,T,L1+dx,T+dy,L1+dx,T+LH+dy,L1,T+LH];poly(SL);g=x.createLinearGradient(L1,0,L1+dx,0);g.addColorStop(0,'#121212');g.addColorStop(1,'#080808');x.fillStyle=g;x.fill();
+  var TP=[L0,T,L1,T,L1+dx,T+dy,L0+dx,T+dy];poly(TP);g=x.createLinearGradient(L0,T+dy,L0+120,T+80);g.addColorStop(0,'#3a3a39');g.addColorStop(.5,'#2a2a2a');g.addColorStop(1,'#1f1f1f');x.fillStyle=g;x.fill();
+  var FL=[L0,T,L1,T,L1,T+LH,L0,T+LH];poly(FL);g=x.createLinearGradient(L0,T,L1,T+LH);g.addColorStop(0,'#2a2a2a');g.addColorStop(.6,'#1c1c1c');g.addColorStop(1,'#151515');x.fillStyle=g;x.fill();
+  grain(TP,.05);grain(FL,.06);
+  /* kapak kenarları yeşil, üst ön kenarda ince ışık */
+  x.strokeStyle='rgba(124,195,106,.9)';x.lineWidth=1.6;poly(FL);x.stroke();poly(TP);x.stroke();poly(SL);x.stroke();
+  x.strokeStyle='rgba(255,255,255,.18)';x.lineWidth=1;x.beginPath();x.moveTo(L0+2,T+1.5);x.lineTo(L1-2,T+1.5);x.stroke();
+  /* saten kurdele: kapağın üstünde çapraz, önden ve yandan aşağı iner */
+  function satin(p,ax,ay,bx2,by2){poly(p);g=x.createLinearGradient(ax,ay,bx2,by2);g.addColorStop(0,'#8f1d23');g.addColorStop(.35,'#e2464d');g.addColorStop(.5,'#f06a6f');g.addColorStop(.65,'#d9363e');g.addColorStop(1,'#8f1d23');x.fillStyle=g;x.fill();}
+  var cxT=(L0+L1)/2,W=9,f=dy/dx;
+  satin([cxT-W,T,cxT+W,T,cxT+W+dx,T+dy,cxT-W+dx,T+dy],cxT-W,T,cxT+W,T);
+  var my=T+dy/2,mxx=dx/2;satin([L0+mxx,my-W*0.7,L1+mxx,my-W*0.7,L1+mxx,my+W*0.7,L0+mxx,my+W*0.7],0,my-W,0,my+W);
+  satin([cxT-W,T,cxT+W,T,cxT+W,T+LH,cxT-W,T+LH],cxT-W,0,cxT+W,0);
+  x.save();x.translate(L1+mxx,T+LH/2+dy/2);x.transform(1,f,0,1,0,0);satin([-W*0.7,-LH/2,W*0.7,-LH/2,W*0.7,LH/2,-W*0.7,LH/2],-W,0,W,0);x.restore();
+  /* kurdelenin kapak kenarına düşen gölgesi */
+  x.fillStyle='rgba(0,0,0,.35)';x.fillRect(cxT+W,T+1,3,LH-1);
+  /* masada kutunun önüne bırakılmış okaliptüs dalı */
+  x.save();x.translate(250,872);x.rotate(-0.12);x.lineCap='round';x.shadowColor='rgba(40,22,8,.3)';x.shadowBlur=8;x.shadowOffsetY=4;
+  x.beginPath();x.moveTo(-70,8);x.quadraticCurveTo(40,-6,170,4);x.strokeStyle='#7d8a72';x.lineWidth=2.6;x.stroke();x.shadowColor='transparent';
+  for(i=0;i<8;i++){var lx=-50+i*27,ly=-0.0007*(lx-50)*(lx-50)+1,sz=14-i*0.8;[-1,1].forEach(function(sd){x.beginPath();x.ellipse(lx,ly+sd*sz*0.8,sz,sz*0.78,sd*0.5,0,Math.PI*2);x.fillStyle=(i+sd)%3?'#9bb0a3':'#86a093';x.fill();x.strokeStyle='rgba(70,95,85,.3)';x.lineWidth=1;x.stroke();});}
+  x.restore();
+  /* fiyonk: kurdelelerin kesiştiği yerde */
+  var bx0=cxT+dx/2,by0=T+dy/2;
+  x.save();x.translate(bx0,by0);
+  x.shadowColor='rgba(0,0,0,.45)';x.shadowBlur=14;x.shadowOffsetY=8;
+  /* uçlar */
+  [[-1,-0.35],[1,0.25]].forEach(function(s){x.beginPath();x.moveTo(0,0);x.quadraticCurveTo(s[0]*22,22,s[0]*30+s[1]*10,52);x.lineTo(s[0]*18+s[1]*10,56);x.lineTo(s[0]*12,46);x.quadraticCurveTo(s[0]*8,20,0,4);x.closePath();
+    g=x.createLinearGradient(s[0]*4,0,s[0]*30,50);g.addColorStop(0,'#c22f37');g.addColorStop(.5,'#e8545a');g.addColorStop(1,'#9c2229');x.fillStyle=g;x.fill();});
+  /* ilmekler */
+  [-1,1].forEach(function(s){x.beginPath();x.moveTo(0,0);x.bezierCurveTo(s*18,-38,s*68,-40,s*62,-6);x.bezierCurveTo(s*58,18,s*20,12,0,0);x.closePath();
+    g=x.createRadialGradient(s*40,-18,4,s*36,-14,46);g.addColorStop(0,'#f47a7e');g.addColorStop(.45,'#df3f46');g.addColorStop(1,'#8f1d23');x.fillStyle=g;x.fill();});
+  x.shadowColor='transparent';
+  [-1,1].forEach(function(s){x.beginPath();x.moveTo(s*6,-4);x.bezierCurveTo(s*22,-26,s*48,-28,s*52,-8);x.strokeStyle='rgba(120,20,26,.55)';x.lineWidth=1.6;x.stroke();
+    x.beginPath();x.moveTo(s*10,-2);x.bezierCurveTo(s*24,-18,s*40,-22,s*46,-14);x.strokeStyle='rgba(255,190,190,.45)';x.lineWidth=1.4;x.stroke();});
+  /* düğüm */
+  x.beginPath();x.ellipse(0,-1,11,9,0,0,Math.PI*2);g=x.createRadialGradient(-3,-4,1,0,0,12);g.addColorStop(0,'#f2696e');g.addColorStop(1,'#a3242b');x.fillStyle=g;x.fill();
+  x.restore();
+}
 /* side: 'front' | 'back'; hs: kulp yönü (+1 sağ, -1 sol); bx: kutulu görünüm (kupa sağda, kutusu solda arkada) */
 async function mugScene(side,hs,S,bx){S=S||1000;var c=document.createElement('canvas');c.width=c.height=S;var x=c.getContext('2d');x.drawImage(mscBg(S),0,0);x.scale(S/1000,S/1000);
-  var tee=state.tee||'#f6f6f4',Rcm=4,Hcm=9.5,R=bx?120:185,pc=R/Rcm,H=Hcm*pc,ry=R*0.17,cx=bx?700:500-hs*60,yT=bx?585:330,yB=yT+H;
-  if(bx){var bg0=x.createRadialGradient(330,832,10,330,832,320);bg0.addColorStop(0,'rgba(50,30,12,.38)');bg0.addColorStop(.6,'rgba(50,30,12,.12)');bg0.addColorStop(1,'rgba(50,30,12,0)');
-    x.save();x.translate(0,832);x.scale(1,0.12);x.translate(0,-832);x.fillStyle=bg0;x.beginPath();x.arc(330,832,320,0,Math.PI*2);x.fill();x.restore();
-    try{x.drawImage(await loadImg(svgUrl(MUG_BOX_SVG)),70,415,520,430);}catch(e){try{console.error('Kupa kutusu',e);}catch(_){}}}
+  var tee=state.tee||'#f6f6f4',Rcm=4,Hcm=9.5,R=bx?120:185,pc=R/Rcm,H=Hcm*pc,ry=R*0.17,cx=bx?742:500-hs*60,yT=bx?585:330,yB=yT+H;
+  if(bx){try{await document.fonts.load('italic 500 38px "Cormorant Garamond"');await document.fonts.load('800 25px Manrope');}catch(_){}
+    try{x.save();mscBox(x);x.restore();}catch(e){try{console.error('Kupa kutusu',e);}catch(_){}}}
   /* masadaki gölge */
   var g=x.createRadialGradient(cx+hs*0+30,yB+ry,10,cx+30,yB+ry,R*1.5);g.addColorStop(0,'rgba(50,30,12,.42)');g.addColorStop(.55,'rgba(50,30,12,.14)');g.addColorStop(1,'rgba(50,30,12,0)');
   x.save();x.translate(0,yB+ry);x.scale(1,0.22);x.translate(0,-(yB+ry));x.fillStyle=g;x.beginPath();x.arc(cx+30,yB+ry,R*1.5,0,Math.PI*2);x.fill();x.restore();
