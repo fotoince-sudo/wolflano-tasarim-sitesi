@@ -654,7 +654,7 @@ img{-webkit-touch-callout:none;-webkit-user-drag:none}
           <input id="kolajFile" type="file" accept="image/*" multiple hidden>
           <div class="wstep"><i>2</i>Wolf yerleştirsin</div>
           <button class="primary wide" id="kolajGo" type="button" disabled>Fotoğrafları tasarla</button>
-          <p class="note" id="kolajNote">Tabloya en fazla 15 (35 × 50) ya da 30 (50 × 70), süblimasyon kupaya en fazla 7 fotoğraf. Wolf, fotoğrafların dikey ya da yatay oluşuna göre karışık bir kolaj kurar: kimi hafif sola, kimi hafif sağa eğik, kimi düz. Zemin açık krem, fotoğraflar ince siyah çerçeveli. Beğenmezsen yeniden dokun, Wolf başka bir yerleşim dener.</p>
+          <p class="note" id="kolajNote">Tabloya en fazla 15 (35 × 50) ya da 30 (50 × 70), süblimasyon kupaya en fazla 7 fotoğraf. Wolf, fotoğrafların dikey ya da yatay oluşuna göre karışık bir kolaj kurar: kimi hafif sola, kimi hafif sağa eğik, kimi düz. Zemin hafif dokulu açık krem, fotoğraflar köşeleri hafif yuvarlak beyaz çerçeveli. Beğenmezsen yeniden dokun, Wolf başka bir yerleşim dener.</p>
         </div>
       </div>
       <div class="kolaj" id="kosBox" hidden>
@@ -1694,8 +1694,8 @@ function updateEl(el,o){
   if(o.type==='text'){if(!isWarped(o)&&(el.firstElementChild||el.textContent!==o.value))el.textContent=o.value;styleText(el,o);}
   else if(o.type==='clip'){el.style.color=o.color;if(el.dataset.k!==o.key){el.dataset.k=o.key;el.innerHTML=clipSVG(o.key);}}
   else if(o.type==='image'&&assets[o.assetId]){if(el.dataset.asset!==o.assetId){el.dataset.asset=o.assetId;el.innerHTML='';var im=new Image();im.draggable=false;im.alt='';im.src=assets[o.assetId].url;el.appendChild(im);}
-    /* Kolaj fotoğrafı: ince siyah çerçeve ve yumuşak gölge (baskıda da aynı çizilir) */
-    var fi=el.firstElementChild;if(fi){fi.style.boxSizing='border-box';fi.style.border=o.bw?o.bw+'px solid '+(o.bc||'#161616'):'';fi.style.boxShadow=o.bw?'0 '+(o.bw*0.9)+'px '+(o.bw*2.6)+'px rgba(40,30,20,.28)':'';}}
+    /* Kolaj fotoğrafı: beyaz, köşeleri hafif yuvarlak çerçeve ve yumuşak gölge (baskıda da aynı çizilir) */
+    var fi=el.firstElementChild;if(fi){fi.style.boxSizing='border-box';fi.style.border=o.bw?o.bw+'px solid '+(o.bc||'#161616'):'';fi.style.boxShadow=o.bw?'0 '+(o.bw*0.9)+'px '+(o.bw*2.6)+'px rgba(40,30,20,.28)':'';fi.style.borderRadius=o.br?o.br+'px':'';el.style.borderRadius=o.br?o.br+'px':'';}}
   place(el,o);
 }
 function makeEl(o){var el=document.createElement('div');el.className='obj'+(o.type==='text'?' text':'');el.dataset.id=o.id;updateEl(el,o);return el;}
@@ -2014,17 +2014,30 @@ function kolajLayout(){
   best.rows.forEach(function(rw,ri){var h=best.hs[ri]*k,rowW=rw.reduce(function(a,i){return a+asp[i]*h;},0)+gap*k*(rw.length-1),x=F.l+pad+(W-rowW)/2;
     rw.forEach(function(i){var w=asp[i]*h,u=R(),rot=u<0.3?0:(u<0.65?-1:1)*(1.8+R()*4.2),s=1.06+R()*0.08,
         jx=(R()-0.5)*w*0.09,jy=(R()-0.5)*h*0.09,o=newBase('image');
-      o.assetId=ids[i];o.w=w*s;o.h=h*s;o.rot=+rot.toFixed(1);o.x=x+w/2+jx;o.y=y+h/2+jy;o.bw=Math.max(1.4,Math.min(o.w,o.h)*0.022);o.bc='#161616';o.kj=1;
+      o.assetId=ids[i];o.w=w*s;o.h=h*s;o.rot=+rot.toFixed(1);o.x=x+w/2+jx;o.y=y+h/2+jy;o.bw=Math.max(1.6,Math.min(o.w,o.h)*0.03);o.bc='#ffffff';o.br=Math.min(o.w,o.h)*0.035;o.kj=1;
       /* Eğik fotoğrafın köşesi ön yüzden taşmasın */
       var rr=Math.abs(o.rot)*Math.PI/180,bw2=(o.w*Math.cos(rr)+o.h*Math.sin(rr))/2,bh2=(o.w*Math.sin(rr)+o.h*Math.cos(rr))/2,fz=Math.min(1,(F.w-2)/(2*bw2),(F.h-2)/(2*bh2));
-      if(fz<1){o.w*=fz;o.h*=fz;bw2*=fz;bh2*=fz;o.bw=Math.max(1.4,Math.min(o.w,o.h)*0.022);}
+      if(fz<1){o.w*=fz;o.h*=fz;bw2*=fz;bh2*=fz;o.bw=Math.max(1.6,Math.min(o.w,o.h)*0.03);o.br=Math.min(o.w,o.h)*0.035;}
       o.x=Math.min(Math.max(o.x,F.l+bw2+1),F.l+F.w-bw2-1);o.y=Math.min(Math.max(o.y,F.t+bh2+1),F.t+F.h-bh2-1);
       objs.push(o);x+=w+gap*k;});
     y+=h+gap*k+extra;});
   /* Tatlı karışıklık: üst üste binmelerde rastgele sıra */
   for(var q=objs.length-1;q>0;q--){var j=Math.floor(R()*(q+1)),t=objs[q];objs[q]=objs[j];objs[j]=t;}
   return objs;}
-function kolajBg(){var id='kjbg',A=areaBox('front',cur().area);if(!assets[id]){var c=document.createElement('canvas');c.width=60;c.height=80;var x=c.getContext('2d');x.fillStyle=KJ_CREAM;x.fillRect(0,0,60,80);assets[id]={url:c.toDataURL('image/png'),w:60,h:80,bg:true};}
+/* Kolaj zemini: düz değil, gözü yormayan hafif dokulu açık krem (yumuşak deri / keten hissi). Baskı alanının oranında üretilir, gerilip bozulmaz. */
+function kjTexture(W,H){var c=document.createElement('canvas');c.width=W;c.height=H;var x=c.getContext('2d'),R=kjRand(20261025),i;
+  var g=x.createLinearGradient(0,0,W,H);g.addColorStop(0,'#f6f0e5');g.addColorStop(.5,KJ_CREAM);g.addColorStop(1,'#eee5d6');x.fillStyle=g;x.fillRect(0,0,W,H);
+  /* yumuşak bulutlanma (deri yüzeyi) */
+  for(i=0;i<70;i++){var cx=R()*W,cy=R()*H,r=(0.06+R()*0.22)*Math.max(W,H),d=R()<0.5;g=x.createRadialGradient(cx,cy,0,cx,cy,r);
+    g.addColorStop(0,d?'rgba(176,150,112,.045)':'rgba(255,252,244,.06)');g.addColorStop(1,'rgba(0,0,0,0)');x.fillStyle=g;x.fillRect(cx-r,cy-r,2*r,2*r);}
+  /* ince gözenek / grenli doku */
+  var im=x.getImageData(0,0,W,H),a=im.data;for(i=0;i<a.length;i+=4){var n=(R()-0.5)*9;a[i]+=n;a[i+1]+=n;a[i+2]+=n*0.9;}x.putImageData(im,0,0);
+  /* çok hafif keten lifleri */
+  x.lineWidth=Math.max(0.6,W/1800);for(i=0;i<Math.round(W*H/9000);i++){var lx=R()*W,ly=R()*H,L=(8+R()*30)*W/1800,hz=R()<0.5;
+    x.strokeStyle=R()<0.5?'rgba(150,124,88,.05)':'rgba(255,255,250,.07)';x.beginPath();x.moveTo(lx,ly);x.lineTo(lx+(hz?L:0),ly+(hz?0:L));x.stroke();}
+  return c;}
+function kolajBg(){var A=areaBox('front',cur().area),W=1800,H=Math.max(200,Math.round(W*A.h/A.w)),id='kjbg2-'+W+'x'+H;
+  if(!assets[id]){var c=kjTexture(W,H);assets[id]={url:c.toDataURL('image/jpeg',.9),w:W,h:H,bg:true};}
   var o=newBase('image');o.assetId=id;o.w=A.w+2;o.h=A.h+2;o.x=A.cx;o.y=A.cy;o.lock=true;o.kj=1;o.kjbg=1;return o;}
 function kolajMake(){if(KOLAJ.length<2){toast('Kolaj için en az 2 fotoğraf seç.');return;}
   if(view.side!=='front'){view.side='front';}
@@ -3069,9 +3082,11 @@ async function drawObj(c,o,S,ox,oy){
     var im=await loadImg(svgUrl(svg));c.drawImage(im,-o.w*S/2,-o.h*S/2,o.w*S,o.h*S);
   }else if(o.type==='image'&&assets[o.assetId]){
     var im2=await loadImg(assets[o.assetId].url);
-    if(o.bw){c.save();c.shadowColor='rgba(40,30,20,.28)';c.shadowBlur=o.bw*2.6*S;c.shadowOffsetY=o.bw*0.9*S;c.fillStyle='#161616';c.fillRect(-o.w*S/2,-o.h*S/2,o.w*S,o.h*S);c.restore();}
-    c.drawImage(im2,-o.w*S/2,-o.h*S/2,o.w*S,o.h*S);
-    if(o.bw){var lw=o.bw*S;c.lineWidth=lw;c.strokeStyle=o.bc||'#161616';c.strokeRect(-o.w*S/2+lw/2,-o.h*S/2+lw/2,o.w*S-lw,o.h*S-lw);}
+    var rx=-o.w*S/2,ry=-o.h*S/2,rw=o.w*S,rh=o.h*S,rr=(o.br||0)*S;
+    function rp(ix){var r=Math.max(0,rr-ix);c.beginPath();if(c.roundRect)c.roundRect(rx+ix,ry+ix,rw-2*ix,rh-2*ix,r);else c.rect(rx+ix,ry+ix,rw-2*ix,rh-2*ix);}
+    if(o.bw){c.save();c.shadowColor='rgba(40,30,20,.28)';c.shadowBlur=o.bw*2.6*S;c.shadowOffsetY=o.bw*0.9*S;c.fillStyle=o.bc||'#161616';rp(0);c.fill();c.restore();}
+    c.save();if(rr){rp(0);c.clip();}c.drawImage(im2,rx,ry,rw,rh);c.restore();
+    if(o.bw){var lw=o.bw*S;c.lineWidth=lw;c.strokeStyle=o.bc||'#161616';rp(lw/2);c.stroke();}
   }
   c.restore();
 }
