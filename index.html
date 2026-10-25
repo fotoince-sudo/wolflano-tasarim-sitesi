@@ -2388,10 +2388,13 @@ var PAGES=[['ana','Ana Sayfa'],['hazir','Koleksiyon'],['atolye','Baskı Atölyes
 function pagesNow(){var l=PAGES.map(function(p){var m={hazir:'menuHazir',atolye:'menuAtolye',hakkimizda:'menuAbout'}[p[0]];return [p[0],m?TX(m):p[1]];});
   var cp=(D.cpages||[]).filter(function(x){return x&&x.show!==false&&x.menu!==false&&x.title;}).map(function(x){return ['p-'+x.id,x.title];});
   if(cp.length){var i=l.length-1;l=l.slice(0,i).concat(cp,l.slice(i));}
-  /* "Hediye & Dekor" kategorisi yönetimde "Sitede göster" açılınca menüde Baskı Atölyesi'nden sonra kendiliğinden çıkar */
+  /* "Hediye & Dekor" kategorisi yönetimde "Sitede göster" açılınca menüde Koleksiyon'dan sonra kendiliğinden çıkar */
   /* Koleksiyon'da sekme olarak görünmez; menüden kendi sayfasına (Hediye & Dekor) gider */
   var hd=(D.cats||[]).filter(function(c){return c.show!==false&&/hediye|dekor/i.test(c.name||'')&&PRODUCTS.some(function(p){return (p.cat||[]).indexOf(c.id)>=0;});})[0];
-  if(hd&&!cp.some(function(x){return /hediye|dekor/i.test(x[1]);})){var ai=-1;l.forEach(function(x,k){if(x[0]==='atolye')ai=k;});l.splice(ai+1,0,['hediye',hd.name||'Hediye & Dekor']);}
+  if(hd&&!cp.some(function(x){return /hediye|dekor/i.test(x[1]);}))l.push(['hediye',hd.name||'Hediye & Dekor']);
+  /* Hediye & Dekor (kategori ya da yönetimde açılan sayfa) menüde hep Koleksiyon ile Baskı Atölyesi arasında durur */
+  var hi=-1;l.forEach(function(x,k){if(hi<0&&(x[0]==='hediye'||/hediye|dekor/i.test(x[1])))hi=k;});
+  if(hi>=0){var it=l.splice(hi,1)[0],ki=-1;l.forEach(function(x,k){if(x[0]==='hazir')ki=k;});l.splice(ki+1,0,it);}
   return l;}
 var CATS=[['erkek','Erkek'],['kadin','Kadın'],['cocuk','Çocuk']],subSel='',sub2Sel='',catOpen='',grpOpen='',typSel='',typOpen=false;
 var SIDES={tee:{front:['a4','a3','logo'],back:['a4','a3']},sweat:{front:['a4','a3','logo'],back:['a4','a3']},polo:{front:['logo'],back:['a4','a3']},hat:{front:['hat'],back:[]}};
