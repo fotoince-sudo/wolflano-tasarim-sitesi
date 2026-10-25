@@ -555,6 +555,8 @@ footer a{text-decoration:none}footer a:hover{color:var(--green)}
 .kbs{font:600 clamp(10.5px,2.9vw,13px)/1.45 var(--ui);letter-spacing:.04em;color:var(--ink);opacity:.86}
 .kbl{font:500 clamp(10px,2.6vw,12px) var(--ui);letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-top:2px}
 .kbph{position:relative;height:100%;min-height:inherit}
+.kbh1{margin:0;font-style:normal;font-size:clamp(34px,9.6vw,58px);line-height:.98}.kbh1 em{font-style:italic;color:var(--green);padding:0 .03em}
+.kbq{font:italic 400 clamp(17px,4.6vw,24px)/1.15 'Cormorant Garamond',Georgia,serif;color:var(--ink)}
 .kbtop{display:flex;align-items:center;gap:10px}.kbw{width:34px;height:34px;object-fit:contain;flex:0 0 auto;padding:4px;background:#fff;border:1px solid var(--line);border-radius:10px}
 .kbp{position:absolute;object-fit:cover;object-position:50% 40%;border-radius:12px;border:3px solid #fff;box-shadow:0 12px 26px rgba(16,26,20,.18);background:#eef2ef}
 .kbp0{right:9%;top:11%;width:56%;aspect-ratio:4/5;z-index:2;transform:rotate(2.5deg)}
@@ -2573,7 +2575,7 @@ function hdGrid(){var bl=BLANKS.filter(function(b){var t=b.p||b.id;return (t==='
 var HDTAB='sub',IC_HD={logo:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h12v9a4 4 0 0 1-4 4H8a4 4 0 0 1-4-4z"/><path d="M16 9h2a3 3 0 0 1 0 6h-2"/><circle cx="10" cy="12" r="2.6"/></svg>',kupa:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h12v9a4 4 0 0 1-4 4H8a4 4 0 0 1-4-4z"/><path d="M16 9h2a3 3 0 0 1 0 6h-2"/></svg>',canvas:'<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="15" rx="1.5"/><path d="M3 15l5-5 5 5 3-3 5 5"/><circle cx="16" cy="8.5" r="1.5"/></svg>'};
 document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('[data-hdtab]');if(!b)return;HDTAB=b.dataset.hdtab;var w=b.parentNode,g=w.nextElementSibling;[].forEach.call(w.children,function(x){var on=x===b;x.classList.toggle('on',on);x.setAttribute('aria-selected',on);});if(g)g.setAttribute('data-hdt',HDTAB);});
 /* Hediye & Dekor başlığı: düz yazı yerine zarif, görsel bir başlık */
-function hdHead(){return '<header class="hdh"><span class="hdk">Wolflano</span><h1 class="hdt">Hediye <em>&amp;</em> Dekor</h1><p class="hds">Sevdiklerine özel kupa ve canvas tablolar</p></header>'+pageBan('hediye',(D.banners||{}).hediye);}
+function hdHead(){var k=Object.assign({},(D.banners||{}).hediye||{});k.show=true;return pageBan('hediye',k);}
 /* Geri bağlantısı: site içinden gelindiyse geldiği sayfaya döner (ör. Hediye & Dekor'dan kupaya bakınca yine Hediye & Dekor'a) */
 var NAVPREV='';window.addEventListener('hashchange',function(e){try{var o=new URL(e.oldURL),n=new URL(e.newURL);if(o.pathname===n.pathname)NAVPREV=o.hash||'#ana';}catch(_){}});
 function backLink(def,lbl){return '<a class="link back" href="'+def+'" data-goback>'+(NAVPREV&&NAVPREV!==def?'← Geri':esc(lbl))+'</a>';}
@@ -2620,11 +2622,14 @@ function kolPicks(){var seen={},sc={},out=[];var L=PRODUCTS.filter(function(p){v
 function wBan(k,pics,def){k=k||{};if(k.show===false)return '';
   var ph=pics.slice(0,2).map(function(u,i){return '<img class="kbp kbp'+i+'" src="'+u+'" alt="" loading="'+(i?'lazy':'eager')+'">';}).join('');
   var e=k.eyebrow||def.e,t=k.title||def.t,x=k.text||def.x,l=k.line!=null&&k.line!==''?k.line:def.l;
-  var inner='<div class="kbt"><span class="kbtop"><img class="kbw" src="img/wolflano-logo.png" alt="" aria-hidden="true">'+(e?'<span class="kbe">'+esc(e)+'</span>':'')+'</span><b class="kbh">'+esc(t)+'</b>'+(x?'<span class="kbs">'+esc(x)+'</span>':'')+(l?'<span class="kbl">'+esc(l)+'</span>':'')+'</div><div class="kbph">'+ph+'</div>';
+  /* Sayfa başlığı banner'ın içinde (Hediye & Dekor): ayrı üst başlık yok, mobilde yer kaplamaz */
+  if(def.h1){e=k.eyebrow&&!/hediye|dekor/i.test(k.eyebrow)?k.eyebrow:def.e;x=k.title||def.x;}
+  var hh=def.h1?'<h1 class="kbh kbh1">'+esc(def.h1).replace('&amp;','<em>&amp;</em>')+'</h1>'+(x?'<span class="kbq">'+esc(x)+'</span>':''):'<b class="kbh">'+esc(t)+'</b>'+(x?'<span class="kbs">'+esc(x)+'</span>':'');
+  var inner='<div class="kbt"><span class="kbtop"><img class="kbw" src="img/wolflano-logo.png" alt="" aria-hidden="true">'+(e?'<span class="kbe">'+esc(e)+'</span>':'')+'</span>'+hh+(l?'<span class="kbl">'+esc(l)+'</span>':'')+'</div><div class="kbph">'+ph+'</div>';
   return k.link?'<a class="kbx" href="'+esc(k.link)+'">'+inner+'</a>':'<div class="kbx">'+inner+'</div>';}
 var WBAN_DEF={
   hazir:{e:'Yeni sezon',t:'Logoya değil, kumaşa.',x:'240 gr tişört · 280 gr polo · 380 gr sweatshirt',l:'İtalyan estetiği · Wolflano karakteri'},
-  hediye:{e:'Hediye & Dekor',t:'Anıların, kupada ve duvarda.',x:'Süblimasyon kupa · Logo baskılı kupa · Canvas tablo',l:'Kolajını Wolf hazırlasın'},
+  hediye:{e:'Wolflano',h1:'Hediye & Dekor',t:'',x:'Anıların, kupada ve duvarda.',l:'Kolajını Wolf hazırlasın'},
   tasarla:{e:'Kendin tasarla',t:'Fikrin senin, kalitesi bizim.',x:'Tişört · Polo · Sweatshirt · Şapka',l:'Wolf seninle tasarlar'},
   sayfa:{e:'Wolflano',t:'',x:'',l:'İtalyan estetiği · Wolflano karakteri'}};
 function wbPics(page){var out=[];
