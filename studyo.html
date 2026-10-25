@@ -665,7 +665,7 @@ img{-webkit-touch-callout:none;-webkit-user-drag:none}
           <div class="wstep"><i>2</i>Fotoğrafını seç</div>
           <label class="primary wide kjadd" for="kosFile"><svg class="i" viewBox="0 0 24 24"><path d="M12 16V4M7 9l5-5 5 5"/><path d="M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"/></svg>Fotoğraf seç ve çizdir</label>
           <input id="kosFile" type="file" accept="image/*" hidden>
-          <p class="note">Wolf fotoğrafını seçtiğin tarza çevirir, etrafına köşeleri hafif yuvarlak beyaz kontür atar ve küçük boyutta kupayı kulpundan tutunca görünen köşeye (baskı alanının sağ üstü) yerleştirir. Şehir tasarımın ya da kendi tasarımın yerinde kalır. Çizimi parmağınla istediğin yere taşıyıp büyütebilirsin. 30-60 saniye sürer, üyelikle günde 3 hak.</p>
+          <p class="note">Wolf fotoğrafını seçtiğin tarza çevirir, etrafına köşeleri hafif yuvarlak beyaz kontür atar ve küçük boyutta kupayı kulpundan tutunca görünen köşeye (baskı alanının sağ üstü) yerleştirir. Şehir tasarımın ya da kendi tasarımın yerinde kalır. Çizimi parmağınla istediğin yere taşıyıp büyütebilirsin. 30-60 saniye sürer, üyelikle günde 3 ücretsiz hak, sonrası tasarım başı 50 ₺.</p>
         </div>
       </div>
       <div class="wolfp"><b>Wolf tasarlasın</b>
@@ -677,7 +677,7 @@ img{-webkit-touch-callout:none;-webkit-user-drag:none}
       <textarea id="wolfIn" rows="1" enterkeyhint="done" placeholder="Örn. ay ışığında uluyan kurt, Çeşme ya da Öğretmen"></textarea>
       <div class="wcity" id="wolfCity"></div>
       <button class="primary" id="wolfGo" type="button">Tasarla</button>
-      <p class="note" id="wolfNote">30-60 saniye sürer, üyelikle günde 3 hak. Tasarıma yazı istersen tırnak içinde yaz: "WOLFLANO". İstersen <a href="#" id="wolfWa" style="color:var(--accent);font-weight:600">fikrini ekibimize gönder</a>, biz hazırlayalım.</p></div>
+      <p class="note" id="wolfNote">30-60 saniye sürer, üyelikle günde 3 ücretsiz hak, sonrası tasarım başı 50 ₺. Tasarıma yazı istersen tırnak içinde yaz: "WOLFLANO". İstersen <a href="#" id="wolfWa" style="color:var(--accent);font-weight:600">fikrini ekibimize gönder</a>, biz hazırlayalım.</p></div>
     </div>
     <div class="panel" data-p="opt" hidden>
       <div class="mini-title">Ürün rengi <em id="optColorName"></em></div>
@@ -772,7 +772,7 @@ img{-webkit-touch-callout:none;-webkit-user-drag:none}
   <div class="o-body">
     <section><h3>İletişim</h3><div style="display:grid;gap:10px"><label class="f" for="cAd">Ad soyad<input id="cAd" autocomplete="name" required></label><div class="two"><label class="f" for="cMail">E-posta<input id="cMail" type="email" autocomplete="email" required></label><label class="f" for="cTel">Telefon<input id="cTel" type="tel" autocomplete="tel" required></label></div></div></section>
     <section><h3>Teslimat adresi</h3><div style="display:grid;gap:10px"><label class="f" for="cAdr">Adres<textarea id="cAdr" rows="3" autocomplete="street-address" required></textarea></label><div class="two"><label class="f" for="cIl">İl<input id="cIl" autocomplete="address-level1" required></label><label class="f" for="cIlce">İlçe<input id="cIlce" autocomplete="address-level2" required></label></div><label class="f" for="cNot">Sipariş notu (isteğe bağlı)<input id="cNot"></label></div></section>
-    <section><h3>Ödeme yöntemi</h3><div style="display:grid;gap:8px"><label class="rad" for="cY1"><input type="radio" name="cY" id="cY1" value="kart" checked><span>Kredi veya banka kartı<small>Kart bilgisi bu sayfada alınmaz, güvenli ödeme sayfasına yönlendirilirsin.</small></span></label><label class="rad" for="cY2"><input type="radio" name="cY" id="cY2" value="havale"><span>Havale / EFT<small>Sipariş sonrası banka bilgisi paylaşılır.</small></span></label></div></section>
+    <section><h3>Ödeme yöntemi</h3><div style="display:grid;gap:8px"><label class="rad" for="cY2"><input type="radio" name="cY" id="cY2" value="havale" checked><span>Havale / EFT<small>Sipariş sonrası banka bilgisi paylaşılır.</small></span></label><label class="rad" for="cY1" style="opacity:.6"><input type="radio" name="cY" id="cY1" value="kart" disabled><span>Kredi veya banka kartı · Yakında<small>Kartla ödeme sistemimiz yapım aşamasındadır, çok yakında hizmete girecektir.</small></span></label></div></section>
     <section><h3>Okul siparişi</h3>
       <label class="rad" for="scOn"><input type="checkbox" id="scOn"><span>Bu bir okul siparişi<small>Okul siparişlerinde her 100 adete 10 adet, ihtiyaç sahibi öğrenciler için ücretsiz eklenir.</small></span></label>
       <div id="scWrap" hidden style="margin-top:10px;display:grid;gap:10px"><label class="f" for="scAd">Okul adı<input id="scAd" autocomplete="organization"></label><label class="f" for="scBeden">Ücretsiz ürünlerin bedenleri (isteğe bağlı)<input id="scBeden" placeholder="Örn. 5 × M, 5 × L"></label><div class="msg" id="scInfo"></div></div></section>
@@ -2343,7 +2343,7 @@ async function applyFx(st,edge,soft){
 function fxPop(){
   var o=selObj(),pop=$('#colorPop');if(!o||o.type!=='image'||view.pop!=='fx')return;
   var st=o.phs||'none',ed=o.phe||'none',sf=o.phf==null?0.5:o.phf;
-  pop.innerHTML='<div class="fxp"><b>Wolf çizsin <em class="aitag">Yapay zekâ</em></b><div class="fxc ai">'+AI_ST.map(function(s){return '<button type="button" data-ais="'+s[0]+'"'+(st==='ai-'+s[0]?' class="on"':'')+(AI_BUSY||fxBusy?' disabled':'')+'>'+s[1]+'</button>';}).join('')+'</div><small class="ainote">'+(AI_BUSY?'Wolf çiziyor…':'Gerçek çizim gibi sonuç · 30-60 sn · üyelik ile günde 3 hak')+'</small>'+
+  pop.innerHTML='<div class="fxp"><b>Wolf çizsin <em class="aitag">Yapay zekâ</em></b><div class="fxc ai">'+AI_ST.map(function(s){return '<button type="button" data-ais="'+s[0]+'"'+(st==='ai-'+s[0]?' class="on"':'')+(AI_BUSY||fxBusy?' disabled':'')+'>'+s[1]+'</button>';}).join('')+'</div><small class="ainote">'+(AI_BUSY?'Wolf çiziyor…':'Gerçek çizim gibi sonuç · 30-60 sn · günde 3 ücretsiz hak, sonrası 50 ₺')+'</small>'+
     '<b>Hızlı filtre</b><div class="fxc">'+PHS.map(function(s){return '<button type="button" data-phs="'+s[0]+'"'+(s[0]===st?' class="on"':'')+(fxBusy?' disabled':'')+'>'+s[1]+'</button>';}).join('')+'</div>'+
     '<b>Kenar</b><div class="fxc">'+PHE.map(function(s){return '<button type="button" data-phe="'+s[0]+'"'+(s[0]===ed?' class="on"':'')+(fxBusy?' disabled':'')+'>'+s[1]+'</button>';}).join('')+'</div>'+
     (ed!=='none'?'<label class="fxr"><span>Kenar yumuşaklığı</span><input type="range" min="0" max="100" value="'+Math.round(sf*100)+'" data-phf="1"'+(fxBusy?' disabled':'')+'></label>':'')+'</div>';
@@ -2355,6 +2355,12 @@ var AI_BUSY=false;
 async function aiTok(){try{var s=JSON.parse(localStorage.getItem('wf_sb')||'null');if(!s||!s.access)return null;if(s.exp>Date.now())return s.access;
   var r=await fetch(SB.url+'/auth/v1/token?grant_type=refresh_token',{method:'POST',headers:{apikey:SB.key,'Content-Type':'application/json'},body:JSON.stringify({refresh_token:s.refresh})});
   if(!r.ok)return null;var j=await r.json();var n={access:j.access_token,refresh:j.refresh_token,exp:Date.now()+((+j.expires_in||3600)-60)*1000,user:j.user||s.user,adm:s.adm};localStorage.setItem('wf_sb',JSON.stringify(n));return n.access;}catch(_){return null;}}
+/* Wolf ek tasarım: günlük 3 ücretsiz haktan sonra her tasarım peşin 50 ₺ (üye ya da misafir, kartla).
+   Ödeme altyapısı bağlanınca PAYMENT.wolf(adet) kartı tahsil eder; şimdilik yalnız bilgilendirir. */
+var WOLF_EXTRA={free:3,price:50};
+function aiPaywall(){var t=toastEl();t.classList.add('long','tap');t.style.pointerEvents='auto';
+  t.innerHTML='<b>Bugünkü '+WOLF_EXTRA.free+' ücretsiz Wolf hakkını kullandın.</b><br>'+WOLF_EXTRA.free+'\'ten sonraki her tasarım '+WOLF_EXTRA.price+' ₺\'dir, ücret peşin alınır. Ödeyerek mevcut tasarımına istediğin kadar yeni çizim ekleyebilirsin.<div style="margin-top:10px"><button type="button" disabled style="opacity:.6;border:1px solid #000;background:#30703f;color:#fff;border-radius:999px;padding:8px 14px;font:600 14px var(--ui)">'+WOLF_EXTRA.price+' ₺ öde ve çiz</button></div><small style="display:block;margin-top:8px">Kartla ödeme sistemimiz yapım aşamasındadır, çok yakında hizmete girecektir.</small>';
+  t.hidden=false;clearTimeout(toastT);toastT=setTimeout(function(){t.hidden=true;},14000);}
 function aiLogin(){var t=toastEl();t.classList.add('long','tap');t.style.pointerEvents='auto';t.innerHTML='Wolf\'un çizmesi için üye girişi gerekiyor. <a href="index.html#hesabim" target="_blank" rel="noopener" style="color:inherit;font-weight:700;text-decoration:underline">Giriş yap / üye ol</a>, sonra buraya dönüp yeniden dokun.';t.hidden=false;clearTimeout(toastT);toastT=setTimeout(function(){t.hidden=true;},9000);}
 async function aiPhotoData(assetId){var a=assets[assetId],im=await loadImg(a.url),M=1536,sc=Math.min(1,M/Math.max(im.naturalWidth,im.naturalHeight));
   var c=document.createElement('canvas');c.width=Math.round(im.naturalWidth*sc);c.height=Math.round(im.naturalHeight*sc);var x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,c.width,c.height);x.drawImage(im,0,0,c.width,c.height);return c.toDataURL('image/jpeg',0.88);}
@@ -2364,6 +2370,7 @@ async function aiCall(body){
   try{var r=await fetch(SB.url+'/functions/v1/bz-image',{method:'POST',signal:ac.signal,headers:{'Content-Type':'application/json',apikey:SB.key,Authorization:'Bearer '+tk},body:JSON.stringify(body)});
     var j=await r.json().catch(function(){return {};});clearTimeout(tm);aiDone();
     if(r.status===401){aiLogin();return null;}
+    if(r.status===429||j.error==='limit'){aiPaywall();return null;}
     if(!r.ok||!j.image){longToast(j.message||'Wolf şu an çizemedi. Biraz sonra yeniden dene.');return null;}
     return j.image;}
   catch(e){clearTimeout(tm);aiDone();longToast('Wolf şu an çizemedi. Bağlantını kontrol edip yeniden dene.');return null;}}
@@ -3622,7 +3629,7 @@ $('#coForm').addEventListener('submit',async function(e){
   if(rec&&rec.code)txt='Sipariş no: '+rec.code+'\n'+txt;
   PAYMENT.pay({code:rec&&rec.code,total:T.net+sh,subtotal:T.sub,special:special,school:school,shipping:{fee:sh,carrier:CARGO.provider,quote:shipQuote,il:$('#cIl').value,ilce:$('#cIlce').value},method:yo,text:txt}).then(function(r){
     if(r&&r.ok&&r.url){location.href=r.url;return;}
-    m.innerHTML='Ödeme altyapısı henüz bağlı değil, bu yüzden ödeme alınamadı. Siparişin hazır, kopyalayıp Wolflano ile paylaşabilirsin.<div style="margin-top:10px"><button type="button" class="ghost" id="coCopy">Siparişi kopyala</button></div>';
+    m.innerHTML='Kartla ödeme sistemimiz yapım aşamasındadır, çok yakında hizmete girecektir. Siparişin hazır, kopyalayıp Wolflano ile paylaşabilirsin.<div style="margin-top:10px"><button type="button" class="ghost" id="coCopy">Siparişi kopyala</button></div>';
     m.dataset.text=txt;
     $('#coCopy').addEventListener('click',async function(){try{await navigator.clipboard.writeText(txt);toast('Sipariş kopyalandı');}catch(_){var ta=document.createElement('textarea');ta.value=txt;document.body.appendChild(ta);ta.select();try{document.execCommand('copy');toast('Sipariş kopyalandı');}catch(__){toast('Kopyalanamadı');}ta.remove();}});
   });

@@ -1948,6 +1948,7 @@ async function bzGen(i){
   try{r=await fetch(SB.url+'/functions/v1/bz-image',{method:'POST',signal:ac.signal,headers:{'Content-Type':'application/json',apikey:SB.key,Authorization:'Bearer '+tk},body:JSON.stringify({prompt:BZ.idea,style:BZ.style,orient:c.or,image:BZ.img||''})});j=await r.json().catch(function(){return {};});}
   catch(_){throw {message:'Bağlantı kurulamadı. Tekrar dene.'};}finally{clearTimeout(to);}
   if(j.error==='not_configured'&&(EDIT||admOk()))return {img:src(c.or==='portrait'?'builtin:p1':'builtin:hero'),or:c.or,demo:true};
+  if(r.status===429||j.error==='limit')throw {message:'Bugünkü 3 ücretsiz Wolf hakkını kullandın. 3\'ten sonraki her tasarım 50 ₺\'dir, ücret peşin alınır. Kartla ödeme sistemimiz yapım aşamasındadır, çok yakında hizmete girecektir.'};
   if(!r.ok||!j.image)throw {message:j.message||'Tasarım şu an hazırlanamadı.'};
   return {img:j.image,or:c.or};
 }
@@ -2957,7 +2958,7 @@ async function coSubmit(){var miss=coMiss();if(miss){coFocus(miss);return;}{var 
     var inv=invoiceInfo();saveLast(L,net,shp,yo,special,school);L.push((inv.corp?'Fatura: kurumsal - '+inv.title+', VKN '+inv.taxNo+', '+inv.taxOffice:'Fatura: bireysel')+' · Fatura adresi: '+inv.address);var order={designs:scl.map(function(it){return {label:it.label,cut:it.cut,sizes:it.sizes,unit:it.unit,total:scTot(it),lines:it.lines||[],roster:it.roster||null,thumb:it.thumb||''};}),lines:L,invoice:inv,total:net+shp,subtotal:tot,special:special,school:school,shipping:{method:dm,fee:shp,carrier:CARGO.provider,quote:shipQuote,il:$('#oIl').value,ilce:$('#oIlce').value},method:yo};cm.hidden=false;cm.textContent='Hazırlanıyor…';
     PAYMENT.pay(order).then(function(r){
       if(r&&r.ok&&r.url){location.href=r.url;return;}if(r&&r.ok){location.hash='#siparis';return;}
-      cm.innerHTML='Ödeme altyapısı henüz bağlı değil, bu yüzden ödeme alınamadı. Siparişin hazır, kopyalayıp Wolflano ile paylaşabilirsin.<div style="margin-top:10px"><button type="button" class="btn soft sm" id="copyOrder">Siparişi kopyala</button> <a class="btn soft sm" href="#siparis">Ödeme sonrası ekranı (önizleme)</a></div>';
+      cm.innerHTML='Kartla ödeme sistemimiz yapım aşamasındadır, çok yakında hizmete girecektir. Siparişin hazır, kopyalayıp Wolflano ile paylaşabilirsin.<div style="margin-top:10px"><button type="button" class="btn soft sm" id="copyOrder">Siparişi kopyala</button> <a class="btn soft sm" href="#siparis">Ödeme sonrası ekranı (önizleme)</a></div>';
       cm.dataset.text=L.join('\n');
     });
 }
