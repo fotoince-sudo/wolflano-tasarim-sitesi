@@ -4164,8 +4164,7 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
 })();
 
 /* ================= 3D GÖRÜNÜM VE DÖNEN VİDEO =================
-   Dış kütüphane yok: tişörtün siluetinden yumuşak, dolgun bir 3D gövde üretilir (kenarlarda incelir, ortada dolgunlaşır).
-   Ön ve arka yüze stüdyodaki görüntünün aynısı (ürün + tasarım + gölgeler + marka işareti) doku olarak giydirilir.
+   Dış kütüphane yok. Yalnız kupada: gerçek ölçülü 3D kupa, tasarım çevresine sarılır (giyimdeki 3D gövde gerçekçi durmadığı için kaldırıldı).
    Tek parmak: çevir. İki parmak: yakınlaştır. "Video kaydet" bir tam turu kaydeder ve telefonun paylaş menüsünü açar. */
 (function(){
   var V={gl:null,prog:null,meshes:[],rx:0.06,ry:0,dist:1,auto:true,rec:null,raf:0,ptr:{},pinch:null,last:0,idleAt:0};
@@ -4175,7 +4174,7 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
   function m4rotX(t){var c=Math.cos(t),s=Math.sin(t);return [1,0,0,0,0,c,s,0,0,-s,c,0,0,0,0,1];}
   function m4tr(x,y,z){return [1,0,0,0,0,1,0,0,0,0,1,0,x,y,z,1];}
   var VS='attribute vec3 p;attribute vec3 n;attribute vec2 uv;uniform mat4 mvp;uniform mat4 mdl;varying vec2 vUv;varying vec3 vN;void main(){vUv=uv;vN=mat3(mdl)*n;gl_Position=mvp*vec4(p,1.0);}';
-  var FS='precision mediump float;varying vec2 vUv;varying vec3 vN;uniform sampler2D tex;void main(){vec4 c=texture2D(tex,vUv);vec3 N=normalize(vN);vec3 L=normalize(vec3(-0.45,0.55,0.85));float d=max(dot(N,L),0.0);float rim=pow(1.0-max(N.z,0.0),3.0);vec3 col=c.rgb*(0.62+0.48*d)-rim*0.10;gl_FragColor=vec4(col,1.0);}';
+  var FS='precision mediump float;varying vec2 vUv;varying vec3 vN;uniform sampler2D tex;void main(){vec4 c=texture2D(tex,vUv);vec3 N=normalize(vN);vec3 L=normalize(vec3(-0.45,0.55,0.85));float d=max(dot(N,L),0.0);float rim=pow(1.0-max(N.z,0.0),3.0);vec3 R=reflect(-L,N);float sp=pow(max(R.z,0.0),48.0)*0.55+pow(max(R.z,0.0),6.0)*0.06;vec3 col=c.rgb*(0.66+0.42*d)-rim*0.08+sp;gl_FragColor=vec4(col,1.0);}';
   function sh(gl,t,src){var s=gl.createShader(t);gl.shaderSource(s,src);gl.compileShader(s);return s;}
   function initGL(cv){
     var gl=cv.getContext('webgl',{antialias:true,preserveDrawingBuffer:true,alpha:false});if(!gl)return null;
@@ -4245,6 +4244,37 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
     }
     return {front:side(1),back:side(-1),h:(y1-y0+1)*S,w:(x1-x0+1)*S};
   }
+  /* ---- Kupa: gerçek ölçülü silindir (çap 8,2 cm, yükseklik 9,5 cm), kulp, iç yüz ve ağız kenarı. Baskı silindirin çevresine sarılır. ---- */
+  var MG={R:4.1,H:9.5,U:100};
+  function solidTex(hex){var c=document.createElement('canvas');c.width=c.height=4;var x=c.getContext('2d');x.fillStyle=hex;x.fillRect(0,0,4,4);return c;}
+  function mesh(P,N,U,I){return {P:new Float32Array(P),N:new Float32Array(N),U:new Float32Array(U),I:new Uint16Array(I),big:false};}
+  function cyl(r,y0,y1,inward){var P=[],N=[],U=[],I=[],S=120,u=MG.U,i;
+    for(i=0;i<=S;i++){var t=i/S*Math.PI*2,sx=Math.sin(t),cz=Math.cos(t),f=inward?-1:1;
+      P.push(r*sx*u,y1*u,r*cz*u, r*sx*u,y0*u,r*cz*u);N.push(sx*f,0,cz*f,sx*f,0,cz*f);U.push(i/S,(MG.H/2-y1)/MG.H,i/S,(MG.H/2-y0)/MG.H);}
+    for(i=0;i<S;i++){var a=i*2,b=a+1,c=a+2,d=a+3;I.push(a,b,c,c,b,d);}return mesh(P,N,U,I);}
+  function ring(r0,r1,y,up){var P=[],N=[],U=[],I=[],S=120,u=MG.U,i;
+    for(i=0;i<=S;i++){var t=i/S*Math.PI*2,sx=Math.sin(t),cz=Math.cos(t);P.push(r0*sx*u,y*u,r0*cz*u,r1*sx*u,y*u,r1*cz*u);N.push(0,up,0,0,up,0);U.push(.5,.5,.5,.5);}
+    for(i=0;i<S;i++){var a=i*2;I.push(a,a+1,a+2,a+2,a+1,a+3);}return mesh(P,N,U,I);}
+  function handle(){var P=[],N=[],U=[],I=[],u=MG.U,cx=MG.R-0.35,cy=0.25,Rm=2.95,rt=0.55,A=46,B=20,i,j,a0=-1.62,a1=1.62;
+    for(i=0;i<=A;i++){var ph=a0+(a1-a0)*i/A,ox=Math.cos(ph),oy=Math.sin(ph);
+      for(j=0;j<=B;j++){var ps=j/B*Math.PI*2,nx=ox*Math.cos(ps),ny=oy*Math.cos(ps),nz=Math.sin(ps)*1.0;
+        P.push((cx+(Rm+rt*Math.cos(ps))*ox)*u,(cy+(Rm+rt*Math.cos(ps))*oy)*u,rt*0.8*Math.sin(ps)*u);N.push(nx,ny,nz);U.push(.5,.5);}}
+    for(i=0;i<A;i++)for(j=0;j<B;j++){var a=i*(B+1)+j,b=a+B+1;I.push(a,b,a+1,a+1,b,b+1);}return mesh(P,N,U,I);}
+  async function mugTex(){
+    var circ=2*Math.PI*MG.R,Tw=2048,pcm=Tw/circ,Th=Math.round(MG.H*pcm),c=document.createElement('canvas');c.width=Tw;c.height=Th;
+    var x=c.getContext('2d');x.fillStyle='#ffffff';x.fillRect(0,0,Tw,Th);var k=pcm/PPC;
+    async function put(sd,uc){if(!state[sd]||!state[sd].objs.length)return;var fc=await printFlat(sd,k),cxp=uc*Tw-fc.width/2,cyp=(Th-fc.height)/2;
+      [-Tw,0,Tw].forEach(function(o){x.drawImage(fc,cxp+o,cyp);});}
+    /* kulp sağda (θ=90°). Klasik: ön baskı tam karşıda, arka baskı tam arkada. Süblimasyon: kulbun tam karşısında ortalanır, boşluk kulpta kalır. */
+    if(mugWrap())await put('front',0.75);else{await put('front',0);await put('back',0.5);}
+    return c;
+  }
+  async function buildMug(){
+    var gl=V.gl,R=MG.R,H=MG.H,w='#ffffff',inn=solidTex('#f3f3f1');
+    V.meshes=[upload(gl,cyl(R,-H/2,H/2,false),await mugTex()),upload(gl,cyl(R-0.28,-H/2+0.7,H/2,true),inn),upload(gl,ring(R-0.28,R,H/2,1),solidTex(w)),
+      upload(gl,ring(0,R-0.28,-H/2+0.7,1),inn),upload(gl,ring(0,R,-H/2,-1),solidTex(w)),upload(gl,handle(),solidTex(w))];
+    V.gw=2*(R+3.3)*MG.U;V.gh=H*MG.U;V.r0=mugWrap()?Math.PI/2:0;
+  }
   async function texCanvas(sd){
     var c0=await renderComposite(sd,1),c=document.createElement('canvas');c.width=c0.width;c.height=c0.height;var cx2=c.getContext('2d');cx2.fillStyle=state.tee;cx2.fillRect(0,0,c.width,c.height);cx2.drawImage(c0,0,0);
     if(sd==='front'){try{var bm=$('#brandMark'),p=brandOn()?brandPos('front'):null;if(p&&bm&&bm.complete&&bm.naturalWidth){var w=BRAND_CM*PPC,h=w*bm.naturalHeight/bm.naturalWidth;c.getContext('2d').drawImage(bm,p.x-w/2,p.y-h/2,w,h);}}catch(_){}}
@@ -4276,7 +4306,7 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
   }
   function loop(t){
     var dt=Math.min(0.05,(t-(V.last||t))/1000);V.last=t;
-    if(V.rec){var k=Math.min(1,(t-V.rec.t0)/V.rec.ms);V.ry=V.rec.ry0+k*Math.PI*2;V.rx=0.06;var lb=$('#v3dRecL');if(lb)lb.textContent='Kaydediliyor… '+Math.ceil((1-k)*V.rec.ms/1000)+' sn';if(k>=1&&!V.rec.done){V.rec.done=true;draw();setTimeout(function(){try{V.rec.mr.stop();}catch(_){}} ,120);}}
+    if(V.rec){var k=Math.min(1,(t-V.rec.t0)/V.rec.ms);V.ry=V.rec.ry0+k*Math.PI*2;V.rx=0.22;var lb=$('#v3dRecL');if(lb)lb.textContent='Kaydediliyor… '+Math.ceil((1-k)*V.rec.ms/1000)+' sn';if(k>=1&&!V.rec.done){V.rec.done=true;draw();setTimeout(function(){try{V.rec.mr.stop();}catch(_){}} ,120);}}
     else if(V.auto&&t>V.idleAt)V.ry+=dt*0.7;
     draw();V.raf=requestAnimationFrame(loop);
   }
@@ -4297,12 +4327,12 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
     cv.addEventListener('pointerup',up);cv.addEventListener('pointercancel',up);
     $('#v3dX').addEventListener('click',close3d);
     $('#v3dSpin').addEventListener('click',function(){V.auto=!V.auto;V.idleAt=0;syncSpin();});
-    $('#v3dFace').addEventListener('click',function(){var showBack=Math.cos(V.ry)>0,base=showBack?Math.PI:0,tgt=base+Math.round((V.ry-base)/(2*Math.PI))*2*Math.PI;V.auto=false;syncSpin();var s=V.ry,t0=performance.now();(function an(t){var k=Math.min(1,(t-t0)/550);V.ry=s+(tgt-s)*(1-Math.pow(1-k,3));if(k<1)requestAnimationFrame(an);else syncSpin();})(t0);});
+    $('#v3dFace').addEventListener('click',function(){var r0=V.r0||0,showBack=Math.cos(V.ry-r0)>0,base=r0+(showBack?Math.PI:0),tgt=base+Math.round((V.ry-base)/(2*Math.PI))*2*Math.PI;V.auto=false;syncSpin();var s=V.ry,t0=performance.now();(function an(t){var k=Math.min(1,(t-t0)/550);V.ry=s+(tgt-s)*(1-Math.pow(1-k,3));if(k<1)requestAnimationFrame(an);else syncSpin();})(t0);});
     $('#v3dRec').addEventListener('click',record);
   }
-  function syncSpin(){var b=$('#v3dSpin');if(b)b.textContent=V.auto?'Durdur':'Döndür';var f=$('#v3dFace');if(f)f.textContent=Math.cos(V.ry)<0?'Önü göster':'Arkayı göster';}
+  function syncSpin(){var b=$('#v3dSpin');if(b)b.textContent=V.auto?'Durdur':'Döndür';var f=$('#v3dFace');if(f)f.textContent=Math.cos(V.ry-(V.r0||0))<0?'Önü göster':'Arkayı göster';}
   async function open3d(){
-    if(P().draw){toast('3D görünüm şimdilik tişört, sweatshirt ve poloda');return;}
+    if(state.product!=='mug'){toast('3D görünüm kupada');return;}
     closeTab();select(null);
     if(!$('#v3d'))ui();
     var w=$('#v3d');w.hidden=false;$('#v3dLoad').hidden=false;
@@ -4310,11 +4340,9 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
     var cv=$('#v3dC');V.dpr=Math.min(2,window.devicePixelRatio||1);
     if(!V.gl&&!initGL(cv)){$('#v3dLoad').textContent='Bu cihaz 3D görünümü desteklemiyor.';return;}
     try{
-      var g=await buildGeometry();if(!g)throw 0;
-      var tf=await texCanvas('front'),tb=await texCanvas('back');
-      V.meshes=[upload(V.gl,g.front,tf),upload(V.gl,g.back,tb)];V.gw=g.w;V.gh=g.h;
+      await buildMug();
     }catch(_){$('#v3dLoad').textContent='3D görünüm hazırlanamadı.';return;}
-    V.ry=0;V.rx=0.06;V.dist=1;V.auto=true;V.idleAt=performance.now()+900;V.last=0;syncSpin();
+    V.ry=V.r0||0;V.rx=0.22;V.dist=1;V.auto=true;V.idleAt=performance.now()+900;V.last=0;syncSpin();
     $('#v3dLoad').hidden=true;cancelAnimationFrame(V.raf);V.raf=requestAnimationFrame(loop);
   }
   function close3d(){var w=$('#v3d');if(w&&!w.hidden){if(V.rec){try{V.rec.mr.stop();}catch(_){}V.rec=null;}w.hidden=true;cancelAnimationFrame(V.raf);
@@ -4335,16 +4363,16 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
       var u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(function(){URL.revokeObjectURL(u);},8000);toast('Video indirildi');
     };
     V.ptr={};V.pinch=null;V.dist=1;
-    V.rec={mr:mr,t0:performance.now()+150,ms:6000,ry0:Math.round(V.ry/(Math.PI*2))*Math.PI*2,done:false};V.ry=V.rec.ry0;
+    V.rec={mr:mr,t0:performance.now()+150,ms:6000,ry0:(V.r0||0)+Math.round((V.ry-(V.r0||0))/(Math.PI*2))*Math.PI*2,done:false};V.ry=V.rec.ry0;
     $('#v3dRecW').hidden=false;$('#v3dRec').disabled=true;
     mr.start(250);
   }
   var b=document.createElement('button');b.id='v3dBtn';b.type='button';b.className='v3db';b.setAttribute('aria-label','3D görünüm');
   b.innerHTML='<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 4.5v9L12 21l-8-4.5v-9z"/><path d="M12 12l8-4.5M12 12v9M12 12L4 7.5"/></svg>3D';
   document.body.appendChild(b);b.addEventListener('click',open3d);
-  var bp=$('#thumbs');if(bp)bp.insertAdjacentHTML('afterend','<button type="button" class="ghost v3o" id="v3dOrder">3D döndür ve video al</button>');
+  var bp=$('#thumbs');if(bp)bp.insertAdjacentHTML('afterend','<button type="button" class="ghost v3o" id="v3dOrder">Kupayı 3D döndür, video al</button>');
   var vo=$('#v3dOrder');if(vo)vo.addEventListener('click',function(){$('#order').hidden=true;open3d().then(function(){});});
-  var syncBtn=function(){var sh=$('#sheet'),cx=$('#ctx'),busy=(sh&&!sh.hidden)||(cx&&!cx.hidden)||!$('#order').hidden||!$('#prodPage').hidden;b.hidden=!!P().draw||busy;if(vo)vo.hidden=!!P().draw;};
+  var syncBtn=function(){var sh=$('#sheet'),cx=$('#ctx'),busy=(sh&&!sh.hidden)||(cx&&!cx.hidden)||!$('#order').hidden||!$('#prodPage').hidden;b.hidden=state.product!=='mug'||busy;if(vo)vo.hidden=state.product!=='mug';};
   try{var mo=new MutationObserver(function(){try{syncBtn();}catch(_){}});['#sheet','#ctx','#order','#prodPage'].forEach(function(q){var el=$(q);if(el)mo.observe(el,{attributes:true,attributeFilter:['hidden']});});}catch(_){}
   var _ra=renderAll;renderAll=function(){var r=_ra.apply(this,arguments);try{syncBtn();}catch(_){}return r;};syncBtn();
 })();
