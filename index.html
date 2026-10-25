@@ -530,8 +530,10 @@ footer a{text-decoration:none}footer a:hover{color:var(--green)}
 .aznote{margin:0;padding:12px 14px;border-radius:16px;background:var(--mint,#e8f2ec);font-size:14px;line-height:1.5}
 .crmbox{display:flex;flex-direction:column;gap:6px;border:1.5px solid var(--line);border-radius:12px;padding:12px}
 .crmbadge{align-self:flex-start;color:#fff;border-radius:999px;padding:4px 10px;font-weight:600;font-size:13px}
-.crmf{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 12px}.crmf button{border:1px solid var(--line);background:var(--card);border-radius:999px;padding:8px 14px;font:inherit;font-weight:600;cursor:pointer}.crmf button.on{background:#a96a0f;color:#fff;border-color:#a96a0f}
-.crmtabs{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0}.crmtabs button:not(.btn){border:1px solid var(--line);background:var(--card);border-radius:999px;padding:10px 18px;font:inherit;font-weight:600;cursor:pointer}.crmtabs button.on{background:var(--green);color:#fff;border-color:var(--green)}.crm .crmc{margin:12px 0;gap:8px;max-width:760px}.crmh{display:flex;justify-content:space-between;gap:8px;align-items:center}.crmseg{font-size:12px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;background:var(--mint,#e8f2ec);color:var(--green);border-radius:999px;padding:4px 10px}.crmact{display:flex;gap:8px;flex-wrap:wrap}.crmsel{display:flex;gap:8px;align-items:center;font-weight:600}.crmrow{text-align:left;cursor:pointer;display:grid;font:inherit;width:100%}.crmstat{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:12px 0;max-width:760px}.crmstat div{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:12px}.crmstat small{display:block;color:var(--muted)}.crmstat b{font-family:var(--serif);font-size:20px}.crmnote{display:grid;gap:2px;padding:8px 0;border-top:1px solid var(--line)}.crmnote.dn{opacity:.55}
+.crmf{display:flex;gap:6px;flex-wrap:nowrap;overflow-x:auto;margin:0 0 10px;scrollbar-width:none}.crmf::-webkit-scrollbar{display:none}.crmf button{flex:none;border:1px solid var(--line);background:var(--card);border-radius:999px;padding:6px 12px;font:600 13px var(--ui);cursor:pointer;white-space:nowrap}.crmf button.on{background:#a96a0f;color:#fff;border-color:#a96a0f}
+.crmtabs{display:flex;gap:6px;flex-wrap:nowrap;align-items:center;margin:12px 0;overflow-x:auto;scrollbar-width:none}.crmtabs::-webkit-scrollbar{display:none}.crmtabs button:not(.btn){flex:none;border:1px solid var(--line);background:var(--card);border-radius:999px;padding:7px 13px;font:600 14px var(--ui);cursor:pointer;white-space:nowrap}.crmtabs .btn.sm{flex:none;padding:6px 11px;font-size:13px;min-height:0}.crmtabs .crmsp{flex:1}
+.mc-bg{position:fixed;inset:0;z-index:90;background:rgba(10,14,12,.45);display:flex;align-items:flex-end;justify-content:center}.mc{background:var(--bg,#fff);width:100%;max-width:560px;max-height:92vh;overflow:auto;border-radius:18px 18px 0 0;padding:16px 16px calc(16px + env(safe-area-inset-bottom));display:grid;gap:10px}.mc h3{margin:0;font:700 17px var(--ui);display:flex;justify-content:space-between;align-items:center}.mc input,.mc textarea{width:100%;box-sizing:border-box;font:16px var(--ui);padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:var(--card)}.mc textarea{min-height:170px;resize:vertical}.mc label{display:grid;gap:4px;font:600 13px var(--ui)}.mc .row{display:flex;gap:8px;justify-content:flex-end}
+.dgsel{display:grid;grid-template-columns:1fr 1.4fr;gap:8px}.crmtabs button.on{background:var(--green);color:#fff;border-color:var(--green)}.crm .crmc{margin:12px 0;gap:8px;max-width:760px}.crmh{display:flex;justify-content:space-between;gap:8px;align-items:center}.crmseg{font-size:12px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;background:var(--mint,#e8f2ec);color:var(--green);border-radius:999px;padding:4px 10px}.crmact{display:flex;gap:8px;flex-wrap:wrap}.crmsel{display:flex;gap:8px;align-items:center;font-weight:600}.crmrow{text-align:left;cursor:pointer;display:grid;font:inherit;width:100%}.crmstat{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:12px 0;max-width:760px}.crmstat div{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:12px}.crmstat small{display:block;color:var(--muted)}.crmstat b{font-family:var(--serif);font-size:20px}.crmnote{display:grid;gap:2px;padding:8px 0;border-top:1px solid var(--line)}.crmnote.dn{opacity:.55}
 .ib.lang{display:inline-flex;align-items:center;gap:3px;width:auto;padding:0 4px;margin-right:4px}.ib.lang .lg{font:700 11px/1 inherit;letter-spacing:.02em}
 
 /* MARKA KURALI: çerçeveli (dolgusuz) düğmelerin çizgisi yeşil; içi yeşil dolgulu düğmelerin çizgisi siyah. */
@@ -1184,7 +1186,58 @@ function crmView(){
 function crmRender(){if(cur==='yonetim'){if(A&&(A.tab==='crm'||A.tab==='depo'||A.tab==='kanal')&&admOk()){var y=window.scrollY;adRender();window.scrollTo(0,y);}return;}var m=document.getElementById('main');if(m&&cur==='crm'){var y=window.scrollY;m.innerHTML=crmView();window.scrollTo(0,y);}}
 function crmBy(e){return (C.orders||[]).filter(function(o){return String(o.mail||'').toLowerCase()===e;});}
 function crmDate(d){try{return new Date(d).toLocaleDateString('tr-TR',{day:'2-digit',month:'short',year:'numeric'});}catch(_){return '';}}
-function crmContact(o){var t=String(o.tel||'').replace(/\D/g,'');if(t.charAt(0)==='0')t='9'+t;var wa=t?'https://wa.me/'+t:'';return '<div class="crmact">'+(o.tel?'<a class="btn soft sm" href="tel:'+esc(o.tel)+'">Ara</a>':'')+(wa?'<a class="btn soft sm" target="_blank" rel="noopener" href="'+wa+'">WhatsApp</a>':'')+(o.mail||o.email?'<a class="btn soft sm" href="mailto:'+esc(o.mail||o.email)+'">E-posta</a>':'')+'</div>';}
+function crmContact(o){var t=String(o.tel||'').replace(/\D/g,'');if(t.charAt(0)==='0')t='9'+t;var wa=t?'https://wa.me/'+t:'';return '<div class="crmact">'+(o.tel?'<a class="btn soft sm" href="tel:'+esc(o.tel)+'">Ara</a>':'')+(wa?'<a class="btn soft sm" target="_blank" rel="noopener" href="'+wa+'">WhatsApp</a>':'')+(o.mail||o.email?'<button type="button" class="btn soft sm" data-crm="mail" data-v="'+esc(o.mail||o.email)+'" data-n="'+esc(o.ad||'')+'">E-posta</button>':'')+'</div>';}
+/* ---- Doğum günü seçici (yalnız gün ve ay, 'AA-GG') ---- */
+var AYLAR=['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'];
+function dgSel(id,v,attr){var m=String(v||'').split('-'),ay=+m[0]||0,gn=+m[1]||0,o='<option value="">Gün</option>',a='<option value="">Ay</option>';
+  for(var i=1;i<=31;i++)o+='<option value="'+i+'"'+(i===gn?' selected':'')+'>'+i+'</option>';
+  AYLAR.forEach(function(x,k){a+='<option value="'+(k+1)+'"'+(k+1===ay?' selected':'')+'>'+x+'</option>';});
+  return '<div class="dgsel" id="'+id+'"><select data-dg="g" '+(attr||'')+'>'+o+'</select><select data-dg="a" '+(attr||'')+'>'+a+'</select></div>';}
+function dgVal(id){var w=document.getElementById(id);if(!w)return undefined;var g=+w.querySelector('[data-dg="g"]').value,a=+w.querySelector('[data-dg="a"]').value;
+  if(!g&&!a)return null;if(!g||!a)return undefined;var mx=[31,29,31,30,31,30,31,31,30,31,30,31][a-1];if(g>mx)g=mx;return (a<10?'0':'')+a+'-'+(g<10?'0':'')+g;}
+
+/* ---- Panelden serbest e-posta: herkese yazılabilir, Wolflano şablonuyla info@ adına gider. Müşteriyse kaydına not düşülür. ---- */
+function mailCompose(to,name){
+  var old=document.getElementById('mcBg');if(old)old.remove();
+  var w=document.createElement('div');w.className='mc-bg';w.id='mcBg';
+  var hi=name?'Merhaba '+String(name).split(' ')[0]+',\n\n':'Merhaba,\n\n';
+  w.innerHTML='<form class="mc" id="mcF"><h3>Yeni e-posta<button type="button" class="btn soft sm" data-mcx aria-label="Kapat">✕</button></h3>'+
+    '<small class="note" style="margin:0">Gönderen: Wolflano &lt;info@wolflano.com.tr&gt; · yanıtlar info@ adresine gelir</small>'+
+    '<label>Kime (birden fazlaysa virgülle)<input id="mcTo" type="text" inputmode="email" autocomplete="off" value="'+esc(to||'')+'" placeholder="ornek@mail.com"></label>'+
+    '<label>Konu<input id="mcSub" maxlength="150"></label>'+
+    '<label>Mesaj<textarea id="mcTxt">'+esc(hi)+'\n\nSaygılarımızla,\nWolflano</textarea></label>'+
+    '<label style="display:flex;gap:8px;align-items:center;font-weight:500"><input type="checkbox" id="mcBr" checked style="width:auto">Wolflano şablonuyla gönder (logo ve iletişim bilgileri)</label>'+
+    '<div class="row"><button type="button" class="btn soft sm" data-mcx>Vazgeç</button><button type="submit" class="btn sm" id="mcGo">Gönder</button></div><span class="note" id="mcMsg" style="margin:0"></span></form>';
+  document.body.appendChild(w);
+  setTimeout(function(){var f=document.getElementById(to?'mcSub':'mcTo');if(f)f.focus();},60);
+}
+document.addEventListener('click',function(e){var x=e.target.closest&&e.target.closest('[data-mcx]');if(x){var w=document.getElementById('mcBg');if(w)w.remove();}else if(e.target&&e.target.id==='mcBg')e.target.remove();});
+document.addEventListener('submit',async function(e){
+  if(!e.target||e.target.id!=='mcF')return;e.preventDefault();
+  var g=function(i){return (document.getElementById(i).value||'').trim();},m=document.getElementById('mcMsg'),btn=document.getElementById('mcGo');
+  var to=g('mcTo'),sub=g('mcSub'),txt=g('mcTxt');
+  if(!to){m.textContent='Alıcı yaz.';return;}if(!sub){m.textContent='Konu yaz.';return;}if(!txt){m.textContent='Mesaj boş.';return;}
+  btn.disabled=true;m.textContent='Gönderiliyor…';
+  try{await MAILER.send(document.getElementById('mcBr').checked?{to:to,subject:sub,text:txt,brand:{title:sub}}:{to:to,subject:sub,text:txt});
+    m.textContent='Gönderildi.';toast('E-posta gönderildi');
+    /* müşteriyse kaydına iz bırak */
+    try{var tk=await sbToken(),ems=to.toLowerCase().split(/[,;\s]+/).filter(Boolean);
+      for(var i=0;i<ems.length;i++){if(!(C.cust||[]).some(function(c){return c.email===ems[i];}))continue;
+        var r=await sbReq('/rest/v1/crm_notes?select=*',{method:'POST',token:tk,prefer:'return=representation',body:{customer_email:ems[i],kind:'eposta',body:('Gönderildi: '+sub+' · '+txt.replace(/\s+/g,' ')).slice(0,480)}});
+        if(r.ok&&Array.isArray(r.j)&&r.j[0]&&C.notes)C.notes.unshift(r.j[0]);}}catch(_){}
+    setTimeout(function(){var w=document.getElementById('mcBg');if(w)w.remove();if(C.tab==='mus'&&typeof crmRender==='function')crmRender();},700);
+  }catch(er){m.textContent=er&&er.code==='not_connected'?'E-posta ayarları bulunamadı.':(er&&er.message)||'Gönderilemedi, tekrar dene.';btn.disabled=false;}
+});
+
+/* ---- Kargoya verildi maili: sipariş "Kargoda" olup takip no girilince müşteriye bir kez gider ---- */
+async function shipMail(o,f){
+  if(!o||!o.mail)return false;
+  var first=String(o.ad||'').split(' ')[0];
+  var txt='Merhaba'+(first?' '+first:'')+',\n\n'+o.code+' numaralı siparişin özenle paketlendi ve kargoya verildi.\n\n'+
+    (f.carrier?'Kargo firması: '+f.carrier+'\n':'')+'Takip numarası: '+f.track+'\n\n'+
+    'Kargo firmasının sitesinden ya da uygulamasından bu numarayla gönderini takip edebilirsin. Bir sorun olursa bu e-postayı yanıtlaman ya da WhatsApp\'tan yazman yeterli.\n\nWolflano\'yu seçtiğin için teşekkürler.';
+  try{await MAILER.send({to:o.mail,subject:'Siparişin kargoda · '+o.code,text:txt,brand:{title:'Siparişin kargoya verildi',btn:{href:'https://wolflano.com.tr/',label:"Wolflano'ya dön"}}});return true;}catch(_){return false;}
+}
 function crmOrderCard(o){
   var its=(o.items||[]).map(function(x){return '<div class="sumr"><span>'+esc(x.n)+' × '+x.q+'</span><span>'+tl(x.t)+'</span></div>'+(x.r&&x.r.length?'<p class="note" style="margin:0 0 6px">İsim/numara: '+esc(x.r.map(function(r){return r.s+' '+([r.n,r.k].filter(Boolean).join(' ')||'(boş)');}).join(', '))+'</p>':'');}).join('');
   var st=ORST.map(function(v){return '<option'+(o.status===v?' selected':'')+'>'+v+'</option>';}).join('');
@@ -1205,7 +1258,7 @@ function crmSpecial(o){
 }
 function crmHTML(){
   var tabs=[['sip','Siparişler'],['mus','Müşteriler'],['tas','Tasarımlar']].map(function(x){return '<button type="button" data-crm="tab" data-v="'+x[0]+'"'+(C.tab===x[0]?' class="on"':'')+'>'+x[1]+'</button>';}).join('');
-  var h='<div class="wrap page crm"><p class="eyebrow">Wolflano</p><h1 class="h2">Yönetim</h1><div class="crmtabs">'+tabs+'<button type="button" class="btn soft sm" data-crm="reload">Yenile</button></div>';
+  var h='<div class="wrap page crm"><p class="eyebrow">Wolflano</p><h1 class="h2">Yönetim</h1><div class="crmtabs">'+tabs+'<span class="crmsp"></span><button type="button" class="btn sm" data-crm="mail">✉ Yeni e-posta</button><button type="button" class="btn soft sm" data-crm="reload" aria-label="Yenile">↻</button></div>';
   if(C.err)h+='<p class="msg">'+esc(C.err)+'</p>';
   if(C.tab==='sip'){
     var wait=C.orders.filter(function(o){return o.doc_status==='bekliyor';}).length,sc=C.orders.filter(function(o){return o.school;}).length;
@@ -1229,7 +1282,7 @@ function crmDetail(em){
   var c=C.cust.filter(function(x){return x.email===em;})[0];if(!c){C.sel=null;return '';}
   var nn=(C.notes||[]).filter(function(x){return x.customer_email===em;});
   var sg=SEGS.map(function(v){return '<option'+(c.segment===v?' selected':'')+'>'+v+'</option>';}).join('');
-  return '<button type="button" class="btn soft sm" data-crm="back">← Müşteriler</button><div class="panel crmc"><div class="crmh"><b>'+esc(c.ad||c.email)+'</b><span class="crmseg">'+esc(c.segment)+'</span></div><span class="note" style="margin:0">'+esc(c.email)+'<br>'+esc(c.tel||'')+' · '+esc(c.il||'')+'<br>'+c.order_count+' sipariş · '+tl(c.total_spent)+'</span>'+crmContact({tel:c.tel,mail:c.email})+'<label class="crmsel">Segment<select data-crm="seg" data-v="'+esc(em)+'">'+sg+'</select></label></div>'+
+  return '<button type="button" class="btn soft sm" data-crm="back">← Müşteriler</button><div class="panel crmc"><div class="crmh"><b>'+esc(c.ad||c.email)+'</b><span class="crmseg">'+esc(c.segment)+'</span></div><span class="note" style="margin:0">'+esc(c.email)+'<br>'+esc(c.tel||'')+' · '+esc(c.il||'')+'<br>'+c.order_count+' sipariş · '+tl(c.total_spent)+'</span>'+crmContact({tel:c.tel,mail:c.email,ad:c.ad})+'<label class="crmsel">Segment<select data-crm="seg" data-v="'+esc(em)+'">'+sg+'</select></label><label class="crmsel">Doğum günü (otomatik kutlama maili)'+dgSel('cdg-'+em,c.dogum,'data-crm="dg" data-v="'+esc(em)+'"')+'</label></div>'+
    '<div class="panel crmc"><b>Not ve takip ekle</b><select id="cnK"><option value="not">Not</option><option value="arama">Arama</option><option value="whatsapp">WhatsApp</option><option value="eposta">E-posta</option></select><textarea id="cnB" rows="2" maxlength="500" placeholder="Ne konuşuldu, ne yapılacak?"></textarea><label>Takip tarihi (isteğe bağlı)<input id="cnD" type="date"></label><button type="button" class="btn" data-crm="note" data-v="'+esc(em)+'">Kaydet</button></div>'+
    (nn.length?'<div class="panel crmc"><b>Notlar</b>'+nn.map(function(x){return '<div class="crmnote'+(x.done?' dn':'')+'"><span class="note" style="margin:0">'+crmDate(x.created_at)+' · '+esc(x.kind)+(x.due_at?' · takip: '+crmDate(x.due_at):'')+'</span><span>'+esc(x.body)+'</span>'+(x.due_at&&!x.done?'<button type="button" class="btn soft sm" data-crm="done" data-id="'+esc(x.id)+'">Tamam</button>':'')+'</div>';}).join('')+'</div>':'')+
    '<b>Siparişler</b>'+(crmBy(em).map(crmOrderCard).join('')||'<p class="note">Sipariş yok.</p>');
@@ -1238,10 +1291,12 @@ document.addEventListener('input',function(e){if(e.target&&e.target.matches&&e.t
 document.addEventListener('change',async function(e){
   var t=e.target;if(!t||!t.dataset||!t.matches('[data-crm]'))return;var a=t.dataset.crm,tk=await sbToken();if(!tk)return;
   if(a==='ost'){var r=await sbReq('/rest/v1/orders?id=eq.'+encodeURIComponent(t.dataset.id),{method:'PATCH',token:tk,prefer:'return=minimal',body:{status:t.value}});if(r.ok){C.orders.forEach(function(o){if(o.id===t.dataset.id)o.status=t.value;});toast('Durum güncellendi');}else toast('Güncellenemedi');}
+  if(a==='dg'){var dv=dgVal('cdg-'+t.dataset.v);if(dv===undefined)return;var r4=await sbReq('/rest/v1/crm_customers?email=eq.'+encodeURIComponent(t.dataset.v),{method:'PATCH',token:tk,prefer:'return=minimal',body:{dogum:dv,dogum_yil:null}});if(r4.ok){C.cust.forEach(function(c){if(c.email===t.dataset.v)c.dogum=dv;});toast(dv?'Doğum günü kaydedildi':'Doğum günü silindi');}else toast('Kaydedilemedi');}
   if(a==='seg'){var r2=await sbReq('/rest/v1/crm_customers?email=eq.'+encodeURIComponent(t.dataset.v),{method:'PATCH',token:tk,prefer:'return=minimal',body:{segment:t.value}});if(r2.ok){C.cust.forEach(function(c){if(c.email===t.dataset.v)c.segment=t.value;});crmRender();}else toast('Güncellenemedi');}
 });
 document.addEventListener('click',async function(e){
   var b=e.target.closest&&e.target.closest('[data-crm]');if(!b||b.tagName==='SELECT')return;var a=b.dataset.crm,v=b.dataset.v;
+  if(a==='mail'){mailCompose(v||'',b.dataset.n||'');return;}
   if(a==='tab'){C.tab=v;C.sel=null;crmRender();}
   else if(a==='filt'){C.filt=v||'';crmRender();}
   else if(a==='doc'){var w=window.open('','_blank');var tkd=await sbToken();if(!tkd){if(w)w.close();return;}
@@ -1347,11 +1402,15 @@ async function ffSaveOrder(id){
   var o=(C.orders||[]).filter(function(x){return x.id===id;})[0];if(!o)return;
   var old=o.fulfillment||{},st=ffV('ffs-'+id)||'bekliyor',prov=ffV('ffp-'+id)||'self';
   var hist=(old.hist||[]).slice(-30);if(st!==(old.st||'bekliyor'))hist.push({st:st,at:new Date().toISOString()});
-  var nf={prov:prov,provName:ffProvName(prov),st:st,carrier:ffV('ffc-'+id),track:ffV('fft-'+id),note:ffV('ffn-'+id),hist:hist,updated:new Date().toISOString()};
+  var nf={kmail:old.kmail||undefined,prov:prov,provName:ffProvName(prov),st:st,carrier:ffV('ffc-'+id),track:ffV('fft-'+id),note:ffV('ffn-'+id),hist:hist,updated:new Date().toISOString()};
   var body={fulfillment:nf};if(FF_ORDST[st]&&o.status!=='iptal')body.status=FF_ORDST[st];
   var tk=await sbToken();if(!tk){toast('Oturum süresi doldu, yeniden giriş yap.');return;}
   var r=await sbReq('/rest/v1/orders?id=eq.'+encodeURIComponent(id),{method:'PATCH',token:tk,prefer:'return=minimal',body:body});
-  if(r.ok){o.fulfillment=nf;if(body.status)o.status=body.status;FF.open=null;toast('Kaydedildi');ffRender();}
+  if(r.ok){o.fulfillment=nf;if(body.status)o.status=body.status;FF.open=null;toast('Kaydedildi');ffRender();
+    if(st==='kargoda'&&nf.track&&!old.kmail){shipMail(o,nf).then(function(ok){if(!ok){toast('Kaydedildi; kargo maili gönderilemedi');return;}
+      nf.kmail=new Date().toISOString();sbReq('/rest/v1/orders?id=eq.'+encodeURIComponent(id),{method:'PATCH',token:tk,prefer:'return=minimal',body:{fulfillment:nf}});toast('Müşteriye kargo maili gönderildi');});}
+    else if(st==='kargoda'&&!nf.track&&!old.kmail)toast('Takip no girersen müşteriye kargo maili gider');
+    if(old.kmail)nf.kmail=old.kmail;}
   else toast(r.status===400?'Kaydedilemedi: veritabanı güncellemesi gerekli.':'Kaydedilemedi');
 }
 
@@ -2433,6 +2492,8 @@ async function sbToken(){
 async function sbLoadProfile(){
   var t=await sbToken();if(!t||!ACCOUNT.user)return;
   try{var r=await sbReq('/rest/v1/profiles?select=*&id=eq.'+ACCOUNT.user.id,{token:t});if(r.ok&&r.j[0])ACCOUNT.prof=r.j[0];}catch(_){}
+  /* Hoş geldin maili: yeni üyeye bir kez (sunucu tekrar göndermez; burada da cihaz başına bir kez sorulur) */
+  try{var um=(SBS&&SBS.user&&SBS.user.user_metadata)||{},hk='wf_hg_'+ACCOUNT.user.id;if(!um.welcomed&&!localStorage.getItem(hk)){localStorage.setItem(hk,'1');fetch(SB.url+'/functions/v1/hosgeldin',{method:'POST',headers:{'Content-Type':'application/json',apikey:SB.key,Authorization:'Bearer '+t},body:'{}'}).catch(function(){});}}catch(_){}
   try{var pend=JSON.parse(localStorage.getItem('wf_pending')||'null');if(pend){localStorage.removeItem('wf_pending');await ACCOUNT.saveProfile(pend);}}catch(_){}
   try{await wfWaitFlush();}catch(_){}
 }
@@ -2464,13 +2525,15 @@ ACCOUNT.logout=async function(){try{var t=SBS&&SBS.access;if(t)sbReq('/auth/v1/l
 function acctHome(){
   var u=ACCOUNT.user,p=ACCOUNT.prof||{},f=function(id,l,v,ex){return '<label for="'+id+'">'+l+(ex||'<input id="'+id+'" value="'+esc(v||'')+'">')+'</label>';};
   return '<div class="wrap page acct"><div class="acth"><p class="eyebrow" style="margin:0">Hesabım</p><button class="outsm" type="button" id="outBtn">Çıkış yap</button></div><h1 class="h2">Merhaba'+((p.ad||u.name)?', '+esc((p.ad||u.name).split(' ')[0]):'')+'</h1><p class="lead">'+esc(u.email)+'</p>'+
-  '<form class="panel" id="profForm" style="max-width:460px;margin-top:20px">'+f('pAd','Ad soyad',p.ad||u.name)+f('pTel','Cep telefonu',p.tel,'<input id="pTel" type="tel" inputmode="tel" placeholder="05xx xxx xx xx" value="'+esc(p.tel||'')+'">')+f('pAdr','Adres',p.adres)+'<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">'+f('pIl','İl',p.il)+f('pIlce','İlçe',p.ilce)+'</div><button class="btn" type="submit">Kaydet</button><div class="msg" id="profMsg" hidden></div></form>'+
+  '<form class="panel" id="profForm" style="max-width:460px;margin-top:20px">'+f('pAd','Ad soyad',p.ad||u.name)+f('pTel','Cep telefonu',p.tel,'<input id="pTel" type="tel" inputmode="tel" placeholder="05xx xxx xx xx" value="'+esc(p.tel||'')+'">')+f('pAdr','Adres',p.adres)+'<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">'+f('pIl','İl',p.il)+f('pIlce','İlçe',p.ilce)+'</div><label>Doğum günün <small style="font-weight:500;opacity:.7">(isteğe bağlı, o gün sana küçük bir sürprizimiz olsun)</small>'+dgSel('pDg',p.dogum)+'</label><button class="btn" type="submit">Kaydet</button><div class="msg" id="profMsg" hidden></div></form>'+
   '<div class="acts"><a class="btn soft" href="#siparis">Son siparişim</a><a class="btn soft" href="#favoriler">Favorilerim</a><button class="btn soft" type="button" id="accCart">Sepetim</button></div></div>';
 }
 document.addEventListener('submit',async function(e){
   if(!e.target||e.target.id!=='profForm')return;e.preventDefault();var g=function(i){return document.getElementById(i).value.trim();},m=document.getElementById('profMsg');
   var tel=g('pTel');if(tel&&!normPhone(tel)){m.hidden=false;m.textContent='Geçerli bir cep telefonu yaz (05xx xxx xx xx).';return;}
-  m.hidden=false;m.textContent='Kaydediliyor…';var ok=await ACCOUNT.saveProfile({ad:g('pAd'),tel:tel?normPhone(tel):'',adres:g('pAdr'),il:g('pIl'),ilce:g('pIlce')});m.textContent=ok?'Bilgilerin kaydedildi.':'Kaydedilemedi, tekrar dene.';
+  m.hidden=false;m.textContent='Kaydediliyor…';var dg=dgVal('pDg');if(dg===undefined){m.textContent='Doğum günü için hem günü hem ayı seç.';return;}
+  var pr0=ACCOUNT.prof||{},px={ad:g('pAd'),tel:tel?normPhone(tel):'',adres:g('pAdr'),il:g('pIl'),ilce:g('pIlce'),dogum:dg};if(dg!==(pr0.dogum||null))px.dogum_yil=null;
+  var ok=await ACCOUNT.saveProfile(px);m.textContent=ok?'Bilgilerin kaydedildi.':'Kaydedilemedi, tekrar dene.';
 });
 document.addEventListener('click',async function(e){if(e.target.closest&&e.target.closest('#outBtn')){await ACCOUNT.logout();route();}});
 document.addEventListener('click',function(e){if(e.target.closest&&e.target.closest('#accCart')){openCart();}});

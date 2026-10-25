@@ -1,9 +1,8 @@
 // Yönetim panelinden e-posta gönderir (info@wolflano.com.tr adına, TurkHosting SMTP üzerinden).
 // Yalnız yönetici ve yetkililer kullanabilir (is_wf_admin). Şifre kodda değil, Supabase gizli ayarlarındadır.
-// Gerekli gizli ayarlar: SMTP_HOST, SMTP_USER (info@wolflano.com.tr), SMTP_PASS. İsteğe bağlı: SMTP_PORT (varsayılan 465), SMTP_SERVER.
-// Not: Supabase 25 ve 587 numaralı portlardan dışarı bağlantıya izin vermez; 465 (SSL) kullanılır.
-import nodemailer from "npm:nodemailer@6.9.14";
+// brand:{title,btn?} gelirse düz metin Wolflano tarzı e-posta şablonuna yerleştirilir.
 import { createClient } from "npm:@supabase/supabase-js@2";
+import { sendMail, frame, paras, smtpReady } from "../_shared/posta.ts";
 
 const CORS = {
   "Access-Control-Allow-Origin": "*",
@@ -29,31 +28,22 @@ Deno.serve(async (req) => {
   const subject = String(b.subject || "").slice(0, 200).trim();
   if (!subject) return j({ code: "konu", message: "Konu boş olamaz." }, 400);
   const text = String(b.text || "").slice(0, 100000);
-  const html = b.html ? String(b.html).slice(0, 500000) : undefined;
-  if (!text && !html) return j({ code: "icerik", message: "E-posta içeriği boş." }, 400);
-
-  const host = Deno.env.get("SMTP_HOST"), user = Deno.env.get("SMTP_USER"), pass = Deno.env.get("SMTP_PASS");
-  if (!host || !user || !pass) return j({ code: "not_connected", message: "E-posta ayarları (SMTP) henüz girilmemiş." }, 503);
-  const port = +(Deno.env.get("SMTP_PORT") || 465);
-  // TurkHosting sertifikası sunucunun kendi adına; mail.alanadi ile olmazsa sunucu adıyla bağlanılır
-  const hosts = [host, Deno.env.get("SMTP_SERVER") || "static-159-253-45-63.sunucuhub.com"].filter((h, i, a) => h && a.indexOf(h) === i);
-  let last: any = null;
-  for (const h of hosts) {
-    try {
-      const tx = nodemailer.createTransport({ host: h, port, secure: port === 465, auth: { user, pass }, connectionTimeout: 15000 });
-      const info = await tx.sendMail({
-        from: { name: "Wolflano", address: user },
-        replyTo: b.replyTo && mailOk(String(b.replyTo)) ? String(b.replyTo) : user,
-        to, subject, text: text || undefined, html,
-      });
-      return j({ ok: true, id: info.messageId, via: h });
-    } catch (e) {
-      last = e;
-      const m = String((e as any)?.message) + String((e as any)?.code);
-      if (/EAUTH|Invalid login|535/i.test(m)) return j({ code: "sifre", message: "E-posta kullanıcı adı ya da şifresi hatalı." }, 502);
-      if (!/certificate|ESOCKET|ECONN|ETIMEDOUT|ENOTFOUND/i.test(m)) break;
-    }
+  let html = b.html ? String(b.html).slice(0, 500000) : undefined;
+  if (!html && b.brand && text) {
+    const br = b.brand || {};
+    const btn = br.btn && /^https:\/\//.test(String(br.btn.href || "")) ? { href: String(br.btn.href), label: String(br.btn.label || "Aç").slice(0, 40) } : undefined;
+    html = frame({ title: String(br.title || subject).slice(0, 120), body: paras(text), btn, pre: text.slice(0, 90) });
   }
-  console.error("mail-gonder", last);
-  return j({ code: "gonderilemedi", message: "E-posta gönderilemedi: " + String(last?.message || "bilinmeyen hata").slice(0, 200) }, 502);
+  if (!text && !html) return j({ code: "icerik", message: "E-posta içeriği boş." }, 400);
+  if (!smtpReady()) return j({ code: "not_connected", message: "E-posta ayarları (SMTP) henüz girilmemiş." }, 503);
+
+  try {
+    const info = await sendMail({ to, subject, text: text || undefined, html, replyTo: b.replyTo && mailOk(String(b.replyTo)) ? String(b.replyTo) : undefined });
+    return j({ ok: true, id: info.messageId });
+  } catch (e) {
+    const m = String((e as any)?.message) + String((e as any)?.code);
+    if (/EAUTH|Invalid login|535/i.test(m)) return j({ code: "sifre", message: "E-posta kullanıcı adı ya da şifresi hatalı." }, 502);
+    console.error("mail-gonder", e);
+    return j({ code: "gonderilemedi", message: "E-posta gönderilemedi: " + String((e as any)?.message || "bilinmeyen hata").slice(0, 200) }, 502);
+  }
 });
