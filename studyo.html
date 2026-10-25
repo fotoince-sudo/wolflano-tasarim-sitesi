@@ -174,7 +174,7 @@ svg.i{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stro
 #areaBox.onV,#areaBox.onH{opacity:1}
 #areaLabel{position:absolute;left:0;bottom:100%;margin-bottom:calc(4px*var(--inv));white-space:nowrap;font:600 calc(11px*var(--inv))/1 var(--ui);color:var(--area)}
 #selLayer{position:absolute;inset:0;pointer-events:none}
-/* Seçim: ince çerçeve ve tek köşe noktası. Nokta çekilince tasarım hem büyür/küçülür hem döner. */
+/* Seçim: ince çerçeve ve iki köşe tutamağı (sol üst beyaz kare: boy, sağ alt siyah nokta: dönüş). */
 .selbox{position:absolute;left:0;top:0;transform-origin:50% 50%;border:calc(1px*var(--inv)) solid rgba(20,24,22,.55);box-shadow:0 0 0 calc(1px*var(--inv)) rgba(255,255,255,.6);pointer-events:auto;cursor:move;--rot:0deg}
 .selbox.locked{cursor:default;border-style:dashed}
 .selbox.grp{border-style:dashed;border-color:var(--accent,#159b91)}
@@ -184,7 +184,12 @@ svg.i{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stro
 .selbox::before{content:"";position:absolute;inset:calc(-14px*var(--inv))}
 .h{position:absolute;width:44px;height:44px;margin:-22px 0 0 -22px;display:grid;place-items:center;transform:scale(var(--inv));pointer-events:auto;touch-action:none;cursor:nwse-resize}
 .h i{width:16px;height:16px;border-radius:50%;background:#141816;box-shadow:0 0 0 2px #fff,0 1px 6px rgba(0,0,0,.4)}
-.h-turn{left:100%;top:100%}
+/* İki ayrı tutamak, çaprazda: sağ alttaki siyah nokta yalnız döndürür, sol üstteki beyaz kare yalnız büyütür/küçültür.
+   Tutamaklar köşenin biraz dışında durur ki küçük yazıyı sürüklerken yanlışlıkla tutamağa basılmasın. */
+.h-turn{left:100%;top:100%;margin:calc(-22px + 12px) 0 0 calc(-22px + 12px);cursor:grab}
+.h-size{left:0;top:0;margin:calc(-22px - 12px) 0 0 calc(-22px - 12px)}
+.h-size i{border-radius:4px;background:#fff;box-shadow:0 0 0 2px #141816,0 1px 6px rgba(0,0,0,.35);width:14px;height:14px}
+.selbox.locked .h{display:none}
 #sheetBg{position:absolute;background:#fff;box-shadow:0 0 0 calc(.6px*var(--inv)) rgba(0,0,0,.12),0 calc(3px*var(--inv)) calc(10px*var(--inv)) rgba(16,26,20,.14);pointer-events:none}
 .mugw #shirtHost,.mugw #shadeHost,.mugw #brandMark{visibility:hidden}
 .mlive{position:absolute;right:10px;bottom:46px;z-index:6;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:7px 8px 6px;box-shadow:0 8px 22px rgba(16,26,20,.14);pointer-events:none}
@@ -590,7 +595,7 @@ img{-webkit-touch-callout:none;-webkit-user-drag:none}
       <button data-c="bwd" data-t="text clip image"><svg class="i" viewBox="0 0 24 24"><path d="M12 5v14M5 12l7 7 7-7"/></svg>Arkaya</button>
     </div>
     <div class="mlive" id="mugLive" hidden aria-label="Kupada gerçek görünüm"><b>Kupada gerçek görünüm</b><div><figure><canvas id="mlR" width="300" height="300"></canvas><figcaption>Sağ elde</figcaption></figure><figure><canvas id="mlL" width="300" height="300"></canvas><figcaption>Sol elde</figcaption></figure></div></div>
-    <div class="hint" id="hint">Sürükle: taşı · Köşedeki nokta: büyüt ve döndür · İki parmak: yakınlaştır</div>
+    <div class="hint" id="hint">Sürükle: taşı · Beyaz kare: büyüt/küçült · Siyah nokta: döndür · İki parmak: yakınlaştır</div>
     <div class="toast" id="toast" role="status" hidden></div>
   </main>
 
@@ -1850,10 +1855,10 @@ function enterGroup(){
 }
 function buildSel(){
   selLayer.innerHTML='';
-  if(view.grp){var gb=document.createElement('div');gb.className='selbox grp';gb.innerHTML='<div class="h h-turn" data-h="turn" role="button" aria-label="Hepsini birlikte büyüt, küçült ve döndür"><i></i></div>';selLayer.appendChild(gb);updateSel();return;}
+  if(view.grp){var gb=document.createElement('div');gb.className='selbox grp';gb.innerHTML='<div class="h h-size" data-h="size" role="button" aria-label="Hepsini birlikte büyüt ve küçült"><i></i></div><div class="h h-turn" data-h="turn" role="button" aria-label="Hepsini birlikte döndür"><i></i></div>';selLayer.appendChild(gb);updateSel();return;}
   if(!view.sel)return;
   var box=document.createElement('div'),lo=selObj();box.className='selbox'+(lo&&lo.lock?' locked':'');
-  if(!(lo&&lo.lock))box.innerHTML='<div class="h h-turn" data-h="turn" role="button" aria-label="Büyüt, küçült ve döndür"><i></i></div>';
+  if(!(lo&&lo.lock))box.innerHTML='<div class="h h-size" data-h="size" role="button" aria-label="Büyüt ve küçült"><i></i></div><div class="h h-turn" data-h="turn" role="button" aria-label="Döndür"><i></i></div>';
   selLayer.appendChild(box);updateSel();
 }
 function updateSel(){
@@ -2624,7 +2629,7 @@ function applyTemplate(t,silent){
   var bx=tplBox(t);cur().objs=kept.concat(tplObjects(t,A,Math.min(A.w/bx[0],A.h/bx[1]),autoInk()));
   view.sel=null;view.grp=false;renderAll();pushHist();
   if(!silent&&grpObjs().length>1){view.grp=true;buildSel();syncCtx();}
-  if(!silent){if(t.items.some(function(it){return it.fx&&it.fx.rs;}))longToast('Şablon uygulandı. İsim ve numarayı siparişte her kişi için ayrı yazacaksın.');else toast('Şablon uygulandı. Köşedeki noktayla hepsini birlikte büyütebilirsin.');}
+  if(!silent){if(t.items.some(function(it){return it.fx&&it.fx.rs;}))longToast('Şablon uygulandı. İsim ve numarayı siparişte her kişi için ayrı yazacaksın.');else toast('Şablon uygulandı. Sol üstteki beyaz kareyle hepsini birlikte büyütebilirsin.');}
 }
 
 /* ---------- İşaretçi etkileşimi ---------- */
@@ -2690,13 +2695,13 @@ function onDown(e){
   var h=e.target.closest('[data-h]'),oEl=e.target.closest('.obj'),sb=e.target.closest('.selbox'),p=toL(e.clientX,e.clientY),o=selObj();
   if(view.grp){
     var X=grpBox(),snap=grpObjs().map(function(q){return {id:q.id,x:q.x,y:q.y,w:q.w,h:q.h,s:q.size||0,r:q.rot};});
-    if(X&&h){g={kind:'gturn',cx:X.cx,cy:X.cy,a0:ang(X.cx,X.cy,p.x,p.y),d0:Math.max(8,dist(X.cx,X.cy,p.x,p.y)),snap:snap,bw:X.r-X.l,bh:X.b-X.t,moved:false};return;}
+    if(X&&h){g={kind:'gturn',mode:h.dataset.h,cx:X.cx,cy:X.cy,a0:ang(X.cx,X.cy,p.x,p.y),d0:Math.max(8,dist(X.cx,X.cy,p.x,p.y)),snap:snap,bw:X.r-X.l,bh:X.b-X.t,moved:false};return;}
     var under=(document.elementsFromPoint?document.elementsFromPoint(e.clientX,e.clientY):[]).filter(function(el){return el.classList&&el.classList.contains('obj')&&!el.closest('#selLayer');})[0],
         tid=under&&grpObjs().some(function(q){return q.id===+under.dataset.id;})?+under.dataset.id:0;
     if(X&&(sb||tid)){g={kind:'gmove',px:p.x,py:p.y,snap:snap,moved:false,tid:tid};return;}
   }
   if(h&&o&&!o.lock){
-    g={kind:'turn',id:o.id,cx:o.x,cy:o.y,a0:ang(o.x,o.y,p.x,p.y),r0:o.rot,
+    g={kind:'turn',mode:h.dataset.h,id:o.id,cx:o.x,cy:o.y,a0:ang(o.x,o.y,p.x,p.y),r0:o.rot,
        d0:Math.max(8,dist(o.x,o.y,p.x,p.y)),base:{w:o.w,h:o.h,s:o.size||0}};
     return;
   }
@@ -2739,8 +2744,8 @@ function onMove(e){
   if(g.kind==='gmove'||g.kind==='gturn'){
     var A=areaBox(view.side,cur().area),k=1,dr=0,mx=p.x-(g.px||0),my=p.y-(g.py||0);
     if(g.kind==='gmove'){if(!g.moved&&Math.hypot(mx,my)*view.s<4)return;}
-    else{dr=deg(ang(g.cx,g.cy,p.x,p.y)-g.a0);var sn=Math.round(dr/45)*45;if(Math.abs(dr-sn)<4)dr=sn;
-      k=dist(g.cx,g.cy,p.x,p.y)/g.d0;k=clamp(k,MIN_PX/Math.max(1,Math.min(g.bw,g.bh)),Math.max(A.w,A.h)*1.6/Math.max(4,Math.max(g.bw,g.bh)));}
+    else if(g.mode==='turn'){dr=deg(ang(g.cx,g.cy,p.x,p.y)-g.a0);var sn=Math.round(dr/45)*45;if(Math.abs(dr-sn)<4)dr=sn;}
+    else{k=dist(g.cx,g.cy,p.x,p.y)/g.d0;k=clamp(k,MIN_PX/Math.max(1,Math.min(g.bw,g.bh)),Math.max(A.w,A.h)*1.6/Math.max(4,Math.max(g.bw,g.bh)));}
     g.moved=true;var ca=Math.cos(dr*PI/180),sa=Math.sin(dr*PI/180);
     g.snap.forEach(function(q){var ob=objById(q.id);if(!ob)return;
       if(g.kind==='gmove'){ob.x=q.x+mx;ob.y=q.y+my;place(els[ob.id],ob);return;}
@@ -2759,10 +2764,13 @@ function onMove(e){
   }else if(g.kind==='turn'){
     o=objById(g.id);if(!o)return;
     g.moved=true;
-    var r=g.r0+deg(ang(g.cx,g.cy,p.x,p.y)-g.a0),sn=Math.round(r/45)*45;
-    if(Math.abs(r-sn)<4)r=sn;                    /* düz ve 45° açılara hafifçe oturur */
-    o.rot=r;
-    applySize(o,limitScale(g.base.w,g.base.h,dist(g.cx,g.cy,p.x,p.y)/g.d0),g.base);
+    if(g.mode==='turn'){                          /* siyah nokta: yalnız döndürür, boy değişmez */
+      var r=g.r0+deg(ang(g.cx,g.cy,p.x,p.y)-g.a0),sn=Math.round(r/45)*45;
+      if(Math.abs(r-sn)<4)r=sn;                  /* düz ve 45° açılara hafifçe oturur */
+      o.rot=r;place(els[o.id],o);updateSel();
+    }else{                                        /* beyaz kare: yalnız büyütür/küçültür, açı değişmez */
+      applySize(o,limitScale(g.base.w,g.base.h,dist(g.cx,g.cy,p.x,p.y)/g.d0),g.base);
+    }
   }
 }
 /* Ortalama: tasarım baskı alanının yatay/dikey ortasına yaklaşınca oraya oturur, pembe çizgi ortada olduğunu gösterir. */
@@ -3072,7 +3080,7 @@ $('#tplGrid').addEventListener('click',function(e){var b=e.target.closest('[data
 function ctxClick(e){
   var b=e.target.closest('[data-c]');if(!b)return;
   var c=b.dataset.c;
-  if(c==='all'){if(enterGroup())toast('Tüm tasarım seçildi. Köşedeki noktayla hepsini birlikte büyüt, küçült.');return;}
+  if(c==='all'){if(enterGroup())toast('Tüm tasarım seçildi. Sol üstteki beyaz kareyle hepsini birlikte büyüt, küçült.');return;}
   if(c==='gdone'){select(null);return;}
   if(c==='gcolor'){view.gdel=false;showPop('fill');syncCtx();return;}
   if(c==='gdel'){if(!view.gdel){view.gdel=true;syncCtx();return;}var keep=cur().objs.filter(function(q){return q.lock;});cur().objs=keep;select(null);renderAll();pushHist();toast('Tasarım silindi. Geri almak için ↶');return;}
@@ -4473,7 +4481,7 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
      a:'<svg viewBox="0 0 64 64"><path d="M22 10l-12 6 4 12 6-2v28h24V26l6 2 4-12-12-6c-1 4-5 7-10 7s-9-3-10-7z"/></svg>'},
     {t:'Tasarımını kur',p:'Şablon ile hazır bir tasarımla başla ya da Yazı, Şekil ve Görsel ile kendin ekle. İstersen fikrini anlat, Wolf senin için tasarlasın.',
      a:'<svg viewBox="0 0 64 64"><rect x="8" y="8" width="20" height="20" rx="3"/><rect x="36" y="8" width="20" height="20" rx="3"/><rect x="8" y="36" width="20" height="20" rx="3"/><path d="M46 38v16M38 46h16"/></svg>'},
-    {t:'Yerleştir ve boyutlandır',p:'Tek parmakla sürükle, köşedeki noktayla büyüt ve döndür. Tümünü seç ile bütün tasarımı birlikte boyutlandır. İki parmakla yakınlaştır.',
+    {t:'Yerleştir ve boyutlandır',p:'Tek parmakla sürükle, sol üstteki beyaz kareyle büyüt/küçült, sağ alttaki siyah noktayla döndür. Tümünü seç ile bütün tasarımı birlikte boyutlandır. İki parmakla yakınlaştır.',
      a:'<svg viewBox="0 0 64 64"><rect x="12" y="14" width="34" height="30" rx="2" stroke-dasharray="4 3"/><circle cx="46" cy="44" r="4" fill="currentColor"/><path d="M50 48l6 6M56 46v8h-8"/></svg>'},
     {t:'Gör ve sepete ekle',p:'Üstten ön, logo ya da arka yüzü ve A4, A3 baskı alanını seç. Bitti\'ye bas, önizlemeyi kontrol et ve sepete ekle.',
      a:'<svg viewBox="0 0 64 64"><path d="M14 22h36l-3 30H17z"/><path d="M24 22v-4a8 8 0 0 1 16 0v4"/><path d="M25 37l5 5 9-10"/></svg>'}
@@ -4483,7 +4491,7 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
     ['Fotoğrafım baskıya uygun mu?','Görseli seçince "Baskı kalitesi" etiketi görünür: İyi, Orta ya da Düşük. Düşükse görseli küçült ya da daha büyük bir fotoğraf yükle.'],
     ['Fotoğrafın arka planını nasıl silerim?','Görsele dokun, alttaki çubukta "Arka planı sil" düğmesine bas.'],
     ['Hem öne hem arkaya baskı yaptırabilir miyim?','Evet. Üstteki Ön, Logo ve Arka düğmeleriyle önde büyük baskı, sol göğüste logo ve arkada ayrı tasarım yapabilirsin. Logo ön baskıyla çakışırsa logo önde kalır.'],
-    ['Bütün tasarımı birlikte nasıl büyütürüm?','Bir öğeye dokun, "Tümünü seç" düğmesine bas ve köşedeki noktayı çek. Şablon seçtiğinde tasarım zaten bütün halde seçili gelir.'],
+    ['Bütün tasarımı birlikte nasıl büyütürüm?','Bir öğeye dokun, "Tümünü seç" düğmesine bas ve sol üstteki beyaz kareyi çek. Şablon seçtiğinde tasarım zaten bütün halde seçili gelir.'],
     ['Yanlışlıkla bir şeyi sildim.','Üstteki ↶ düğmesiyle geri alabilirsin.']
   ];
   var el=document.getElementById('guide'),i=0,mode='';
