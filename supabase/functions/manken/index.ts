@@ -1,6 +1,7 @@
 // Manken stüdyosu: yalnız yönetici ve yetkililer. Seçilen manken, mekân, poz ve alt kıyafetle
 // "Wolflano Sanal Manken Kadrosu" kurallarına uygun fotoğraf üretir (OpenAI görsel API).
 // Kural metinleri burada sabit durur; panelden yalnız seçim yapılır, kimse mesaj yazmaz.
+// Yükleme: GitHub Actions "Sunucu fonksiyonları" (main'e gönderilince otomatik).
 const SB_URL = Deno.env.get('SUPABASE_URL')!;
 const SRK = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 const cors = {
