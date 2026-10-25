@@ -1918,7 +1918,7 @@ function overflowOf(o,A){
 function liveWarn(o){
   var ov=$('#ovPill');if(!ov||!o)return;
   ov.hidden=!overflowOf(o,areaBox(view.side,cur().area));
-  if(o.type==='image'){var r=qualityOf(o),q=$('#qPill');if(r&&q){q.className='pill '+r.cls;q.textContent='Baskı kalitesi: '+r.txt+' · '+r.ppi+' dpi';}}
+  if(o.type==='image'){var r=qualityOf(o),q=$('#qPill');if(q){q.hidden=!r;if(r){q.className='pill '+r.cls;q.textContent='Baskı kalitesi: '+r.txt+' · '+r.ppi+' dpi';}}}
 }
 function printIssues(){
   var low=[],over=0;
@@ -1951,6 +1951,7 @@ function syncTextInput(){
 }
 function qualityOf(o){
   var a=assets[o.assetId];if(!a||a.bg)return null;
+  if(a.ai||!a.up)return null;  /* Wolf'un ve Wolflano'nun ürettiği görseller: netleştirme bizim işimiz, müşteriye uyarı gösterilmez */
   var ppi=Math.round(a.w/((o.w/PPC)/2.54));
   return {ppi:ppi,cls:ppi>=200?'good':(ppi>=120?'mid':'low'),txt:ppi>=200?'İyi':(ppi>=120?'Orta':'Düşük')};
 }
@@ -1972,7 +1973,7 @@ function syncCtx0(){
   liveWarn(o);
   $('#ctxDot').style.background=o.color||'transparent';
   var q=$('#qPill');
-  if(o.type==='image'){var r=qualityOf(o);if(r){q.className='pill '+r.cls;q.textContent='Baskı kalitesi: '+r.txt+' · '+r.ppi+' dpi';}}
+  if(o.type==='image'){var r=qualityOf(o);q.hidden=!r;if(r){q.className='pill '+r.cls;q.textContent='Baskı kalitesi: '+r.txt+' · '+r.ppi+' dpi';}}
   if(o.type==='image'){var na=assets[o.assetId];$('#nobgBtn').hidden=!!(na&&na.nobg);$('#nobgBtn').disabled=!!bgBusy;}
   if(o.lock)$$('#ctxBar [data-t],#stageBar [data-t]').forEach(function(b){b.hidden=b.id!=='lockBtn';});
   $('#lockBtn span').textContent=o.lock?'Kilidi aç':'Kilitle';
@@ -2300,7 +2301,7 @@ async function removeBg(){
   if(!blob){bgBusy=false;syncCtx();toast('Arka plan silinemedi. Tekrar dene.');return;}
   var url=URL.createObjectURL(blob),im=new Image();
   im.onload=function(){
-    var id='a'+(++assetN);assets[id]={url:url,w:im.naturalWidth,h:im.naturalHeight,nobg:true,up:!!a.up};assetList.push(id);
+    var id='a'+(++assetN);assets[id]={url:url,w:im.naturalWidth,h:im.naturalHeight,nobg:true,up:!!a.up,ai:a.ai};assetList.push(id);
     o.assetId=id;o.base=id;o.crop=null;o.phs='none';o.phe='none';o.wout=0; /* arka plan silinen görsel yeni temel olur (kırpma/kenar içinde) */
     renderObjects();renderUploads();bgBusy=false;syncCtx();pushHist();
     toast(how==='ai'?'Arka plan silindi. Beğenmezsen ↶ ile geri al.':'Düz renkli arka plan silindi. Beğenmezsen ↶ ile geri al.');
@@ -2403,7 +2404,7 @@ async function fxProcess(baseId,st,edge,soft,crop,wout){
   x.putImageData(d,0,0);
   if(wout)c=whiteOutline(c,wout);
   var blob=await new Promise(function(r){c.toBlob(r,'image/png');}),url=URL.createObjectURL(blob);
-  var id='a'+(++assetN);assets[id]={url:url,w:c.width,h:c.height,up:a.up,nobg:a.nobg||edge!=='none'||!!wout,fx:1};fxCache[key]=id;return id;
+  var id='a'+(++assetN);assets[id]={url:url,w:c.width,h:c.height,up:a.up,ai:a.ai,nobg:a.nobg||edge!=='none'||!!wout,fx:1};fxCache[key]=id;return id;
 }
 /* Beyaz kontur: görselin görünen şeklinin (dikdörtgen fotoğraf, arka planı silinmiş kişi, oval kenar…) çevresine beyaz çerçeve.
    Kalınlık 1-3 (ince/orta/kalın), görselin kısa kenarına göre. Köşeler hafif yuvarlak çıkar. */
