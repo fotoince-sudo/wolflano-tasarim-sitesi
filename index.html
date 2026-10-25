@@ -2502,7 +2502,7 @@ function cpBody(t){var h='',ul=false,para=[];function flush(){if(para.length){h+
     para.push(l);});
   flush();if(ul)h+='</ul>';return h;}
 /* Hediye & Dekor sayfası: kupa ve canvas, Baskı Atölyesi'ndeki gibi kart olarak (fotoğraf, isim, fiyat, renk, "Tasarla"); varsa hazır baskılı ürünler de yanında */
-function hdGrid(){var bl=BLANKS.filter(function(b){var t=b.p||b.id;return (t==='mug'||t==='canvas')&&!soldOut(b);});
+function hdGrid(){var bl=BLANKS.filter(function(b){var t=b.p||b.id;return (t==='mug'||t==='canvas')&&bVisible(b);});
   var hc=(D.cats||[]).filter(function(c){return /hediye|dekor/i.test(c.name||'');})[0],rd=hc?PRODUCTS.filter(function(p){return (p.cat||[]).indexOf(hc.id)>=0;}):[];
   if(!bl.length&&!rd.length)return '';return '<div class="grid hdg">'+rd.map(card).join('')+bl.map(tsCard).join('')+'</div>';}
 /* Geri bağlantısı: site içinden gelindiyse geldiği sayfaya döner (ör. Hediye & Dekor'dan kupaya bakınca yine Hediye & Dekor'a) */
