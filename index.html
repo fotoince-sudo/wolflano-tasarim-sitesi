@@ -748,6 +748,7 @@ body.cko #nav,body.cko .menu-btn,body.cko .lang,body.cko #cartBtn,body.cko #ann{
 .card .pnm{display:block;white-space:nowrap;text-overflow:ellipsis;height:1.35em;overflow:hidden;font:600 14.5px/1.3 var(--ui);color:var(--ink);margin:2px 0 3px}
 .ph img.dimg{transform:scale(1.18);transform-origin:50% 26%}
 .card .pnm{min-height:0}.cgd i{width:14px;height:14px;border-radius:50%;border:1px solid rgba(0,0,0,.22);margin:2px 0}.cgd{position:absolute;left:8px;bottom:8px;display:flex;gap:6px;padding:5px 7px;border-radius:999px;background:rgba(255,255,255,.88);box-shadow:0 2px 8px rgba(0,0,0,.12);z-index:2}.cgd button{width:18px;height:18px;border-radius:50%;border:1px solid rgba(0,0,0,.22);padding:0;cursor:pointer;position:relative}.cgd button.on{box-shadow:0 0 0 2px var(--bg,#fff),0 0 0 3.5px var(--green)}.cgd button::after{content:"";position:absolute;inset:-7px}
+.card .cdel{display:block;margin:2px auto 0;border:0;background:none;color:#b3261e;font:600 12.5px var(--ui);text-decoration:underline;text-underline-offset:3px;padding:4px 6px;cursor:pointer}.card .cdel small{font:500 11px var(--ui);color:var(--muted)}
 .card .cedit{border:0!important;padding:4px 6px!important;margin-top:4px!important;font:600 12.5px var(--ui)!important;background:none!important;text-decoration:underline;text-underline-offset:3px;text-decoration-color:rgba(47,107,69,.35)}.card .cedit svg{width:13px;height:13px}
 .pclr{text-transform:none;letter-spacing:0;color:var(--muted)}
 .cdot{display:inline-block;width:10px;height:10px;border-radius:50%;border:1px solid rgba(0,0,0,.25);margin:0 5px 0 2px;vertical-align:-1px}
@@ -2858,8 +2859,23 @@ function card(p){
   return '<article class="card'+(V?' cg':'')+'"'+(V?' data-cg="'+esc(JSON.stringify(V.map(function(v){return {i:v.id,u:IMG(v),p:pr(v),c:v.color||'',d:v.dsg?1:0,s:soldOut(v)?1:0,f:pImgCls(v)?1:0};})))+'"':'')+'><div class="phw"><a class="ph" href="#urun-'+p.id+'" aria-label="'+esc(p.name)+' detay"><img src="'+IMG(p)+'"'+pImgCls(p)+' alt="'+esc(p.name)+'" loading="lazy">'+pTag(p)+'</a>'+favBtn(p.id)+(V?'<div class="cgd" role="radiogroup" aria-label="Renk">'+V.map(function(v,i){var h=cHex(v.color)||'#ccc';return '<button type="button" data-cgi="'+i+'"'+(i?'':' class="on"')+' role="radio" aria-checked="'+(i?'false':'true')+'" aria-label="'+esc(v.color||'Renk')+'" style="background:'+h+'"></button>';}).join('')+'</div>':'')+'</div>'+
   '<div class="meta">'+'<b class="pnm">'+esc(nm)+'</b>'+'<div class="row"><small>'+p.type+'</small><span class="price">'+pr(p)+'</span></div>'+
   stk(p)+'</div>'+
-  (soldOut(p)?'<button type="button" class="btn sm add sold" data-soldout="'+p.id+'">Sepete ekle</button>':'<button class="btn sm add" data-add="'+p.id+'">Sepete ekle</button>')+(p.dsg?'<a class="cedit" href="studyo.html?hazir='+encodeURIComponent(p.id)+'"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13.5 6.5l4 4"/></svg>Düzenle, ismini ekle</a>':'')+'</article>';
+  (soldOut(p)?'<button type="button" class="btn sm add sold" data-soldout="'+p.id+'">Sepete ekle</button>':'<button class="btn sm add" data-add="'+p.id+'">Sepete ekle</button>')+(p.dsg?'<a class="cedit" href="studyo.html?hazir='+encodeURIComponent(p.id)+'"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13.5 6.5l4 4"/></svg>Düzenle, ismini ekle</a>':'')+(sbAdmin()?'<button type="button" class="cdel" data-pdel="'+esc((V?V.map(function(v){return v.id;}):[p.id]).join(','))+'">Sil <small>(yalnız sen görürsün)</small></button>':'')+'</article>';
 }
+
+/* Yönetici: koleksiyondaki ürünü kartından silme (yalnız yönetici görür). Sunucudaki güncel veri okunur, yalnız bu ürün(ler) çıkarılıp kaydedilir. */
+document.addEventListener('click',async function(e){var b=e.target.closest&&e.target.closest('[data-pdel]');if(!b)return;e.preventDefault();e.stopPropagation();
+  if(!sbAdmin())return;var ids=b.dataset.pdel.split(',').filter(Boolean);
+  var nm=((ALLP.filter(function(x){return x.id===ids[0];})[0])||{}).name||'Bu ürün';
+  if(!confirm('"'+nm+'"'+(ids.length>1?' ('+ids.length+' rengiyle birlikte)':'')+' koleksiyondan silinsin mi? Bu geri alınamaz.'))return;
+  b.disabled=true;b.textContent='Siliniyor…';
+  try{var t=await sbToken();if(!t)throw 0;
+    var g=await sbReq('/rest/v1/site_content?select=data&id=eq.main',{token:t});var d=g.ok&&g.j&&g.j[0]&&g.j[0].data;if(!d||!Array.isArray(d.products))throw 0;
+    d.products=d.products.filter(function(x){return ids.indexOf(x.id)<0;});
+    var r=await sbReq('/rest/v1/site_content?on_conflict=id',{method:'POST',token:t,prefer:'resolution=merge-duplicates,return=minimal',body:{id:'main',data:d,updated_at:new Date().toISOString()}});
+    if(!r.ok)throw 0;
+    D.products=D.products.filter(function(x){return ids.indexOf(x.id)<0;});applyData();route();toast('Silindi');}
+  catch(_){b.disabled=false;b.textContent='Sil';toast('Silinemedi. Yönetici girişini kontrol edip tekrar dene.');}
+});
 /* renk noktasına dokununca kart o rengin ürününe geçer */
 document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('[data-cgi]');if(!b)return;e.preventDefault();e.stopPropagation();
   var c=b.closest('.cg');if(!c)return;var L;try{L=JSON.parse(c.dataset.cg);}catch(_){return;}var v=L[+b.dataset.cgi];if(!v)return;
