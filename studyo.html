@@ -2333,7 +2333,9 @@ function mscBox(x){
 var MUG_PH={src:'img/kupa-sahne.jpg',W:1122,H:1402,cx:803,R:164,yT:588,ry:26,yB:949,ryB:34,hs:1},
     MUG_HAND={src:'img/kupa-elde.jpg',W:1122,H:1402,cx:588,R:214,yT:381,ry:26,yB:850,ryB:37,hs:-1},
     MUG_TABLE={src:'img/kupa-masa.jpg',W:1122,H:1402,cx:585,R:251,yT:428,ry:28,yB:980,ryB:39,hs:-1};
-var MUG_PHS={box:MUG_PH,hand:MUG_HAND,table:MUG_TABLE};
+/* Ön görünüm: masadaki fotoğrafın aynadaki hâli (kulp sağda), yeni yapay zekâ ücreti olmadan */
+var MUG_TABLE_R={src:'img/kupa-masa-sag.jpg',W:1122,H:1402,cx:537,R:251,yT:428,ry:28,yB:980,ryB:39,hs:1};
+var MUG_PHS={box:MUG_PH,hand:MUG_HAND,table:MUG_TABLE,tableR:MUG_TABLE_R};
 async function mugPhotoScene(side,S,P){P=P||MUG_PH;var im=await loadImg(P.src),k=S/P.W,cw=S,ch=Math.round(P.H*k);
   var c=document.createElement('canvas');c.width=cw;c.height=ch;var x=c.getContext('2d');x.drawImage(im,0,0,cw,ch);
   var A=areaBox(side,state[side].area),Wcm=A.w/PPC,Pcm=A.h/PPC,wrap=state[side].area==='mugw',Rcm=4,Hcm=9.5,pc=P.R/Rcm,pv=(P.yB-P.yT)/Hcm,kf=pc*k*1.6,fc=null;
@@ -4572,7 +4574,7 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
   function curShots(){var o={front:'',back:''};try{var b=phBlank(state.product,state.cut),cs=phColors(b),co=cs.filter(function(c){return String(c.hex).toLowerCase()===String(state.tee).toLowerCase();})[0]||cs[0];if(co){o.front=co.front?phSrc(co.front):'';o.back=co.back?phSrc(co.back):'';}if(!o.front&&!o.back&&b&&b.imgs&&b.imgs.length)o.front=phSrc(b.imgs[0]);}catch(_){}return o;}
   /* Kupa: ilk görünüm kupa standart Wolflano kutusuyla (sitedeki ürün kartında bu görünür), sonra Ön (kulp sağda) ve Arka (kulp solda).
      Süblimasyonda Ön ve Arka sarılmış baskının iki yarısıdır. */
-  function mugViews(){return state.cut==='sub'?[['front',1,'Kutulu','box'],['front',1,'Ön'],['front',-1,'Arka','table'],['front',-1,'Elde','hand']]:[['front',1,'Kutulu','box'],['front',1,'Ön'],['back',-1,'Arka','table'],['back',-1,'Elde','hand']];}
+  function mugViews(){return state.cut==='sub'?[['front',1,'Kutulu','box'],['front',1,'Ön','tableR'],['front',-1,'Arka','table'],['front',-1,'Elde','hand']]:[['front',1,'Kutulu','box'],['front',1,'Ön','tableR'],['back',-1,'Arka','table'],['back',-1,'Elde','hand']];}
   var MSCV={key:'',urls:[],busy:null};
   function mscKey(){try{return JSON.stringify([state.cut,state.tee,state.front,state.back]);}catch(_){return String(Math.random());}}
   async function mscFill(){if(state.product!=='mug')return;var k=mscKey();
