@@ -560,7 +560,11 @@ footer a{text-decoration:none}footer a:hover{color:var(--green)}
 .kbw{position:absolute;right:10px;top:10px;width:30px;height:30px;object-fit:contain;opacity:.55;z-index:4}
 @media (min-width:900px){.kbt{padding:34px 0 34px 40px;gap:10px}.kbx{grid-template-columns:1fr 1fr}}
 @media (prefers-color-scheme:dark){:root:not([data-theme=light]) .kbx{background:linear-gradient(135deg,#17251d,#0f1813);}:root:not([data-theme=light]) .kbp{mix-blend-mode:normal}}
-:root[data-theme=dark] .kbx{background:linear-gradient(135deg,#17251d,#0f1813)}:root[data-theme=dark] .kbp{mix-blend-mode:normal}.kolp .kb{margin-bottom:10px}.kolp .chips{margin-bottom:12px}@media (max-width:639px){.kolp .kb{width:auto;margin-inline:-10px;border-radius:6px}}
+:root[data-theme=dark] .kbx{background:linear-gradient(135deg,#17251d,#0f1813)}:root[data-theme=dark] .kbp{mix-blend-mode:normal}.kolp .kb{margin-bottom:10px}.kolp .chips{margin-bottom:12px}
+.kolp{padding-top:14px}.kcb{margin-bottom:14px}.kc4.chips{grid-template-columns:repeat(4,minmax(0,1fr));max-width:620px;gap:7px;margin:0}
+.kc4.chips button{padding:9px 4px;font-size:13.5px;min-width:0}.kc4 .kall{gap:4px;color:var(--green)}.kc4 .kall span{overflow:hidden;text-overflow:ellipsis}.kc4 .kall .cv{display:inline-flex;margin:0;transition:transform .15s}.kc4 .kall.open .cv{transform:rotate(180deg)}.kc4 .kall.sel{background:var(--mint)}.kc4 .kall:disabled{opacity:.5}
+.kcb .kdd{position:absolute;left:0;right:0;top:100%;max-width:620px;margin:6px 0 0}.kcb .kdd .ddl{position:static;border-top:1px solid var(--green);border-radius:12px}
+.kbp{-webkit-mask-image:radial-gradient(ellipse 72% 68% at 50% 52%,#000 60%,transparent 100%);mask-image:radial-gradient(ellipse 72% 68% at 50% 52%,#000 60%,transparent 100%)}@media (max-width:639px){.kolp .kb{width:auto;margin-inline:-10px;border-radius:6px}}
 .ann{background:#000;color:var(--red);font:600 11px var(--ui);letter-spacing:.12em;text-transform:uppercase;height:28px;overflow:hidden;position:relative;text-align:center}.ann .r{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:0 12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;opacity:0;transition:opacity .6s}.ann .r.on{opacity:1}.ann .mq{display:flex;align-items:center;height:100%;white-space:nowrap}.ann .mq span{display:inline-block;padding-left:100%;animation:annq 28s linear infinite}.ann .mq i{font-style:normal;margin:0 14px;color:#fff;opacity:.5}@keyframes annq{to{transform:translateX(-100%)}}@media (prefers-reduced-motion:reduce){.ann .mq span{animation:none;padding-left:12px}}.chips button .cv{display:inline-flex;font-size:inherit;margin-left:0}
 /* Üst ikonlar aynı hizada */
 .top .wrap{align-items:center}.top .ib{display:inline-flex!important;align-items:center;justify-content:center;height:44px;padding:0;margin:0;vertical-align:middle;line-height:1}.top .ib .i{display:block;width:22px;height:22px;margin:0}.top #favBtn .i{transform:translateY(1px)}.top #cartBtn .i{transform:translateY(1px)}.top .lang .lg{font:700 17px/1 var(--ui);letter-spacing:.02em;transform:translateY(2px)}.top .lang{width:auto!important;min-width:34px;gap:0;padding:0 4px}.top .lang .lg{font:600 14px/1 var(--ui);display:block}
@@ -2268,7 +2272,9 @@ function seedBlanks(){D.seeded=D.seeded||{};if(!Array.isArray(D.blanks))return;v
 function applyData(){seedBlanks();autoSub(D);if(!D.vat)D.vat={mode:'excl',ready:20,blank:20,print:20};
  pNums(D.products);ALLP=D.products.map(function(p){return Object.assign({},p,{price:vp(p.price,'ready'),old:vp(p.old,'ready')});});
  PRODUCTS=ALLP.filter(function(p){return p.show!==false;});
- CATS=(D.cats||[]).filter(function(c){if(c.show===false)return false;if(/hediye|dekor/i.test(c.name||''))return false;return true;}).map(function(c){return [c.id,c.name||'Adsız'];});if(CATS.length&&!CATS.some(function(c){return c[0]===catSel;})){catSel=CATS[0][0];subSel='';}
+ CATS=(D.cats||[]).filter(function(c){if(c.show===false)return false;if(/hediye|dekor/i.test(c.name||''))return false;return true;}).map(function(c){return [c.id,c.name||'Adsız'];});
+ /* Koleksiyon sırası: Erkek, Kadın, Çocuk (diğerleri sonra) */
+ (function(){var O=function(c){var n=String(c[1]).toLocaleLowerCase('tr');return /^erkek/.test(n)?0:/^kad/.test(n)?1:/^çocuk|^cocuk/.test(n)?2:3;};CATS=CATS.map(function(c,i){return [c,i];}).sort(function(x,y){return O(x[0])-O(y[0])||x[1]-y[1];}).map(function(x){return x[0];});})();if(CATS.length&&!CATS.some(function(c){return c[0]===catSel;})){catSel=CATS[0][0];subSel='';}
  BLANKS=D.blanks.filter(function(b){return b.show!==false;}).map(function(b){return Object.assign({},b,{price:vp(b.price,'blank'),old:vp(b.old,'blank'),a4:vp(b.a4,'print'),logo:vp(b.logo,'print'),hat:vp(b.hat,'print'),wrap:vp(b.wrap!=null?b.wrap:((b.p||b.id)==='mug'?75:null),'print')});});
  A3_KAT=+D.a3||2;TIERS=D.tiers;setTimeout(function(){if(window.seoUpdate)seoUpdate();},0);PRICE_NOTE=(D.note||[]).concat(['Tüm fiyatlara KDV dahildir.']);CONTACT=D.contact;applyLogo();bzMerge();}
 function prBig(x){if(x.old&&x.old>x.price){var pc=Math.round((1-x.price/x.old)*100);return '<s class="old">'+tl(x.old)+'</s><span class="now">'+tl(x.price)+'</span>'+(pc>0?'<em class="pct">%'+pc+' indirim</em>':'');}return '<span class="now">'+tl(x.price)+'</span>';}
@@ -2359,11 +2365,11 @@ function pagesNow(){var l=PAGES.map(function(p){var m={hazir:'menuHazir',atolye:
   var hd=(D.cats||[]).filter(function(c){return c.show!==false&&/hediye|dekor/i.test(c.name||'')&&PRODUCTS.some(function(p){return (p.cat||[]).indexOf(c.id)>=0;});})[0];
   if(hd&&!cp.some(function(x){return /hediye|dekor/i.test(x[1]);})){var ai=-1;l.forEach(function(x,k){if(x[0]==='atolye')ai=k;});l.splice(ai+1,0,['hediye',hd.name||'Hediye & Dekor']);}
   return l;}
-var CATS=[['kadin','Kadın'],['erkek','Erkek'],['cocuk','Çocuk']],subSel='',sub2Sel='',catOpen='',grpOpen='';
+var CATS=[['erkek','Erkek'],['kadin','Kadın'],['cocuk','Çocuk']],subSel='',sub2Sel='',catOpen='',grpOpen='';
 var SIDES={tee:{front:['a4','a3','logo'],back:['a4','a3']},sweat:{front:['a4','a3','logo'],back:['a4','a3']},polo:{front:['logo'],back:['a4','a3']},hat:{front:['hat'],back:[]}};
 var PNAME={a4:'A4 baskı',a3:'A3 baskı',logo:'Sol göğüs logo',hat:'Şapka ön baskı'};
 function printFee(b,k){if(k==='a4')return b.a4;if(k==='a3')return b.a4*A3_KAT;if(k==='logo')return b.logo;if(k==='hat'||k==='mug')return b.hat;if(k==='mugw')return b.wrap||0;return 0;}
-var cart={},catSel='kadin',cur='ana',favs={};
+var cart={},catSel='erkek',cur='ana',favs={};
 try{cart=JSON.parse(localStorage.getItem('wf_cart')||'{}')||{};favs=JSON.parse(localStorage.getItem('wf_fav')||'{}')||{};}catch(_){cart={};favs={};}
 function saveLS(){try{localStorage.setItem('wf_cart',JSON.stringify(cart));localStorage.setItem('wf_fav',JSON.stringify(favs));}catch(_){}}
 /* ÖDEME ALTYAPISI: sağlayıcı (iyzico, PayTR vb.) bağlanınca provider ve pay doldurulur. pay(order) güvenli ödeme sayfasının adresini döndürür. */
@@ -2838,11 +2844,14 @@ yorumlar:function(){return rvPage();},
   var sobj=subs.filter(function(x){return x.id===subSel;})[0]||{},subs2=sobj.subs||[];if(sub2Sel&&!subs2.some(function(x){return x.id===sub2Sel;}))sub2Sel='';
   var list=PRODUCTS.filter(function(p){var ps=p.sub||[];return (p.cat||[]).indexOf(catSel)>=0&&(!subSel||ps.indexOf(subSel)>=0||(sobj.subs||[]).some(function(y){return ps.indexOf(y.id)>=0;}))&&(!sub2Sel||ps.indexOf(sub2Sel)>=0);});
   return '<div class="wrap page kolp"><h1 class="kolh">'+esc(String(TX('kolTitle')||'').toLocaleUpperCase((typeof LANG!=='undefined'&&LANG==='en')?'en':'tr'))+'</h1>'+kolBan()+
-  '<div class="catbar"><div class="chips" role="tablist">'+CATS.map(function(c){return '<button role="tab" data-cat="'+c[0]+'"'+(c[0]===catSel?' class="on" aria-selected="true"':'')+'>'+esc(c[1])+'</button>';}).join('')+'</div>'+
-  (subs.length?(function(){var op=catOpen===catSel,CV='<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>',OK='<svg class="ok" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-10"/></svg>',
+  /* Dört eşit tuş yan yana: en solda tür seçici (Tümü / seçilen tür), sonra Erkek, Kadın, Çocuk; tür listesi tuşların altında açılır, sayfada boşluk bırakmaz */
+  (function(){var op=catOpen===catSel&&subs.length,s2=sub2Sel?(((sobj.subs||[]).filter(function(y){return y.id===sub2Sel;})[0]||{}).name||''):'',lb=subSel?(s2||sobj.name||''):'Tümü';
+    return '<div class="catbar kcb"><div class="chips kc4" role="tablist"><button type="button" class="kall'+(op?' open':'')+(subSel?' sel':'')+'"'+(subs.length?' data-ddtog aria-haspopup="true" aria-expanded="'+!!op+'"':' disabled')+'><span>'+esc(lb)+'</span><i class="cv"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></i></button>'+
+      CATS.map(function(c){return '<button role="tab" data-cat="'+c[0]+'"'+(c[0]===catSel?' class="on" aria-selected="true"':'')+'>'+esc(c[1])+'</button>';}).join('')+'</div>';})()+
+  (subs.length&&catOpen===catSel?(function(){var op=catOpen===catSel,CV='<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>',OK='<svg class="ok" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-10"/></svg>',
     s2n=sub2Sel?(((sobj.subs||[]).filter(function(y){return y.id===sub2Sel;})[0]||{}).name||''):'',lbl=subSel?(sobj.name||'')+(s2n?' › '+s2n:''):'Tümü',
     it=function(on,attrs,name){return '<button type="button" '+attrs+(on?' class="on" aria-checked="true"':' aria-checked="false"')+' role="menuitemradio"><span>'+esc(name)+'</span>'+(on?OK:'')+'</button>';};
-    return '<div class="dd'+(op?' open':'')+'"><button type="button" class="ddb" data-ddtog aria-haspopup="true" aria-expanded="'+op+'"><span>'+esc(lbl)+'</span><i class="cv">'+CV+'</i></button>'+
+    return '<div class="dd open kdd">'+
     (op?'<div class="ddl" role="menu">'+it(!subSel,'data-pick="" data-p2=""','Tümü')+subs.map(function(x){var ss=x.subs||[];if(!ss.length)return it(subSel===x.id,'data-pick="'+x.id+'" data-p2=""',x.name||'Adsız');
       var go=grpOpen===x.id||subSel===x.id;return '<div class="ddg"><button type="button" class="ddh'+(go?' open':'')+(subSel===x.id?' on':'')+'" data-gtog="'+x.id+'" aria-expanded="'+go+'"><span>'+esc(x.name||'')+'</span><i class="cv">'+CV+'</i></button>'+
         (go?'<div class="ddi">'+it(subSel===x.id&&!sub2Sel,'data-pick="'+x.id+'" data-p2=""','Tümü')+ss.map(function(y){return it(sub2Sel===y.id,'data-pick="'+x.id+'" data-p2="'+y.id+'"',y.name||'Adsız');}).join('')+'</div>':'')+'</div>';}).join('')+'</div>':'')+'</div>';})():'')+'</div>'+
