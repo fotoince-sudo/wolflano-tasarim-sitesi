@@ -568,7 +568,10 @@ footer a{text-decoration:none}footer a:hover{color:var(--green)}
 @media (prefers-reduced-motion:reduce){.kban .kbp{transition:none}}
 .kbh1{margin:0;font-style:normal;font-size:clamp(34px,9.6vw,58px);line-height:.98}.kbh1 em{font-style:italic;color:var(--green);padding:0 .03em}
 .kbq{font:italic 400 clamp(17px,4.6vw,24px)/1.15 'Cormorant Garamond',Georgia,serif;color:var(--ink)}
-.kbtop{display:flex;align-items:center;gap:10px}.kbw{width:34px;height:34px;object-fit:contain;flex:0 0 auto;padding:4px;background:#fff;border:1px solid var(--line);border-radius:10px}
+.kbtop{display:flex;align-items:center;gap:10px}
+/* Logo ve üst yazı banner'ın üstüne yakın; başlık ve alt yazılar kalan alanda ortada */
+.kbx .kbt{align-self:stretch;padding-top:12px}.kbx .kbt>.kbtop{margin-bottom:auto}.kbx .kbt>:last-child{margin-bottom:auto}
+.kbh.kbh-l{font-size:clamp(22px,5.9vw,40px);line-height:1.04}.kbw{width:34px;height:34px;object-fit:contain;flex:0 0 auto;padding:4px;background:#fff;border:1px solid var(--line);border-radius:10px}
 .kbp{position:absolute;object-fit:cover;object-position:50% 40%;border-radius:12px;border:3px solid #fff;box-shadow:0 12px 26px rgba(16,26,20,.18);background:#eef2ef}
 .kbp0{right:9%;top:11%;width:56%;aspect-ratio:4/5;z-index:2;transform:rotate(2.5deg)}
 .kbp1{right:46%;bottom:9%;width:40%;aspect-ratio:4/5;z-index:3;transform:rotate(-4deg)}
@@ -2713,7 +2716,7 @@ function wBan(k,pics,def){k=k||{};if(k.show===false)return '';
   var e=k.eyebrow||def.e,t=k.title||def.t,x=k.text||def.x,l=k.line!=null&&k.line!==''?k.line:def.l;
   /* Sayfa başlığı banner'ın içinde (Hediye & Dekor): ayrı üst başlık yok, mobilde yer kaplamaz */
   if(def.h1){e=k.eyebrow&&!/hediye|dekor/i.test(k.eyebrow)?k.eyebrow:def.e;x=k.title||def.x;}
-  var hh=def.h1?'<h1 class="kbh kbh1">'+esc(def.h1).replace('&amp;','<em>&amp;</em>')+'</h1>'+(x?'<span class="kbq">'+esc(x)+'</span>':''):'<b class="kbh">'+esc(t)+'</b>'+(x?'<span class="kbs">'+esc(x)+'</span>':'');
+  var hh=def.h1?'<h1 class="kbh kbh1">'+esc(def.h1).replace('&amp;','<em>&amp;</em>')+'</h1>'+(x?'<span class="kbq">'+esc(x)+'</span>':''):'<b class="kbh'+(t.length>26?' kbh-l':'')+'">'+esc(t)+'</b>'+(x?'<span class="kbs">'+esc(x)+'</span>':'');
   var inner='<div class="kbt"><span class="kbtop"><img class="kbw" src="img/wolflano-logo.png" alt="" aria-hidden="true">'+(e?'<span class="kbe">'+esc(e)+'</span>':'')+'</span>'+hh+(l?'<span class="kbl">'+esc(l)+'</span>':'')+'</div><div class="kbph">'+ph+'</div>';
   var cl='kbx'+(anim?' kban':'');kbAnimStart();return k.link?'<a class="'+cl+'" href="'+esc(k.link)+'">'+inner+'</a>':'<div class="'+cl+'">'+inner+'</div>';}
 /* Hareketli banner görselleri: üç yer (üstte büyük, ortada orta, sağ altta küçük ve arkada).
@@ -2725,7 +2728,7 @@ var KBA=null;function kbAnimStart(){if(KBA)return;var rm=false;try{rm=matchMedia
   KBA=setInterval(function(){[].forEach.call(document.querySelectorAll('.kban .kbph'),function(ph){var im=ph.querySelectorAll('img'),n=im.length;if(n<5)return;var st=((+ph.dataset.st||0)+1)%n;ph.dataset.st=st;
     [].forEach.call(im,function(e,i){var pos=(i+st)%n;e.className='kbp kbq'+kbSlot(pos,n);});});},3600);}
 var WBAN_DEF={
-  hazir:{e:'Yeni sezon',t:'Logoya değil, kumaşa.',x:'240 gr tişört · 280 gr polo · 380 gr sweatshirt',l:'İtalyan estetiği · Wolflano karakteri'},
+  hazir:{e:'Yeni sezon',t:'Paranı savurma, logo algısına değil kumaşa öde.',x:'240 gr tişört · 280 gr polo · 380 gr sweatshirt',l:'İtalyan estetiği · Wolflano karakteri'},
   hediye:{e:'Wolflano',h1:'Hediye & Dekor',t:'',x:'Anıların, kupada ve duvarda.',l:'Kolajını Wolf hazırlasın'},
   tasarla:{e:'Kendin tasarla',t:'Fikrin senin, kalitesi bizim.',x:'Tişört · Polo · Sweatshirt · Şapka',l:'Wolf seninle tasarlar'},
   sayfa:{e:'Wolflano',t:'',x:'',l:'İtalyan estetiği · Wolflano karakteri'}};
