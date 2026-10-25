@@ -1918,7 +1918,7 @@ function overflowOf(o,A){
 function liveWarn(o){
   var ov=$('#ovPill');if(!ov||!o)return;
   ov.hidden=!overflowOf(o,areaBox(view.side,cur().area));
-  if(o.type==='image'){var r=qualityOf(o),q=$('#qPill');if(q){q.hidden=!r;if(r){q.className='pill '+r.cls;q.textContent='Baskı kalitesi: '+r.txt+' · '+r.ppi+' dpi';}}}
+  if(o.type==='image'){var r=qualityOf(o),q=$('#qPill');if(q){q.hidden=!r;if(r){q.className='pill '+r.cls;q.textContent=r.txt;}}}
 }
 function printIssues(){
   var low=[],over=0;
@@ -1933,7 +1933,7 @@ function printIssues(){
 }
 function issueText(){
   var r=printIssues(),t=[];
-  if(r.low.length)t.push('Fotoğrafın baskı kalitesi düşük ('+Math.min.apply(null,r.low)+' dpi), baskıda bulanık çıkabilir. Küçült ya da daha büyük bir fotoğraf yükle.');
+  if(r.low.length)t.push('Fotoğrafın biraz küçük; elinde daha büyük bir sürümü varsa onu yüklersen daha net basılır.');
   if(r.over)t.push('Tasarımın bir kısmı baskı alanından taşıyor, taşan kısım basılmaz.');
   return t.join(' ');
 }
@@ -1953,7 +1953,10 @@ function qualityOf(o){
   var a=assets[o.assetId];if(!a||a.bg)return null;
   if(a.ai||!a.up)return null;  /* Wolf'un ve Wolflano'nun ürettiği görseller: netleştirme bizim işimiz, müşteriye uyarı gösterilmez */
   var ppi=Math.round(a.w/((o.w/PPC)/2.54));
-  return {ppi:ppi,cls:ppi>=200?'good':(ppi>=120?'mid':'low'),txt:ppi>=200?'İyi':(ppi>=120?'Orta':'Düşük')};
+  /* 75 dpi ve üstü müşteri fotoğrafları siparişte bizim tarafta AI ile netleştirilir (masrafı Wolflano karşılar), uyarı gösterilmez.
+     Yalnız çok küçük fotoğraflarda nazik bir not çıkar; satış hiçbir zaman engellenmez. */
+  if(ppi>=75)return null;
+  return {ppi:ppi,cls:'low',txt:'Fotoğraf küçük'};
 }
 function syncCtx(){syncCtx0();var sb=$('#stageBar');if(sb)sb.hidden=ctx.hidden||!$$('#stageBar button').some(function(b){return !b.hidden;});}
 function syncCtx0(){
@@ -1973,7 +1976,7 @@ function syncCtx0(){
   liveWarn(o);
   $('#ctxDot').style.background=o.color||'transparent';
   var q=$('#qPill');
-  if(o.type==='image'){var r=qualityOf(o);q.hidden=!r;if(r){q.className='pill '+r.cls;q.textContent='Baskı kalitesi: '+r.txt+' · '+r.ppi+' dpi';}}
+  if(o.type==='image'){var r=qualityOf(o);q.hidden=!r;if(r){q.className='pill '+r.cls;q.textContent=r.txt;}}
   if(o.type==='image'){var na=assets[o.assetId];$('#nobgBtn').hidden=!!(na&&na.nobg);$('#nobgBtn').disabled=!!bgBusy;}
   if(o.lock)$$('#ctxBar [data-t],#stageBar [data-t]').forEach(function(b){b.hidden=b.id!=='lockBtn';});
   $('#lockBtn span').textContent=o.lock?'Kilidi aç':'Kilitle';
@@ -2029,7 +2032,7 @@ function loadFile(file){
     var id='a'+(++assetN);assets[id]={url:url,w:im.naturalWidth,h:im.naturalHeight,up:true};assetList.push(id);
     renderUploads();addImageObj(id);
     var nq=qualityOf(selObj()||{});
-    if(nq&&nq.cls==='low')longToast('Fotoğraf eklendi. Baskı kalitesi düşük ('+nq.ppi+' dpi), baskıda bulanık çıkabilir. Küçült ya da daha büyük bir fotoğraf yükle.');
+    if(nq&&nq.cls==='low')longToast('Fotoğraf eklendi. Fotoğraf biraz küçük; elinde daha büyük bir sürümü varsa onu yüklersen daha net basılır.');
     else if(mugWrap()&&view.aiNext!=='wolf'&&/jpe?g|hei[cf]/i.test(file.type||file.name||'')){
       /* Saran kupada düz fotoğraf kutu gibi durmasın: yalnız fotoğraflarda (JPG/HEIC) kenarlar kendiliğinden yumuşar; PNG logo ve çizimlere dokunulmaz (Wolf çizsin · Tarz → Kenar → Düz ile geri alınır) */
       applyFx(null,'soft',null).then(function(){longToast('Fotoğraf kupaya uysun diye kenarları yumuşatıldı. İstemezsen "Wolf çizsin · Tarz" → Kenar → Düz.');});}
@@ -3178,7 +3181,7 @@ $('#swapIn').addEventListener('change',function(e){var file=e.target.files[0];e.
     o.x=old.x;o.y=old.y;o.rot=old.rot||0;
     var a=cur().objs,i=a.indexOf(old);if(i<0)a.push(o);else a.splice(i,1,o);
     renderObjects();select(o.id);pushHist();
-    var nq=qualityOf(o);if(nq&&nq.cls==='low')longToast('Değiştirildi. Baskı kalitesi düşük ('+nq.ppi+' dpi); daha büyük bir dosya yüklersen daha net basılır.');else toast('Değiştirildi. Geri almak için ↶');
+    var nq=qualityOf(o);if(nq&&nq.cls==='low')longToast('Değiştirildi. Fotoğraf biraz küçük; daha büyük bir sürümünü yüklersen daha net basılır.');else toast('Değiştirildi. Geri almak için ↶');
   };
   im.onerror=function(){toast('Bu dosya açılamadı. PNG veya JPG dene.');};im.src=url;});
 $('#fileIn').addEventListener('change',function(e){var f=e.target.files[0];if(f)loadFile(f);e.target.value='';});
@@ -4771,7 +4774,7 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
   ];
   var FAQ=[
     ['Baskı alanı nedir?','Ürünün üzerindeki kesik çizgili kutu baskı yapılacak alandır. Tasarımın dışına taşan kısmı basılmaz; seçim çubuğunda "Taşan kısım basılmaz" uyarısı çıkar.'],
-    ['Fotoğrafım baskıya uygun mu?','Görseli seçince "Baskı kalitesi" etiketi görünür: İyi, Orta ya da Düşük. Düşükse görseli küçült ya da daha büyük bir fotoğraf yükle.'],
+    ['Fotoğrafım baskıya uygun mu?','Çoğu fotoğraf uygundur: baskıdan önce fotoğrafını ücretsiz olarak netleştiriyoruz. Fotoğraf çok küçükse (ör. ekran görüntüsü) seni nazikçe uyarırız; daha büyük bir sürümün varsa onu yüklemen yeterli.'],
     ['Fotoğrafın arka planını nasıl silerim?','Görsele dokun, alttaki çubukta "Arka planı sil" düğmesine bas.'],
     ['Hem öne hem arkaya baskı yaptırabilir miyim?','Evet. Üstteki Ön, Logo ve Arka düğmeleriyle önde büyük baskı, sol göğüste logo ve arkada ayrı tasarım yapabilirsin. Logo ön baskıyla çakışırsa logo önde kalır.'],
     ['Bütün tasarımı birlikte nasıl büyütürüm?','Bir öğeye dokun, "Tümünü seç" düğmesine bas ve sol üstteki beyaz kareyi çek. Şablon seçtiğinde tasarım zaten bütün halde seçili gelir.'],
