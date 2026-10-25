@@ -1726,7 +1726,7 @@ function place(el,o){
 }
 /* ---------- Yazı efektleri: şekil (eğme) ve görünüm (dolu, içi boş, gölgeli) ----------
    Ekrandaki SVG ve baskı dosyasındaki tuval aynı yerleşim hesabını (warpLayout) kullanır; böylece ikisi birebir aynı çıkar. */
-var WARPS=[['none','Düz'],['arc','Kemer'],['smile','Gülümse'],['wave','Dalga'],['bulge','Balon'],['rise','Perspektif']];
+var WARPS=[['none','Düz'],['arc','Kemer'],['smile','Gülümse'],['wave','Dalga'],['bulge','Balon'],['rise','Perspektif'],['dikey','Dikey']];
 var LOOKS=[['fill','Dolu'],['hollow','İçi boş'],['shadow','Gölgeli']];
 var mctx=document.createElement('canvas').getContext('2d');
 function isWarped(o){return !!o.warp&&o.warp!=='none';}
@@ -1741,7 +1741,12 @@ function warpLayout(o,sz){
   var m=mctx.measureText('ÂĞÇÖİgjpy'),asc=m.actualBoundingBoxAscent||sz*0.8,desc=m.actualBoundingBoxDescent||sz*0.25;
   var th=a*PI,R=L/Math.max(th,0.0001),A=a*sz*0.42,by=(asc-desc)/2,hh=(asc+desc)/2;
   var out=[],s=-L/2,minX=1e9,maxX=-1e9,minY=1e9,maxY=-1e9;
+  /* Dikey: harfler alt alta, her biri dik durur; miktar harf aralığını açar (boşluk yarım satır) */
+  var lh=(asc+desc)*(0.92+a*0.5),vy=0;
   for(var i=0;i<chars.length;i++){
+    if(w==='dikey'){var sp=/\s/.test(chars[i]),yy=vy+(sp?lh*0.25:lh/2);vy+=sp?lh*0.5:lh;
+      if(!sp){var hw0=ws[i]/2;minX=Math.min(minX,-hw0);maxX=Math.max(maxX,hw0);minY=Math.min(minY,yy-hh);maxY=Math.max(maxY,yy+hh);}
+      out.push({ch:sp?'':chars[i],x:0,y:yy,r:0,sy:1});continue;}
     var c=s+ws[i]/2,x=c,y=0,r=0,sy=1,phi;s+=ws[i];
     if(w==='arc'){phi=c/R;x=R*Math.sin(phi);y=R*(1-Math.cos(phi));r=phi;}
     else if(w==='smile'){phi=c/R;x=R*Math.sin(phi);y=-R*(1-Math.cos(phi));r=-phi;}
@@ -1752,6 +1757,7 @@ function warpLayout(o,sz){
     [[-hw,-hy],[hw,-hy],[hw,hy],[-hw,hy]].forEach(function(q){var px=x+q[0]*cs-q[1]*sn,py=y+q[0]*sn+q[1]*cs;minX=Math.min(minX,px);maxX=Math.max(maxX,px);minY=Math.min(minY,py);maxY=Math.max(maxY,py);});
     out.push({ch:chars[i],x:x,y:y,r:r*180/PI,sy:sy});
   }
+  if(minX>maxX){minX=-sz*0.3;maxX=sz*0.3;minY=-hh;maxY=hh;}
   var pad=sz*0.1,cx=(minX+maxX)/2,cy=(minY+maxY)/2;
   out.forEach(function(g){g.x-=cx;g.y-=cy;});
   return {g:out,by:by,w:maxX-minX+pad*2,h:maxY-minY+pad*2};
@@ -3071,7 +3077,7 @@ function buildPanels(){
 }
 function renderFxRows(){
   var o=selObj(),isT=!!(o&&o.type==='text'),f=isT?o.font:view.font,wv=isT?(o.warp||'none'):'none',lv=isT?lookOf(o):'fill',h='';
-  WARPS.forEach(function(w){h+='<button class="fx'+(w[0]===wv?' on':'')+'" data-warp="'+w[0]+'" aria-label="Şekil: '+w[1]+'" aria-pressed="'+(w[0]===wv)+'"><span class="pv">'+warpSVG({value:'ABCDE',font:f,size:30,color:'currentColor',warp:w[0],wamt:w[0]==='rise'?60:75,look:'fill'})+'</span><small>'+w[1]+'</small></button>';});
+  WARPS.forEach(function(w){h+='<button class="fx'+(w[0]===wv?' on':'')+'" data-warp="'+w[0]+'" aria-label="Şekil: '+w[1]+'" aria-pressed="'+(w[0]===wv)+'"><span class="pv">'+warpSVG({value:w[0]==='dikey'?'ABC':'ABCDE',font:f,size:30,color:'currentColor',warp:w[0],wamt:w[0]==='rise'?60:w[0]==='dikey'?10:75,look:'fill'})+'</span><small>'+w[1]+'</small></button>';});
   $('#warpRow').innerHTML=h;h='';
   LOOKS.forEach(function(l){h+='<button class="fx'+(l[0]===lv?' on':'')+'" data-look="'+l[0]+'" aria-label="Görünüm: '+l[1]+'" aria-pressed="'+(l[0]===lv)+'"><span class="pv">'+warpSVG({value:'Ag',font:f,size:30,color:'currentColor',stroke:l[0]==='shadow'?'#159b91':null,warp:'none',look:l[0]})+'</span><small>'+l[1]+'</small></button>';});
   $('#lookRow').innerHTML=h;
