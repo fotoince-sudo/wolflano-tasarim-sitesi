@@ -84,6 +84,23 @@ const RENK: Record<string, string> = {
 };
 const URUN_STYLE = 'Professional premium e-commerce product photo in ghost-mannequin (invisible mannequin) style: the garment looks worn, with natural 3D volume and soft realistic folds, the inside of the back neck visible through the collar opening; no person, no mannequin, no hanger visible. Perfectly straight-on and symmetrical, centered, sleeves relaxed, the whole garment visible with a generous empty margin on all sides. Seamless plain light-grey (#d6d6d6) background, soft even studio lighting, very soft shadow, sharp fabric texture, true-to-life color. Completely blank garment: no print, no logo, no label, no tag, no text, no watermark. Vertical 2:3 composition.';
 
+// Hediye & Dekor ortam fotoğrafı: stüdyoda tasarlanan kupa / canvas, baskısı aynen korunarak gerçekçi bir mekâna yerleştirilir
+const ORTAM: Record<string, Record<string, string>> = {
+  mug: {
+    kafe: 'standing on a warm oak café table beside a large window, soft morning light, a blurred cozy café interior with plants in the background',
+    mutfak: 'on a bright Scandinavian kitchen counter of light marble, a small potted herb and a linen towel softly blurred nearby, gentle morning sunlight',
+    calisma: 'on a tidy minimalist home office desk of light wood, a notebook and a pen beside it, a softly blurred bookshelf behind, calm daylight',
+    hediye: 'in an elegant gift presentation on a linen tablecloth, an open kraft gift box with tissue paper and a sprig of dried eucalyptus beside it, warm soft light',
+    ege: 'on a white-washed Aegean balcony table, pink bougainvillea and the turquoise sea softly blurred in the background, golden late-afternoon light',
+  },
+  canvas: {
+    salon: 'hanging centered on a warm off-white wall above a modern linen sofa in a bright, elegant living room, a floor lamp and a plant at the sides, soft natural daylight',
+    yatak: 'hanging centered on the wall above a bed with neatly layered neutral linen bedding in a calm, airy bedroom, soft morning light',
+    ofis: 'hanging on the wall of a modern minimalist office above a wooden desk with a chair, soft daylight from a side window',
+    antre: 'hanging on the wall above a slim wooden console table with a ceramic vase and a few books in a stylish entrance hall, warm soft light',
+  },
+};
+
 function blobFromB64(b64: string, type: string) {
   const bin = atob(b64);
   const a = new Uint8Array(bin.length);
@@ -110,17 +127,32 @@ Deno.serve(async (req) => {
 
     const b = await req.json();
     const isUrun = b.mode === 'urun';
-    const mk = isUrun ? MK.kerem : MK[String(b.mk)];
+    const isOrtam = b.mode === 'ortam';
+    const mk = isUrun || isOrtam ? MK.kerem : MK[String(b.mk)];
     if (!mk) return j({ error: 'bad', message: 'Manken seçilmedi.' }, 400);
     const pr = mk.kid ? 'the child' : (mk.he ? 'He' : 'She');
     const style = mk.kid ? KIDSTYLE : STYLE;
-    const mode = isUrun ? 'urun' : b.mode === 'ref' ? 'ref' : b.mode === 'mask' ? 'mask' : 'photo';
+    const mode = isOrtam ? 'ortam' : isUrun ? 'urun' : b.mode === 'ref' ? 'ref' : b.mode === 'mask' ? 'mask' : 'photo';
 
     let prompt = '';
     let size = '1024x1536';
     let refBlob: Blob | null = null;
 
-    if (mode === 'urun') {
+    if (mode === 'ortam') {
+      const tur = String(b.tur) === 'canvas' ? 'canvas' : 'mug';
+      const sc = ORTAM[tur][String(b.sahne)];
+      if (!sc) return j({ error: 'bad', message: 'Ortam seç.' }, 400);
+      const u = String(b.ref || '');
+      if (!u.startsWith(`${SB_URL}/storage/v1/object/public/site/`)) return j({ error: 'bad', message: 'Ürün görseli geçersiz.' }, 400);
+      const rr = await fetch(u);
+      if (!rr.ok) return j({ error: 'bad', message: 'Ürün görseli okunamadı.' }, 400);
+      refBlob = new Blob([await rr.arrayBuffer()], { type: rr.headers.get('content-type') || 'image/jpeg' });
+      size = '1024x1024';
+      const what = tur === 'canvas'
+        ? 'the exact same stretched canvas print with the exact same artwork wrapped around its edges, same proportions and orientation'
+        : 'the exact same white ceramic mug with the exact same printed artwork, same handle side';
+      prompt = `Create a photorealistic premium lifestyle product photo for a gift and home decor shop. Use the reference image: it shows ${what}. Reproduce the printed artwork EXACTLY and unchanged: same image, same colors, same text and letters, same position and size on the product; do not redraw, restyle, crop or add anything to the print. Place the product ${sc}. The product is the clear hero, in sharp focus, filling about half of the frame, with realistic perspective, natural soft shadows and reflections. Shallow depth of field, warm inviting atmosphere, true-to-life colors, high-end catalog quality. No people, no hands, no extra text, no logos, no watermarks. Square 1:1 composition.`;
+    } else if (mode === 'urun') {
       // ref yoksa: beyaz ön sıfırdan; ref varsa: aynı ürünün arkası (yuz=back) ya da başka rengi (aynı yüz)
       const gar = URUN[String(b.tur)];
       const fit = KESIM[String(b.kesim)] || KESIM.erkek;
@@ -248,7 +280,7 @@ Deno.serve(async (req) => {
     const ext = isPng ? 'png' : isWebp ? 'webp' : 'jpg';
 
     // Sonucu site kovasına kaydet, panel yalnız adresi saklar
-    const path = mode === 'urun' ? `img/urun-${String(b.tur)}-${String(b.kesim)}-${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}.${ext}` : `img/manken-${String(b.mk)}-${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}.${ext}`;
+    const path = mode === 'ortam' ? `img/ortam-${String(b.tur) === 'canvas' ? 'canvas' : 'kupa'}-${String(b.sahne).replace(/[^a-z]/g, '')}-${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}.${ext}` : mode === 'urun' ? `img/urun-${String(b.tur)}-${String(b.kesim)}-${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}.${ext}` : `img/manken-${String(b.mk)}-${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}.${ext}`;
     const up = await fetch(`${SB_URL}/storage/v1/object/site/${path}`, {
       method: 'POST',
       headers: { apikey: SRK, Authorization: `Bearer ${SRK}`, 'Content-Type': ct, 'x-upsert': 'true', 'cache-control': '31536000' },

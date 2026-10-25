@@ -3787,7 +3787,7 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
     var t=await tok();if(!t)throw {code:'auth'};
     var rows=await rq('/rest/v1/site_content?select=data&id=eq.main');var d=rows&&rows[0]&&rows[0].data;if(!d)throw {msg:'Site verisi okunamadı.'};
     var p=(d.products||[]).filter(function(x){return x.id===E.pid;})[0];if(!p)throw {msg:'Ürün sitede bulunamadı (silinmiş olabilir).'};
-    var imgs=await prodImgs(ss),rest=(p.imgs||[]).filter(function(k){return !/^img\/tas-/.test(String(k));});
+    var imgs=await withOrtam(await prodImgs(ss),$('#amGo')),rest=(p.imgs||[]).filter(function(k){return !/^img\/(tas|ortam)-/.test(String(k));});
     p.imgs=imgs.concat(rest);
     var data=await collect();
     p.dsg=data;
@@ -3803,7 +3803,7 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
     var t=await tok();if(!t)throw {code:'auth'};
     var rows=await rq('/rest/v1/site_content?select=data&id=eq.main');var d=rows&&rows[0]&&rows[0].data;if(!d)throw {msg:'Site verisi okunamadı.'};
     if(d.media!=='sb')throw {msg:'Önce yönetim panelinden bir kez Kaydet\'e bas, sonra tekrar dene.'};
-    var imgs=await prodImgs(ss);
+    var imgs=await withOrtam(await prodImgs(ss),$('#amGo'));
     var data=await collect();
     var rec=await insertRow({title:title,kind:'urun',status:'yayında',product:state.product,cut:state.cut,color:state.tee,data:data,thumb:pubUrl(imgs[0]),by_wolf:!!byWolf});
     var no=(d.products||[]).reduce(function(m,p){return Math.max(m,+p.no||0);},0)+1,id='n'+rnd();
@@ -3937,11 +3937,23 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
     catch(e){toast(e&&e.code==='auth'?'Oturum süresi doldu':'Kaydedilemedi, tekrar dene');}
     ADM.busy=false;if(btn){btn.disabled=false;btn.textContent='Galeriye kaydet';}
   }
+  /* Kupa ve canvas için yapay zekâ ortam fotoğrafı: tasarım aynen korunur, ürün gerçekçi bir mekânda gösterilir */
+  var ORTAMS={mug:[['kafe','Kafe masası'],['mutfak','Aydınlık mutfak'],['calisma','Çalışma masası'],['hediye','Hediye sunumu'],['ege','Ege balkonu'],['','Ortam fotoğrafı istemiyorum']],
+    canvas:[['salon','Salon duvarı'],['yatak','Yatak odası'],['ofis','Modern ofis'],['antre','Antre konsolu'],['','Ortam fotoğrafı istemiyorum']]};
+  function ortBox(){var L=ORTAMS[state.product];if(!L)return '';var cur=ADM.ort!=null&&L.some(function(o){return o[0]===ADM.ort;})?ADM.ort:L[0][0];
+    return '<label class="am-f">Ortam fotoğrafı<select id="amOrt">'+L.map(function(o){return '<option value="'+o[0]+'"'+(o[0]===cur?' selected':'')+'>'+o[1]+'</option>';}).join('')+'</select></label>'+
+      '<p class="note">Ürün, tasarımı aynen korunarak seçtiğin mekânda gerçekçi fotoğraflanır ve ana görsel olur; düz görsel ikinci sırada kalır. 1–2 dakika sürer.</p>';}
+  async function withOrtam(imgs,btn){var o=ADM.ort;if(!o||!ORTAMS[state.product]||!imgs.length)return imgs;
+    try{if(btn)btn.textContent='Ortam fotoğrafı hazırlanıyor (1–2 dk)…';var t=await tok();if(!t)throw 0;
+      var r=await fetch(SBA.url+'/functions/v1/manken',{method:'POST',headers:{'Content-Type':'application/json',apikey:SBA.key,Authorization:'Bearer '+t},body:JSON.stringify({mode:'ortam',tur:state.product,sahne:o,ref:pubUrl(imgs[0])})});
+      var jj=await r.json().catch(function(){return {};});if(r.ok&&jj.tok)return [jj.tok].concat(imgs);
+      longToast((jj&&jj.message)||'Ortam fotoğrafı üretilemedi; ürün düz görselle kaydediliyor.');}catch(_){longToast('Ortam fotoğrafı üretilemedi; ürün düz görselle kaydediliyor.');}
+    return imgs;}
   function renderAdm(){
     var w=$('#admSheet');
     var tabs=[['sablon','Şablon'],['urun','Ürün yap'],['baski','Baskıya gönder'],['taslak','Taslak']];if(!/^(mug|canvas)$/.test(state.product))tabs.push(['manken','Mankende gör']);else if(mode==='manken')mode='sablon';if(ADM.edit)tabs.unshift(['guncelle','Güncelle']);else if(mode==='guncelle')mode='sablon';
     var body='';
-    if(mode==='guncelle')body='<p class="note">Düzenlenen ürün: <b>'+ea(ADM.edit.title||'')+'</b>. "Ürünü güncelle" yalnız ön ve arka görsellerini yeniler; ürün kodu, fiyat, kategori, açıklama ve stok aynı kalır.</p>';
+    if(mode==='guncelle')body='<p class="note">Düzenlenen ürün: <b>'+ea(ADM.edit.title||'')+'</b>. "Ürünü güncelle" yalnız ön ve arka görsellerini yeniler; ürün kodu, fiyat, kategori, açıklama ve stok aynı kalır.</p>'+ortBox();
     if(mode==='sablon')body='<div class="am-two"><label class="am-f">Kimler görsün<select id="amVis"><option value="herkes"'+(tplVis==='herkes'?' selected':'')+'>Herkes (müşteriler de)</option><option value="ozel"'+(tplVis==='ozel'?' selected':'')+'>Sadece Wolflano</option></select></label>'+
       '<label class="am-f">Kategori<select id="amTCat"><option value="">'+ea(TPL_CAT_ADM)+'</option>'+TPL_CATS.filter(function(c){return c!=='Tümü'&&c!==TPL_CAT_ADM&&c!==TPL_CAT_PRIV;}).map(function(c){return '<option'+(c===tplCat?' selected':'')+'>'+ea(c)+'</option>';}).join('')+'</select></label></div>'+
       '<p class="note">'+(tplVis==='ozel'?'Yalnız sen ve yetkililer Şablon panelinde "'+TPL_CAT_PRIV+'" altında görürsünüz; müşterinin sayfasına hiç yüklenmez.':'Müşteriler Şablon panelinde seçtiğin kategoride görür; seçince kendi ürününe uyarlanır.')+'</p>';
@@ -3949,7 +3961,7 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
       '<div class="am-two"><label class="am-f">Ürün türü<select id="amType">'+typeOpts()+'</select></label><label class="am-f">Renk<input id="amColor" maxlength="30" value="'+ea(colorName())+'"></label></div>'+
       '<label class="am-f">Kategori<select id="amCat">'+catOpts()+'</select></label>'+
       '<div class="am-two"><label class="am-f">Satış fiyatı (₺)<input id="amPrice" type="number" inputmode="decimal" min="0" value="'+defPrice()+'"></label><label class="am-f">Eski fiyat (isteğe bağlı)<input id="amOld" type="number" inputmode="decimal" min="0" placeholder="İndirim için"></label></div>'+
-      '<label class="am-f">Etiket<input id="amTag" maxlength="20" value="Yeni"></label>'+
+      '<label class="am-f">Etiket<input id="amTag" maxlength="20" value="Yeni"></label>'+ortBox()+
       '<label class="am-f">Açıklama<textarea id="amDesc" maxlength="1200" placeholder="Kumaş, kalıp, baskı tekniği…"></textarea></label>'+
       '<p class="note">Ürün, tasarımın ürün üstündeki görüntüsüyle (ön ve arka) Koleksiyon\'a eklenir. Sonra panelden de düzenleyebilirsin.</p>';
     if(mode==='baski')body='<div class="am-grid">'+sizeGrid()+'</div><p class="note">Sepet ve ödeme olmadan baskıya gider; baskı dosyaları (300 dpi PNG) kaydedilir ve panelde "Baskıda" olarak görünür.</p>';
@@ -4000,6 +4012,7 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
       var g=e.target.closest('#amGo');if(!g)return;
       var title=($('#amTitle').value||'').trim()||(mode==='urun'&&DEPO.cur&&DEPO.cur.name?DEPO.cur.name:'Wolflano tasarımı');
       if(mode==='manken'){mnGo(g);return;}
+      var oe=$('#amOrt');ADM.ort=oe?oe.value:'';
       if(mode==='guncelle'){run(doUpdate,g);return;}
       if(mode==='sablon')run(function(){return doTemplate(title,false,{vis:tplVis,cat:tplCat});},g);
       else if(mode==='taslak')run(function(){return doDraft(title);},g);
