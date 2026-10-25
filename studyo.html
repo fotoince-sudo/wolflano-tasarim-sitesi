@@ -4489,9 +4489,26 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
     return {s:0,l:(best.l+1)/W,t:(top.t+1)/H,w:(bw-1)/W,h:(top.b-top.t-1)/H};
   }
 
-  async function printFace(){var pr=await renderPrint('front'),c=pr.canvas,cm=dimsOf(state.front.area,isLand('front')),fx=4/cm[0],fy=4/cm[1];
-    var sx=Math.round(c.width*fx),sy=Math.round(c.height*fy),o=document.createElement('canvas');o.width=c.width-2*sx;o.height=c.height-2*sy;var x=o.getContext('2d');
-    x.fillStyle='#ffffff';x.fillRect(0,0,o.width,o.height);x.drawImage(c,-sx,-sy);return o;}
+  /* Tablonun gerçek dış kenarı: ön yüzün bulunamayan ince kenarları ve görünen yan yüzleri (4 cm sargı) dahil, beyaz alan bittiği yere kadar genişletilir */
+  function wbGrow(d,W,H,X,Y,BW,BH){
+    function L(x,y){x=Math.max(0,Math.min(W-1,x|0));y=Math.max(0,Math.min(H-1,y|0));var i=(y*W+x)*4;return (d[i]+d[i+1]+d[i+2])/3;}
+    var mo=Math.round(Math.max(W,H)*0.05),out={};
+    [['l',-1,0],['r',1,0],['t',0,-1],['b',0,1]].forEach(function(s){
+      var hor=s[2]===0,span=hor?BH:BW,base=hor?(s[1]<0?X:X+BW-1):(s[2]<0?Y:Y+BH-1),dir=hor?s[1]:s[2],n=24,p=[],o,j;
+      for(o=-12;o<=mo+Math.round(mo*0.4);o++){var sum=0;for(j=0;j<n;j++){var a=(hor?Y:X)+Math.round(span*(0.2+0.6*j/(n-1)));sum+=hor?L(base+dir*o,a):L(a,base+dir*o);}p.push(sum/n);}
+      var at=function(o){return p[o+12];},face=0,wall=0,c=0;
+      for(o=-10;o<=-4;o++)face+=at(o);face/=7;for(o=mo;o<mo+Math.round(mo*0.4);o++){wall+=at(o);c++;}wall/=c;
+      var e=0;
+      if(face-wall>=5){var thr=wall+0.35*(face-wall);var miss=0;for(o=-4;o<mo;o++){if(at(o)>=thr){e=o;miss=0;}else if(o>0&&++miss>2)break;}}
+      else{var bg=0;for(o=-4;o<8;o++){var g=Math.abs(at(o)-at(o+1));if(g>bg){bg=g;e=o;}}}
+      out[s[0]]=Math.max(0,e);});
+    return {l:X-out.l,t:Y-out.t,r:X+BW-1+out.r,b:Y+BH-1+out.b};
+  }
+
+  /* Baskının tamamı (4 cm sargı payı dahil); fx/fy ön yüzün kenarındaki pay oranı */
+  async function printFull(){var pr=await renderPrint('front'),c=pr.canvas,cm=dimsOf(state.front.area,isLand('front'));
+    var o=document.createElement('canvas');o.width=c.width;o.height=c.height;var x=o.getContext('2d');x.fillStyle='#ffffff';x.fillRect(0,0,o.width,o.height);x.drawImage(c,0,0);
+    return {c:o,sx:Math.round(c.width*4/cm[0]),sy:Math.round(c.height*4/cm[1])};}
   async function sceneCompose(sahne,btn){
     var land=isLand('front'),t=await tok();if(!t)throw 0;if(btn)btn.textContent='Mekân hazırlanıyor…';
     var r=await fetch(SBA.url+'/functions/v1/manken',{method:'POST',headers:{'Content-Type':'application/json',apikey:SBA.key,Authorization:'Bearer '+t},body:JSON.stringify({mode:'sahne',sahne:sahne,yon:land?'yatay':'dikey'})});
@@ -4499,15 +4516,19 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
     if(btn)btn.textContent='Tasarım mekâna yerleştiriliyor…';
     var im=await loadCors(jj.url+(jj.cached?'':'?v='+Date.now())),bx=SCN_BOX[jj.url]||findWhiteBox(im,land);if(!bx)return null;SCN_BOX[jj.url]=bx;
     var W=im.naturalWidth,H=im.naturalHeight,X=Math.round(bx.l*W),Y=Math.round(bx.t*H),BW=Math.round(bx.w*W),BH=Math.round(bx.h*H);
-    var face=await printFace(),c=document.createElement('canvas');c.width=W;c.height=H;var x=c.getContext('2d');x.drawImage(im,0,0);
-    /* ışık haritası: beyaz tablonun kendi aydınlık farkları (gölge, köşe kararması) tasarımın üstüne çarpılır */
-    var lc=document.createElement('canvas');lc.width=BW;lc.height=BH;var lx=lc.getContext('2d');lx.drawImage(im,X,Y,BW,BH,0,0,BW,BH);
-    var ld=lx.getImageData(0,0,BW,BH),dd=ld.data,mx=1,i;for(i=0;i<dd.length;i+=4){var v=(dd[i]+dd[i+1]+dd[i+2])/3;if(v>mx)mx=v;}
+    var c=document.createElement('canvas');c.width=W;c.height=H;var x=c.getContext('2d');x.drawImage(im,0,0);
+    /* tablonun dış kenarı: ön yüzün ince beyaz kalan kenarları ve görünen yan yüzler de baskıyla kaplanır (gerçekte baskı kenarlara 4 cm sarılır) */
+    var G=wbGrow(x.getImageData(0,0,W,H).data,W,H,X,Y,BW,BH),GW=G.r-G.l+1,GH=G.b-G.t+1;
+    /* ışık haritası: beyaz tablonun kendi aydınlık farkları (gölge, köşe kararması, yan yüzün koyuluğu) tasarımın üstüne çarpılır; ön yüzün en parlak yeri esas alınır */
+    var lc=document.createElement('canvas');lc.width=GW;lc.height=GH;var lx=lc.getContext('2d');lx.drawImage(im,G.l,G.t,GW,GH,0,0,GW,GH);
+    var ld=lx.getImageData(0,0,GW,GH),dd=ld.data,mx=1,i,px,py;
+    for(py=Y-G.t;py<Y-G.t+BH;py++)for(px=X-G.l;px<X-G.l+BW;px++){i=(py*GW+px)*4;var v=(dd[i]+dd[i+1]+dd[i+2])/3;if(v>mx)mx=v;}
     for(i=0;i<dd.length;i+=4){var v2=Math.min(255,((dd[i]+dd[i+1]+dd[i+2])/3)/mx*255*1.02);dd[i]=dd[i+1]=dd[i+2]=v2;}lx.putImageData(ld,0,0);
-    /* tasarım: tablonun ön yüzünü tam kaplar (oran farkı varsa ortadan kırpılır) */
-    var k=Math.max(BW/face.width,BH/face.height),dw=face.width*k,dh=face.height*k;
-    x.save();x.beginPath();x.rect(X,Y,BW,BH);x.clip();x.drawImage(face,X+(BW-dw)/2,Y+(BH-dh)/2,dw,dh);
-    x.globalCompositeOperation='multiply';x.drawImage(lc,X,Y);x.restore();
+    /* tasarım: ön yüzü tam kaplar (oran farkı varsa ortadan kırpılır); dışarıda kalan sargı payı yan yüzlere düşer */
+    var F=await printFull(),fw=F.c.width-2*F.sx,fh=F.c.height-2*F.sy,k=Math.max(BW/fw,BH/fh);
+    var dx=X+(BW-fw*k)/2-F.sx*k,dy=Y+(BH-fh*k)/2-F.sy*k;
+    x.save();x.beginPath();x.rect(G.l,G.t,GW,GH);x.clip();x.drawImage(F.c,dx,dy,F.c.width*k,F.c.height*k);
+    x.globalCompositeOperation='multiply';x.drawImage(lc,G.l,G.t);x.restore();
     var tk='img/ortam-canvas-'+sahne+'-'+rnd()+'.jpg';await upload('site',tk,await canvasBlob(c,'image/jpeg',.9));return tk;}
   function renderAdm(){
     var w=$('#admSheet');
