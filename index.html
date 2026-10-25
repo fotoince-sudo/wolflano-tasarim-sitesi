@@ -801,6 +801,10 @@ body.cko #nav,body.cko .menu-btn,body.cko .lang,body.cko #cartBtn,body.cko #ann{
 .kr.anim .kr-r{opacity:0;transform:translateY(14px);transition:opacity .9s ease,transform .9s ease}
 .kr.anim .kr-r.in{opacity:1;transform:none}
 .kr-cta{margin-top:32px;justify-content:center}
+/* Hakkımızda alt düğmeleri: iki düğme aynı boyda, ikisi de yeşil, yazı beyaz */
+.kr-cta.kr2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px;max-width:520px;margin-left:auto;margin-right:auto}
+.kr-cta.kr2 .btn{width:100%;justify-content:center;gap:8px;padding-left:10px;padding-right:10px;white-space:nowrap}
+.kr-cta.kr2 .il{transform:scaleX(-1)}
 @media (max-width:700px){.kr-cards{grid-template-columns:1fr}.kr-c{padding:30px 20px 34px}}
 
 .kr-old{max-width:640px;margin:0 auto;padding:56px 20px 64px;text-align:center;border-top:1px solid #2b5a3d}
@@ -2684,7 +2688,7 @@ function aboutHTML(){var mt=TX('mfText');if(typeof mt==='string')mt=mt.split('\n
   (mt.length?'<section class="kr-old"><p class="kr-eb">Manifesto</p><h2 class="kr-ot kr-r">'+esc(TX('mfTitle'))+'</h2>'+mt.map(function(x){return '<p class="kr-r">'+esc(x)+'</p>';}).join('')+(TX('mfSign')?'<p class="kr-os kr-r">'+esc(TX('mfSign'))+'</p>':'')+'</section>':'')+'</div><div class="wrap page about '+alC()+'"><p class="eyebrow">'+esc(TX('menuAbout'))+'</p><h2 class="h2">'+esc(TX('aboutTitle'))+'</h2>'+(TX('aboutLead')?cpBody(TX('aboutLead')):'')+
   (TX('aboutPhil')?'<section class="ab"><h2 class="h2">'+esc(TX('aboutPhilTitle'))+'</h2>'+cpBody(TX('aboutPhil'))+'</section>':'')+
   (TX('aboutProm')?'<section class="ab"><h2 class="h2">'+esc(TX('aboutPromTitle'))+'</h2>'+cpBody(TX('aboutProm'))+'</section>':'')+
-  lgHTML()+'<div class="cta-row kr-cta"><a class="btn" href="#hazir">'+esc(TX('heroCta'))+' '+IC.arrow+'</a><a class="btn soft" href="#atolye">'+esc(TX('menuAtolye'))+'</a></div></div>';}
+  lgHTML()+'<div class="cta-row kr-cta kr2"><a class="btn" href="#hazir"><span class="il">'+IC.arrow+'</span>'+esc(TX('heroCta'))+'</a><a class="btn" href="#atolye">'+'Kendin Tasarla'+IC.arrow+'</a></div></div>';}
 function lgHTML(){function L(k){var v=TX(k);if(typeof v==='string')v=v.split('\n');return (v||[]).map(function(x){return String(x||'').trim();}).filter(Boolean);}
   var a=L('lgLeft'),b=L('lgRight');if(!TX('lgTitle')||(!a.length&&!b.length))return '';
   return '<section class="lgv"><h2 class="h2">'+esc(TX('lgTitle'))+'</h2>'+(TX('lgLead')?'<p class="lead">'+esc(TX('lgLead'))+'</p>':'')+'<div class="lg-g">'+
