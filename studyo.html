@@ -446,12 +446,12 @@ svg.i{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stro
 #admSheet{position:fixed;inset:0;z-index:80;background:rgba(0,0,0,.45);display:flex;align-items:flex-end;justify-content:center}
 #admSheet[hidden]{display:none}
 .am-card>*,.am-dp>*,.am-dp details{min-width:0;max-width:100%}
-.am-card{width:100%;max-width:520px;max-height:88vh;overflow-y:auto;overflow-x:hidden;grid-template-columns:minmax(0,1fr);box-sizing:border-box;background:var(--panel,#fff);border-radius:18px 18px 0 0;padding:14px 16px calc(16px + env(safe-area-inset-bottom,0px));display:grid;gap:10px}
+.am-card{width:100%;max-width:520px;max-height:88vh;max-height:88dvh;overflow-y:auto;overflow-x:hidden;grid-template-columns:minmax(0,1fr);box-sizing:border-box;background:var(--panel,#fff);border-radius:18px 18px 0 0;padding:14px 16px calc(16px + env(safe-area-inset-bottom,0px));display:grid;gap:10px}
 .am-h{display:flex;align-items:center;justify-content:space-between}.am-h b{font:700 17px var(--ui)}
 .am-who{color:var(--muted);font:500 12px var(--ui);margin-top:-8px}
 .am-f{display:grid;gap:4px;font:600 12px var(--ui);color:var(--muted)}
 .am-f textarea{min-height:70px;border-radius:10px;border:1px solid var(--line2);background:var(--panel2);color:var(--ink);padding:8px 12px;font:500 15px var(--ui);resize:vertical}
-.am-two{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.am-two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px}.am-two .am-f{min-width:0}.am-two select{width:100%;min-width:0;text-overflow:ellipsis}
 .am-info{display:flex;gap:10px;align-items:center;border:1px solid var(--line2);border-radius:12px;padding:8px;background:var(--panel2)}.am-info img{width:56px;height:56px;object-fit:contain;border-radius:8px;background:#eef1ef;flex:0 0 56px}.am-info div{display:grid;gap:2px;font:600 13px var(--ui);color:var(--ink)}.am-info small{font:600 12px var(--ui);color:var(--muted)}
 .am-f input,.am-f select{height:40px;border-radius:10px;border:1px solid var(--line2);background:var(--panel2);color:var(--ink);padding:0 12px;font:600 16px var(--ui)}
 .mn-ph{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;-webkit-overflow-scrolling:touch}
@@ -473,7 +473,8 @@ svg.i{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stro
 .am-s output{min-width:16px;text-align:center;font:600 13px var(--ui)}
 .am-card .note{margin:0}
 .am-dp{display:grid;gap:6px}.am-dp>b{font:700 13px var(--ui)}
-.am-sel{display:grid;grid-template-columns:1fr 1fr;gap:8px}.am-sel figure{margin:0;display:grid;gap:4px;text-align:center;font:600 12px var(--ui);color:var(--muted)}.am-sel img{width:100%;aspect-ratio:1/1;object-fit:contain;border-radius:12px;background:#eef1ef;border:1px solid var(--line2)}.am-sel .am-ns{grid-column:1/-1;display:grid;place-items:center;aspect-ratio:2/1;border-radius:12px;background:#eef1ef;font:600 12px var(--ui);color:var(--muted)}
+.am-sel{display:grid;grid-template-columns:1fr 1fr;gap:8px}.am-sel figure{margin:0;display:grid;gap:4px;text-align:center;font:600 12px var(--ui);color:var(--muted)}.am-sel img{width:100%;aspect-ratio:1/1;object-fit:contain;border-radius:12px;background:#eef1ef;border:1px solid var(--line2)}.am-sel .am-one{grid-column:1/-1}.am-one img{max-height:200px}
+.am-ns{grid-column:1/-1;display:grid;place-items:center;aspect-ratio:4/1;border-radius:12px;background:#eef1ef;font:600 12px var(--ui);color:var(--muted)}
 .am-dp summary{font:600 12px var(--ui);color:var(--muted);cursor:pointer;padding:2px 0}.am-dp details .am-dl{margin-top:6px}
 .am-dl{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;-webkit-overflow-scrolling:touch}
 .am-dl button{flex:0 0 84px;border:2px solid var(--line2);border-radius:12px;background:var(--panel2);padding:4px;display:grid;gap:3px;font:600 11px var(--ui);color:var(--ink);text-align:center}
@@ -3821,11 +3822,13 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
   /* ---- Ürün deposu: yönetimde yüklenen hayalet ürün fotoğrafları (yalnız yönetici görür) ---- */
   async function loadDepo(){try{var r=await rq('/rest/v1/admin_kv?select=data&id=eq.udepo');DEPO.items=((r&&r[0]&&r[0].data&&r[0].data.items)||[]).filter(function(x){return x&&x.front&&PRODUCTS[x.product];});}catch(_){DEPO.items=[];}}
   /* Seçili ürün: kendi renginde ön ve arka görüntüsü (depo listesi yalnız istenirse açılır) */
-  function curShots(){var o={front:'',back:''};try{var b=phBlank(state.product,state.cut),cs=phColors(b),co=cs.filter(function(c){return String(c.hex).toLowerCase()===String(state.tee).toLowerCase();})[0]||cs[0];if(co){o.front=co.front?phSrc(co.front):'';o.back=co.back?phSrc(co.back):'';}}catch(_){}return o;}
+  function curShots(){var o={front:'',back:''};try{var b=phBlank(state.product,state.cut),cs=phColors(b),co=cs.filter(function(c){return String(c.hex).toLowerCase()===String(state.tee).toLowerCase();})[0]||cs[0];if(co){o.front=co.front?phSrc(co.front):'';o.back=co.back?phSrc(co.back):'';}if(!o.front&&!o.back&&b&&b.imgs&&b.imgs.length)o.front=phSrc(b.imgs[0]);}catch(_){}return o;}
   function depoBox(){
     var sh=curShots(),parts=[typeName(curType())];if(CUT_TR[state.cut])parts.push(CUT_TR[state.cut]);var cn=colorName();if(cn)parts.push(cn);
     var h='<div class="am-dp"><b>Seçili ürün · '+ea(parts.join(' · '))+'</b><div class="am-sel">';
+    var one=/^(mug|canvas)$/.test(state.product);
     if(!sh.front&&!sh.back)h+='<div class="am-ns">Ürün fotoğrafı yok</div>';
+    else if(one&&!sh.back)h+='<figure class="am-one"><img alt="Ürün" src="'+ea(sh.front)+'"></figure>';
     else h+='<figure>'+(sh.front?'<img alt="Ön" src="'+ea(sh.front)+'">':'<div class="am-ns" style="aspect-ratio:1/1">Ön yok</div>')+'Ön</figure><figure>'+(sh.back?'<img alt="Arka" src="'+ea(sh.back)+'">':'<div class="am-ns" style="aspect-ratio:1/1">Arka yok</div>')+'Arka</figure>';
     h+='</div>';
     if(DEPO.cur)h+='<div class="am-dcur">Depodan: '+ea(DEPO.cur.name||'')+' <button type="button" data-amdx>Bırak</button></div>';
@@ -3921,7 +3924,7 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
   }
   function renderAdm(){
     var w=$('#admSheet');
-    var tabs=[['sablon','Şablon'],['urun','Ürün yap'],['baski','Baskıya gönder'],['taslak','Taslak']];tabs.push(['manken','Mankende gör']);if(ADM.edit)tabs.unshift(['guncelle','Güncelle']);else if(mode==='guncelle')mode='sablon';
+    var tabs=[['sablon','Şablon'],['urun','Ürün yap'],['baski','Baskıya gönder'],['taslak','Taslak']];if(!/^(mug|canvas)$/.test(state.product))tabs.push(['manken','Mankende gör']);else if(mode==='manken')mode='sablon';if(ADM.edit)tabs.unshift(['guncelle','Güncelle']);else if(mode==='guncelle')mode='sablon';
     var body='';
     if(mode==='guncelle')body='<p class="note">Düzenlenen ürün: <b>'+ea(ADM.edit.title||'')+'</b>. "Ürünü güncelle" yalnız ön ve arka görsellerini yeniler; ürün kodu, fiyat, kategori, açıklama ve stok aynı kalır.</p>';
     if(mode==='sablon')body='<div class="am-two"><label class="am-f">Kimler görsün<select id="amVis"><option value="herkes"'+(tplVis==='herkes'?' selected':'')+'>Herkes (müşteriler de)</option><option value="ozel"'+(tplVis==='ozel'?' selected':'')+'>Sadece Wolflano</option></select></label>'+
