@@ -3764,7 +3764,20 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
   function colorName(){if(DEPO.cur&&depoBlank(state.product,state.cut)){var dc=depoCols(DEPO.cur).filter(function(c){return c.hex.toLowerCase()===String(state.tee).toLowerCase();})[0];return dc?dc.name:(DEPO.cur.color||'');}var n='';TEES.forEach(function(t){if(t[1]===state.tee)n=t[0];});return n;}
   /* Kategori seçimi "ana|alt|alt-alt" yolu olarak gelir: ürün ana kategoriye ve seçilen alt kategorilere eklenir */
   function catPath(v){var a=String(v||'').split('|').filter(Boolean);return {cat:a[0]?[a[0]]:[],sub:a.slice(1)};}
-  async function prodImgs(ss){var imgs=[];ss=ss.filter(function(q){return q!=='logo'||ss.indexOf('front')<0;});for(var i=0;i<ss.length;i++){var c=await renderComposite(ss[i],1.2),bg=document.createElement('canvas');bg.width=c.width;bg.height=c.height;var x=bg.getContext('2d');x.fillStyle='#f1f3f2';x.fillRect(0,0,bg.width,bg.height);x.drawImage(c,0,0);
+  /* Kupa ve canvas sahnede küçük durur: önce ürünün sahnedeki yerini bulur, sonra yalnız o bölgeyi yüksek çözünürlükte çizip kareye doldurur (tasarım bulanıklaşmaz) */
+  function boxOf(c){var W=c.width,H=c.height,d=c.getContext('2d').getImageData(0,0,W,H).data,b=[d[0],d[1],d[2],d[3]],x0=W,y0=H,x1=-1,y1=-1;
+    for(var y=0;y<H;y++)for(var x=0;x<W;x++){var i=(y*W+x)*4;if(d[i+3]<10)continue;if(b[3]>200&&Math.abs(d[i]-b[0])+Math.abs(d[i+1]-b[1])+Math.abs(d[i+2]-b[2])<18)continue;if(x<x0)x0=x;if(x>x1)x1=x;if(y<y0)y0=y;if(y>y1)y1=y;}
+    return x1<0?null:{x:x0,y:y0,w:x1-x0+1,h:y1-y0+1};}
+  async function renderTight(side){var s0=1,c0=await renderComposite(side,s0),bx=null;try{bx=boxOf(c0);}catch(_){}if(!bx)return renderComposite(side,1.2);
+    var S=Math.max(bx.w,bx.h)*1.16/s0,OUT=1200,k=OUT/S,cx=(bx.x+bx.w/2)/s0,cy=(bx.y+bx.h/2)/s0;
+    var c=document.createElement('canvas');c.width=c.height=OUT;var x=c.getContext('2d');x.translate(OUT/2-cx*k,OUT/2-cy*k);
+    x.drawImage(await loadImg(svgUrl(productSVG(side,state.tee,state.product,state.cut))),0,0,STAGE_W*k,STAGE_H*k);
+    await drawFace(x,side,k);
+    try{var sl=shadeLayers(side,state.tee,state.product,state.cut);
+      if(sl){x.save();x.globalCompositeOperation='multiply';x.drawImage(await loadImg(svgUrl(sl.shade)),0,0,STAGE_W*k,STAGE_H*k);
+        x.globalCompositeOperation='screen';x.drawImage(await loadImg(svgUrl(sl.light)),0,0,STAGE_W*k,STAGE_H*k);x.restore();}}catch(_){}
+    return c;}
+  async function prodImgs(ss){var imgs=[];ss=ss.filter(function(q){return q!=='logo'||ss.indexOf('front')<0;});for(var i=0;i<ss.length;i++){var c=/^(mug|canvas)$/.test(state.product)?await renderTight(ss[i]):await renderComposite(ss[i],1.2);var bg=document.createElement('canvas');bg.width=c.width;bg.height=c.height;var x=bg.getContext('2d');x.fillStyle='#f1f3f2';x.fillRect(0,0,bg.width,bg.height);x.drawImage(c,0,0);
       var tk='img/tas-'+rnd()+'.jpg';await upload('site',tk,await canvasBlob(bg,'image/jpeg',.88));imgs.push(tk);}return imgs;}
   /* Yayındaki ürünü güncelle: yalnız tasarım görselleri yenilenir; kod, fiyat, kategori, açıklama aynı kalır */
   async function doUpdate(){
