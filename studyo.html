@@ -1813,7 +1813,7 @@ function renderRuler(){
   var gh=$('#gridHost');if(gh){if(!RULER||P().draw){gh.innerHTML='';}else{var gy=NECK_Y[face(view.side)]-NECK_DROP[face(view.side)],g='',i;for(i=-30;i<=30;i++){var gx=300+i*5*PPC;g+='<line'+(i%2?' class="g5"':'')+' x1="'+gx+'" x2="'+gx+'" y1="-2000" y2="2600"/>';}for(i=-30;i<=40;i++){var yy=gy+i*5*PPC;g+='<line'+(i%2?' class="g5"':'')+' x1="-2000" x2="2600" y1="'+yy+'" y2="'+yy+'"/>';}gh.innerHTML='<svg width="'+STAGE_W+'" height="'+STAGE_H+'" viewBox="0 0 '+STAGE_W+' '+STAGE_H+'">'+g+'</svg>';}}
   if(!RULER||P().draw){h.innerHTML='';return;}
   var A=areaBox(view.side,cur().area),ny=NECK_Y[face(view.side)],gt=ny-NECK_DROP[face(view.side)],o='',k,y,x,len,ty=Math.max(0,gt-30);
-  var sc=view.s||1,vl=0,vt=0,vb2=STAGE_H,vr=STAGE_W;if(view.W){vl=-(view.W/2-view.cx*sc+(view.px||0))/sc;vt=-(view.H/2-view.cy*sc+(view.py||0))/sc;vb2=vt+view.H/sc;vr=vl+view.W/sc;}
+  var sc=view.s||1,vl=0,vt=0,vb2=STAGE_H,vr=STAGE_W;if(view.W){vl=-(view.W/2-view.cx*sc+(view.px||0))/sc;vt=-(view.H/2+(view.oy||0)-view.cy*sc+(view.py||0))/sc;vb2=vt+view.H/sc;vr=vl+view.W/sc;}
   var RW=28/sc,RH=24/sc;ty=Math.max(gt-RH-18/sc,vt);
   /* Sol cetvel: 0 = omuz dikişi (beden tablosundaki boy buradan ölçülür); ekranın görünen sol kenarına yapışır */
   ny=gt;
@@ -1864,6 +1864,10 @@ function updateArea(){
 function layout(){
   var wr=wrap.getBoundingClientRect(),W=wr.width,H=wr.height;
   if(!W||!H)return;
+  /* Üstteki fiyat etiketi ve alttaki Ortala/Öne/Arkaya çubuğu tasarımın üstüne binmesin: o şeritler ayrılır, tasarım kalan alana ortalanır */
+  var lp=$('#livePrice'),sbar=$('#stageBar'),padT=lp&&!lp.hidden&&lp.offsetHeight?lp.offsetHeight+14:0,padB=sbar&&!sbar.hidden&&sbar.offsetHeight?sbar.offsetHeight+16:0;
+  if(H-padT-padB<H*0.45){var kk=H*0.55/Math.max(1,padT+padB);padT*=kk;padB*=kk;}
+  var H0=H;H=H-padT-padB;var oy=padT+H/2-H0/2;
   var k=CUT_K[state.cut]||CUT_K.erkek,ay=NECK_Y[face(view.side)],vb=prodVB(),base,s,cx=STAGE_W/2,cy;
   if(vb&&mugWrap())vb={cx:267,cy:305,w:178,h:118};
   if(vb){base=Math.min(W/vb.w,H/vb.h)*0.97;cx=vb.cx;cy=vb.cy;}
@@ -1877,9 +1881,9 @@ function layout(){
   s=s*view.z;
   view.s=s;
   if(!view.ready)stage.style.transition='none';
-  stage.style.transform='translate('+(W/2-cx*s+view.px)+'px,'+(H/2-cy*s+view.py)+'px) scale('+s+')';
+  stage.style.transform='translate('+(W/2-cx*s+view.px)+'px,'+(H0/2+oy-cy*s+view.py)+'px) scale('+s+')';
   stage.style.setProperty('--inv',(1/s).toFixed(4));
-  view.W=W;view.H=H;try{renderRuler();}catch(_){}
+  view.W=W;view.H=H0;view.oy=oy;try{renderRuler();}catch(_){}
   if(!view.ready){view.ready=true;requestAnimationFrame(function(){requestAnimationFrame(function(){stage.style.transition='';});});}
 }
 function resetZoom(){view.z=1;view.px=0;view.py=0;}
@@ -1978,7 +1982,9 @@ function qualityOf(o){
   if(ppi>=75)return null;
   return {ppi:ppi,cls:'low',txt:'Fotoğraf küçük'};
 }
-function syncCtx(){syncCtx0();var sb=$('#stageBar');if(sb)sb.hidden=ctx.hidden||!$$('#stageBar button').some(function(b){return !b.hidden;});}
+function syncCtx(){syncCtx0();var sb=$('#stageBar');if(sb){var was=sb.hidden;sb.hidden=ctx.hidden||!$$('#stageBar button').some(function(b){return !b.hidden;});if(was!==sb.hidden&&!(view.g||view.drag))requestAnimationFrame(layout);}}
+/* Alt panel, seçim çubuğu ya da tarayıcı çubuğu açılıp kapanınca tasarım alanı yeniden sığdırılır (görsel kaybolmasın) */
+(function(){if(!window.ResizeObserver)return;var t=0,lw=0,lh=0;new ResizeObserver(function(en){var r=en[0].contentRect;if(Math.abs(r.width-lw)<1&&Math.abs(r.height-lh)<1)return;lw=r.width;lh=r.height;cancelAnimationFrame(t);t=requestAnimationFrame(function(){try{layout();}catch(_){}});}).observe(wrap);})();
 function syncCtx0(){
   var o=selObj();
   $$('#ctxBar [data-g],#stageBar [data-g]').forEach(function(b){b.hidden=!view.grp;});
@@ -2798,6 +2804,7 @@ function applyTemplate(t,silent){
   var A=areaBox(view.side,cur().area);
   var kept=cur().objs.filter(function(o){return o.lock;});
   var bx=tplBox(t);cur().objs=kept.concat(tplObjects(t,A,Math.min(A.w/bx[0],A.h/bx[1]),autoInk()));
+  if(!silent&&view.tab==='tpl'&&innerWidth<700)closeTab();
   view.sel=null;view.grp=false;renderAll();pushHist();
   if(!silent&&grpObjs().length>1){view.grp=true;buildSel();syncCtx();}
   if(!silent&&t.items.some(function(it){return it.t==='ph';})){var fs=cur().objs.filter(function(o){return o.phEmpty;})[0];
@@ -2835,7 +2842,7 @@ function cancelSingle(){
 function startPinch(){
   cancelSingle();
   var P0=pinchState(),W=wrap.clientWidth,H=wrap.clientHeight,s=view.s;
-  var tx=W/2-view.cx*s+view.px,ty=H/2-view.cy*s+view.py;
+  var tx=W/2-view.cx*s+view.px,ty=H/2+(view.oy||0)-view.cy*s+view.py;
   pinch={d0:P0.d,z0:view.z,lx:(P0.m.x-tx)/s,ly:(P0.m.y-ty)/s};
   stage.style.transition='none';
 }
@@ -2847,7 +2854,7 @@ function movePinch(){
     var s=view.bs*z;
     view.z=z;
     view.px=P1.m.x-pinch.lx*s-W/2+view.cx*s;
-    view.py=P1.m.y-pinch.ly*s-H/2+view.cy*s;
+    view.py=P1.m.y-pinch.ly*s-H/2-(view.oy||0)+view.cy*s;
   }
   layout();
 }
@@ -2866,6 +2873,7 @@ function onDown(e){
   activeId=e.pointerId;
   try{wrap.setPointerCapture(e.pointerId);}catch(_){}
   var h=e.target.closest('[data-h]'),oEl=e.target.closest('.obj'),sb=e.target.closest('.selbox'),p=toL(e.clientX,e.clientY),o=selObj();
+  view.tapClose=!h&&!!(oEl||sb)&&innerWidth<700&&['tpl','clip','image'].indexOf(view.tab)>=0;
   if(view.grp){
     var X=grpBox(),snap=grpObjs().map(function(q){return {id:q.id,x:q.x,y:q.y,w:q.w,h:q.h,s:q.size||0,r:q.rot};});
     if(X&&h){g={kind:'gturn',mode:h.dataset.h,cx:X.cx,cy:X.cy,a0:ang(X.cx,X.cy,p.x,p.y),d0:Math.max(8,dist(X.cx,X.cy,p.x,p.y)),snap:snap,bw:X.r-X.l,bh:X.b-X.t,moved:false};return;}
@@ -2964,8 +2972,11 @@ function onUp(e){
   if(e.pointerId!==activeId)return;
   activeId=null;
   try{wrap.releasePointerCapture(e.pointerId);}catch(_){}
+  var tc=view.tapClose;view.tapClose=false;
   if(!g)return;
   var k=g.kind,gg=g;g=null;
+  /* Şablon/şekil/görsel paneli açıkken tasarımdaki bir parçaya dokunulursa panel kapanır; tasarım küçülüp kaybolmaz */
+  if(tc&&!gg.moved&&view.tab)setTimeout(closeTab,0);
   if(e.type!=='pointerup'){if(gg.moved){syncCtx();pushHist();}return;}   /* iptal edilen dokunuş */
   if(k==='gmove'||k==='gturn'){if(gg.moved)pushHist();else if(k==='gmove'&&gg.tid)select(gg.tid);return;}
   if(k==='move'){if(gg.moved)pushHist();else tapObject(gg.id);}
