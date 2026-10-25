@@ -3779,7 +3779,9 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
         x.globalCompositeOperation='screen';x.drawImage(await loadImg(svgUrl(sl.light)),0,0,STAGE_W*k,STAGE_H*k);x.restore();}}catch(_){}
     return c;}
   async function prodImgs(ss){var imgs=[];ss=ss.filter(function(q){return q!=='logo'||ss.indexOf('front')<0;});for(var i=0;i<ss.length;i++){var c=/^(mug|canvas)$/.test(state.product)?await renderTight(ss[i]):await renderComposite(ss[i],1.2);var bg=document.createElement('canvas');bg.width=c.width;bg.height=c.height;var x=bg.getContext('2d');x.fillStyle='#f1f3f2';x.fillRect(0,0,bg.width,bg.height);x.drawImage(c,0,0);
-      var tk='img/tas-'+(/^(mug|canvas)$/.test(state.product)?'hq-':'')+rnd()+'.jpg';await upload('site',tk,await canvasBlob(bg,'image/jpeg',.88));imgs.push(tk);}return imgs;}
+      var tk='img/tas-'+(/^(mug|canvas)$/.test(state.product)?'hq-':'')+rnd()+'.jpg';await upload('site',tk,await canvasBlob(bg,'image/jpeg',.88));imgs.push(tk);
+      /* Ortam fotoğrafı için ayrı referans: beyaz kupa açık zeminde kaybolunca yapay zekâ kupanın boyunu tahmin edip baskıyı küçültüyordu; koyu zeminde kupanın silüeti ve baskının kupayı ne kadar kapladığı net görünür */
+      if(i===0&&/^(mug|canvas)$/.test(state.product)){try{var rf=document.createElement('canvas');rf.width=c.width;rf.height=c.height;var rx=rf.getContext('2d');rx.fillStyle='#9aa39e';rx.fillRect(0,0,rf.width,rf.height);rx.drawImage(c,0,0);var rk='img/ref-'+rnd()+'.jpg';await upload('site',rk,await canvasBlob(rf,'image/jpeg',.9));ADM.refTok=rk;}catch(_){ADM.refTok=null;}}}return imgs;}
   /* Yayındaki ürünü güncelle: yalnız tasarım görselleri yenilenir; kod, fiyat, kategori, açıklama aynı kalır */
   async function doUpdate(){
     var E=ADM.edit;if(!E)throw {msg:'Düzenlenen ürün yok.'};
@@ -3945,7 +3947,7 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
       '<p class="note">Ürün, tasarımı aynen korunarak seçtiğin mekânda gerçekçi fotoğraflanır ve ana görsel olur; düz görsel ikinci sırada kalır. 1–2 dakika sürer.</p>';}
   async function withOrtam(imgs,btn){var o=ADM.ort;if(!o||!ORTAMS[state.product]||!imgs.length)return imgs;
     try{if(btn)btn.textContent='Ortam fotoğrafı hazırlanıyor (1–2 dk)…';var t=await tok();if(!t)throw 0;
-      var r=await fetch(SBA.url+'/functions/v1/manken',{method:'POST',headers:{'Content-Type':'application/json',apikey:SBA.key,Authorization:'Bearer '+t},body:JSON.stringify({mode:'ortam',tur:state.product,sahne:o,ref:pubUrl(imgs[0])})});
+      var r=await fetch(SBA.url+'/functions/v1/manken',{method:'POST',headers:{'Content-Type':'application/json',apikey:SBA.key,Authorization:'Bearer '+t},body:JSON.stringify({mode:'ortam',tur:state.product,sahne:o,ref:pubUrl(ADM.refTok||imgs[0]),cut:state.cut})});ADM.refTok=null;
       var jj=await r.json().catch(function(){return {};});if(r.ok&&jj.tok)return [jj.tok].concat(imgs);
       longToast((jj&&jj.message)||'Ortam fotoğrafı üretilemedi; ürün düz görselle kaydediliyor.');}catch(_){longToast('Ortam fotoğrafı üretilemedi; ürün düz görselle kaydediliyor.');}
     return imgs;}

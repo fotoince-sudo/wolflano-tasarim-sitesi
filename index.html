@@ -674,6 +674,17 @@ body.cko #nav,body.cko .menu-btn,body.cko .lang,body.cko #cartBtn,body.cko #ann{
 /* Baskılı ürün kartı: "Tasarla" ince, kartın en altında; renk noktalarıyla arasında boşluk (telefonda yanlışlıkla dokunmasın) */
 .tsp .card .meta,.hdc .meta,.hdg .card .meta{flex:1 1 auto}
 .cpg .hdg{margin-top:18px}
+.hdh{text-align:center;padding:6px 0 4px;position:relative}
+.hdk{display:inline-flex;align-items:center;gap:10px;font:700 11.5px var(--ui);letter-spacing:.32em;text-transform:uppercase;color:var(--green)}
+.hdk:before,.hdk:after{content:"";width:26px;height:1px;background:currentColor;opacity:.55}
+.hdt{font:400 clamp(44px,12vw,72px)/1 'Cormorant Garamond',Georgia,serif;letter-spacing:-.01em;margin:10px 0 8px;color:var(--ink)}
+.hdt em{font-style:italic;color:var(--green);padding:0 .04em}
+.hds{margin:0;font:500 14px/1.5 var(--ui);color:var(--muted)}
+.hdtabs{display:grid;grid-template-columns:repeat(auto-fit,minmax(0,1fr));gap:6px;margin:20px 0 4px;padding:5px;border:1px solid var(--line);border-radius:999px;background:var(--card)}
+.hdtabs button{display:flex;align-items:center;justify-content:center;gap:8px;border:0;background:none;padding:11px 10px;border-radius:999px;font:600 14.5px var(--ui);letter-spacing:.02em;color:var(--ink);cursor:pointer}
+.hdtabs button svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.hdtabs button.on{background:var(--green);color:#fff;box-shadow:0 0 0 1px #000}
+.hdg[data-hdt=kupa] [data-hd=canvas],.hdg[data-hdt=canvas] [data-hd=kupa]{display:none}
 .card .add[data-tcgo],.hdc .add{margin-top:18px;padding:5px 10px;min-height:30px;font:600 12.5px/1 var(--ui);letter-spacing:.04em;border-width:1px}
 .kpromo{padding:8px 0 4px;border-bottom:1px solid var(--line);margin-bottom:18px}.kpromo .lead{margin:6px 0 14px}
 .spt{width:100%;max-width:100%;min-width:0!important;border-collapse:collapse;table-layout:fixed;font-size:14px;display:table}.spt th,.spt td{border:1px solid var(--line);padding:7px 9px;text-align:left;vertical-align:top;white-space:normal!important;overflow-wrap:anywhere;text-transform:none!important;letter-spacing:normal!important}.spt th{width:36%;background:var(--mint);font-weight:600;font-size:13px}
@@ -2522,7 +2533,17 @@ function cpBody(t){var h='',ul=false,para=[];function flush(){if(para.length){h+
 /* Hediye & Dekor sayfası: kupa ve canvas, Baskı Atölyesi'ndeki gibi kart olarak (fotoğraf, isim, fiyat, renk, "Tasarla"); varsa hazır baskılı ürünler de yanında */
 function hdGrid(){var bl=BLANKS.filter(function(b){var t=b.p||b.id;return (t==='mug'||t==='canvas')&&bVisible(b);});
   var hc=(D.cats||[]).filter(function(c){return /hediye|dekor/i.test(c.name||'');})[0],rd=hc?PRODUCTS.filter(function(p){return (p.cat||[]).indexOf(hc.id)>=0;}):[];
-  if(!bl.length&&!rd.length)return '';return '<div class="grid hdg">'+rd.map(card).join('')+bl.map(tsCard).join('')+'</div>';}
+  if(!bl.length&&!rd.length)return '';
+  /* İki ayrı kategori: Kupa ve Canvas Tablo; her kart kendi türüyle işaretlenir, sekme yalnız o türü gösterir */
+  var it=rd.map(function(p){return [ptOf(p)==='canvas'?'canvas':'kupa',card(p)];}).concat(bl.map(function(b){return [(b.p||b.id)==='canvas'?'canvas':'kupa',tsCard(b)];}));
+  var n={kupa:0,canvas:0};it.forEach(function(x){n[x[0]]++;});var tab=n[HDTAB]?HDTAB:(n.kupa?'kupa':'canvas');
+  var tb=[['kupa','Kupa',IC_HD.kupa],['canvas','Canvas Tablo',IC_HD.canvas]].filter(function(x){return n[x[0]];});
+  return '<div class="hdtabs" role="tablist">'+tb.map(function(x){return '<button type="button" role="tab" data-hdtab="'+x[0]+'" aria-selected="'+(x[0]===tab)+'"'+(x[0]===tab?' class="on"':'')+'>'+x[2]+'<span>'+x[1]+'</span></button>';}).join('')+'</div>'+
+    '<div class="grid hdg" data-hdt="'+tab+'">'+it.map(function(x){return x[1].replace('<article class="','<article data-hd="'+x[0]+'" class="');}).join('')+'</div>';}
+var HDTAB='kupa',IC_HD={kupa:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h12v9a4 4 0 0 1-4 4H8a4 4 0 0 1-4-4z"/><path d="M16 9h2a3 3 0 0 1 0 6h-2"/></svg>',canvas:'<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="15" rx="1.5"/><path d="M3 15l5-5 5 5 3-3 5 5"/><circle cx="16" cy="8.5" r="1.5"/></svg>'};
+document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('[data-hdtab]');if(!b)return;HDTAB=b.dataset.hdtab;var w=b.parentNode,g=w.nextElementSibling;[].forEach.call(w.children,function(x){var on=x===b;x.classList.toggle('on',on);x.setAttribute('aria-selected',on);});if(g)g.setAttribute('data-hdt',HDTAB);});
+/* Hediye & Dekor başlığı: düz yazı yerine zarif, görsel bir başlık */
+function hdHead(){return '<header class="hdh"><span class="hdk">Wolflano</span><h1 class="hdt">Hediye <em>&amp;</em> Dekor</h1><p class="hds">Sevdiklerine özel kupa ve canvas tablolar</p></header>';}
 /* Geri bağlantısı: site içinden gelindiyse geldiği sayfaya döner (ör. Hediye & Dekor'dan kupaya bakınca yine Hediye & Dekor'a) */
 var NAVPREV='';window.addEventListener('hashchange',function(e){try{var o=new URL(e.oldURL),n=new URL(e.newURL);if(o.pathname===n.pathname)NAVPREV=o.hash||'#ana';}catch(_){}});
 function backLink(def,lbl){return '<a class="link back" href="'+def+'" data-goback>'+(NAVPREV&&NAVPREV!==def?'← Geri':esc(lbl))+'</a>';}
@@ -2546,7 +2567,7 @@ function acDo(img){var u=img.currentSrc||img.src;if(img.dataset.acd||!acNeed(u))
     o.toBlob(function(bl){if(!bl){ACM[u]='-';return;}ACM[u]=URL.createObjectURL(bl);document.querySelectorAll('img').forEach(function(z){if((z.currentSrc||z.src)===u)z.src=ACM[u];});},'image/jpeg',.9);}catch(_){ACM[u]='-';}};
   im.onerror=function(){ACM[u]='-';};im.src=u+(u.indexOf('?')<0?'?':'&')+'ac=1';}
 document.addEventListener('load',function(e){var t=e.target;if(t&&t.tagName==='IMG')acDo(t);},true);
-function cpHTML(x){var im=(x.imgs||[])[0],hg=/hediye|dekor/i.test(x.title||'')?hdGrid():'';return '<div class="wrap page cpg">'+(x.eyebrow?'<p class="eyebrow">'+esc(x.eyebrow)+'</p>':'')+'<h1 class="h2">'+esc(x.title||'')+'</h1>'+(hg||(im?'<img class="cpim" src="'+src(im)+'" alt="'+esc(x.title||'')+'">':''))+cpBody(x.body)+'</div>';}
+function cpHTML(x){var im=(x.imgs||[])[0],hg=/hediye|dekor/i.test(x.title||'')?hdGrid():'';return '<div class="wrap page cpg">'+(hg?hdHead():(x.eyebrow?'<p class="eyebrow">'+esc(x.eyebrow)+'</p>':'')+'<h1 class="h2">'+esc(x.title||'')+'</h1>')+(hg||(im?'<img class="cpim" src="'+src(im)+'" alt="'+esc(x.title||'')+'">':''))+cpBody(x.body)+'</div>';}
 function socURL(v,base){v=String(v||'').trim();if(!v)return '';if(/^https?:\/\//i.test(v))return v;return base+v.replace(/^@/,'').replace(/^(www\.)?(instagram|tiktok)\.com\/@?/i,'');}
 document.addEventListener('contextmenu',function(e){var t=e.target;if(t&&t.tagName==='IMG'&&!(t.closest&&t.closest('.ad')))e.preventDefault();});
 document.addEventListener('dragstart',function(e){var t=e.target;if(t&&t.tagName==='IMG')e.preventDefault();});
@@ -2805,7 +2826,7 @@ yorumlar:function(){return rvPage();},
   return '<div class="wrap page">'+backLink('#hazir','← Koleksiyon')+'<div class="pd"><div class="gal" id="gal">'+galHTML(p)+'</div><div class="info"><small class="ptype">'+pTypeColor(p)+'</small>'+(function(){var zs=pSizes(p);if(!zs.length||soldOut(p))return '';return szBlock(zs,szTable(szKind((p.type||'')+' '+(p.name||'')),pCut(p),zs));})()+'<div class="ptop">'+(String(p.name||'').trim().toLocaleLowerCase('tr')===String(p.type||'').trim().toLocaleLowerCase('tr')?'':'<h1>'+esc(p.name)+'</h1>')+'<div class="pbig">'+prBig(p)+'</div><small class="pcode">Ürün kodu: '+pCode(p)+'</small></div>'+stk(p)+(soldOut(p)?'<button type="button" class="btn sold" data-soldout="'+p.id+'">Sepete ekle</button>':'<button class="btn" data-add="'+p.id+'">Sepete ekle</button>')+(p.dsg?'<a class="btn soft" href="studyo.html?hazir='+encodeURIComponent(p.id)+'">Bu tasarımı düzenle <small style="font-weight:500;opacity:.75">(ismini ekle)</small></a>':'')+(hdStudio(p)?'<a class="btn soft'+(p.dsg?' sm':'')+'" href="'+hdStudio(p)+'">'+(p.dsg?'Boş üründen tasarla':'Kendi tasarımını yap')+'</a>':'')+'<button class="btn soft sm" data-fav="'+p.id+'" style="gap:8px">'+(favs[p.id]?'♥ Favorilerde':'♡ Favorilere ekle')+'</button>'+(p.adesign&&sbAdmin()?'<a class="btn soft sm" href="studyo.html?duzenle='+encodeURIComponent(p.id)+'" style="gap:8px">✎ Stüdyoda düzenle <small style="font-weight:500;opacity:.7">(yalnız sen görürsün)</small></a>':'')+(pDesc(p)?'<p style="margin:0;color:var(--muted)">'+esc(pDesc(p))+'</p>':'')+(function(){var pn=String(p.pnote||'').trim();if(pn==='-')return '';if(!pn){if(/kupa/i.test((p.type||'')+' '+(p.name||'')))return '';pn=TX('pnote');}return pn?'<div class="pnote"><b>'+esc(TX('pnoteTitle'))+'</b><p>'+esc(pn)+'</p></div>':'';})()+'<ul><li>Siparişler 2-4 iş gününde hazırlanır</li><li>Hediye paketi her siparişte ücretsiz</li></ul></div></div></div>';
  },
  baski:function(){return VIEWS.tasarla();},
- hediye:function(){var hh=hdHref();if(hh!=='#hediye'){setTimeout(function(){location.replace(hh);},0);return '';}return '<div class="wrap page cpg"><p class="eyebrow">Kendin tasarla</p><h1 class="h2">Hediye &amp; Dekor</h1>'+(hdGrid()||'<p class="empty">Bu bölümde henüz ürün yok.</p>')+'</div>';},
+ hediye:function(){var hh=hdHref();if(hh!=='#hediye'){setTimeout(function(){location.replace(hh);},0);return '';}return '<div class="wrap page cpg">'+hdHead()+(hdGrid()||'<p class="empty">Bu bölümde henüz ürün yok.</p>')+'</div>';},
  tasarla:function(){
   /* Sekmeler: Tümü · Kadın · Erkek · Çocuk · Kupa · Canvas; giyim sekmelerinde tür kutusu (Tişört, Sweatshirt, Polo, Şapka) */
   var all=BLANKS.filter(function(b){var t=b.p||b.id;return t!=='mug'&&t!=='canvas'&&!/kupa|canvas|tablo/i.test(b.name||'')&&bVisible(b);}),inTab=all.filter(function(b){return !tsSel||bGen(b).indexOf(tsSel)>=0;}),types=[];
