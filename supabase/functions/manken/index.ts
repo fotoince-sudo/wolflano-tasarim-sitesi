@@ -100,6 +100,10 @@ const ORTAM: Record<string, Record<string, string>> = {
     antre: 'hanging on the wall above a slim wooden console table with a ceramic vase and a few books in a stylish entrance hall, warm soft light',
   },
 };
+// Açılı (yandan) boş sahneler: yalnız 'sahne' modunda kullanılır; tasarım tarayıcıda perspektifle yerleştirilir
+const SAHNE_YAN: Record<string, string> = {
+  salonyan: 'hanging on a warm off-white wall above a modern light linen sofa in a bright, calm, elegant living room with a few soft cushions in muted olive and caramel, a round light-wood coffee table with a small ceramic vase and green olive branches, a knitted throw, soft natural daylight; minimal decor, no other pictures on the walls',
+};
 
 function blobFromB64(b64: string, type: string) {
   const bin = atob(b64);
@@ -131,16 +135,18 @@ Deno.serve(async (req) => {
     // Boş sahne (canvas için): mekân bir kez üretilir, kaydedilir ve hep yeniden kullanılır. Tasarım tarayıcıda yerleştirilir; ikinci kez para harcanmaz.
     if (b.mode === 'sahne') {
       const sk = String(b.sahne || '').replace(/[^a-z]/g, '');
-      const sc = ORTAM.canvas[sk];
+      const sc = ORTAM.canvas[sk] || SAHNE_YAN[sk];
       if (!sc) return j({ error: 'bad', message: 'Ortam seç.' }, 400);
       const land = String(b.yon) === 'yatay';
-      const spath = `img/sahne-canvas-${sk}-${land ? 'yatay' : 'dikey'}.jpg`;
+      const kucuk = String(b.olcu) === '3550';
+      // 50 × 70 sahneleri eski adıyla kalır (önceden üretilenler yeniden kullanılır); 35 × 50 ayrı üretilir ki tablo kanepeye göre gerçek boyunda görünsün
+      const spath = `img/sahne-canvas-${sk}-${land ? 'yatay' : 'dikey'}${kucuk ? '-3550' : ''}.jpg`;
       const surl = `${SB_URL}/storage/v1/object/public/site/${spath}`;
       if (!b.yeni) {
         const hd = await fetch(surl, { method: 'HEAD' });
         if (hd.ok) return j({ ok: true, url: surl, tok: spath, cached: true });
       }
-      b.__sahne = { sk, sc, land, spath };
+      b.__sahne = { sk, sc, land, spath, kucuk, yan: !!SAHNE_YAN[sk] };
     }
     const mk = isUrun || isOrtam || b.__sahne ? MK.kerem : MK[String(b.mk)];
     if (!mk) return j({ error: 'bad', message: 'Manken seçilmedi.' }, 400);
@@ -155,7 +161,8 @@ Deno.serve(async (req) => {
     if (mode === 'sahne') {
       const S = b.__sahne;
       size = '1024x1024';
-      prompt = `Photorealistic premium interior photo for a home decor shop. A single BLANK stretched canvas with a perfectly plain, pure flat white front (no artwork, no texture, no frame, no text) is ${S.sc.replace(/^hanging/, 'hanging')}. The canvas is ${S.land ? 'LANDSCAPE (horizontal, about 10:7, wider than tall)' : 'PORTRAIT (vertical, about 7:10, taller than wide)'}, a gallery-wrapped canvas about 4 cm deep, seen perfectly straight-on from the front at eye level so its front face is an exact upright rectangle with no perspective tilt, centered horizontally, its front face covering about ${S.land ? '45% of the image width' : '30% of the image width'}. The white front is evenly lit and clearly brighter than the wall behind it, with a soft natural shadow on the wall. Warm, inviting, high-end catalog quality, true-to-life colors. No people, no text, no logos, no watermarks. Square 1:1 composition.`;
+      if (S.yan) prompt = `Photorealistic premium interior photo for a home decor shop. A single BLANK stretched canvas with a perfectly plain, pure flat white front (no artwork, no texture, no frame, no text) is ${S.sc}. The canvas is ${S.land ? 'LANDSCAPE (horizontal, about 10:7, wider than tall)' : 'PORTRAIT (vertical, about 7:10, taller than wide)'}, a gallery-wrapped canvas about 4 cm deep, really measuring ${S.kucuk ? '35 × 50 cm' : '50 × 70 cm'} and shown at true scale next to the furniture (a standard three-seat sofa is about 210 cm wide). The camera stands about 30 degrees to the LEFT of the canvas at eye level, so the canvas is seen at a gentle angle: its front face appears as a slightly narrowing trapezoid, the left edge a little taller than the right edge, and its LEFT side edge is visible as a narrow strip in soft shade. Vertical lines stay perfectly vertical. The whole canvas is fully inside the image with wall space around it, its front face covering about ${S.land ? (S.kucuk ? '28%' : '40%') : (S.kucuk ? '18%' : '26%')} of the image width, placed slightly right of center. The white front is evenly lit and clearly brighter than the wall behind it, with a soft natural shadow on the wall. Warm, inviting, high-end catalog quality, true-to-life colors. No people, no text, no logos, no watermarks. Square 1:1 composition.`;
+      else prompt = `Photorealistic premium interior photo for a home decor shop. A single BLANK stretched canvas with a perfectly plain, pure flat white front (no artwork, no texture, no frame, no text) is ${S.sc.replace(/^hanging/, 'hanging')}. The canvas is ${S.land ? 'LANDSCAPE (horizontal, about 10:7, wider than tall)' : 'PORTRAIT (vertical, about 7:10, taller than wide)'}, a gallery-wrapped canvas about 4 cm deep, really measuring ${S.kucuk ? '35 × 50 cm' : '50 × 70 cm'} and shown at true scale next to the furniture, seen perfectly straight-on from the front at eye level so its front face is an exact upright rectangle with no perspective tilt, centered horizontally, its front face covering about ${S.land ? (S.kucuk ? '32%' : '45%') : (S.kucuk ? '22%' : '30%')} of the image width. The white front is evenly lit and clearly brighter than the wall behind it, with a soft natural shadow on the wall. Warm, inviting, high-end catalog quality, true-to-life colors. No people, no text, no logos, no watermarks. Square 1:1 composition.`;
     } else if (mode === 'ortam') {
       const tur = String(b.tur) === 'canvas' ? 'canvas' : 'mug';
       const sc = ORTAM[tur][String(b.sahne)];

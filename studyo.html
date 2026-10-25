@@ -4433,7 +4433,10 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
     return '<label class="am-f">Ortam fotoğrafı<select id="amOrt">'+L.map(function(o){return '<option value="'+o[0]+'"'+(o[0]===cur?' selected':'')+'>'+o[1]+'</option>';}).join('')+'</select></label>'+
       '<p class="note">Tasarım seçtiğin mekândaki tabloya birebir yerleştirilir ve ana görsel olur. Her mekân yalnız ilk kullanımda bir kez yapay zekâyla üretilir (1–2 dk); sonra hep aynı mekân kullanılır, tekrar ücret harcanmaz.</p>';}
   async function withOrtam(imgs,btn){var o=ADM.ort;if(!o||!ORTAMS[state.product]||!imgs.length||state.product==='mug')return imgs;
-    if(state.product==='canvas'){try{var tk2=await sceneCompose(o,btn);if(tk2)return [tk2].concat(imgs);}catch(e){console.warn('sahne',e);}
+    if(state.product==='canvas'){try{var tk2=await sceneCompose(o,btn);if(tk2){var out=[tk2];
+        /* yandan görünüş (şimdilik salon için): üretilemezse ürün yalnız karşıdan görünüşle kaydedilir */
+        if(o==='salon'){try{var tk3=await sideCompose('salonyan',btn);if(tk3)out.push(tk3);}catch(e3){console.warn('yan',e3);}}
+        return out.concat(imgs);}}catch(e){console.warn('sahne',e);}
       longToast('Ortam fotoğrafı hazırlanamadı; ürün düz görselle kaydediliyor.');return imgs;}
     try{if(btn)btn.textContent='Ortam fotoğrafı hazırlanıyor (1–2 dk)…';var t=await tok();if(!t)throw 0;
       var r=await fetch(SBA.url+'/functions/v1/manken',{method:'POST',headers:{'Content-Type':'application/json',apikey:SBA.key,Authorization:'Bearer '+t},body:JSON.stringify({mode:'ortam',tur:state.product,sahne:o,ref:pubUrl(ADM.refTok||imgs[0]),cut:state.cut})});ADM.refTok=null;
@@ -4511,7 +4514,7 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
     return {c:o,sx:Math.round(c.width*4/cm[0]),sy:Math.round(c.height*4/cm[1])};}
   async function sceneCompose(sahne,btn){
     var land=isLand('front'),t=await tok();if(!t)throw 0;if(btn)btn.textContent='Mekân hazırlanıyor…';
-    var r=await fetch(SBA.url+'/functions/v1/manken',{method:'POST',headers:{'Content-Type':'application/json',apikey:SBA.key,Authorization:'Bearer '+t},body:JSON.stringify({mode:'sahne',sahne:sahne,yon:land?'yatay':'dikey'})});
+    var r=await fetch(SBA.url+'/functions/v1/manken',{method:'POST',headers:{'Content-Type':'application/json',apikey:SBA.key,Authorization:'Bearer '+t},body:JSON.stringify({mode:'sahne',sahne:sahne,yon:land?'yatay':'dikey',olcu:cvOlcu()})});
     var jj=await r.json().catch(function(){return {};});if(!r.ok||!jj.url){if(jj&&jj.message)longToast(jj.message);return null;}
     if(btn)btn.textContent='Tasarım mekâna yerleştiriliyor…';
     var im=await loadCors(jj.url+(jj.cached?'':'?v='+Date.now())),bx=SCN_BOX[jj.url]||findWhiteBox(im,land);if(!bx)return null;SCN_BOX[jj.url]=bx;
@@ -4529,6 +4532,71 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
     var dx=X+(BW-fw*k)/2-F.sx*k,dy=Y+(BH-fh*k)/2-F.sy*k;
     x.save();x.beginPath();x.rect(G.l,G.t,GW,GH);x.clip();x.drawImage(F.c,dx,dy,F.c.width*k,F.c.height*k);
     x.globalCompositeOperation='multiply';x.drawImage(lc,G.l,G.t);x.restore();
+    var tk='img/ortam-canvas-'+sahne+'-'+rnd()+'.jpg';await upload('site',tk,await canvasBlob(c,'image/jpeg',.9));return tk;}
+  /* Açılı mekânda beyaz tablo ön yüzünün dört köşesi. d: RGBA, W×H (çalışma ölçeği), bx: wbCore kutusu (0-1 oranlarıyla) */
+  function wbQuad(d,W,H,bx){
+    var N=W*H,lum=new Float32Array(N),i;for(i=0;i<N;i++){var r=d[i*4],g=d[i*4+1],b=d[i*4+2];lum[i]=Math.max(r,g,b)-Math.min(r,g,b)<34?(r+g+b)/3:0;}
+    var l=Math.round(bx.l*W),t=Math.round(bx.t*H),w=Math.round(bx.w*W),h=Math.round(bx.h*H),cx=l+(w>>1),cy=t+(h>>1);
+    /* yüz parlaklığı: kutunun ortası; duvar: kutunun hemen dışı */
+    var fs=[],ws=[];for(var y=t+(h>>2);y<t+h-(h>>2);y+=2)for(var x=l+(w>>2);x<l+w-(w>>2);x+=2)fs.push(lum[y*W+x]);
+    var m=Math.max(4,Math.round(w*0.08));for(y=t;y<t+h;y+=2){ws.push(lum[y*W+Math.max(0,l-m)]);ws.push(lum[y*W+Math.min(W-1,l+w+m)]);}
+    fs.sort(function(a,b){return a-b;});ws.sort(function(a,b){return a-b;});var face=fs[fs.length>>1],wall=ws[ws.length>>1];
+    if(face-wall<4)return null;var th=wall+0.5*(face-wall);
+    var seen=new Uint8Array(N),st=[cy*W+cx],P={tl:[1e9,0,0],tr:[-1e9,0,0],br:[-1e9,0,0],bl:[1e9,0,0]},n=0;if(lum[st[0]]<th)return null;seen[st[0]]=1;
+    while(st.length){var q=st.pop(),qx=q%W,qy=(q/W)|0;n++;
+      if(qx+qy<P.tl[0])P.tl=[qx+qy,qx,qy];if(qx-qy>P.tr[0])P.tr=[qx-qy,qx,qy];if(qx+qy>P.br[0])P.br=[qx+qy,qx,qy];if(qx-qy<P.bl[0])P.bl=[qx-qy,qx,qy];
+      if(qx===0||qy===0||qx===W-1||qy===H-1)return null;
+      [q-1,q+1,q-W,q+W].forEach(function(z){if(!seen[z]&&lum[z]>=th&&Math.abs(z%W-qx)<=1){seen[z]=1;st.push(z);}});}
+    var Q=[[P.tl[1],P.tl[2]],[P.tr[1]+1,P.tr[2]],[P.br[1]+1,P.br[2]+1],[P.bl[1],P.bl[2]+1]];
+    /* dörtgen alanı ile beyaz piksel sayısı uyuşmalı (yoksa köşe bulma yanlış) */
+    var A=0;for(i=0;i<4;i++){var a=Q[i],c=Q[(i+1)%4];A+=a[0]*c[1]-c[0]*a[1];}A=Math.abs(A)/2;if(n<A*0.85||n>A*1.1)return null;
+    return Q.map(function(p){return [p[0]/W,p[1]/H];});
+  }
+  /* birim kare → dörtgen homografisi */
+  function homog(Q){var x0=Q[0][0],y0=Q[0][1],x1=Q[1][0],y1=Q[1][1],x2=Q[2][0],y2=Q[2][1],x3=Q[3][0],y3=Q[3][1];
+    var dx1=x1-x2,dx2=x3-x2,dy1=y1-y2,dy2=y3-y2,sx=x0-x1+x2-x3,sy=y0-y1+y2-y3,den=dx1*dy2-dx2*dy1;
+    var g=(sx*dy2-dx2*sy)/den,h=(dx1*sy-sx*dy1)/den;
+    var a=x1-x0+g*x1,b=x3-x0+h*x3,d=y1-y0+g*y1,e=y3-y0+h*y3;
+    return function(u,v){var z=g*u+h*v+1;return [(a*u+b*v+x0)/z,(d*u+e*v+y0)/z];};}
+
+  function cvOlcu(){return state.front&&state.front.area==='cv3550'?'3550':'5070';}
+  /* resmin bir dikdörtgenini (sx,sy,sw,sh) homografiyle dörtgene çizer: küçük üçgenlere bölünüp her biri afin dönüşümle yerleştirilir */
+  function warpImg(x,img,sx,sy,sw,sh,Hf,n){
+    function tri(s0,s1,s2,d0,d1,d2){
+      var cx=(d0[0]+d1[0]+d2[0])/3,cy=(d0[1]+d1[1]+d2[1])/3,ex=function(p){var dx=p[0]-cx,dy=p[1]-cy,l=Math.hypot(dx,dy)||1;return [p[0]+dx/l*0.7,p[1]+dy/l*0.7];};
+      var den=(s1[0]-s0[0])*(s2[1]-s0[1])-(s2[0]-s0[0])*(s1[1]-s0[1]);if(!den)return;
+      var a=((d1[0]-d0[0])*(s2[1]-s0[1])-(d2[0]-d0[0])*(s1[1]-s0[1]))/den,c=((d2[0]-d0[0])*(s1[0]-s0[0])-(d1[0]-d0[0])*(s2[0]-s0[0]))/den;
+      var b=((d1[1]-d0[1])*(s2[1]-s0[1])-(d2[1]-d0[1])*(s1[1]-s0[1]))/den,d=((d2[1]-d0[1])*(s1[0]-s0[0])-(d1[1]-d0[1])*(s2[0]-s0[0]))/den;
+      var e=d0[0]-a*s0[0]-c*s0[1],f=d0[1]-b*s0[0]-d*s0[1];
+      var p0=ex(d0),p1=ex(d1),p2=ex(d2);x.save();x.beginPath();x.moveTo(p0[0],p0[1]);x.lineTo(p1[0],p1[1]);x.lineTo(p2[0],p2[1]);x.closePath();x.clip();
+      x.setTransform(a,b,c,d,e,f);x.drawImage(img,0,0);x.restore();}
+    for(var i=0;i<n;i++)for(var j=0;j<n;j++){var u0=i/n,u1=(i+1)/n,v0=j/n,v1=(j+1)/n,S=function(u,v){return [sx+u*sw,sy+v*sh];};
+      tri(S(u0,v0),S(u1,v0),S(u1,v1),Hf(u0,v0),Hf(u1,v0),Hf(u1,v1));tri(S(u0,v0),S(u1,v1),S(u0,v1),Hf(u0,v0),Hf(u1,v1),Hf(u0,v1));}}
+  /* Yandan görünüş: açılı boş salon bir kez üretilir; tasarım ön yüze perspektifle, 4 cm sargı payı görünen yan yüze yerleştirilir */
+  async function sideCompose(sahne,btn){
+    var land=isLand('front'),t=await tok();if(!t)return null;if(btn)btn.textContent='Yandan görünüş hazırlanıyor…';
+    var r=await fetch(SBA.url+'/functions/v1/manken',{method:'POST',headers:{'Content-Type':'application/json',apikey:SBA.key,Authorization:'Bearer '+t},body:JSON.stringify({mode:'sahne',sahne:sahne,yon:land?'yatay':'dikey',olcu:cvOlcu()})});
+    var jj=await r.json().catch(function(){return {};});if(!r.ok||!jj.url)return null;
+    var im=await loadCors(jj.url+(jj.cached?'':'?v='+Date.now())),W=im.naturalWidth,H=im.naturalHeight,Q=SCN_BOX[jj.url];
+    if(!Q){var mk=function(w){var h=Math.round(w*H/W),c=document.createElement('canvas');c.width=w;c.height=h;var g=c.getContext('2d');g.drawImage(im,0,0,w,h);return {d:g.getImageData(0,0,w,h).data,w:w,h:h};};
+      var s1=mk(200),bx=wbCore(s1.d,s1.w,s1.h,(land?1.43:0.7)*0.87);if(!bx)return null;var s2=mk(600);Q=wbQuad(s2.d,s2.w,s2.h,bx);if(!Q)return null;SCN_BOX[jj.url]=Q;}
+    var P=Q.map(function(p){return [p[0]*W,p[1]*H];}),c=document.createElement('canvas');c.width=W;c.height=H;var x=c.getContext('2d');x.drawImage(im,0,0);
+    if(btn)btn.textContent='Tasarım mekâna yerleştiriliyor…';
+    var F=await printFull(),fw=F.c.width-2*F.sx,fh=F.c.height-2*F.sy,n=28;
+    /* ışık haritası: ön yüzün kendi aydınlığı (en parlak yer esas) */
+    var bl=Math.floor(Math.min(P[0][0],P[3][0])),bt=Math.floor(Math.min(P[0][1],P[1][1])),bw=Math.ceil(Math.max(P[1][0],P[2][0]))-bl,bh=Math.ceil(Math.max(P[2][1],P[3][1]))-bt;
+    var lc=document.createElement('canvas');lc.width=bw;lc.height=bh;var lx=lc.getContext('2d');lx.drawImage(im,bl,bt,bw,bh,0,0,bw,bh);
+    var ld=lx.getImageData(0,0,bw,bh),dd=ld.data,mx=1,i;for(i=0;i<dd.length;i+=4){var v=(dd[i]+dd[i+1]+dd[i+2])/3;if(v>mx)mx=v;}
+    for(i=0;i<dd.length;i+=4){var v2=Math.min(255,((dd[i]+dd[i+1]+dd[i+2])/3)/mx*255*1.02);dd[i]=dd[i+1]=dd[i+2]=v2;}lx.putImageData(ld,0,0);
+    /* görünen yan yüz: kameraya yakın (daha uzun) kenarın dışında; derinlik 4 cm, 30° bakışta yaklaşık yarısı görünür */
+    var lh=P[3][1]-P[0][1],rh=P[2][1]-P[1][1],left=lh>=rh,hcm=dimsOf(state.front.area,land)[1]-8,eh=left?lh:rh,sw=eh/hcm*4*0.5;
+    if(sw>=1.5){var A=left?P[0]:P[1],B=left?P[3]:P[2],O=left?P[1]:P[0],Bo=left?P[2]:P[3],dir=left?-1:1;
+      var st=(A[1]-O[1])/(A[0]-O[0]),sb=(B[1]-Bo[1])/(B[0]-Bo[0]),oT=[A[0]+dir*sw,A[1]+st*dir*sw],oB=[B[0]+dir*sw,B[1]+sb*dir*sw];
+      var SQ=left?[oT,A,B,oB]:[A,oT,oB,B];
+      if(left)warpImg(x,F.c,0,F.sy,F.sx,fh,homog(SQ),8);else warpImg(x,F.c,F.c.width-F.sx,F.sy,F.sx,fh,homog(SQ),8);
+      x.save();x.beginPath();SQ.forEach(function(p,k){if(k)x.lineTo(p[0],p[1]);else x.moveTo(p[0],p[1]);});x.closePath();x.fillStyle='rgba(30,25,20,.2)';x.fill();x.restore();}
+    warpImg(x,F.c,F.sx,F.sy,fw,fh,homog(P),n);
+    x.save();x.beginPath();P.forEach(function(p,k){if(k)x.lineTo(p[0],p[1]);else x.moveTo(p[0],p[1]);});x.closePath();x.clip();x.globalCompositeOperation='multiply';x.drawImage(lc,bl,bt);x.restore();
     var tk='img/ortam-canvas-'+sahne+'-'+rnd()+'.jpg';await upload('site',tk,await canvasBlob(c,'image/jpeg',.9));return tk;}
   function renderAdm(){
     var w=$('#admSheet');
