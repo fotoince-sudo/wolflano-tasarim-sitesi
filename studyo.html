@@ -768,7 +768,7 @@ var AREAS={
   mug: {name:'Kupa baskı',    chip:'Kupa 8×8',  cm:[8,8],  rot:false, fee:50, at:[296.4,305]},
   cv3550:{name:'Canvas 35 × 50',chip:'Canvas',cm:[43,58],rot:true,fee:0,at:[300,320]},
   cv5070:{name:'Canvas 50 × 70',chip:'Canvas',cm:[58,78],rot:true,fee:0,at:[300,320]},
-  mugw:{name:'Kupa süblimasyon',chip:'Süblimasyon 20×10',cm:[20,10],rot:false, fee:75, at:[256.8,305]}
+  mugw:{name:'Kupa süblimasyon',chip:'Süblimasyon 20×9',cm:[20,9],rot:false, fee:75, at:[256.8,305]}
 };
 /* Kesin kurallar: A4/A3 boğaz (arkada ense) çizgisinden 8 cm aşağıda başlar. Logo 8×8 cm, sol göğüste (karşıdan bakınca sağ), hiçbir üründe yeri değişmez. */
 /* LOGO STANDARDI (tişört, polo, sweatshirt): ölçüler yakanın en üst noktasından (cetvelde 0 · omuz) ve ürünün dikey orta çizgisinden cm.
@@ -794,7 +794,7 @@ var PRODUCTS={
          rule:'Yalnız ön yüz, 20 × 10 cm sabit baskı alanı.',draw:function(side,tee,cut,thumb){return hatSVG(tee,thumb);}},
   mug:  {name:'Kupa',       cuts:['std','sub'],price:{std:149,sub:149},
          sides:{front:['mug','mugw'],back:['mug']},vb:{cx:306,cy:305,w:130,h:118},
-         rule:'Kulpun iki yanına (ön ve arka) 8 × 8 cm baskı ya da kupanın çevresini saran 20 × 10 cm süblimasyon.',draw:function(side,tee,cut,thumb){return mugSVG(side,tee,thumb);}},
+         rule:'Kulpun iki yanına (ön ve arka) 8 × 8 cm baskı ya da kupanın çevresini saran 20 × 9 cm süblimasyon.',draw:function(side,tee,cut,thumb){return mugSVG(side,tee,thumb);}},
   canvas:{name:'Canvas tablo',cuts:['c3550','c5070'],price:{c3550:450,c5070:650},
          sides:{front:['cv3550','cv5070']},vb:{cx:300,cy:320,w:420,h:520},
          rule:'Ön yüz ve her yanda 4 cm kenar (tuvalin yanlarına sarılır). Dikey ya da yatay.',draw:function(side,tee,cut,thumb){return canvasSVG(cut,thumb);}}
@@ -2252,7 +2252,7 @@ function chooseProduct(p,c){
   view.sel=null;closeProdPage();
   view.fit='shirt';resetZoom();syncFitBtn();
   renderAll();layout();if(ch)pushHist();
-  toast((state.product==='canvas'?CUT_NAME[state.cut]:productLabel())+': '+(state.product==='mug'?(state.cut==='sub'?'kupanın çevresini saran 20 × 10 cm süblimasyon baskı.':'kulpun iki yanına (ön ve arka) 8 × 8 cm baskı.'):P().rule));
+  toast((state.product==='canvas'?CUT_NAME[state.cut]:productLabel())+': '+(state.product==='mug'?(state.cut==='sub'?'kupanın çevresini saran 20 × 9 cm süblimasyon baskı.':'kulpun iki yanına (ön ve arka) 8 × 8 cm baskı.'):P().rule));
 }
 function syncProduct(){}
 function openProdPage(){closeTab();select(null);renderProdPage();$('#prodPage').hidden=false;$('#pgBody').scrollTop=0;}
@@ -3041,7 +3041,7 @@ async function openOrder(){
     try{
       var sd0=views[i][0],fl=views[i][1],c=await renderPreview(sd0,0.5,fl),f=document.createElement('figure');
       f.dataset.side=sd0;f.setAttribute('role','button');f.setAttribute('aria-label',SIDE_NAME[sd0]+' tasarımını düzenle');
-      f.appendChild(c);var cap=document.createElement('figcaption');cap.textContent=mugWrap()?(fl?'Açılmış baskı · 20 × 10 cm':'Kupada'):SIDE_NAME[sd0];f.appendChild(cap);
+      f.appendChild(c);var cap=document.createElement('figcaption');cap.textContent=mugWrap()?(fl?'Açılmış baskı · 20 × 9 cm':'Kupada'):SIDE_NAME[sd0];f.appendChild(cap);
       if(!state[sd0].objs.length){var hn=document.createElement('span');hn.className='sideHint';hn.textContent='+ '+SIDE_NAME[sd0]+' baskı ekle';f.appendChild(hn);}
       th.appendChild(f);
     }catch(_){}
