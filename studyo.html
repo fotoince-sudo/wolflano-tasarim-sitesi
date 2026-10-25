@@ -3366,18 +3366,16 @@ applyTemplate(TPLS.filter(function(t){return t.n==='Güneş kurdu';})[0]||TPLS[0
 (function(){try{var q=new URLSearchParams(location.search),u=q.get('urun'),k=q.get('kesim'),bd=q.get('beden');if(u&&PRODUCTS[u]){var cs=PRODUCTS[u].cuts;chooseProduct(u,cs.indexOf(k)>=0?k:cs[0]);if(bd&&sizeList().indexOf(bd)>=0){state.sizes={};state.sizes[bd]=1;renderAll();}else if(!isStd()&&(sizeList()||[]).length){setTimeout(function(){try{openTab('opt');toast('Bedenini seç. Rengi de buradan değiştirebilirsin.');}catch(_){}},700);}if(PRODUCTS[u].vb){['front','logo','back'].forEach(function(sd){if(state[sd]&&state[sd].objs)state[sd].objs=[];});view.sel=null;renderAll();}}
   if(q.get('vitrin')==='wolf'){if(!u&&PRODUCTS.tee)chooseProduct('tee',PRODUCTS.tee.cuts[0]);openWolf();}}catch(_){}})();
 syncUndo();
-/* Ürünlere dönüş ürüne göre: kupa ve canvas Hediye & Dekor'a, giyim Giyim & Moda'ya. Siteden gelinmiş ve ürün değişmemişse geldiği sayfaya döner. */
-(function(){var u0='';try{u0=new URLSearchParams(location.search).get('urun')||'';}catch(_){}
+/* Ürünlere dönüş: stüdyoya hangi sayfadan gelindiyse oraya; ürün o sırada türü değiştiyse (kupa ↔ giyim) ürüne uygun sayfaya (kupa/canvas → Hediye & Dekor, giyim → Giyim & Moda) */
+(function(){var p0=null,from='';try{from=sessionStorage.getItem('wf_from')||'';}catch(_){}
+  setTimeout(function(){p0=state.product;},2500);
   function sec(p){return /^(mug|canvas)$/.test(p||'')?'hediye':'tasarla';}
-  function href(){return 'index.html#'+sec(state.product);}
+  function href(){if(from&&p0&&sec(p0)===sec(state.product))return 'index.html'+from;return 'index.html#'+sec(state.product);}
   var L=[document.getElementById('backBtn'),document.querySelector('a.brand[href^="index.html#"]')].filter(Boolean);
-  function upd(){L.forEach(function(a){a.href=href();});}upd();setInterval(upd,1500);
+  function upd(){L.forEach(function(a){a.href=href();});}upd();setInterval(upd,1000);
   L.forEach(function(b){b.addEventListener('click',function(e){
     var st=history.state||{};if(b.id==='backBtn'&&(st.wfOrder||st.wf3d))return;
-    var r='';try{r=document.referrer?new URL(document.referrer).origin:'';}catch(_){}
-    e.preventDefault();
-    if(r===location.origin&&history.length>1&&u0&&sec(u0)===sec(state.product)){history.back();return;}
-    location.href=href();});});})();
+    e.preventDefault();location.href=href();});});})();
 /* ===== Taslak: sayfa yenilenince ekrandaki ürün, renk ve tasarım geri gelsin (yalnız bu cihazda, IndexedDB) =====
    Her değişiklikte (pushHist) kısa gecikmeyle kaydedilir; yüklenen fotoğraflar da saklanır. 7 günden eski taslak kullanılmaz.
    Bağlantı belirli bir şey açıyorsa (düzenle, şablon, favori, depo…) ya da başka bir ürün istiyorsa taslak açılmaz. */
