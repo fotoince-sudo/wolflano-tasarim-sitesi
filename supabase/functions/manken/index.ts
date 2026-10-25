@@ -128,17 +128,35 @@ Deno.serve(async (req) => {
     const b = await req.json();
     const isUrun = b.mode === 'urun';
     const isOrtam = b.mode === 'ortam';
-    const mk = isUrun || isOrtam ? MK.kerem : MK[String(b.mk)];
+    // Boş sahne (canvas için): mekân bir kez üretilir, kaydedilir ve hep yeniden kullanılır. Tasarım tarayıcıda yerleştirilir; ikinci kez para harcanmaz.
+    if (b.mode === 'sahne') {
+      const sk = String(b.sahne || '').replace(/[^a-z]/g, '');
+      const sc = ORTAM.canvas[sk];
+      if (!sc) return j({ error: 'bad', message: 'Ortam seç.' }, 400);
+      const land = String(b.yon) === 'yatay';
+      const spath = `img/sahne-canvas-${sk}-${land ? 'yatay' : 'dikey'}.jpg`;
+      const surl = `${SB_URL}/storage/v1/object/public/site/${spath}`;
+      if (!b.yeni) {
+        const hd = await fetch(surl, { method: 'HEAD' });
+        if (hd.ok) return j({ ok: true, url: surl, tok: spath, cached: true });
+      }
+      b.__sahne = { sk, sc, land, spath };
+    }
+    const mk = isUrun || isOrtam || b.__sahne ? MK.kerem : MK[String(b.mk)];
     if (!mk) return j({ error: 'bad', message: 'Manken seçilmedi.' }, 400);
     const pr = mk.kid ? 'the child' : (mk.he ? 'He' : 'She');
     const style = mk.kid ? KIDSTYLE : STYLE;
-    const mode = isOrtam ? 'ortam' : isUrun ? 'urun' : b.mode === 'ref' ? 'ref' : b.mode === 'mask' ? 'mask' : 'photo';
+    const mode = b.__sahne ? 'sahne' : isOrtam ? 'ortam' : isUrun ? 'urun' : b.mode === 'ref' ? 'ref' : b.mode === 'mask' ? 'mask' : 'photo';
 
     let prompt = '';
     let size = '1024x1536';
     let refBlob: Blob | null = null;
 
-    if (mode === 'ortam') {
+    if (mode === 'sahne') {
+      const S = b.__sahne;
+      size = '1024x1024';
+      prompt = `Photorealistic premium interior photo for a home decor shop. A single BLANK stretched canvas with a perfectly plain, pure flat white front (no artwork, no texture, no frame, no text) is ${S.sc.replace(/^hanging/, 'hanging')}. The canvas is ${S.land ? 'LANDSCAPE (horizontal, about 10:7, wider than tall)' : 'PORTRAIT (vertical, about 7:10, taller than wide)'}, a gallery-wrapped canvas about 4 cm deep, seen perfectly straight-on from the front at eye level so its front face is an exact upright rectangle with no perspective tilt, centered horizontally, its front face covering about ${S.land ? '45% of the image width' : '30% of the image width'}. The white front is evenly lit and clearly brighter than the wall behind it, with a soft natural shadow on the wall. Warm, inviting, high-end catalog quality, true-to-life colors. No people, no text, no logos, no watermarks. Square 1:1 composition.`;
+    } else if (mode === 'ortam') {
       const tur = String(b.tur) === 'canvas' ? 'canvas' : 'mug';
       const sc = ORTAM[tur][String(b.sahne)];
       if (!sc) return j({ error: 'bad', message: 'Ortam seç.' }, 400);
@@ -284,7 +302,7 @@ Deno.serve(async (req) => {
     const ext = isPng ? 'png' : isWebp ? 'webp' : 'jpg';
 
     // Sonucu site kovasına kaydet, panel yalnız adresi saklar
-    const path = mode === 'ortam' ? `img/ortam-${String(b.tur) === 'canvas' ? 'canvas' : 'kupa'}-${String(b.sahne).replace(/[^a-z]/g, '')}-${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}.${ext}` : mode === 'urun' ? `img/urun-${String(b.tur)}-${String(b.kesim)}-${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}.${ext}` : `img/manken-${String(b.mk)}-${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}.${ext}`;
+    const path = mode === 'sahne' ? b.__sahne.spath : mode === 'ortam' ? `img/ortam-${String(b.tur) === 'canvas' ? 'canvas' : 'kupa'}-${String(b.sahne).replace(/[^a-z]/g, '')}-${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}.${ext}` : mode === 'urun' ? `img/urun-${String(b.tur)}-${String(b.kesim)}-${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}.${ext}` : `img/manken-${String(b.mk)}-${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}.${ext}`;
     const up = await fetch(`${SB_URL}/storage/v1/object/site/${path}`, {
       method: 'POST',
       headers: { apikey: SRK, Authorization: `Bearer ${SRK}`, 'Content-Type': ct, 'x-upsert': 'true', 'cache-control': '31536000' },
