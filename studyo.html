@@ -3362,6 +3362,18 @@ applyTemplate(TPLS.filter(function(t){return t.n==='Güneş kurdu';})[0]||TPLS[0
 (function(){try{var q=new URLSearchParams(location.search),u=q.get('urun'),k=q.get('kesim'),bd=q.get('beden');if(u&&PRODUCTS[u]){var cs=PRODUCTS[u].cuts;chooseProduct(u,cs.indexOf(k)>=0?k:cs[0]);if(bd&&sizeList().indexOf(bd)>=0){state.sizes={};state.sizes[bd]=1;renderAll();}else if(!isStd()&&(sizeList()||[]).length){setTimeout(function(){try{openTab('opt');toast('Bedenini seç. Rengi de buradan değiştirebilirsin.');}catch(_){}},700);}if(PRODUCTS[u].vb){['front','logo','back'].forEach(function(sd){if(state[sd]&&state[sd].objs)state[sd].objs=[];});view.sel=null;renderAll();}}
   if(q.get('vitrin')==='wolf'){if(!u&&PRODUCTS.tee)chooseProduct('tee',PRODUCTS.tee.cuts[0]);openWolf();}}catch(_){}})();
 syncUndo();
+/* Ürünlere dönüş ürüne göre: kupa ve canvas Hediye & Dekor'a, giyim Giyim & Moda'ya. Siteden gelinmiş ve ürün değişmemişse geldiği sayfaya döner. */
+(function(){var u0='';try{u0=new URLSearchParams(location.search).get('urun')||'';}catch(_){}
+  function sec(p){return /^(mug|canvas)$/.test(p||'')?'hediye':'tasarla';}
+  function href(){return 'index.html#'+sec(state.product);}
+  var L=[document.getElementById('backBtn'),document.querySelector('a.brand[href^="index.html#"]')].filter(Boolean);
+  function upd(){L.forEach(function(a){a.href=href();});}upd();setInterval(upd,1500);
+  L.forEach(function(b){b.addEventListener('click',function(e){
+    var st=history.state||{};if(b.id==='backBtn'&&(st.wfOrder||st.wf3d))return;
+    var r='';try{r=document.referrer?new URL(document.referrer).origin:'';}catch(_){}
+    e.preventDefault();
+    if(r===location.origin&&history.length>1&&u0&&sec(u0)===sec(state.product)){history.back();return;}
+    location.href=href();});});})();
 /* ===== Taslak: sayfa yenilenince ekrandaki ürün, renk ve tasarım geri gelsin (yalnız bu cihazda, IndexedDB) =====
    Her değişiklikte (pushHist) kısa gecikmeyle kaydedilir; yüklenen fotoğraflar da saklanır. 7 günden eski taslak kullanılmaz.
    Bağlantı belirli bir şey açıyorsa (düzenle, şablon, favori, depo…) ya da başka bir ürün istiyorsa taslak açılmaz. */
@@ -4125,9 +4137,6 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
 
 <script>
 /* Üst sol geri tuşu: siteden gelindiyse aynı yere (ürün listesine) döner, yoksa Baskı Atölyesi ürünlerine gider */
-(function(){var b=document.getElementById('backBtn');if(!b)return;b.addEventListener('click',function(e){
-  var st=history.state||{};if(st.wfOrder||st.wf3d)return;
-  var r='';try{r=document.referrer?new URL(document.referrer).origin:'';}catch(_){}
-  if(r===location.origin&&history.length>1){e.preventDefault();history.back();}});})();
+
 </script>
 </body></html>
