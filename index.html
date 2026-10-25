@@ -2859,12 +2859,16 @@ function card(p){
   return '<article class="card'+(V?' cg':'')+'"'+(V?' data-cg="'+esc(JSON.stringify(V.map(function(v){return {i:v.id,u:IMG(v),p:pr(v),c:v.color||'',d:v.dsg?1:0,s:soldOut(v)?1:0,f:pImgCls(v)?1:0};})))+'"':'')+'><div class="phw"><a class="ph" href="#urun-'+p.id+'" aria-label="'+esc(p.name)+' detay"><img src="'+IMG(p)+'"'+pImgCls(p)+' alt="'+esc(p.name)+'" loading="lazy">'+pTag(p)+'</a>'+favBtn(p.id)+(V?'<div class="cgd" role="radiogroup" aria-label="Renk">'+V.map(function(v,i){var h=cHex(v.color)||'#ccc';return '<button type="button" data-cgi="'+i+'"'+(i?'':' class="on"')+' role="radio" aria-checked="'+(i?'false':'true')+'" aria-label="'+esc(v.color||'Renk')+'" style="background:'+h+'"></button>';}).join('')+'</div>':'')+'</div>'+
   '<div class="meta">'+'<b class="pnm">'+esc(nm)+'</b>'+'<div class="row"><small>'+p.type+'</small><span class="price">'+pr(p)+'</span></div>'+
   stk(p)+'</div>'+
-  (soldOut(p)?'<button type="button" class="btn sm add sold" data-soldout="'+p.id+'">Sepete ekle</button>':'<button class="btn sm add" data-add="'+p.id+'">Sepete ekle</button>')+(p.dsg?'<a class="cedit" href="studyo.html?hazir='+encodeURIComponent(p.id)+'"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13.5 6.5l4 4"/></svg>Düzenle, ismini ekle</a>':'')+(sbAdmin()?'<button type="button" class="cdel" data-pdel="'+esc((V?V.map(function(v){return v.id;}):[p.id]).join(','))+'">Sil <small>(yalnız sen görürsün)</small></button>':'')+'</article>';
+  (soldOut(p)?'<button type="button" class="btn sm add sold" data-soldout="'+p.id+'">Sepete ekle</button>':'<button class="btn sm add" data-add="'+p.id+'">Sepete ekle</button>')+(p.dsg?'<a class="cedit" href="studyo.html?hazir='+encodeURIComponent(p.id)+'"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13.5 6.5l4 4"/></svg>Düzenle, ismini ekle</a>':'')+((sbAdmin()||WF_ADM)?'<button type="button" class="cdel" data-pdel="'+esc((V?V.map(function(v){return v.id;}):[p.id]).join(','))+'">Sil <small>(yalnız sen görürsün)</small></button>':'')+'</article>';
 }
 
+/* Yönetici mi? Sunucuya sorulur (stüdyodaki gibi); evetse kartlarda Sil düğmesi çıkar */
+var WF_ADM=false;
+setTimeout(async function(){try{var t=await sbToken();if(!t)return;var r=await sbReq('/rest/v1/rpc/is_wf_admin',{method:'POST',token:t,body:{}});
+  if(r.ok&&r.j===true){WF_ADM=true;if(!document.querySelector('[data-pdel]'))route();}}catch(_){}},400);
 /* Yönetici: koleksiyondaki ürünü kartından silme (yalnız yönetici görür). Sunucudaki güncel veri okunur, yalnız bu ürün(ler) çıkarılıp kaydedilir. */
 document.addEventListener('click',async function(e){var b=e.target.closest&&e.target.closest('[data-pdel]');if(!b)return;e.preventDefault();e.stopPropagation();
-  if(!sbAdmin())return;var ids=b.dataset.pdel.split(',').filter(Boolean);
+  if(!(sbAdmin()||WF_ADM))return;var ids=b.dataset.pdel.split(',').filter(Boolean);
   var nm=((ALLP.filter(function(x){return x.id===ids[0];})[0])||{}).name||'Bu ürün';
   if(!confirm('"'+nm+'"'+(ids.length>1?' ('+ids.length+' rengiyle birlikte)':'')+' koleksiyondan silinsin mi? Bu geri alınamaz.'))return;
   b.disabled=true;b.textContent='Siliniyor…';
