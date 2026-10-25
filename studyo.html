@@ -1465,6 +1465,9 @@ window.phSite=function(d){PH.site=d;PH.media=d.media||'';PH.teesBase=TEES.slice(
   try{var q=new URLSearchParams(location.search),rn=q.get('renk'),bd=q.get('beden');if(bd)PH.want=bd;
     phApplyColors();if(rn!=null){var cs=phColors(phBlank(state.product,state.cut)),c=(/^\d+$/.test(rn)?cs[+rn]:null)||cs.filter(function(x){return x.name===rn||String(x.hex).toLowerCase()===String(rn).toLowerCase();})[0];if(c)state.tee=c.hex;}}catch(_){}
   try{renderAll();}catch(_){}
+  /* Hazır baskılı ürün: müşteri aynı tasarımı açıp ismini ekleyebilir, yazıyı ya da rengi değiştirebilir */
+  try{var hz=new URLSearchParams(location.search).get('hazir');if(hz&&!PH.hzDone){var hp=(d.products||[]).filter(function(x){return x.id===hz;})[0];
+    if(hp&&hp.dsg){PH.hzDone=1;var go=function(n){if(window.wfApplyDesign){try{window.wfApplyDesign(hp.dsg,true);toast('"'+(hp.name||'Tasarım')+'" açıldı. İsmini ekleyebilir, istediğini değiştirebilirsin.');}catch(_){toast('Tasarım açılamadı');}}else if(n<20)setTimeout(function(){go(n+1);},150);};go(0);}}}catch(_){}
 };
 function mugSVG(side,tee,thumb){
   /* Klasik seramik kupa: 8 cm çap, 10 cm boy (1 cm = 6,6 px). Ön yüzde kulp sağda, arka yüzde solda. */
@@ -3390,7 +3393,7 @@ async function draftSave(){if(!DRAFT.ready)return;try{
 function draftSoon(){if(!DRAFT||!DRAFT.ready)return;clearTimeout(DRAFT.t);DRAFT.t=setTimeout(draftSave,700);}
 document.addEventListener('visibilitychange',function(){if(document.hidden){clearTimeout(DRAFT.t);draftSave();}});
 (async function(){try{
-  var q=new URLSearchParams(location.search),block=['duzenle','ad','fav','depo','sablon','vitrin','wolf','tasarim'].some(function(k){return q.get(k);});
+  var q=new URLSearchParams(location.search),block=['duzenle','ad','fav','depo','sablon','vitrin','wolf','tasarim','hazir'].some(function(k){return q.get(k);});
   var d=block?null:await draftIO('get');
   if(d&&d.state&&Date.now()-(d.at||0)<7*864e5){var st=JSON.parse(d.state),u=q.get('urun');
     if(st&&PRODUCTS[st.product]&&(!u||u===st.product)){
@@ -3789,6 +3792,7 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
     var imgs=await prodImgs(ss),rest=(p.imgs||[]).filter(function(k){return !/^img\/tas-/.test(String(k));});
     p.imgs=imgs.concat(rest);
     var data=await collect();
+    p.dsg=data;
     if(p.adesign)await rq('/rest/v1/admin_designs?id=eq.'+p.adesign,{method:'PATCH',body:{data:data,thumb:pubUrl(imgs[0]),product:state.product,cut:state.cut,color:state.tee}});
     await rq('/rest/v1/site_content?on_conflict=id',{method:'POST',body:{id:'main',data:d,updated_at:new Date().toISOString()},prefer:'resolution=merge-duplicates,return=minimal'});
     var nm=p.name||E.title;ADM.edit=null;mode='urun';
@@ -3806,7 +3810,7 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
     var rec=await insertRow({title:title,kind:'urun',status:'yayında',product:state.product,cut:state.cut,color:state.tee,data:data,thumb:pubUrl(imgs[0]),by_wolf:!!byWolf});
     var no=(d.products||[]).reduce(function(m,p){return Math.max(m,+p.no||0);},0)+1,id='n'+rnd();
     d.products=d.products||[];
-    d.products.push({id:id,no:no,name:title,type:o.type||TYPE_OF[state.product]||'TİŞÖRT',color:o.color!=null?o.color:colorName(),price:+price||0,old:(+o.old>0?+o.old:null),stock:null,tag:o.tag!=null?o.tag:'Yeni',cat:cp.cat,sub:cp.sub,imgs:imgs,desc:o.desc||'',show:true,adesign:rec&&rec.id,depo:(DEPO.cur&&depoBlank(state.product,state.cut))?DEPO.cur.id:undefined});
+    d.products.push({id:id,no:no,name:title,type:o.type||TYPE_OF[state.product]||'TİŞÖRT',color:o.color!=null?o.color:colorName(),price:+price||0,old:(+o.old>0?+o.old:null),stock:null,tag:o.tag!=null?o.tag:'Yeni',cat:cp.cat,sub:cp.sub,imgs:imgs,desc:o.desc||'',show:true,adesign:rec&&rec.id,dsg:data,depo:(DEPO.cur&&depoBlank(state.product,state.cut))?DEPO.cur.id:undefined});
     await rq('/rest/v1/site_content?on_conflict=id',{method:'POST',body:{id:'main',data:d,updated_at:new Date().toISOString()},prefer:'resolution=merge-duplicates,return=minimal'});
     if(rec)await rq('/rest/v1/admin_designs?id=eq.'+rec.id,{method:'PATCH',body:{note:'Ürün: '+id}});
     var cn=catLabel(catId);return 'Ürün sitede yayında: "'+title+'"'+(cn?' → '+cn:'')+'. Fiyatını ve açıklamasını yönetim panelindeki Koleksiyon sekmesinden değiştirebilirsin.';
