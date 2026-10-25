@@ -1308,6 +1308,7 @@ var TPLS=[
 {c:'Doğa ve macera',n:'Dağ çağırıyor',items:[CL('dag','ink',110,-30),CL('gunes',OR,30,-62,30),TX('DAĞLAR','Russo One','ink',28,36),TX('çağırıyor','Kaushan Script',TC,24,68)]},
 {c:'Türkiye',n:'Ege',items:[CL('dalga',BL,110,-30),TX('EGE','Cinzel','ink',46,22),TX('mavisi','Sacramento',BL,26,58)]}
 ];
+TPLS.forEach(function(t){t.c0=t.c;}); /* asıl kategori: yönetim panelinde ad değişse de ürün süzmesi bozulmasın */
 
 
 /* ---------- Durum ve geçmiş ---------- */
@@ -2784,7 +2785,7 @@ function openTab(name,focusInput){
   $$('.panel').forEach(function(p){p.hidden=p.dataset.p!==name;});
   $$('#tabs button').forEach(function(b){b.classList.toggle('on',b.dataset.tab===name);});
   view.fit='area';resetZoom();syncFitBtn();
-  if(name==='tpl')renderTplPreviews();
+  if(name==='tpl'){if(tplLastGroup!==tplGroup())renderTpl();renderTplPreviews();}
   if(name==='opt')renderOpt();
   sheet.classList.toggle('tall',name==='wolf');
   if(name==='wolf')try{wolfStDefault();wolfPhRender();kolajSync();kosSync();}catch(_){}
@@ -2837,12 +2838,22 @@ function normTR(t){return String(t).toLocaleLowerCase('tr').replace(/[ıi̇]/g,'
 var TPL_SYN={kurt:'wolf alfa sürü bozkurt pati',wolf:'kurt',anne:'anneler',baba:'babalar',futbol:'gol forma kaptan',spor:'futbol basket koşu fitness',ask:'sevgi kalp sevgili',dogum:'doğum günü parti yaş',turkiye:'bayrak ay yıldız 29 ekim 23 nisan 19 mayıs'};
 function tplText(t){if(!t._q){t._q=normTR(t.n+' '+t.c+' '+t.items.map(function(it){return it.v||it.k||'';}).join(' '));}return t._q;}
 function tplMatch(t,q){if(!q)return true;var hay=tplText(t);return q.split(/\s+/).every(function(w){if(!w)return true;if(hay.indexOf(w)>=0)return true;var syn=TPL_SYN[w];return !!syn&&normTR(syn).split(' ').some(function(x){return x&&hay.indexOf(x)>=0;});});}
+/* Şablonlar baskı ölçüsüne göre gruplanır; her ürün yalnız kendi grubunu görür:
+   giyim = tişört, sweatshirt, polo (A4 / A3) · sapka = 20 × 10 cm · kupa = 20 × 9 cm · canvas = 35 × 50 / 50 × 70.
+   Şablonda p yazmıyorsa giyim şablonudur. Başka ürüne de uyuyorsa p:['kupa','sapka'] gibi yazılır. */
+var TPL_GROUP_NAME={giyim:'giyim',sapka:'şapka',kupa:'kupa',canvas:'canvas'};
+function tplGroup(p){p=p===undefined?state.product:p;return p==='mug'?'kupa':p==='canvas'?'canvas':p==='hat'?'sapka':'giyim';}
+function tplFits(t,g){g=g||tplGroup();if(t.c==='__gizli__')return false;return [].concat(t.p||'giyim').indexOf(g)>=0;}
+var tplLastGroup='';
 function renderTpl(){
-  var h='',cc='',q=normTR(($('#tplQ')&&$('#tplQ').value||'').trim()),n=0;
-  TPL_CATS.forEach(function(c){cc+='<button data-tc="'+c+'"'+(c===view.tplCat&&!q?' class="on"':'')+'>'+c+'</button>';});
+  var h='',cc='',q=normTR(($('#tplQ')&&$('#tplQ').value||'').trim()),n=0,g=tplGroup(),has={};
+  TPLS.forEach(function(t){if(tplFits(t,g))has[t.c]=1;});
+  if(window.TPL_EXTRA_CATS)window.TPL_EXTRA_CATS(g).forEach(function(c){has[c]=1;});
+  if(view.tplCat!=='Tümü'&&!has[view.tplCat])view.tplCat='Tümü';
+  TPL_CATS.forEach(function(c){if(c!=='Tümü'&&!has[c])return;cc+='<button data-tc="'+c+'"'+(c===view.tplCat&&!q?' class="on"':'')+'>'+c+'</button>';});
   $('#tplCats').innerHTML=cc;
-  TPLS.forEach(function(t,i){if(q){if(!tplMatch(t,q))return;}else if(view.tplCat!=='Tümü'&&t.c!==view.tplCat)return;n++;h+='<button class="tpl" data-tpl="'+i+'"><div class="prev"><div class="in"></div></div><span>'+t.n+'</span></button>';});
-  $('#tplGrid').innerHTML=h;$('#tplEmpty').hidden=n>0;$('#tplQx').hidden=!q;
+  TPLS.forEach(function(t,i){if(!tplFits(t,g))return;if(q){if(!tplMatch(t,q))return;}else if(view.tplCat!=='Tümü'&&t.c!==view.tplCat)return;n++;h+='<button class="tpl" data-tpl="'+i+'"><div class="prev"><div class="in"></div></div><span>'+t.n+'</span></button>';});
+  $('#tplGrid').innerHTML=h;tplLastGroup=g;var em=$('#tplEmpty');em.textContent=q?'Bu aramayla eşleşen şablon yok. Başka bir kelime dene.':'Bu ürünün ('+TPL_GROUP_NAME[g]+') baskı ölçüsüne özel şablonlar hazırlanıyor, çok yakında burada.';em.hidden=n>0;$('#tplQx').hidden=!q;
 }
 function renderTplPreviews(){
   var ink=autoInk();
@@ -2885,6 +2896,7 @@ function syncChips(){
 }
 function renderAll(){
   renderShirt();updateArea();renderObjects();renderPassive();buildSel();syncCtx();syncTextInput();syncChips();syncTeeUI();syncProduct();layout();
+  if(tplLastGroup&&tplLastGroup!==tplGroup()){$('#tplQ').value='';renderTpl();}
   if(view.tab==='tpl')renderTplPreviews();
 }
 
@@ -4035,7 +4047,7 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
     o=o||{};if(!sidesWith().length)throw {msg:'Önce bir tasarım yap.'};
     var pub=o.vis!=='ozel',cat=TPL_CATS.indexOf(o.cat)>0?o.cat:'';
     var data=await collect(),th=await designThumb();
-    var r=await insertRow({title:title,kind:'sablon',status:'yayında',published:pub,product:null,cut:null,color:null,data:data,thumb:th,by_wolf:!!byWolf,note:cat||null});
+    var r=await insertRow({title:title,kind:'sablon',status:'yayında',published:pub,product:state.product||null,cut:null,color:null,data:data,thumb:th,by_wolf:!!byWolf,note:cat||null});
     await loadTpls();
     return pub?'Şablon herkese açık: Şablon panelinde "'+(cat||TPL_CAT_ADM)+'" altında.':'Şablon kaydedildi. Yalnız sen ve yetkililer "'+TPL_CAT_PRIV+'" altında görürsün.';
   }
@@ -4365,15 +4377,18 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
     if(ADM.on){try{var pv=await rq('/rest/v1/admin_designs?select=id,title,thumb,data,product,note,published&kind=eq.sablon&published=eq.false&order=created_at.desc&limit=300')||[];ADM.tpls=pv.concat(ADM.tpls);}catch(_){}}
     try{renderTpl();if(view.tab==='tpl')renderTplPreviews();}catch(_){}
   }
+  /* yönetici şablonları da ürüne göre: kupada kaydedilen kupada, giyimde kaydedilen giyimde çıkar (eski kayıtlar giyim sayılır) */
+  function admFit(t){return tplGroup(t.product||'tee')===tplGroup();}
+  window.TPL_EXTRA_CATS=function(){var o=[];ADM.tpls.forEach(function(t){if(admFit(t))o.push(tplCatOf(t));});return o;};
   var baseTplA=renderTpl;
   renderTpl=function(){
-    var cs={};ADM.tpls.forEach(function(t){cs[tplCatOf(t)]=1;});
+    var cs={};ADM.tpls.forEach(function(t){if(admFit(t))cs[tplCatOf(t)]=1;});
     [TPL_CAT_ADM,TPL_CAT_PRIV].forEach(function(c){var i=TPL_CATS.indexOf(c);if(cs[c]&&i<0)TPL_CATS.splice(1,0,c);else if(!cs[c]&&i>=0)TPL_CATS.splice(i,1);});
     if(TPL_CATS.indexOf(view.tplCat)<0)view.tplCat='Tümü';
     baseTplA();
     var g=$('#tplGrid'),q=(($('#tplQ')&&$('#tplQ').value)||'').trim().toLocaleLowerCase('tr-TR');if(!g||!ADM.tpls.length)return;
     if((view.tplCat===TPL_CAT_ADM||view.tplCat===TPL_CAT_PRIV)&&!q)g.innerHTML='';
-    var l=ADM.tpls.filter(function(t){return q?String(t.title||'').toLocaleLowerCase('tr-TR').indexOf(q)>=0:(view.tplCat==='Tümü'||view.tplCat===tplCatOf(t));});
+    var l=ADM.tpls.filter(function(t){if(!admFit(t))return false;return q?String(t.title||'').toLocaleLowerCase('tr-TR').indexOf(q)>=0:(view.tplCat==='Tümü'||view.tplCat===tplCatOf(t));});
     if(l.length)g.insertAdjacentHTML('afterbegin',l.map(function(t){return '<button class="atpl" data-adtpl="'+ea(t.id)+'"><div class="prev" style="background:#eef1ef"><img alt="" src="'+ea(t.thumb||'')+'" loading="lazy" style="width:100%;height:100%;object-fit:cover"></div><span>'+ea(t.title)+'</span></button>';}).join(''));
     $('#tplEmpty').hidden=g.children.length>0;
   };
