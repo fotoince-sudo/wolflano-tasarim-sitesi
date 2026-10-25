@@ -646,7 +646,7 @@ img{-webkit-touch-callout:none;-webkit-user-drag:none}
           <input id="kolajFile" type="file" accept="image/*" multiple hidden>
           <div class="wstep"><i>2</i>Wolf yerleştirsin</div>
           <button class="primary wide" id="kolajGo" type="button" disabled>Fotoğrafları tasarla</button>
-          <p class="note" id="kolajNote">Wolf, fotoğrafların dikey ya da yatay oluşuna göre karışık bir kolaj kurar: kimi hafif sola, kimi hafif sağa eğik, kimi düz. Zemin açık krem, fotoğraflar ince siyah çerçeveli. Beğenmezsen yeniden dokun, Wolf başka bir yerleşim dener.</p>
+          <p class="note" id="kolajNote">Tabloya en fazla 15 (35 × 50) ya da 30 (50 × 70), süblimasyon kupaya en fazla 7 fotoğraf. Wolf, fotoğrafların dikey ya da yatay oluşuna göre karışık bir kolaj kurar: kimi hafif sola, kimi hafif sağa eğik, kimi düz. Zemin açık krem, fotoğraflar ince siyah çerçeveli. Beğenmezsen yeniden dokun, Wolf başka bir yerleşim dener.</p>
         </div>
       </div>
       <div class="wolfp"><b>Wolf tasarlasın</b>
@@ -825,7 +825,7 @@ function face(s){return s==='logo'?'front':s;}
 function SS(s){if(!state[s])state[s]={area:s==='logo'?'logo':'a4',land:false,objs:[]};return state[s];}
 function hasLogoSide(){return !!(P().sides.logo)&&!mugWrap();}
 function logoOn(){return hasLogoSide()&&SS('logo').objs.length>0;}
-var CUT_NAME={erkek:'Erkek',kadin:'Kadın',cocuk:'Çocuk',std:'Standart',sub:'Süblimasyon',c3550:'Canvas 35 × 50',c5070:'Canvas 50 × 70'};
+var CUT_NAME={erkek:'Erkek',kadin:'Kadın',cocuk:'Çocuk',std:'Logo baskılı',sub:'Süblimasyon',c3550:'Canvas 35 × 50',c5070:'Canvas 50 × 70'};
 /* Kesim: ürün çizimi boğaz çizgisine sabitlenip ölçeklenir. Böylece 8 cm kuralı ve logo yeri hiçbir kesimde değişmez. [yatay, dikey] oran */
 var CUT_K={erkek:[1,1],kadin:[.92,.94],cocuk:[.74,.72],std:[1,1],sub:[1,1],c3550:[1,1],c5070:[1,1]};
 var SIZE_SETS={erkek:['S','M','L','XL','2XL','3XL'],kadin:['XS','S','M','L','XL','2XL'],cocuk:['3-4','5-6','7-8','9-10','11-12','13-14'],std:['Std'],sub:['Std'],c3550:['Std'],c5070:['Std']};
@@ -1949,8 +1949,9 @@ function loadFile(file){
    Zemin açık krem (aradaki boşluk beyaz görünmez, kenara sarılan 4 cm de kremdir), fotoğraflar ince siyah çerçeveli.
    Fotoğraflar tablonun ön yüzünde kalır, yanlara sarılan kısma taşmaz. */
 var KOLAJ=[],KJ_CREAM='#f3ece0';
-function kolajMax(){return state.cut==='c5070'||cur().area==='cv5070'?30:15;}
-function kolajOn(){return state.product==='canvas';}
+/* Süblimasyon kupada da aynı kolaj: en fazla 7 fotoğraf, kupanın çevresini saran 20 × 9 cm alana */
+function kolajMax(){if(state.product==='mug')return 7;return state.cut==='c5070'||cur().area==='cv5070'?30:15;}
+function kolajOn(){return state.product==='canvas'||mugWrap();}
 function kolajSync(){var b=$('#kolajBox');if(!b)return;b.hidden=!kolajOn();if(!kolajOn())return;
   var mx=kolajMax();if(KOLAJ.length>mx){KOLAJ=KOLAJ.slice(0,mx);toast('Bu boyutta en fazla '+mx+' fotoğraf olur; fazlası çıkarıldı.');}
   $('#kolajCnt').textContent=KOLAJ.length+' / '+mx;
@@ -1974,7 +1975,7 @@ function kjMix(ids,R){var P=[],Lx=[];ids.forEach(function(id){(assets[id].h>asse
   big.forEach(function(id,i){out.push(id);if(sm.length&&k<sm.length&&i+1>=Math.round(step*(k+1))){out.push(sm[k++]);}});while(k<sm.length)out.push(sm[k++]);return out;}
 function kolajLayout(){
   var A=areaBox('front',cur().area),d=dimsOf(cur().area,landFor('front',cur().area)),cm=A.w/d[0],wrap=4*cm;
-  var F={l:A.l+wrap,t:A.t+wrap,w:A.w-2*wrap,h:A.h-2*wrap},pad=F.w*0.035,W=F.w-2*pad,H=F.h-2*pad,gap=Math.min(W,H)*0.03;
+  if(state.product==='mug')wrap=0;var F={l:A.l+wrap,t:A.t+wrap,w:A.w-2*wrap,h:A.h-2*wrap},pad=state.product==='mug'?Math.min(F.w,F.h)*0.045:F.w*0.035,W=F.w-2*pad,H=F.h-2*pad,gap=Math.min(W,H)*0.03;
   var seed=(Date.now()^Math.floor(Math.random()*1e9))>>>0,R=kjRand(seed),n=KOLAJ.length,ids,asp;
   /* Satır sayısını seç: satırlar genişliği tam doldurunca toplam yükseklik tabloya en yakın olan */
   function rowsFor(r){var tot=asp.reduce(function(a,b){return a+b;},0),tgt=tot/r,rows=[],cur0=[],sum=0;
@@ -1983,7 +1984,7 @@ function kolajLayout(){
     return {rows:rows,hs:hs,th:hs.reduce(function(a,b){return a+b;},0)+gap*(rows.length-1)};}
   /* Wolf birçok karışık sıralama dener; tabloyu en dolu kaplayanı seçer (boş krem alan en az kalsın) */
   var best=null;for(var tr=0;tr<80;tr++){var tids=kjMix(KOLAJ.slice(),R);ids=tids;asp=tids.map(function(id){return assets[id].w/assets[id].h;});
-    for(var r=1;r<=n;r++){var c=rowsFor(r),kk=Math.min(1,H*(c.rows.length>1?1.12:1)/c.th),cov=kk*kk*c.rows.reduce(function(a,rw,ri){return a+rw.reduce(function(b,i){return b+asp[i]*c.hs[ri]*c.hs[ri];},0);},0)/(W*H);
+    for(var r=1;r<=(state.product==='mug'?(n<=5?1:2):n);r++){var c=rowsFor(r),kk=Math.min(1,H*(c.rows.length>1?1.12:1)/c.th),cov=kk*kk*c.rows.reduce(function(a,rw,ri){return a+rw.reduce(function(b,i){return b+asp[i]*c.hs[ri]*c.hs[ri];},0);},0)/(W*H);
       if(!best||cov>best.cov){best=c;best.cov=cov;best.ids=tids;best.asp=asp;}}}
   ids=best.ids;asp=best.asp;
   /* Satırlar hafifçe üst üste binebilir (en fazla %12): fotoğraflar daha büyük, kolaj daha dolu görünür */
@@ -1993,7 +1994,8 @@ function kolajLayout(){
         jx=(R()-0.5)*w*0.09,jy=(R()-0.5)*h*0.09,o=newBase('image');
       o.assetId=ids[i];o.w=w*s;o.h=h*s;o.rot=+rot.toFixed(1);o.x=x+w/2+jx;o.y=y+h/2+jy;o.bw=Math.max(1.4,Math.min(o.w,o.h)*0.022);o.bc='#161616';o.kj=1;
       /* Eğik fotoğrafın köşesi ön yüzden taşmasın */
-      var rr=Math.abs(o.rot)*Math.PI/180,bw2=(o.w*Math.cos(rr)+o.h*Math.sin(rr))/2,bh2=(o.w*Math.sin(rr)+o.h*Math.cos(rr))/2;
+      var rr=Math.abs(o.rot)*Math.PI/180,bw2=(o.w*Math.cos(rr)+o.h*Math.sin(rr))/2,bh2=(o.w*Math.sin(rr)+o.h*Math.cos(rr))/2,fz=Math.min(1,(F.w-2)/(2*bw2),(F.h-2)/(2*bh2));
+      if(fz<1){o.w*=fz;o.h*=fz;bw2*=fz;bh2*=fz;o.bw=Math.max(1.4,Math.min(o.w,o.h)*0.022);}
       o.x=Math.min(Math.max(o.x,F.l+bw2+1),F.l+F.w-bw2-1);o.y=Math.min(Math.max(o.y,F.t+bh2+1),F.t+F.h-bh2-1);
       objs.push(o);x+=w+gap*k;});
     y+=h+gap*k+extra;});
