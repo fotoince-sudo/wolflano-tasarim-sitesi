@@ -4387,11 +4387,18 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
     var b=$('#admBtn');if(b)b.hidden=false;wolfBox();loadTpls();
     await loadDepo();
     var dq=new URLSearchParams(location.search).get('depo');if(dq)useDepo(dq,true);
-    var dz=new URLSearchParams(location.search).get('duzenle');
+    /* Yayındaki ürünü düzenleme: "Stüdyoda düzenle" (duzenle=) ya da yönetici "Bu tasarımı düzenle" (hazir=) ile açınca her zaman Güncelle çıkar;
+       eski ürünlerde admin_designs kaydı yoksa ürünün kendi tasarımı (dsg) açılır, kayıt aynı ürünün üzerine yapılır */
+    var qz=new URLSearchParams(location.search),dz=qz.get('duzenle'),hzA=!dz&&qz.get('hazir');dz=dz||hzA;
     if(dz){var dp=((ADM.site&&ADM.site.products)||[]).filter(function(x){return x.id===dz;})[0];
-      if(!dp||!dp.adesign)toast('Bu ürünün stüdyo tasarımı bulunamadı');
-      else{try{if(dp.depo)useDepo(dp.depo,true);var r0=await rq('/rest/v1/admin_designs?select=*&id=eq.'+dp.adesign);if(r0&&r0[0]){applyDesign(r0[0].data,true);ADM.edit={pid:dp.id,title:dp.name||r0[0].title};mode='guncelle';var db0=$('#doneBtn');if(db0)db0.textContent='Güncelle';
-        setTimeout(function(){longToast('"'+ADM.edit.title+'" düzenleniyor. Bitince Yönetici → Ürünü güncelle.');},400);}else toast('Tasarım bulunamadı');}catch(_){toast('Tasarım açılamadı');}}}
+      var editOn=function(t){ADM.edit={pid:dp.id,title:dp.name||t||'Ürün'};mode='guncelle';var db0=$('#doneBtn');if(db0)db0.textContent='Güncelle';
+        setTimeout(function(){longToast('"'+ADM.edit.title+'" düzenleniyor. Bitince Güncelle\'ye bas; aynı ürünün üzerine kaydedilir.');},400);};
+      if(!dp)toast('Ürün sitede bulunamadı');
+      else if(hzA){if(dp.dsg)editOn();}
+      else{try{if(dp.depo)useDepo(dp.depo,true);var r0=dp.adesign?await rq('/rest/v1/admin_designs?select=*&id=eq.'+dp.adesign):null;
+        if(r0&&r0[0]){applyDesign(r0[0].data,true);editOn(r0[0].title);}
+        else if(dp.dsg){applyDesign(dp.dsg,true);editOn();}
+        else toast('Bu ürünün stüdyo tasarımı bulunamadı');}catch(_){if(dp.dsg){try{applyDesign(dp.dsg,true);editOn();}catch(__){toast('Tasarım açılamadı');}}else toast('Tasarım açılamadı');}}}
     var id=new URLSearchParams(location.search).get('ad');
     if(id&&/^[0-9a-f-]{36}$/i.test(id)){try{var r=await rq('/rest/v1/admin_designs?select=*&id=eq.'+id);if(r&&r[0]){applyDesign(r[0].data,true);var at=r[0].title;setTimeout(function(){toast('"'+at+'" açıldı');},300);}}catch(_){toast('Tasarım açılamadı');}}
   }
