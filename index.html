@@ -589,7 +589,7 @@ footer a{text-decoration:none}footer a:hover{color:var(--green)}
 .ktr button.on{background:var(--ink);border-color:var(--ink);color:var(--bg,#fff)}
 .kcb .kdd{position:absolute;left:0;right:0;top:100%;max-width:620px;margin:6px 0 0}.kcb .kdd .ddl{position:static;border-top:1px solid var(--green);border-radius:12px}
 @media (max-width:639px){.kolp .kb{width:auto;margin-inline:-10px;border-radius:6px}}
-.ann{background:#000;color:var(--red);font:600 11px var(--ui);letter-spacing:.12em;text-transform:uppercase;height:28px;overflow:hidden;position:relative;text-align:center}.ann .r{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:0 12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;opacity:0;transition:opacity .6s}.ann .r.on{opacity:1}.ann .mq{display:flex;align-items:center;height:100%;white-space:nowrap}.ann .mq span{display:inline-block;padding-left:100%;animation:annq 28s linear infinite}.ann .mq i{font-style:normal;margin:0 14px;color:#fff;opacity:.5}@keyframes annq{to{transform:translateX(-100%)}}@media (prefers-reduced-motion:reduce){.ann .mq span{animation:none;padding-left:12px}}.chips button .cv{display:inline-flex;font-size:inherit;margin-left:0}
+.ann{background:#000;color:#e9f3ec;font:600 11px var(--ui);letter-spacing:.12em;text-transform:uppercase;height:28px;overflow:hidden;position:relative;text-align:center}.ann .r{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:0 12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;opacity:0;transition:opacity .6s}.ann .r.on{opacity:1}.ann .mq{display:flex;align-items:center;height:100%;white-space:nowrap}.ann .mq span{display:inline-block;padding-left:100%;animation:annq 28s linear infinite}.ann .mq i{font-style:normal;margin:0 14px;color:#fff;opacity:.5}@keyframes annq{to{transform:translateX(-100%)}}@media (prefers-reduced-motion:reduce){.ann .mq span{animation:none;padding-left:12px}}.chips button .cv{display:inline-flex;font-size:inherit;margin-left:0}
 /* Üst ikonlar aynı hizada */
 .top .wrap{align-items:center}.top .ib{display:inline-flex!important;align-items:center;justify-content:center;height:44px;padding:0;margin:0;vertical-align:middle;line-height:1}.top .ib .i{display:block;width:22px;height:22px;margin:0}.top #favBtn .i{transform:translateY(1px)}.top #cartBtn .i{transform:translateY(1px)}.top .lang .lg{font:700 17px/1 var(--ui);letter-spacing:.02em;transform:translateY(2px)}.top .lang{width:auto!important;min-width:34px;gap:0;padding:0 4px}.top .lang .lg{font:600 14px/1 var(--ui);display:block}
 body.guide .top .wrap{position:relative}body.guide .top .wrap::after{content:'';position:absolute;left:0;right:0;top:calc(50% + 8.25px);height:1px;background:#e5393a;pointer-events:none;z-index:50}
@@ -745,6 +745,10 @@ body.cko #nav,body.cko .menu-btn,body.cko .lang,body.cko #cartBtn,body.cko #ann{
 .ptop h1{margin:0}
 .info{gap:10px}
 .info .ptype{display:block;width:100%;text-align:center;margin:0}
+.card .pnm{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;font:600 14.5px/1.3 var(--ui);color:var(--ink);margin:2px 0 3px}
+.ph img.dimg{transform:scale(1.18);transform-origin:50% 26%}
+.grid .card .meta{flex:1 1 auto}.card .pnm{min-height:2.6em}.cgd i{width:14px;height:14px;border-radius:50%;border:1px solid rgba(0,0,0,.22);margin:2px 0}.cgd{display:flex;gap:7px;flex-wrap:wrap;margin-top:7px}.cgd button{width:18px;height:18px;border-radius:50%;border:1px solid rgba(0,0,0,.22);padding:0;cursor:pointer;position:relative}.cgd button.on{box-shadow:0 0 0 2px var(--bg,#fff),0 0 0 3.5px var(--green)}.cgd button::after{content:"";position:absolute;inset:-7px}
+.card .cedit{border:0!important;padding:4px 6px!important;margin-top:4px!important;font:600 12.5px var(--ui)!important;background:none!important;text-decoration:underline;text-underline-offset:3px;text-decoration-color:rgba(47,107,69,.35)}.card .cedit svg{width:13px;height:13px}
 .pclr{text-transform:none;letter-spacing:0;color:var(--muted)}
 .cdot{display:inline-block;width:10px;height:10px;border-radius:50%;border:1px solid rgba(0,0,0,.25);margin:0 5px 0 2px;vertical-align:-1px}
 .pcode{display:block;margin-top:2px;font:500 11.5px var(--ui)!important;letter-spacing:.06em!important;color:var(--muted);opacity:.8}
@@ -2593,7 +2597,7 @@ function esc(s){return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp
 function toast(m){var t=$('#toast');t.textContent=m;t.hidden=false;clearTimeout(toast.t);toast.t=setTimeout(function(){t.hidden=true;},2200);}
 function favBtn(id){return '<button class="fav'+(favs[id]?' on':'')+'" data-fav="'+id+'" aria-label="Favorilere ekle" aria-pressed="'+(favs[id]?'true':'false')+'"><svg class="i" viewBox="0 0 24 24"><path d="M12 20s-7-4.5-8.5-9A4.7 4.7 0 0 1 12 7.3 4.7 4.7 0 0 1 20.5 11C19 15.5 12 20 12 20z"/></svg></button>';}
 /* Ana sayfa: hero'nun hemen altında hazır giyim vitrini. Mobilde 2, tablette 3, bilgisayarda 4-5 ürün yan yana; en fazla 10 ürün. */
-function homeReady(){var n=+TX('featN');if(!(n>=0))n=4;var l=PRODUCTS.slice(0,Math.min(n,20));if(!l.length)return '';
+function homeReady(){var n=+TX('featN');if(!(n>=0))n=4;var l=grpP(PRODUCTS).slice(0,Math.min(n,20));if(!l.length)return '';
   return '<div class="wrap feat hsec"><div class="sec-head" style="margin-bottom:12px"><h2 class="h2" style="font-size:26px">Öne çıkanlar</h2><a class="link" href="#hazir">Tümünü gör '+IC.arrow+'</a></div><div class="grid">'+l.map(card).join('')+'</div></div>';}
 function alC(){return {'Sola yaslı':'ta-l','Ortalı':'ta-c','Sağa yaslı':'ta-r','İki yana yaslı':'ta-j'}[TX('txtAlign')]||'ta-j';}
 function atolyeIntro(home){return '<section class="intro aint '+alC()+'"><h1 class="h2">'+esc(TX('atolyeTitle'))+'</h1><p>'+esc(TX('atolyePageLead'))+'</p>'+
@@ -2715,7 +2719,7 @@ function hdGrid(){var bl=BLANKS.filter(function(b){var t=b.p||b.id;return (t==='
   /* Kupa iki kategori: Süblimasyon kupa (çevresini saran baskı) ve Logo baskılı kupa (kulpun iki yanına 8 × 8 cm) */
   function pk(p){if(ptOf(p)==='canvas')return 'canvas';var c=p.dsg&&p.dsg.cut;return c==='std'?'logo':'sub';}
   function bk(b){var t=b.p||b.id;if(t==='canvas')return 'canvas';return b.cut==='sub'?'sub':'logo';}
-  var it=rd.map(function(p){return [pk(p),card(p)];}).concat(bl.map(function(b){var k=bk(b),bb=k==='logo'&&/^kupa$/i.test(String(b.name||'').trim())?Object.assign({},b,{name:'Logo baskılı kupa'}):b;return [k,tsCard(bb)];}));
+  var it=grpP(rd).map(function(p){return [pk(p),card(p)];}).concat(bl.map(function(b){var k=bk(b),bb=k==='logo'&&/^kupa$/i.test(String(b.name||'').trim())?Object.assign({},b,{name:'Logo baskılı kupa'}):b;return [k,tsCard(bb)];}));
   var n={sub:0,logo:0,canvas:0};it.forEach(function(x){n[x[0]]++;});var tab=n[HDTAB]?HDTAB:(n.sub?'sub':(n.logo?'logo':'canvas'));
   var tb=[['sub','Süblimasyon Kupa',IC_HD.kupa],['logo','Logo Baskılı Kupa',IC_HD.logo],['canvas','Canvas Tablo',IC_HD.canvas]].filter(function(x){return n[x[0]];});
   return '<div class="hdtabs" role="tablist">'+tb.map(function(x){return '<button type="button" role="tab" data-hdtab="'+x[0]+'" aria-selected="'+(x[0]===tab)+'"'+(x[0]===tab?' class="on"':'')+'>'+x[2]+'<span>'+x[1]+'</span></button>';}).join('')+'</div>'+
@@ -2827,11 +2831,46 @@ function hdCards(sub){var subN=String(sub||'').toLocaleLowerCase('tr');var L=BLA
     return '<article class="card hdc"><div class="phw"><a class="ph" href="'+studioURL(t,b.cut)+'" aria-label="'+esc(b.name)+' tasarla"><img src="'+im+'" alt="'+esc(b.name)+' – kendin tasarla" loading="lazy"><span class="tag">Kendin tasarla</span></a></div>'+
       '<div class="meta"><div class="row"><small>'+esc(String(b.name||'').toLocaleUpperCase('tr'))+'</small><span class="price">'+pr(b)+'</span></div></div>'+
       '<a class="btn sm add" href="'+studioURL(t,b.cut)+'">Tasarla</a></article>';}).join('');}
+/* Aynı tasarımın farklı renkleri tek kartta: altta renk noktaları, dokununca görsel, fiyat ve sepet o renge geçer.
+   Eşleşme: ürün türü + kategori + tasarımdaki görseller/yazılar (konum ve renkler hariç). p.grp yazılırsa o kullanılır. */
+function dKey(p){if(p.grp)return 'g:'+p.grp;var d=p.dsg;if(!d||typeof d!=='object')return 'p:'+p.id;
+  var s=[p.type||'',(p.cat||[]).join(','),(p.sub||[]).join(','),d.cut||''];
+  ['front','back','logo'].forEach(function(k){var x=d[k];if(!x||!(x.objs||[]).length)return;s.push(k+':'+(x.area||''));
+    (x.objs||[]).forEach(function(o){var A=o.assetId&&d.assets&&d.assets[o.assetId];s.push([o.type||'',(A&&(A.url||A.src))||o.src||o.clip||o.shape||o.k||o.value||o.v||o.text||o.assetId||'',Math.round((+o.w||0)/10)].join('|'));});});
+  return s.join('#');}
+function cIx(c){c=String(c||'').trim().toLocaleLowerCase('tr');for(var i=0;i<STDC.length;i++)if(STDC[i].name.toLocaleLowerCase('tr')===c)return i;return STDC.length;}
+function cHex(c){var n=String(c||'').trim().toLocaleLowerCase('tr');for(var i=0;i<STDC.length;i++)if(STDC[i].name.toLocaleLowerCase('tr')===n)return STDC[i].hex;return RENK[n]||'';}
+function grpP(list){var by={},out=[];list.forEach(function(p){var k=dKey(p),c=String(p.color||'').trim().toLocaleLowerCase('tr');
+  /* aynı renkten ikinci kopya ayrı kart kalır, tek kartta iki aynı nokta olmasın */
+  if(by[k]&&c&&!by[k].some(function(x){return String(x.color||'').trim().toLocaleLowerCase('tr')===c;})){by[k].push(p);return;}
+  if(by[k]||!c)k=k+'@'+p.id;by[k]=[p];out.push(k);});
+  return out.map(function(k){var l=by[k];if(l.length<2)return l[0];
+    l=l.slice().sort(function(a,b){return cIx(a.color)-cIx(b.color);});
+    var r=Object.assign({},l[0]);r._vars=l;return r;});}
+/* "Yeni" etiketi yalnız en son eklenen 6 tasarımda görünür; her şey yeni olunca etiket anlamını yitirir */
+var NEWN=6,NEWSET=null,NEWSRC=null,NEWLEN=-1;
+function isNewP(p){if(!NEWSET||NEWSRC!==PRODUCTS||NEWLEN!==PRODUCTS.length){NEWSRC=PRODUCTS;NEWLEN=PRODUCTS.length;NEWSET={};grpP(PRODUCTS.filter(function(x){return x.tag==='Yeni';})).sort(function(a,b){return (+b.no||0)-(+a.no||0);}).slice(0,NEWN).forEach(function(x){(x._vars||[x]).forEach(function(v){NEWSET[v.id]=1;});});}return !!NEWSET[p.id];}
+function pTag(p){if(!p.tag||/çok\s*satan/i.test(p.tag))return '';if(p.tag==='Yeni'&&!isNewP(p))return '';return '<span class="tag">'+esc(p.tag)+'</span>';}
+function pName(p){var n=String(p.name||'').trim(),t=String(p.type||'').trim();if(!n||n.toLocaleLowerCase('tr')===t.toLocaleLowerCase('tr'))return '';return n;}
+function pImgCls(p){return p.dsg&&!/kupa|canvas/i.test(p.type||'')&&/\/?img\/tas-/.test(String(p.imgs&&p.imgs[0]||''))?' class="dimg"':'';}
 function card(p){
-  return '<article class="card"><div class="phw"><a class="ph" href="#urun-'+p.id+'" aria-label="'+esc(p.name)+' detay"><img src="'+IMG(p)+'" alt="'+esc(p.name)+'" loading="lazy">'+(p.tag&&!/çok\s*satan/i.test(p.tag)?'<span class="tag">'+p.tag+'</span>':'')+'</a>'+favBtn(p.id)+'</div>'+
-  '<div class="meta"><div class="row"><small>'+p.type+'</small><span class="price">'+pr(p)+'</span></div>'+stk(p)+'</div>'+
+  var V=p._vars||null,nm=pName(p);
+  return '<article class="card'+(V?' cg':'')+'"'+(V?' data-cg="'+esc(JSON.stringify(V.map(function(v){return {i:v.id,u:IMG(v),p:pr(v),c:v.color||'',d:v.dsg?1:0,s:soldOut(v)?1:0,f:pImgCls(v)?1:0};})))+'"':'')+'><div class="phw"><a class="ph" href="#urun-'+p.id+'" aria-label="'+esc(p.name)+' detay"><img src="'+IMG(p)+'"'+pImgCls(p)+' alt="'+esc(p.name)+'" loading="lazy">'+pTag(p)+'</a>'+favBtn(p.id)+'</div>'+
+  '<div class="meta">'+'<b class="pnm">'+esc(nm)+'</b>'+'<div class="row"><small>'+p.type+'</small><span class="price">'+pr(p)+'</span></div>'+
+  (V?'<div class="cgd" role="radiogroup" aria-label="Renk">'+V.map(function(v,i){var h=cHex(v.color)||'#ccc';return '<button type="button" data-cgi="'+i+'"'+(i?'':' class="on"')+' role="radio" aria-checked="'+(i?'false':'true')+'" aria-label="'+esc(v.color||'Renk')+'" style="background:'+h+'"></button>';}).join('')+'</div>':(cHex(p.color)?'<div class="cgd one"><i style="background:'+cHex(p.color)+'" title="'+esc(p.color)+'"></i></div>':''))+stk(p)+'</div>'+
   (soldOut(p)?'<button type="button" class="btn sm add sold" data-soldout="'+p.id+'">Sepete ekle</button>':'<button class="btn sm add" data-add="'+p.id+'">Sepete ekle</button>')+(p.dsg?'<a class="cedit" href="studyo.html?hazir='+encodeURIComponent(p.id)+'"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13.5 6.5l4 4"/></svg>Düzenle, ismini ekle</a>':'')+'</article>';
 }
+/* renk noktasına dokununca kart o rengin ürününe geçer */
+document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('[data-cgi]');if(!b)return;e.preventDefault();e.stopPropagation();
+  var c=b.closest('.cg');if(!c)return;var L;try{L=JSON.parse(c.dataset.cg);}catch(_){return;}var v=L[+b.dataset.cgi];if(!v)return;
+  c.querySelectorAll('[data-cgi]').forEach(function(x){var on=x===b;x.classList.toggle('on',on);x.setAttribute('aria-checked',on?'true':'false');});
+  var im=c.querySelector('.ph img');if(im){im.src=v.u;im.classList.toggle('dimg',!!v.f);}
+  var a=c.querySelector('a.ph');if(a)a.href='#urun-'+v.i;
+  var pe=c.querySelector('.row .price');if(pe)pe.innerHTML=v.p;
+  var ad=c.querySelector('.add');if(ad){if(v.s){ad.removeAttribute('data-add');ad.setAttribute('data-soldout',v.i);ad.classList.add('sold');ad.type='button';}else{ad.removeAttribute('data-soldout');ad.setAttribute('data-add',v.i);ad.classList.remove('sold');}}
+  var fv=c.querySelector('.fav');if(fv){fv.dataset.fav=v.i;var on2=!!favs[v.i];fv.classList.toggle('on',on2);fv.setAttribute('aria-pressed',on2?'true':'false');}
+  var ce=c.querySelector('.cedit');if(ce)ce.href='studyo.html?hazir='+encodeURIComponent(v.i);
+},true);
 var gv=0,accMode='login';
 function brandBand(){var b=D.brand||{};return '<section class="band"><div class="wrap" style="display:grid;gap:28px"><div class="claim"><p class="eyebrow">Wolflano Koleksiyonu</p><p class="sl">'+esc(b.slogan||'')+'</p><p class="lead" style="margin:0">'+esc(b.readyText||'')+'</p><a class="link" href="#hazir" style="margin-top:14px;display:inline-flex">Ürünleri gör '+IC.arrow+'</a></div><div><p class="eyebrow">'+esc(b.printTitle||'')+'</p><div class="qs" style="margin-top:8px">'+qItems()+'</div></div></div></section>';}
 var QIC=['<path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M8.5 12l2.5 2.5L16 9.5"/>','<circle cx="12" cy="12" r="4"/><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6L7 7M17 17l1.4 1.4M5.6 18.4L7 17M17 7l1.4-1.4"/>','<path d="M12 3c4 5 6 8 6 11a6 6 0 0 1-12 0c0-3 2-6 6-11z"/>','<path d="M3 9h11a3 3 0 1 0-3-3M3 14h15a3 3 0 1 1-3 3M3 19h7"/>','<path d="M20 4c-9 0-14 5-14 12v4M20 4c0 8-5 13-12 13M9 14l6-6"/>'];
@@ -3046,7 +3085,7 @@ yorumlar:function(){return rvPage();},
   '<div class="catbar kcb"><div class="chips kc4" role="tablist"><button type="button" role="tab" data-kcat=""'+(!catSel?' class="on'+(row?' open':'')+'" aria-selected="true"':(row?' class="open"':''))+' aria-expanded="'+row+'"><span>'+(typSel&&!catSel?esc(tmap[typSel].n):'Tümü')+'</span>'+(tl.length?'<i class="cv">'+CV+'</i>':'')+'</button>'+
     CATS.map(function(c){return '<button type="button" role="tab" data-kcat="'+c[0]+'"'+(c[0]===catSel?' class="on" aria-selected="true"':'')+'>'+esc(c[1])+'</button>';}).join('')+'</div>'+
     (row&&tl.length?'<div class="ktr" role="tablist"><button type="button" data-ktyp=""'+(!typSel?' class="on"':'')+'>Hepsi</button>'+tl.map(function(k){return '<button type="button" data-ktyp="'+esc(k)+'"'+(typSel===k?' class="on"':'')+'>'+esc(tmap[k].n)+'</button>';}).join('')+'</div>':'')+'</div>'+
-  (list.length?'<div class="grid">'+list.map(card).join('')+'</div>':'<p class="empty">Bu kategoride henüz ürün yok.</p>')+'</div>';
+  (list.length?'<div class="grid">'+grpP(list).map(card).join('')+'</div>':'<p class="empty">Bu kategoride henüz ürün yok.</p>')+'</div>';
  },
  urun:function(id){
   var p=PRODUCTS.filter(function(x){return x.id===id;})[0];szPick='';
