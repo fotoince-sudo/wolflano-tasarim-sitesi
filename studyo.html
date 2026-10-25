@@ -4330,7 +4330,7 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
     var one=/^(mug|canvas)$/.test(state.product);
     if(state.product==='mug'){var mk=mscKey();h+=mugViews().map(function(v,i){var u=MSCV.key===mk&&MSCV.urls[i];return '<figure><img alt="'+v[2]+'" data-msc="'+i+'"'+(u?' src="'+u+'"':'')+'>'+v[2]+'</figure>';}).join('');}
     else if(!sh.front&&!sh.back)h+='<div class="am-ns">Ürün fotoğrafı yok</div>';
-    else if(one&&!sh.back)h+='<figure class="am-one"><img alt="Ürün" src="'+ea(sh.front)+'"></figure>';
+    else if(one&&!sh.back)h+='<figure class="am-one"><img alt="Ürün" data-dsv="front" src="'+ea(sh.front)+'"></figure>';
     else h+='<figure>'+(sh.front?'<img alt="Ön" data-dsv="front" src="'+ea(sh.front)+'">':'<div class="am-ns" style="aspect-ratio:1/1">Ön yok</div>')+'Ön</figure><figure>'+(sh.back?'<img alt="Arka" data-dsv="back" src="'+ea(sh.back)+'">':'<div class="am-ns" style="aspect-ratio:1/1">Arka yok</div>')+'Arka</figure>';
     h+='</div>';
     if(DEPO.cur)h+='<div class="am-dcur">Depodan: '+ea(DEPO.cur.name||'')+' <button type="button" data-amdx>Bırak</button></div>';
