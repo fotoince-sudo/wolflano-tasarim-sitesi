@@ -1783,11 +1783,29 @@ function styleText(el,o){
 function updateEl(el,o){
   if(o.type==='text'){if(!isWarped(o)&&(el.firstElementChild||el.textContent!==o.value))el.textContent=o.value;styleText(el,o);}
   else if(o.type==='clip'){el.style.color=o.color;if(el.dataset.k!==o.key){el.dataset.k=o.key;el.innerHTML=clipSVG(o.key);}}
-  else if(o.type==='image'&&assets[o.assetId]){if(el.dataset.asset!==o.assetId){el.dataset.asset=o.assetId;el.innerHTML='';var im=new Image();im.draggable=false;im.alt='';im.src=assets[o.assetId].url;el.appendChild(im);}
+  else if(o.type==='image'&&slotLive(o)){slotRender(el,o);}
+  else if(o.type==='image'&&assets[o.assetId]){if(el.dataset.slot){delete el.dataset.slot;el.dataset.asset='';}if(el.dataset.asset!==o.assetId){el.dataset.asset=o.assetId;el.innerHTML='';var im=new Image();im.draggable=false;im.alt='';im.src=assets[o.assetId].url;el.appendChild(im);}
     /* Kolaj fotoğrafı: beyaz, köşeleri hafif yuvarlak çerçeve ve yumuşak gölge (baskıda da aynı çizilir) */
     var fi=el.firstElementChild;if(fi){fi.style.boxSizing='border-box';fi.style.border=o.bw?o.bw+'px solid '+(o.bc||'#161616'):'';fi.style.boxShadow=o.bw?'0 '+(o.bw*0.9)+'px '+(o.bw*2.6)+'px rgba(40,30,20,.28)':'';fi.style.borderRadius=o.br?o.br+'px':'';el.style.borderRadius=o.br?o.br+'px':'';}}
   place(el,o);
 }
+/* Fotoğraf yeri (şablon çerçevesi): çerçeve sabit durur, fotoğraf çerçevenin altında kaydırılır ve büyütülür.
+   Ekranda canlı gösterim CSS ile (maske + kırpma); baskı ve önizleme için hareket bitince aynı kırpmayla dosya üretilir. */
+function slotPan(o){return !!(o&&o.slot&&o.base&&assets[o.base]&&!o.phEmpty&&(o.phs||'none')==='none'&&o.crop);}
+function slotLive(o){return slotPan(o)&&isBrush(o.phe)&&!o.wout;}
+function slotRender(el,o){
+  if(el.dataset.slot!==o.base+'|'+o.phe){el.dataset.slot=o.base+'|'+o.phe;el.dataset.asset='';
+    el.innerHTML=(o.phe==='murekkep'?'<i style="position:absolute;inset:0;background:url(assets/maske/firca-murekkep.png) 0 0/100% 100% no-repeat"></i>':'')+
+      '<div class="smask" style="position:absolute;inset:0;overflow:hidden;-webkit-mask:url(assets/maske/firca1.png) 0 0/100% 100% no-repeat;mask:url(assets/maske/firca1.png) 0 0/100% 100% no-repeat"><img alt="" draggable="false" style="position:absolute;max-width:none;object-fit:fill"></div>';
+    $('img',el).src=assets[o.base].url;}
+  var c=o.crop,im=$('img',el);if(!im)return;
+  im.style.width=(100/c.w)+'%';im.style.height=(100/c.h)+'%';im.style.left=(-c.x/c.w*100)+'%';im.style.top=(-c.y/c.h*100)+'%';
+}
+function slotPos(o){var el=els[o.id];if(el&&slotLive(o))slotRender(el,o);}
+/* Hareket bitince baskı dosyası (aynı kırpma ve kenar) yeniden üretilir */
+var slotBakeN={};
+async function slotBake(o){var n=(slotBakeN[o.id]||0)+1;slotBakeN[o.id]=n;
+  try{var id=await fxProcess(o.base,o.phs||'none',o.phe||'none',o.phf==null?0.5:o.phf,o.crop,o.wout);if(slotBakeN[o.id]!==n)return;o.assetId=id;renderObjects();updateSel();draftSoon();}catch(_){}}
 function makeEl(o){var el=document.createElement('div');el.className='obj'+(o.type==='text'?' text':'');el.dataset.id=o.id;updateEl(el,o);return el;}
 function measureText(o){var el=els[o.id];if(o.type!=='text'||!el)return;o.w=el.offsetWidth;o.h=el.offsetHeight;}
 function renderObjects(){
@@ -1914,7 +1932,8 @@ function buildSel(){
   if(view.grp){var gb=document.createElement('div');gb.className='selbox grp';gb.innerHTML='<div class="h h-size" data-h="size" role="button" aria-label="Hepsini birlikte büyüt ve küçült"><i></i></div><div class="h h-turn" data-h="turn" role="button" aria-label="Hepsini birlikte döndür"><i></i></div>';selLayer.appendChild(gb);updateSel();return;}
   if(!view.sel)return;
   var box=document.createElement('div'),lo=selObj();box.className='selbox'+(lo&&lo.lock?' locked':'');
-  if(!(lo&&lo.lock))box.innerHTML='<div class="h h-size" data-h="size" role="button" aria-label="Büyüt ve küçült"><i></i></div><div class="h h-turn" data-h="turn" role="button" aria-label="Döndür"><i></i></div>';
+  if(lo&&lo.slot){if(slotPan(lo))box.innerHTML='<div class="h h-size" data-h="size" role="button" aria-label="Fotoğrafı büyüt ve küçült"><i></i></div>';}
+  else if(!(lo&&lo.lock))box.innerHTML='<div class="h h-size" data-h="size" role="button" aria-label="Büyüt ve küçült"><i></i></div><div class="h h-turn" data-h="turn" role="button" aria-label="Döndür"><i></i></div>';
   selLayer.appendChild(box);updateSel();
 }
 function updateSel(){
@@ -1986,7 +2005,7 @@ function syncCtx(){syncCtx0();var sb=$('#stageBar');if(sb){var was=sb.hidden;sb.
 /* Alt panel, seçim çubuğu ya da tarayıcı çubuğu açılıp kapanınca tasarım alanı yeniden sığdırılır (görsel kaybolmasın) */
 (function(){if(!window.ResizeObserver)return;var t=0,lw=0,lh=0;new ResizeObserver(function(en){var r=en[0].contentRect;if(Math.abs(r.width-lw)<1&&Math.abs(r.height-lh)<1)return;lw=r.width;lh=r.height;cancelAnimationFrame(t);t=requestAnimationFrame(function(){try{layout();}catch(_){}});}).observe(wrap);})();
 function syncCtx0(){
-  var o=selObj();
+  var o=selObj();setTimeout(function(){var so=selObj();if(so&&so.slot)$$('#ctxBar [data-c="center"],#stageBar [data-c="center"]').forEach(function(b){b.hidden=true;});},0);
   $$('#ctxBar [data-g],#stageBar [data-g]').forEach(function(b){b.hidden=!view.grp;});
   var idle=!o&&!view.grp&&grpObjs().length>0;$$('#ctxBar [data-i],#stageBar [data-i]').forEach(function(b){b.hidden=!idle;});
   if(idle){ctx.hidden=false;$('#colorPop').hidden=true;view.pop=null;$$('#ctxBar [data-t],#stageBar [data-t]').forEach(function(b){b.hidden=true;});return;}
@@ -2881,6 +2900,9 @@ function onDown(e){
         tid=under&&grpObjs().some(function(q){return q.id===+under.dataset.id;})?+under.dataset.id:0;
     if(X&&(sb||tid)){g={kind:'gmove',px:p.x,py:p.y,snap:snap,moved:false,tid:tid};return;}
   }
+  if(h&&o&&o.slot){if(slotPan(o))g={kind:'zoom',id:o.id,cx:o.x,cy:o.y,d0:Math.max(8,dist(o.x,o.y,p.x,p.y)),c0:JSON.parse(JSON.stringify(o.crop)),moved:false};return;}
+  if(sb&&o&&o.slot){slotDown(o,p);return;}
+  if(oEl&&!oEl.closest('#selLayer')){var sid=+oEl.dataset.id,sob=objById(sid);if(sob&&sob.slot){if(view.sel!==sid){select(sid);if(slotPan(sob))slotDown(sob,p);}else slotDown(sob,p);return;}}
   if(h&&o&&!o.lock){
     g={kind:'turn',mode:h.dataset.h,id:o.id,cx:o.x,cy:o.y,a0:ang(o.x,o.y,p.x,p.y),r0:o.rot,
        d0:Math.max(8,dist(o.x,o.y,p.x,p.y)),base:{w:o.w,h:o.h,s:o.size||0}};
@@ -2912,6 +2934,10 @@ async function inkCompute(o){
 function inkEnsure(o){if(!o||inkOf(o)||INKQ[o.id])return;INKQ[o.id]=1;inkCompute(o).catch(function(){}).then(function(){delete INKQ[o.id];var so=selObj();if(so&&so.id===o.id)updateSel();});}
 function inkCenter(o){var r=inkOf(o);if(!r)return {x:o.x,y:o.y};var a=o.rot*PI/180,c=Math.cos(a),s2=Math.sin(a);return {x:o.x+r.dx*c-r.dy*s2,y:o.y+r.dx*s2+r.dy*c};}
 function moveBounds(o,A){var m=Math.min(o.w,o.h)*0.45;return {l:A.l-m,r:A.r+m,t:A.t-m,b:A.b+m};}
+function slotDown(o,p){
+  if(o.phEmpty){view.swapId=o.id;try{$('#swapIn').click();}catch(_){}return;}
+  if(slotPan(o))g={kind:'pan',id:o.id,px:p.x,py:p.y,c0:JSON.parse(JSON.stringify(o.crop)),moved:false};
+}
 function startMove(id,p){
   var o=objById(id);if(!o)return;
   g={kind:'move',id:id,sx:o.x,sy:o.y,px:p.x,py:p.y,moved:false,box:moveBounds(o,areaBox(view.side,cur().area))};
@@ -2933,6 +2959,16 @@ function onMove(e){
       var vx=(q.x-g.cx)*k,vy=(q.y-g.cy)*k;ob.x=g.cx+vx*ca-vy*sa;ob.y=g.cy+vx*sa+vy*ca;ob.rot=q.r+dr;
       ob.w=q.w*k;ob.h=q.h*k;if(ob.type==='text'){ob.size=q.s*k;styleText(els[ob.id],ob);}place(els[ob.id],ob);});
     updateSel();return;
+  }
+  if(g.kind==='pan'||g.kind==='zoom'){
+    o=objById(g.id);if(!o||!o.crop)return;var c0=g.c0,c=o.crop;
+    if(g.kind==='pan'){var mx2=p.x-g.px,my2=p.y-g.py;if(!g.moved&&Math.hypot(mx2,my2)*view.s<4)return;
+      var ra=-(o.rot||0)*PI/180,lx=mx2*Math.cos(ra)-my2*Math.sin(ra),ly=mx2*Math.sin(ra)+my2*Math.cos(ra);
+      c.x=clamp(c0.x-lx*c0.w/o.w,0,1-c0.w);c.y=clamp(c0.y-ly*c0.h/o.h,0,1-c0.h);}
+    else{var kz=dist(g.cx,g.cy,p.x,p.y)/g.d0,nw=c0.w/kz,nh=c0.h/kz,mxs=Math.max(nw,nh);if(mxs>1){nw/=mxs;nh/=mxs;}
+      if(nw<0.08){nh*=0.08/nw;nw=0.08;}if(nh<0.08){nw*=0.08/nh;nh=0.08;}
+      var ccx=c0.x+c0.w/2,ccy=c0.y+c0.h/2;c.w=nw;c.h=nh;c.x=clamp(ccx-nw/2,0,1-nw);c.y=clamp(ccy-nh/2,0,1-nh);}
+    g.moved=true;slotPos(o);return;
   }
   if(g.kind==='move'){
     o=objById(g.id);if(!o)return;
@@ -2978,6 +3014,7 @@ function onUp(e){
   /* Şablon/şekil/görsel paneli açıkken tasarımdaki bir parçaya dokunulursa panel kapanır; tasarım küçülüp kaybolmaz */
   if(tc&&!gg.moved&&view.tab)setTimeout(closeTab,0);
   if(e.type!=='pointerup'){if(gg.moved){syncCtx();pushHist();}return;}   /* iptal edilen dokunuş */
+  if(k==='pan'||k==='zoom'){var so2=objById(gg.id);if(gg.moved&&so2){pushHist();slotBake(so2);}return;}
   if(k==='gmove'||k==='gturn'){if(gg.moved)pushHist();else if(k==='gmove'&&gg.tid)select(gg.tid);return;}
   if(k==='move'){if(gg.moved)pushHist();else tapObject(gg.id);}
   else if(k==='turn'){if(gg.moved){syncCtx();pushHist();}}
