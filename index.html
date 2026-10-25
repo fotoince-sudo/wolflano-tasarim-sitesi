@@ -3994,7 +3994,15 @@ function accSum(rows){
    MAILER: sunucu tarafında bir posta servisi (SendGrid, Resend, Brevo, SMTP vb.) bağlanınca send doldurulur.
    send({to,subject,text,html}) -> Promise<{ok:true}>. Anahtarlar sayfaya yazılmaz. Bağlı değilken kullanıcının e-posta uygulaması taslakla açılır. */
 var EIRSALIYE={provider:null,issue:function(payload){return Promise.reject({code:'not_connected'});}};
-var MAILER={provider:null,send:function(m){return Promise.reject({code:'not_connected'});}};
+/* MAILER: Supabase "mail-gonder" fonksiyonu üzerinden info@wolflano.com.tr adına gönderir (TurkHosting SMTP). Yalnız yönetici.
+   SMTP ayarları girilmemişse not_connected döner ve eskisi gibi e-posta uygulaması taslakla açılır. */
+var MAILER={provider:'smtp',send:async function(m){
+  var tk=await sbToken();if(!tk)throw {code:'auth'};
+  var r=await fetch(SB.url+'/functions/v1/mail-gonder',{method:'POST',headers:{'Content-Type':'application/json',apikey:SB.key,Authorization:'Bearer '+tk},body:JSON.stringify(m)});
+  var jj=await r.json().catch(function(){return {};});
+  if(r.status===404)throw {code:'not_connected'};
+  if(!r.ok||!jj.ok){if(jj&&jj.message)toast(jj.message);throw {code:jj.code||'x',message:jj.message};}
+  return jj;}};
 function buildDispatch(r,d,x){
   var s=d.invoice||{},b=r.buyer||{};
   return {type:'SEVKIRSALIYESI',series:'IRS',date:r.date,
