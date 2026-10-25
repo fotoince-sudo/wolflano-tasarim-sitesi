@@ -4503,7 +4503,7 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
     var pub=o.vis!=='ozel',cat=TPL_CATS.indexOf(o.cat)>0?o.cat:'';
     var data=await collect(),th=await designThumb(),code=tplCode();data.code=code;
     title=uniqName(title,(ADM.tpls||[]).map(function(x){return x.title;}));
-    var r=await insertRow({title:title,kind:'sablon',status:'yayında',published:pub,product:state.product||null,cut:null,color:null,data:data,thumb:th,by_wolf:!!byWolf,note:cat||null});
+    var r=await insertRow({title:title,kind:'sablon',status:'yayında',published:pub,product:state.product||(data&&data.product)||null,cut:null,color:null,data:data,thumb:th,by_wolf:!!byWolf,note:cat||null});
     await loadTpls();
     return pub?'Şablon herkese açık: "'+title+'" · Kod: '+code+'. Şablon panelinde "'+(cat||TPL_CAT_ADM)+'" altında.':'Şablon kaydedildi: "'+title+'" · Kod: '+code+'. Yalnız sen ve yetkililer "'+TPL_CAT_PRIV+'" altında görürsün.';
   }
@@ -4982,7 +4982,7 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
     try{renderTpl();if(view.tab==='tpl')renderTplPreviews();}catch(_){}
   }
   /* yönetici şablonları da ürüne göre: kupada kaydedilen kupada, giyimde kaydedilen giyimde çıkar (eski kayıtlar giyim sayılır) */
-  function admFit(t){return tplGroup(t.product||'tee')===tplGroup();}
+  function admFit(t){return tplGroup(t.product||(t.data&&t.data.product)||'tee')===tplGroup();}
   window.TPL_EXTRA_CATS=function(){var o=[];ADM.tpls.forEach(function(t){if(admFit(t))o.push(tplCatOf(t));});return o;};
   var baseTplA=renderTpl;
   renderTpl=function(){
