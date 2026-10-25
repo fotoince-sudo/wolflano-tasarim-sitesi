@@ -569,6 +569,7 @@ footer a{text-decoration:none}footer a:hover{color:var(--green)}
 .kbh1{margin:0;font-style:normal;font-size:clamp(34px,9.6vw,58px);line-height:.98}.kbh1 em{font-style:italic;color:var(--green);padding:0 .03em}
 .kbq{font:italic 400 clamp(17px,4.6vw,24px)/1.15 'Cormorant Garamond',Georgia,serif;color:var(--ink)}
 .kbtop{display:flex;align-items:center;gap:10px}
+.kr-mz{margin-top:18px;display:inline-flex;align-items:center;gap:8px;border:1px solid var(--green);background:transparent;color:inherit;border-radius:999px;padding:9px 16px;font:600 14px var(--ui);cursor:pointer;letter-spacing:.02em}.kr-mz span{font-size:11px}.kr-mz.on{background:var(--green);color:#fff;border-color:#000}
 .pcb{display:grid;gap:8px;padding:12px;border:1px solid var(--line);border-radius:12px;background:var(--mint,#eef6f0)}.pcr{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:end}.pcr label{display:grid;gap:4px;font-size:13px}.pcr .pcc{display:flex;align-items:center;gap:6px;align-self:center}.pcs{font-size:13px;line-height:1.5}.pft{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
 /* Logo ve üst yazı banner'ın üstüne yakın; başlık ve alt yazılar kalan alanda ortada */
 .kbx .kbt{align-self:stretch;padding-top:12px}.kbx .kbt>.kbtop{margin-bottom:auto}.kbx .kbt>:last-child{margin-bottom:auto}
@@ -2634,11 +2635,22 @@ function howHTML(){return '<section class="how"><div class="wrap"><h2>'+esc(TX('
   '<div class="step"><span class="dot">'+IC.up+'</span><div><h3>'+esc(TX('how1t'))+'</h3><p>'+esc(TX('how1d'))+'</p></div></div>'+
   '<div class="step"><span class="dot">'+IC.eye+'</span><div><h3>'+esc(TX('how2t'))+'</h3><p>'+esc(TX('how2d'))+'</p></div></div>'+
   '<div class="step"><span class="dot">'+IC.box+'</span><div><h3>'+esc(TX('how3t'))+'</h3><p>'+esc(TX('how3d'))+'</p></div></div></div></div></section>';}
+/* Hakkımızda müziği: "Bozkır · Akın" (Wolflano'ya ait, telifsiz). Yalnız ziyaretçi düğmeye basınca çalar, düşük seste ve döngüde;
+   sayfadan çıkınca yavaşça susar. Başka hiçbir sayfada müzik yok. */
+var MZ={a:null,on:false,t:0};
+function mzLbl(){return MZ.on?'<span aria-hidden="true">❚❚</span> Müziği durdur':'<span aria-hidden="true">▶</span> Hikâyeyi dinleyerek oku';}
+function mzFade(to,ms,done){var a=MZ.a;if(!a)return;clearInterval(MZ.t);var from=a.volume,st=Date.now();MZ.t=setInterval(function(){var k=Math.min(1,(Date.now()-st)/ms);a.volume=from+(to-from)*k;if(k>=1){clearInterval(MZ.t);if(done)done();}},40);}
+function mzPlay(){if(!MZ.a){MZ.a=new Audio('assets/muzik/bozkir-akin.mp3');MZ.a.loop=true;MZ.a.preload='auto';}MZ.a.volume=0;var pr=MZ.a.play();MZ.on=true;if(pr&&pr.catch)pr.catch(function(){MZ.on=false;mzSync();});mzFade(0.35,1500);mzSync();}
+function mzStop(){MZ.on=false;mzSync();mzFade(0,700,function(){if(MZ.a)MZ.a.pause();});}
+function mzSync(){var b=document.getElementById('krMz');if(b){b.innerHTML=mzLbl();b.setAttribute('aria-pressed',MZ.on?'true':'false');b.classList.toggle('on',MZ.on);}}
+document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('#krMz');if(!b)return;if(MZ.on)mzStop();else mzPlay();});
+window.addEventListener('hashchange',function(){if(MZ.on&&!/^#hakkimizda/.test(location.hash))mzStop();});
+document.addEventListener('visibilitychange',function(){if(document.hidden&&MZ.on)mzStop();});
 function aboutHTML(){var mt=TX('mfText');if(typeof mt==='string')mt=mt.split('\n');mt=(mt||[]).map(function(x){return String(x||'').trim();}).filter(Boolean);var kt=TX('krText');if(typeof kt==='string')kt=kt.split('\n');kt=(kt||[]).map(function(x){return String(x||'').trim();}).filter(Boolean);
   var kc=TX('krCards');if(typeof kc==='string')kc=kc.split('\n');kc=(kc||[]).map(function(x){return String(x||'').trim();}).filter(Boolean);
   var RN=['I','II','III','IV','V','VI'];
   setTimeout(krReveal,60);
-  return '<div class="kr"><section class="kr-hero"><p class="kr-eb">'+esc(TX('krEyebrow'))+'</p><h1 class="kr-t">'+esc(TX('krTitle'))+'</h1><span class="kr-ln" aria-hidden="true"></span></section>'+
+  return '<div class="kr"><section class="kr-hero"><p class="kr-eb">'+esc(TX('krEyebrow'))+'</p><h1 class="kr-t">'+esc(TX('krTitle'))+'</h1><span class="kr-ln" aria-hidden="true"></span><button type="button" class="kr-mz" id="krMz" aria-pressed="'+(MZ.on?'true':'false')+'">'+mzLbl()+'</button></section>'+
   (kt.length?'<section class="kr-mf">'+kt.map(function(x){return '<p class="kr-r">'+esc(x)+'</p>';}).join('')+'<p class="kr-sig kr-r">Wolflano</p>'+(TX('mfWords')?'<p class="kr-w kr-r">'+esc(TX('mfWords'))+'</p>':'')+'</section>':'')+
   (kc.length?'<section class="kr-cards">'+kc.map(function(x,i){var q=x.split('|'),t=q.shift().trim(),dd=q.join('|').trim();return '<div class="kr-c kr-r"><span class="kr-n">'+(RN[i]||'')+'</span><h3>'+esc(t)+'</h3>'+(dd?'<p>'+esc(dd)+'</p>':'')+'</div>';}).join('')+'</section>':'')+
   (mt.length?'<section class="kr-old"><p class="kr-eb">Manifesto</p><h2 class="kr-ot kr-r">'+esc(TX('mfTitle'))+'</h2>'+mt.map(function(x){return '<p class="kr-r">'+esc(x)+'</p>';}).join('')+(TX('mfSign')?'<p class="kr-os kr-r">'+esc(TX('mfSign'))+'</p>':'')+'</section>':'')+'</div><div class="wrap page about '+alC()+'"><p class="eyebrow">'+esc(TX('menuAbout'))+'</p><h2 class="h2">'+esc(TX('aboutTitle'))+'</h2>'+(TX('aboutLead')?cpBody(TX('aboutLead')):'')+
