@@ -527,6 +527,21 @@ svg.i{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stro
 .wolfadm{margin-top:14px;padding-top:12px;border-top:1px dashed var(--line2)}
 .wolfadm textarea{width:100%;box-sizing:border-box;border-radius:10px;border:1px solid var(--line2);background:var(--panel2);color:var(--ink);padding:8px 10px;font:500 15px var(--ui)}
 .wolfadm-b{display:flex;gap:6px;margin-top:6px}.wolfadm-b button{height:38px;padding:0 12px}
+#wolfChatOpen{border:1px solid #000;background:#30703f;color:#fff;border-radius:999px;height:40px;padding:0 16px;font:600 14px var(--ui);margin-right:6px}
+#wchat{position:fixed;inset:0;z-index:100;background:var(--bg);display:flex;flex-direction:column;font:500 15px var(--ui);color:var(--ink)}#wchat[hidden]{display:none}
+.wch-h{display:flex;align-items:center;gap:8px;padding:calc(10px + env(safe-area-inset-top)) 14px 8px;background:var(--panel);border-bottom:1px solid var(--line)}.wch-h b{flex:1;font-size:17px}
+.wch-h button{border:1px solid #30703f;background:var(--panel);color:var(--ink);border-radius:999px;padding:6px 12px;font:600 13px var(--ui)}
+.wch-s{padding:6px 14px;font-size:13px;color:var(--muted);background:var(--panel);border-bottom:1px solid var(--line)}.wch-s button{border:0;background:none;color:var(--ink);text-decoration:underline;font:600 13px var(--ui);padding:0 2px}
+.wch-l{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:12px 14px;display:flex;flex-direction:column;gap:10px}
+.wm{max-width:86%;padding:9px 12px;border-radius:14px;line-height:1.4;white-space:pre-wrap;overflow-wrap:anywhere}
+.wm.u{align-self:flex-end;background:#30703f;color:#fff;border-bottom-right-radius:4px}.wm.a{align-self:flex-start;background:var(--panel);border:1px solid var(--line);border-bottom-left-radius:4px}.wm.typing{color:var(--muted)}
+.wm img{display:block;max-width:100%;max-height:260px;border-radius:10px;margin-bottom:6px;background:repeating-conic-gradient(#e9ecea 0 25%,#f6f7f6 0 50%) 0 0/16px 16px}
+.wm .wb{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;white-space:normal}.wb button{border:1px solid #000;background:#30703f;color:#fff;border-radius:999px;padding:8px 16px;font:600 14px var(--ui)}
+.wch-att{display:flex;align-items:center;gap:8px;padding:8px 14px 0;background:var(--panel)}.wch-att[hidden]{display:none}.wch-att img{height:56px;border-radius:8px;border:1px solid var(--line)}
+.wch-att button{border:1px solid #30703f;background:var(--panel);color:var(--ink);border-radius:999px;padding:5px 12px;font:600 13px var(--ui)}
+.wch-b{display:flex;align-items:flex-end;gap:6px;padding:8px 10px calc(8px + env(safe-area-inset-bottom));border-top:1px solid var(--line);background:var(--panel)}
+.wch-b textarea{flex:1;min-width:0;resize:none;max-height:120px;border-radius:20px;border:1px solid var(--line2);background:var(--panel2);color:var(--ink);padding:9px 12px;font:500 16px var(--ui)}
+.wch-ib,.wch-send{width:40px;height:40px;border-radius:50%;flex:none;display:grid;place-items:center;padding:0}.wch-ib{border:1px solid var(--line2);background:var(--panel);color:var(--ink)}.wch-send{border:1px solid #000;background:#30703f;color:#fff}.wch-send:disabled{opacity:.5}
 
 /* 3D görünüm */
 .v3db{position:fixed;right:12px;bottom:calc(84px + env(safe-area-inset-bottom,0px));z-index:40;display:inline-flex;align-items:center;gap:5px;height:34px;padding:0 12px;border-radius:999px;border:1px solid var(--accent);background:var(--panel);color:var(--accent);font:700 13px var(--ui);box-shadow:0 2px 8px rgba(0,0,0,.12)}
@@ -4957,23 +4972,154 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
   }
   function wolfBox(){
     var p=$('.panel[data-p="wolf"] .wolfp');if(!p||$('#wolfAdm'))return;
-    p.insertAdjacentHTML('beforeend','<div id="wolfAdm" class="wolfadm"><b>Yönetici: aynı kutuya görev yaz</b><p class="note" style="margin:4px 0 6px">Örn. <i>şablon olarak kaydet "Gece Kurdu"</i> · <i>ürün yap erkek 449 tl</i> · <i>baskıya gönder 10 M 5 L</i> · <i>taslak kaydet</i></p><button type="button" class="ghost" id="wolfAdmOpen">Seçeneklerle yap</button></div>');
+    p.insertAdjacentHTML('beforeend','<div id="wolfAdm" class="wolfadm"><b>Yönetici: aynı kutuya görev yaz</b><p class="note" style="margin:4px 0 6px">Örn. <i>şablon olarak kaydet "Gece Kurdu"</i> · <i>ürün yap erkek 449 tl</i> · <i>baskıya gönder 10 M 5 L</i> · <i>taslak kaydet</i></p><button type="button" id="wolfChatOpen">Wolf\'la konuş</button><button type="button" class="ghost" id="wolfAdmOpen">Seçeneklerle yap</button></div>');
     var inp=$('#wolfIn');if(inp)inp.placeholder='Görev yaz: şablon kaydet, ürün yap 449 tl, baskıya gönder 10 M…';
-    $('#wolfAdmOpen').addEventListener('click',openAdm);
+    $('#wolfAdmOpen').addEventListener('click',openAdm);$('#wolfChatOpen').addEventListener('click',wcOpen);
     /* Gönder: yönetici görevi tanınırsa Wolf yapar; tanınmazsa normal tasarım isteği olarak gider */
     $('#wolfGo').addEventListener('click',function(e){
       var t=($('#wolfIn').value||'').trim();if(t.length<3)return;
-      var r=wolfParse(t);if(!r.kind)return;
-      e.stopImmediatePropagation();var g=this,title=r.title||'Wolf tasarımı';
-      var done=function(){$('#wolfIn').value='';};
+      if(wolfTask(t))e.stopImmediatePropagation();
+    },true);
+  }
+  /* Yazılı yönetici görevi: tanınırsa yapılır ve true döner (stüdyodaki Wolf kutusu ve Wolf sohbeti kullanır) */
+  function wolfTask(t){
+      var r=wolfParse(t);if(!r.kind)return false;
+      var title=r.title||'Wolf tasarımı';
+      var done=function(){var i=$('#wolfIn');if(i)i.value='';};
       if(r.kind==='sablon')run(function(){return doTemplate(title,true).then(function(m){done();return m;});},null);
       else if(r.kind==='taslak')run(function(){return doDraft(title,true).then(function(m){done();return m;});},null);
       else if(r.kind==='urun'){var cat=r.cat||(((ADM.site&&ADM.site.cats)||[])[0]||{}).id;var pr=r.price||defPrice();run(function(){return doProd(title,cat,pr,true).then(function(m){done();return m;});},null);}
-      else if(r.kind==='baski'){if(!Object.keys(r.sizes).length){longToast('Wolf için adet ve beden yaz. Örn. "baskıya gönder 10 M 5 L"');return;}run(function(){return doPrint(title,r.sizes,true).then(function(m){done();return m;});},null);}
+      else if(r.kind==='baski'){if(!Object.keys(r.sizes).length){longToast('Wolf için adet ve beden yaz. Örn. "baskıya gönder 10 M 5 L"');return true;}run(function(){return doPrint(title,r.sizes,true).then(function(m){done();return m;});},null);}
       bgToastW('Wolf çalışıyor…');
-    },true);
+      return true;
   }
   function bgToastW(m){try{bgToast(m);}catch(_){toast(m);}}
+
+  /* ---- Wolf'la konuş: yalnız yöneticinin Wolf ile sohbeti (sunucu: wolf-sohbet, çizim: bz-image) ----
+     Yönetici yazar, görsel ya da stüdyodaki tasarımı ekler; Wolf yorumlar ve önce planını anlatır.
+     Yönetici "çiz" deyince Wolf çizer. Sohbet ücretsize yakın, yalnız çizim ücretli; günlük çizim sınırı bu cihazda tutulur. */
+  var WC={msgs:[],att:null,busy:false,wait:'',t0:0,tm:null};
+  function wcDay(){var d=new Date();return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();}
+  function wcLim(){var v=+localStorage.getItem('wf_wlim');return v>0?v:5;}
+  function wcUsed(){try{var o=JSON.parse(localStorage.getItem('wf_wused')||'{}');return o.d===wcDay()?(+o.n||0):0;}catch(_){return 0;}}
+  function wcUse(d){try{localStorage.setItem('wf_wused',JSON.stringify({d:wcDay(),n:Math.max(0,wcUsed()+d)}));}catch(_){}}
+  function wcLoad(){try{WC.msgs=JSON.parse(localStorage.getItem('wf_wchat')||'[]')||[];}catch(_){WC.msgs=[];}}
+  /* yalnız yazılar saklanır (görseller telefon hafızasını doldurmasın) */
+  function wcSave(){try{localStorage.setItem('wf_wchat',JSON.stringify(WC.msgs.filter(function(m){return m.text;}).slice(-40).map(function(m){return {role:m.role,text:m.text};})));}catch(_){}}
+  function wcCtx(){var p=state.product||'',n=0;try{sidesOf().forEach(function(s){n+=state[s].objs.length;});}catch(_){}
+    var nm={mug:'kupa',canvas:'canvas tablo',cap:'şapka'}[p]||(p?'giyim ('+p+')':'');
+    return 'Seçili ürün: '+(nm||'bilinmiyor')+(p!=='mug'&&p!=='canvas'&&state.tee?', ürün rengi: '+(shirtName()||state.tee):'')+', tasarımda '+n+' öğe var.';}
+  function wcEl(){
+    var w=$('#wchat');if(w)return w;
+    w=document.createElement('div');w.id='wchat';w.hidden=true;
+    w.innerHTML='<div class="wch-h"><b>Wolf\'la konuş</b><button type="button" data-wc="kapat" aria-label="Kapat">Kapat</button></div>'+
+      '<div class="wch-s" id="wchS"></div><div class="wch-l" id="wchL"></div><div class="wch-att" id="wchA" hidden></div>'+
+      '<div class="wch-b"><button type="button" class="wch-ib" data-wc="foto" aria-label="Fotoğraf ekle"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.5l-8.5 8.5a5 5 0 0 1-7-7L14 5.5a3.3 3.3 0 0 1 4.7 4.7l-8.5 8.5a1.7 1.7 0 0 1-2.4-2.4L15.5 8.6"/></svg></button>'+
+      '<button type="button" class="wch-ib" data-wc="tasarim" aria-label="Stüdyodaki tasarımı ekle"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3 4 6l2 4 2-1v12h8V9l2 1 2-4-4-3a4 4 0 0 1-8 0Z"/></svg></button>'+
+      '<textarea id="wchIn" rows="1" placeholder="Wolf\'a yaz…"></textarea><button type="button" class="wch-send" data-wc="gonder" aria-label="Gönder"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button>'+
+      '<input type="file" id="wchF" accept="image/*" hidden></div>';
+    document.body.appendChild(w);
+    w.addEventListener('click',function(e){var b=e.target.closest('[data-wc]');if(!b)return;var k=b.dataset.wc,i=+b.dataset.i;
+      if(k==='kapat'){w.hidden=true;document.documentElement.style.overflow='';}
+      else if(k==='gonder')wcSend();
+      else if(k==='foto')$('#wchF').click();
+      else if(k==='tasarim')wcSnap();
+      else if(k==='sil'){WC.att=null;wcAtt();}
+      else if(k==='ciz')wcDraw(i);
+      else if(k==='tuval')wcPlace(i);
+      else if(k==='lim'){var v=prompt('Günlük en fazla kaç çizim? (her çizim ücretli)',String(wcLim()));if(v!=null&&+v>0){localStorage.setItem('wf_wlim',String(Math.round(+v)));wcRender();}}
+      else if(k==='yeni'){if(confirm('Sohbet temizlensin mi?')){WC.msgs=[];wcSave();wcRender();}}
+    });
+    var ta=$('#wchIn');
+    ta.addEventListener('input',function(){ta.style.height='auto';ta.style.height=Math.min(120,ta.scrollHeight)+'px';});
+    ta.addEventListener('keydown',function(e){if(e.key==='Enter'&&!e.shiftKey&&!e.isComposing){e.preventDefault();wcSend();}});
+    $('#wchF').addEventListener('change',function(){var f=this.files&&this.files[0];this.value='';if(!f)return;
+      var u=URL.createObjectURL(f),im=new Image();im.onload=function(){var M=1536,k=Math.min(1,M/Math.max(im.naturalWidth,im.naturalHeight)),c=document.createElement('canvas');
+        c.width=Math.round(im.naturalWidth*k);c.height=Math.round(im.naturalHeight*k);var x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,c.width,c.height);x.drawImage(im,0,0,c.width,c.height);
+        URL.revokeObjectURL(u);WC.att=c.toDataURL('image/jpeg',0.88);wcAtt();};im.onerror=function(){toast('Fotoğraf açılamadı');};im.src=u;});
+    return w;
+  }
+  /* Stüdyodaki tasarım: ürün renginin üstünde düz görüntü (az önceki tasarımı Wolf'a göstermek için) */
+  async function wcSnap(){
+    var ss=sidesWith();if(!ss.length){toast('Stüdyoda henüz tasarım yok');return;}
+    try{var f=await printFlat(ss[0],1.4),p=40,c=document.createElement('canvas');c.width=f.width+p*2;c.height=f.height+p*2;var x=c.getContext('2d');
+      var bg=(state.product==='mug'||state.product==='canvas'||!state.tee)?'#ffffff':state.tee;x.fillStyle=bg;x.fillRect(0,0,c.width,c.height);x.drawImage(f,p,p);
+      var M=1536,k=Math.min(1,M/Math.max(c.width,c.height));if(k<1){var c2=document.createElement('canvas');c2.width=Math.round(c.width*k);c2.height=Math.round(c.height*k);c2.getContext('2d').drawImage(c,0,0,c2.width,c2.height);c=c2;}
+      WC.att=c.toDataURL('image/jpeg',0.9);wcAtt();if(!$('#wchIn').value.trim())$('#wchIn').placeholder='Bu tasarımla ne yapalım?';}
+    catch(e){toast('Tasarımın görüntüsü alınamadı');}
+  }
+  function wcAtt(){var a=$('#wchA');if(!a)return;if(!WC.att){a.hidden=true;a.innerHTML='';return;}
+    a.hidden=false;a.innerHTML='<img alt="" src="'+WC.att+'"><button type="button" data-wc="sil">Kaldır</button>';}
+  function wcRender(){
+    var l=$('#wchL');if(!l)return;
+    $('#wchS').innerHTML='Bugün çizim: <b>'+wcUsed()+'/'+wcLim()+'</b> · <button type="button" data-wc="lim">sınırı değiştir</button> · <button type="button" data-wc="yeni">yeni sohbet</button>';
+    var h=WC.msgs.length?'':'<div class="wm a">Merhaba, ben Wolf. Bir görsel ya da stüdyodaki tasarımı ekle, ne istediğini yaz. Önce ne yapacağımı anlatırım, sen "çiz" deyince çizerim. Sohbet ücretsiz, yalnız çizim ücretli.</div>';
+    h+=WC.msgs.map(function(m,i){
+      var b='';
+      if(m.ciz&&!m.done)b='<div class="wb"><button type="button" data-wc="ciz" data-i="'+i+'">Çiz</button></div>';
+      if(m.res)b='<div class="wb"><button type="button" data-wc="tuval" data-i="'+i+'">'+(m.placed?'Bir daha ekle':'Tasarıma ekle')+'</button></div>';
+      return '<div class="wm '+(m.role==='user'?'u':'a')+'">'+(m.img||m.res?'<img alt="" src="'+(m.img||m.res)+'">':'')+ea(m.text||'')+b+'</div>';}).join('');
+    if(WC.busy)h+='<div class="wm a typing" id="wchW">'+ea(WC.wait||'Wolf yazıyor…')+'</div>';
+    l.innerHTML=h;l.scrollTop=l.scrollHeight;
+  }
+  function wcBusy(on,msg){WC.busy=on;WC.wait=msg||'';clearInterval(WC.tm);
+    if(on&&msg){WC.t0=Date.now();WC.tm=setInterval(function(){var e=$('#wchW');if(e)e.textContent=msg+' · '+Math.round((Date.now()-WC.t0)/1000)+' sn';},1000);}
+    $('#wchat .wch-send').disabled=on;wcRender();}
+  function wcOpen(){
+    try{closeTab();}catch(_){}try{popClose();}catch(_){}
+    var w=wcEl();if(!WC.loaded){wcLoad();WC.loaded=true;}w.hidden=false;document.documentElement.style.overflow='hidden';wcAtt();wcRender();
+  }
+  /* Kayıt, ürün ve baskı görevleri aynı kutudan: yalnız açık komutlarla (sohbetteki "ürün" kelimesi yanlışlıkla ürün açmasın) */
+  var WC_GOREV=/şablon\s*(olarak\s*)?kaydet|şablona\s*kaydet|ürün\s*(olarak\s*)?(yap|ekle|kaydet)|satışa\s*(koy|çıkar)|baskıya\s*gönder|taslak\s*(olarak\s*)?kaydet/i;
+  async function wcSend(){
+    var ta=$('#wchIn'),t=(ta.value||'').trim();if(WC.busy)return;if(!t&&!WC.att)return;
+    if(t&&!WC.att&&WC_GOREV.test(t.toLocaleLowerCase('tr-TR'))){
+      if(!sidesWith().length){WC.msgs.push({role:'user',text:t},{role:'assistant',text:'Stüdyoda kaydedilecek bir tasarım yok. Önce bir çizimi "Tasarıma ekle" ile stüdyoya koy.'});ta.value='';wcSave();wcRender();return;}
+      if(wolfTask(t)){WC.msgs.push({role:'user',text:t},{role:'assistant',text:'Tamam, yaptım. Sonucu stüdyo ekranında gösterdim.'});ta.value='';wcSave();wcRender();$('#wchat').hidden=true;document.documentElement.style.overflow='';return;}
+    }
+    var m={role:'user',text:t};if(WC.att)m.img=WC.att;WC.msgs.push(m);WC.att=null;wcAtt();ta.value='';ta.style.height='auto';ta.placeholder='Wolf\'a yaz…';wcSave();
+    wcBusy(true,'');
+    var a=null;
+    try{var tk=await tok();if(!tk)throw {msg:'Oturum süresi doldu. Yönetim panelinden yeniden giriş yap.'};
+      var send=WC.msgs.slice(-14).map(function(x){var o={role:x.role,text:x.text||''};if(x.role==='user'&&x.img)o.image=x.img;if(x.res&&!o.text)o.text='(çizimi gösterdim)';return o;});
+      var li=-1;send.forEach(function(o,i){if(o.image)li=i;});send.forEach(function(o,i){if(i!==li)delete o.image;});
+      var ac=new AbortController(),tm=setTimeout(function(){ac.abort();},70000);
+      var r=await fetch(SBA.url+'/functions/v1/wolf-sohbet',{method:'POST',signal:ac.signal,headers:{'Content-Type':'application/json',apikey:SBA.key,Authorization:'Bearer '+tk},body:JSON.stringify({messages:send,context:wcCtx()})});
+      clearTimeout(tm);var j=await r.json().catch(function(){return {};});
+      if(!r.ok||!j.cevap)throw {msg:j.message||'Wolf şu an cevap veremedi. Biraz sonra yeniden dene.'};
+      a={role:'assistant',text:j.cevap};
+      if(j.ciz){a.ciz=j.ciz;if(j.ciz.gorseli_kullan){for(var k=WC.msgs.length-1;k>=0;k--){if(WC.msgs[k].img){a.src=WC.msgs[k].img;break;}}}}
+      WC.msgs.push(a);}
+    catch(e){WC.msgs.push({role:'assistant',text:(e&&e.msg)||'Wolf şu an cevap veremedi. Bağlantını kontrol edip yeniden dene.'});}
+    wcSave();wcBusy(false);
+    if(a&&a.ciz)wcDraw(WC.msgs.indexOf(a)); /* onay verildi: Wolf hemen çizer */
+  }
+  async function wcDraw(i){
+    var a=WC.msgs[i];if(!a||!a.ciz||a.done||WC.busy)return;
+    if(wcUsed()>=wcLim()){WC.msgs.push({role:'assistant',text:'Bugünkü çizim sınırına ('+wcLim()+') ulaştık. Yarın devam edebiliriz ya da üstteki "sınırı değiştir" ile artırabilirsin.'});wcRender();return;}
+    a.done=1;wcUse(1);wcBusy(true,'Wolf çiziyor');
+    var c=a.ciz,mg=state.product==='mug',cvs=state.product==='canvas'||(mg&&mugWrap());
+    var body={prompt:c.istem,style:c.tarz,orient:c.yon,shirt:(cvs||mg)?'':shirtName(),shirtHex:(cvs||mg)?'':(state.tee||'')};
+    if(state.product==='canvas')body.canvas=true;if(mg)body.mug=mugWrap()?'wrap':'logo';if(cvs)body.transparent=false;
+    if(c.gorseli_kullan&&a.src)body.image=a.src;
+    var img=null,err='';
+    try{var tk=await tok();if(!tk)throw {msg:'Oturum süresi doldu. Yönetim panelinden yeniden giriş yap.'};
+      var ac=new AbortController(),tm=setTimeout(function(){ac.abort();},170000);
+      var r=await fetch(SBA.url+'/functions/v1/bz-image',{method:'POST',signal:ac.signal,headers:{'Content-Type':'application/json',apikey:SBA.key,Authorization:'Bearer '+tk},body:JSON.stringify(body)});
+      clearTimeout(tm);var j=await r.json().catch(function(){return {};});
+      if(!r.ok||!j.image)throw {msg:j.message||'Wolf şu an çizemedi.'};img=j.image;}
+    catch(e){err=(e&&e.msg)||'Wolf şu an çizemedi. Bağlantını kontrol et.';}
+    if(img)WC.msgs.push({role:'assistant',text:'Hazır. Beğendiysen tasarıma ekle; sonra buraya "şablon olarak kaydet" ya da "ürün yap 449 tl" yazabilirsin. Değişiklik istersen söyle.',res:img});
+    else{wcUse(-1);a.done=0;WC.msgs.push({role:'assistant',text:err+' Bu deneme sayılmadı; "Çiz" ile yeniden deneyebilirsin.'});}
+    wcSave();wcBusy(false);
+  }
+  async function wcPlace(i){
+    var m=WC.msgs[i];if(!m||!m.res)return;
+    try{var id=await aiAsset(m.res);addImageObj(id);
+      if(state.product==='canvas'||mugWrap()){var A=areaBox(view.side,cur().area),o=selObj(),na=assets[id];if(o&&na){var k=Math.max(A.w/na.w,A.h/na.h);o.w=na.w*k;o.h=na.h*k;o.x=A.cx;o.y=A.cy;o.rot=0;renderObjects();updateSel();syncCtx();pushHist();}}
+      m.placed=1;$('#wchat').hidden=true;document.documentElement.style.overflow='';toast('Wolf\'un çizimi tasarımda. Taşıyabilir, büyütebilirsin.');}
+    catch(e){toast('Çizim tasarıma eklenemedi');}
+  }
 
   /* ---- Yayındaki yönetici şablonları (herkese görünür) ---- */
   async function loadTpls(){
