@@ -527,7 +527,7 @@ svg.i{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stro
 .wolfadm{margin-top:14px;padding-top:12px;border-top:1px dashed var(--line2)}
 .wolfadm textarea{width:100%;box-sizing:border-box;border-radius:10px;border:1px solid var(--line2);background:var(--panel2);color:var(--ink);padding:8px 10px;font:500 15px var(--ui)}
 .wolfadm-b{display:flex;gap:6px;margin-top:6px}.wolfadm-b button{height:38px;padding:0 12px}
-#wolfChatOpen{border:1px solid #000;background:#30703f;color:#fff;border-radius:999px;height:40px;padding:0 16px;font:600 14px var(--ui);margin-right:6px}
+#wolfChatOpen{display:flex;align-items:center;justify-content:center;gap:8px;width:calc(100% - 52px);border:1px solid #000;background:#30703f;color:#fff;border-radius:999px;min-height:48px;padding:6px 16px;font:700 16px var(--ui);margin-bottom:6px}#wolfChatOpen small{font:500 12px var(--ui);opacity:.85}
 #wchat{position:fixed;inset:0;z-index:100;background:var(--bg);display:flex;flex-direction:column;font:500 15px var(--ui);color:var(--ink)}#wchat[hidden]{display:none}
 .wch-h{display:flex;align-items:center;gap:8px;padding:calc(10px + env(safe-area-inset-top)) 14px 8px;background:var(--panel);border-bottom:1px solid var(--line)}.wch-h b{flex:1;font-size:17px}
 .wch-h button{border:1px solid #30703f;background:var(--panel);color:var(--ink);border-radius:999px;padding:6px 12px;font:600 13px var(--ui)}
@@ -4972,7 +4972,9 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
   }
   function wolfBox(){
     var p=$('.panel[data-p="wolf"] .wolfp');if(!p||$('#wolfAdm'))return;
-    p.insertAdjacentHTML('beforeend','<div id="wolfAdm" class="wolfadm"><b>Yönetici: aynı kutuya görev yaz</b><p class="note" style="margin:4px 0 6px">Örn. <i>şablon olarak kaydet "Gece Kurdu"</i> · <i>ürün yap erkek 449 tl</i> · <i>baskıya gönder 10 M 5 L</i> · <i>taslak kaydet</i></p><button type="button" id="wolfChatOpen">Wolf\'la konuş</button><button type="button" class="ghost" id="wolfAdmOpen">Seçeneklerle yap</button></div>');
+    p.insertAdjacentHTML('beforeend','<div id="wolfAdm" class="wolfadm"><b>Yönetici: aynı kutuya görev yaz</b><p class="note" style="margin:4px 0 6px">Örn. <i>şablon olarak kaydet "Gece Kurdu"</i> · <i>ürün yap erkek 449 tl</i> · <i>baskıya gönder 10 M 5 L</i> · <i>taslak kaydet</i></p><button type="button" class="ghost" id="wolfAdmOpen">Seçeneklerle yap</button></div>');
+    /* Wolf'la konuş: panelin en üstünde, ilk bakışta görünsün */
+    p.insertAdjacentHTML('afterbegin','<button type="button" id="wolfChatOpen"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12Z"/></svg>Wolf\'la konuş<small>yalnız sen görürsün</small></button>');
     var inp=$('#wolfIn');if(inp)inp.placeholder='Görev yaz: şablon kaydet, ürün yap 449 tl, baskıya gönder 10 M…';
     $('#wolfAdmOpen').addEventListener('click',openAdm);$('#wolfChatOpen').addEventListener('click',wcOpen);
     /* Gönder: yönetici görevi tanınırsa Wolf yapar; tanınmazsa normal tasarım isteği olarak gider */
