@@ -3075,12 +3075,12 @@ $('#sheetX').addEventListener('click',closeTab);
 $('#undoBtn').addEventListener('click',undo);
 $('#redoBtn').addEventListener('click',redo);
 $('#wolfIn').addEventListener('keydown',function(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();$('#wolfGo').click();}});
-var WOLF_ST=[['tisort','Tişört grafiği'],['kurt','Kurtla portre'],['real','Gerçekçi'],['illus','İllüstrasyon'],['cartoon','Karikatür'],['pencil','Kalem'],['canvas','Yağlı boya']],wolfSt='tisort';
+var WOLF_ST=[['tisort','Tişört grafiği'],['kurt','Kurtla portre'],['tarih','Kurt ve tarih'],['real','Gerçekçi'],['illus','İllüstrasyon'],['cartoon','Karikatür'],['pencil','Kalem'],['canvas','Yağlı boya']],wolfSt='tisort';
 /* Wolf, tasarımı seçili tişört rengine uyumlu üretsin */
 function shirtName(){var h=String(state.tee||'').toLowerCase(),n='';TEES.forEach(function(t){if(t[1].toLowerCase()===h)n=t[0];});if(!n){try{phColors(phBlank(state.product,state.cut)).forEach(function(c){if(String(c.hex).toLowerCase()===h)n=c.name;});}catch(_){}}return n;}
 /* "Kurtla portre" yalnız giyim baskısında (kupa ve canvas'ta gösterilmez) */
-function kurtOk(st){return st!=='kurt'||(state.product!=='mug'&&state.product!=='canvas');}
-function wolfStRender(){if(!kurtOk(wolfSt))wolfSt=state.product==='canvas'?'canvas':'illus';var e=$('#wolfSt');if(e)e.innerHTML=WOLF_ST.filter(function(s){return kurtOk(s[0]);}).map(function(s){return '<button type="button" data-wst="'+s[0]+'"'+(s[0]===wolfSt?' class="on"':'')+'>'+s[1]+'</button>';}).join('');}
+function kurtOk(st){return (st!=='kurt'&&st!=='tarih')||(state.product!=='mug'&&state.product!=='canvas');}
+function wolfStRender(){if(!kurtOk(wolfSt))wolfSt=state.product==='canvas'?'canvas':'illus';var wi=$('#wolfIn');if(wi)wi.placeholder=wolfSt==='tarih'?'Tarihi yer yaz: Efes, Aspendos, Van Kalesi… (boş bırakırsan Wolf seçer)':wolfSt==='kurt'?'Fotoğrafını ekle, Wolf seni kurtla birlikte çizsin':'Örn. ay ışığında uluyan kurt, Çeşme ya da Öğretmen';var e=$('#wolfSt');if(e)e.innerHTML=WOLF_ST.filter(function(s){return kurtOk(s[0]);}).map(function(s){return '<button type="button" data-wst="'+s[0]+'"'+(s[0]===wolfSt?' class="on"':'')+'>'+s[1]+'</button>';}).join('');}
 wolfStRender();
 /* Şehir kısayolları: dokununca kutuya yazılır, Tasarla ile o şehrin tasarımı yapılır */
 var WOLF_CH={sehir:['Çeşme','Bodrum','Antalya','Kapadokya','İstanbul','İzmir','Alaçatı','Fethiye'],
@@ -3095,7 +3095,7 @@ var wolfStPicked=false;
 /* Canvas tabloda varsayılan tarz Yağlı boya; tişörte dönünce Tişört grafiği (müşteri kendisi seçmediyse) */
 function wolfStDefault(){if(wolfStPicked)return;wolfSt=state.product==='canvas'?'canvas':state.product==='mug'?'illus':'tisort';wolfStRender();}
 document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('[data-wst]');if(!b)return;wolfSt=b.dataset.wst;wolfStPicked=true;wolfStRender();});
-$('#wolfGo').addEventListener('click',async function(){var t=($('#wolfIn').value||'').trim(),sp=selObj();if(t.length<2&&!(sp&&sp.type==='image')){toast('Fotoğraf ekle ya da fikrini yaz');$('#wolfIn').focus();return;}
+$('#wolfGo').addEventListener('click',async function(){var t=($('#wolfIn').value||'').trim(),sp=selObj();if(t.length<2&&!(sp&&sp.type==='image')&&wolfSt!=='tarih'){toast(wolfSt==='kurt'?'Önce fotoğrafını ekle':'Fotoğraf ekle ya da fikrini yaz');$('#wolfIn').focus();return;}
   if(AI_BUSY)return;
   var so0=selObj();
   if(/(orijinal|orjinal|asıl|eski hal|ilk hal|geri (getir|al|dön)|gerçek fotoğraf|geri al)/i.test(t)){

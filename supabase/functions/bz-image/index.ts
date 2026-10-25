@@ -11,6 +11,7 @@ const j = (o: unknown, s = 200) =>
 const STY: Record<string, string> = {
   tisort: 'premium streetwear T-shirt graphic: dramatic, highly detailed realistic digital illustration (not a photo), cinematic lighting, rich texture, ink-splash and dry-brush edges that fade out softly, strong silhouette, cohesive limited color palette, bold modern composition like a high-end apparel brand print',
   kurt: 'premium streetwear T-shirt graphic: dramatic, highly detailed realistic digital illustration (not a photo), dark moody cinematic lighting, muted earthy palette of charcoal, black, warm brown and amber accents, rich fur and hair texture, ink-splash and dry-brush edges that fade out softly into the background (adapt the palette to the shirt color if one is given below)',
+  tarih: 'premium streetwear T-shirt graphic: highly detailed realistic illustration in a double-exposure style, charcoal and graphite tones with soft sepia and stone colors and a single amber accent in the wolf eye, fine engraving-like detail, weathered ancient stone texture, ink-splash and dry-brush edges with small flying flecks that fade out softly (adapt the palette to the shirt color if one is given below)',
   real: 'photorealistic, natural light, premium photography look',
   cartoon: 'fun hand-drawn caricature, slightly exaggerated features, bold clean outlines, vivid flat colors',
   pencil: 'detailed hand-drawn graphite pencil portrait sketch, fine hatching and shading, high contrast, monochrome',
@@ -102,7 +103,18 @@ Deno.serve(async (req) => {
       : mug === 'logo' ? 'Print-ready compact artwork for a small print on one side of a white ceramic mug.'
       : 'Print-ready artwork for a garment print.');
     const wolfPortrait = style === 'kurt' && !canvas && !mug;
-    if (img && wolfPortrait) {
+    const wolfHistory = style === 'tarih' && !canvas && !mug;
+    if (wolfHistory) {
+      /* Kurt ve tarih: kurt başı ile tarihi bir yer iç içe (Türkiye'nin tarihini ve köklerini tanıtan tasarım) */
+      parts.push(`Create a wolf-and-history garment graphic that promotes a historic place, in this style: ${STY.tarih}.`);
+      parts.push(img
+        ? 'The attached photo shows the historic place to feature: redraw its monument or ruins faithfully and recognizably.'
+        : idea
+          ? 'The historic place to feature is the one named in the customer\'s request below; draw its single most iconic and recognizable ancient monument, ruin, castle, bridge, mosque, tower or landmark accurately, with its real architectural details. If the request names a city or region instead of a monument, choose that place\'s most famous historic monument.'
+          : 'Choose one famous, instantly recognizable historic monument of Türkiye (for example the Library of Celsus in Ephesus, the theatre of Aspendos, the Mount Nemrut statues, Göbeklitepe pillars, the Galata Tower, Hagia Sophia, the Temple of Apollo at Didyma or Van Castle) and draw it accurately.');
+      parts.push('Composition: a large noble grey wolf head in profile on the left, facing left, calm and proud with an amber eye. The historic monument emerges from the right side of the wolf\'s head and neck as a double exposure, the ancient stones and columns growing out of the fur, with a little greenery and crumbling stone fragments at the top. The two merge into one strong vertical silhouette whose bottom and edges dissolve into ink splashes and dry-brush strokes; no hard rectangular edge, no ground line.');
+      parts.push('Keep the architecture historically accurate and respectful; do not invent fantasy buildings.');
+    } else if (img && wolfPortrait) {
       /* Kurtla portre: müşterinin fotoğrafındaki kişi, asil bir kurtla yan yana dramatik tişört grafiği */
       parts.push(`Create a dramatic wolf-and-portrait garment graphic in this style: ${STY.kurt}.`);
       parts.push('The person (or people) from the attached photo is the hero of the artwork. Keep each face clearly recognizable as the same real person: same face shape, eyes, eyebrows, nose, mouth, skin tone, age, expression lines and head shape; keep their exact hairline, hair amount, hair color and facial hair (if someone is bald keep them bald, if clean-shaven keep them clean-shaven; never add hair or a beard that is not there).');
@@ -133,7 +145,7 @@ Deno.serve(async (req) => {
     /* Şehir kısayolu: yalnız "Çeşme", "Antalya" ya da "Kapadokya kurt" gibi kısa bir yer adı yazılırsa, o yere özel şehir tasarımı yapılır */
     const words = idea.split(/\s+/).filter(Boolean);
     let topic = '';
-    if (!img && words.length >= 1 && words.length <= 4 && !/["“”']/.test(idea)) {
+    if (!img && !wolfHistory && words.length >= 1 && words.length <= 4 && !/["“”']/.test(idea)) {
       const extra = /^(kurt|kurtlu|wolf|rozet|madalyon|logo|gece|gün|batımı|retro)$/i;
       const nameWords = words.filter((w) => !extra.test(w));
       if (nameWords.length) topic = nameWords.join(' ').toLocaleUpperCase('tr-TR');
