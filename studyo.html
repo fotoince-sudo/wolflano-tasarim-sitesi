@@ -803,10 +803,10 @@ var AREAS={
   a3:  {name:'A3 baskı',      chip:'A3',    cm:[29.7,42], rot:false, fee:140},
   logo:{name:'Sol göğüs logo',chip:'Logo',  cm:[8,8],     rot:false, fee:40},
   hat: {name:'Şapka ön baskı',chip:'Şapka', cm:[20,10],    rot:false, fee:40, at:[300,285]},
-  mug: {name:'Kupa baskı',    chip:'Kupa 8×8',  cm:[8,8],  rot:false, fee:50, at:[296.4,305]},
+  mug: {name:'Kupa baskı',    chip:'Kupa 8×8',  cm:[8,8],  rot:false, fee:0, at:[296.4,305]},
   cv3550:{name:'Canvas 35 × 50',chip:'Canvas',cm:[43,58],rot:true,fee:0,at:[300,320]},
   cv5070:{name:'Canvas 50 × 70',chip:'Canvas',cm:[58,78],rot:true,fee:0,at:[300,320]},
-  mugw:{name:'Kupa süblimasyon',chip:'Süblimasyon 20×9',cm:[20,9],rot:false, fee:75, at:[256.8,305]}
+  mugw:{name:'Kupa süblimasyon',chip:'Süblimasyon 20×9',cm:[20,9],rot:false, fee:0, at:[256.8,305]}
 };
 /* Kesin kurallar: A4/A3 boğaz (arkada ense) çizgisinden 8 cm aşağıda başlar. Logo 8×8 cm, sol göğüste (karşıdan bakınca sağ), hiçbir üründe yeri değişmez. */
 /* LOGO STANDARDI (tişört, polo, sweatshirt): ölçüler yakanın en üst noktasından (cetvelde 0 · omuz) ve ürünün dikey orta çizgisinden cm.
@@ -869,8 +869,8 @@ function priceOf(product,cut){var b=siteBlank(product,cut),v=b&&sNum(b.price);re
 function basePrice(){return priceOf(state.product,state.cut);}
 function areaFee(k){var b=siteBlank(state.product,state.cut),f=AREAS[k]?AREAS[k].fee:0;if(!b)return f;
   var a4=sNum(b.a4),lg=sNum(b.logo),ht=sNum(b.hat),v=null;
-  if(k==='a4')v=a4;else if(k==='a3')v=a4!=null?a4*(+(PH.site&&PH.site.a3)||2):null;else if(k==='logo')v=lg;else if(k==='hat'||k==='mug')v=ht;
-  else if(k==='mugw')v=sNum(b.wrap)!=null?sNum(b.wrap):75;else if(/^cv/.test(k))v=0;
+  if(k==='a4')v=a4;else if(k==='a3')v=a4!=null?a4*(+(PH.site&&PH.site.a3)||2):null;else if(k==='logo')v=lg;else if(k==='hat')v=ht;
+  else if(k==='mug'||k==='mugw')v=sNum(b.wrap)!=null?sNum(b.wrap):0;/* kupa: iki baskı türünde tek ücret; boşsa eklenmez */else if(/^cv/.test(k))v=0;
   return v!=null?Math.round(v*vatK('print')*100)/100:f;}
 function siteTiers(){var t=(PH.site&&PH.site.tiers)||null;if(!Array.isArray(t))return;var l=t.filter(function(x){return x&&+x[0]>0&&+x[1]>0;}).map(function(x){return [+x[0],+x[1]/100];}).sort(function(a,b){return b[0]-a[0];});PRICE.tiers=l;}
 function forcedLand(key){var l=P().land;return !!(l&&l[key]);}
