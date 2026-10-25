@@ -569,6 +569,7 @@ footer a{text-decoration:none}footer a:hover{color:var(--green)}
 .kbh1{margin:0;font-style:normal;font-size:clamp(34px,9.6vw,58px);line-height:.98}.kbh1 em{font-style:italic;color:var(--green);padding:0 .03em}
 .kbq{font:italic 400 clamp(17px,4.6vw,24px)/1.15 'Cormorant Garamond',Georgia,serif;color:var(--ink)}
 .kbtop{display:flex;align-items:center;gap:10px}
+.pcb{display:grid;gap:8px;padding:12px;border:1px solid var(--line);border-radius:12px;background:var(--mint,#eef6f0)}.pcr{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:end}.pcr label{display:grid;gap:4px;font-size:13px}.pcr .pcc{display:flex;align-items:center;gap:6px;align-self:center}.pcs{font-size:13px;line-height:1.5}.pft{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
 /* Logo ve üst yazı banner'ın üstüne yakın; başlık ve alt yazılar kalan alanda ortada */
 .kbx .kbt{align-self:stretch;padding-top:12px}.kbx .kbt>.kbtop{margin-bottom:auto}.kbx .kbt>:last-child{margin-bottom:auto}
 .kbh.kbh-l{font-size:clamp(22px,5.9vw,40px);line-height:1.04}.kbw{width:34px;height:34px;object-fit:contain;flex:0 0 auto;padding:4px;background:#fff;border:1px solid var(--line);border-radius:10px}
@@ -2360,7 +2361,7 @@ function seedBlanks(){D.seeded=D.seeded||{};if(!Array.isArray(D.blanks))return;v
         var nb=clone(po);nb.id=x[0];nb.cut=x[1];nb.name=x[2];nb.cuts=x[3];if(x[1]==='cocuk'&&d0.price)nb.price=d0.price;D.blanks.splice(at+1+k,0,nb);});}
     D.seeded.polo=true;}}
 function applyData(){seedBlanks();autoSub(D);if(!D.vat)D.vat={mode:'excl',ready:20,blank:20,print:20};
- pNums(D.products);ALLP=D.products.map(function(p){return Object.assign({},p,{price:vp(p.price,'ready'),old:vp(p.old,'ready')});});
+ pNums(D.products);pcApply(D);ALLP=D.products.map(function(p){return Object.assign({},p,{price:vp(p.price,'ready'),old:vp(p.old,'ready')});});
  PRODUCTS=ALLP.filter(function(p){return p.show!==false;});
  CATS=(D.cats||[]).filter(function(c){if(c.show===false)return false;if(/hediye|dekor/i.test(c.name||''))return false;return true;}).map(function(c){return [c.id,c.name||'Adsız'];});
  /* Koleksiyon sırası: Erkek, Kadın, Çocuk (diğerleri sonra) */
@@ -2461,7 +2462,21 @@ function pagesNow(){var l=PAGES.map(function(p){var m={hazir:'menuHazir',atolye:
 var CATS=[['erkek','Erkek'],['kadin','Kadın'],['cocuk','Çocuk']],subSel='',sub2Sel='',catOpen='',grpOpen='',typSel='',typOpen=false;
 var SIDES={tee:{front:['a4','a3','logo'],back:['a4','a3']},sweat:{front:['a4','a3','logo'],back:['a4','a3']},polo:{front:['logo'],back:['a4','a3']},hat:{front:['hat'],back:[]}};
 var PNAME={a4:'A4 baskı',a3:'A3 baskı',logo:'Sol göğüs logo',hat:'Şapka ön baskı'};
-function printFee(b,k){if(k==='a4')return b.a4;if(k==='a3')return b.a4*A3_KAT;if(k==='logo')return b.logo;if(k==='mug'||k==='mugw')return b.wrap||0;if(k==='hat')return b.hat;return 0;}
+/* ---------- Otomatik fiyat ----------
+   Fiyat = baskısız ürün fiyatı (Fiyatlandırma → taban fiyatlar) + baskı ücretleri (tüm ürünlerde aynı: logo, ön/arka A4, A3, şapka, kupa).
+   Koleksiyon ürünü "fiyat tablosuna bağlı" ise (p.pc) fiyatı bu tablodan hesaplanır; tablo değişince kendiliğinden güncellenir.
+   p.pc = {b: baskısız ürün id, logo: true/false, f: ön baskı ('a4','a3','hat','mugw' ya da ''), bk: arka baskı ('a4','a3' ya da '')} */
+function pfNum(x){return x===null||x===undefined||x===''||isNaN(+x)?null:+x;}
+function pfFees(d,b){var f=(d&&d.pf)||{},kat=+(d&&d.a3)||2,g=function(k,def){var v=pfNum(f[k]);if(v==null&&b)v=pfNum(b[k]);return v==null?def:v;};
+  var a4=g('a4',150),a3=pfNum(f.a3);if(a3==null)a3=a4*kat;return {logo:g('logo',100),a4:a4,a3:a3,hat:g('hat',150),wrap:g('wrap',0)};}
+var PC_NAME={a4:'A4 baskı',a3:'A3 baskı',hat:'Şapka baskısı',mugw:'Kupa baskısı'};
+function pcFee(F,k){return k==='a4'?F.a4:k==='a3'?F.a3:k==='hat'?F.hat:(k==='mugw'||k==='mug')?F.wrap:0;}
+function pcCalc(d,pc){if(!pc||!pc.b)return null;var b=(d.blanks||[]).filter(function(x){return x.id===pc.b;})[0];if(!b)return null;
+  var F=pfFees(d,b),base=pfNum(b.price)||0,L=[[b.name||'Ürün',base]];
+  if(pc.logo)L.push(['Sol göğüs logo',F.logo]);if(pc.f)L.push(['Ön · '+(PC_NAME[pc.f]||pc.f),pcFee(F,pc.f)]);if(pc.bk)L.push(['Arka · '+(PC_NAME[pc.bk]||pc.bk),pcFee(F,pc.bk)]);
+  var t=0;L.forEach(function(x){t+=x[1];});return {total:Math.round(t*100)/100,lines:L,b:b};}
+function pcApply(d){(d.products||[]).forEach(function(p){if(p&&p.pc){var r=pcCalc(d,p.pc);if(r)p.price=r.total;}});}
+function printFee(b,k){var F=pfFees(D,b);if(k==='a4')return F.a4;if(k==='a3')return F.a3;if(k==='logo')return F.logo;if(k==='mug'||k==='mugw')return F.wrap||0;if(k==='hat')return F.hat;return 0;}
 var cart={},catSel='',cur='ana',favs={};
 try{cart=JSON.parse(localStorage.getItem('wf_cart')||'{}')||{};favs=JSON.parse(localStorage.getItem('wf_fav')||'{}')||{};}catch(_){cart={};favs={};}
 function saveLS(){try{localStorage.setItem('wf_cart',JSON.stringify(cart));localStorage.setItem('wf_fav',JSON.stringify(favs));}catch(_){}}
@@ -3508,6 +3523,22 @@ async function aiGen(pa,step){
 }
 /* Yönetim: baskıya uygun ürünün türü (stüdyoda hangi ürün olarak açılacağı) ve grubu (Kadın / Erkek / Çocuk sekmeleri) */
 var BTYPES=[['tee','Tişört'],['sweat','Sweatshirt'],['polo','Polo tişört'],['hat','Şapka'],['mug','Kupa'],['canvas','Canvas tablo']];
+/* Ürün düzenlemede otomatik fiyat kutusu */
+function pcBox(d,p,i){var pc=p.pc||{},bl=(d.blanks||[]).filter(function(b){return b&&b.id;});
+  var h='<div class="pcb"><label>Fiyat · ürün ve baskı yerleri<select data-pc="b" data-i="'+i+'"><option value="">Elle fiyat gireceğim</option>'+bl.map(function(b){return '<option value="'+esc(b.id)+'"'+(pc.b===b.id?' selected':'')+'>'+esc(b.name||b.id)+' · baskısız '+tl(pfNum(b.price)||0)+'</option>';}).join('')+'</select></label>';
+  var r=pcCalc(d,pc);if(!r)return h+'<span class="note" style="margin:0">Ürün seçersen fiyat, Fiyatlandırma\'daki tablodan baskı yerlerine göre kendiliğinden hesaplanır.</span></div>';
+  var ty=bTypeOf(r.b),opt=function(key,list){return '<select data-pc="'+key+'" data-i="'+i+'">'+list.map(function(o){return '<option value="'+o[0]+'"'+((pc[key]||'')===o[0]?' selected':'')+'>'+o[1]+'</option>';}).join('')+'</select>';};
+  if(ty==='mug')h+='<div class="pcr"><label>Baskı'+opt('f',[['','Baskısız'],['mugw','Kupa baskısı (20 × 9 cm)']])+'</label></div>';
+  else if(ty==='hat')h+='<div class="pcr"><label>Baskı'+opt('f',[['','Baskısız'],['hat','Şapka ön baskı']])+'</label></div>';
+  else if(ty==='canvas')h+='';
+  else h+='<div class="pcr"><label class="pcc"><input type="checkbox" data-pc="logo" data-i="'+i+'"'+(pc.logo?' checked':'')+'>Sol göğüs logo</label><label>Ön'+opt('f',[['','Baskı yok'],['a4','A4'],['a3','A3']])+'</label><label>Arka'+opt('bk',[['','Baskı yok'],['a4','A4'],['a3','A3']])+'</label></div>';
+  var shown=vp(r.total,'ready');
+  h+='<div class="pcs">'+r.lines.map(function(x,k){return (k?' + ':'')+esc(x[0])+' '+tl(x[1]);}).join('')+' = <b>'+tl(r.total)+'</b>'+(shown!==r.total?' · sitede KDV dahil <b>'+tl(shown)+'</b>':'')+'</div></div>';
+  return h;}
+document.addEventListener('change',function(e){var t=e.target;if(!t||!t.dataset||!t.dataset.pc||!A||!A.draft)return;var p=A.draft.products[+t.dataset.i];if(!p)return;var k=t.dataset.pc;
+  if(k==='b'){if(!t.value){if(p.pc){var r0=pcCalc(A.draft,p.pc);if(r0)p.price=r0.total;}delete p.pc;}else{p.pc=Object.assign({logo:false,f:'',bk:''},p.pc||{},{b:t.value});}}
+  else if(p.pc){p.pc[k]=t.type==='checkbox'?t.checked:t.value;}
+  if(p.pc){var r=pcCalc(A.draft,p.pc);if(r)p.price=r.total;}dirty();adRender();});
 function bTypeOf(b){var p=b.p||b.id;return BTYPES.some(function(t){return t[0]===p;})?p:'';}
 function bTypeEd(i,b){var t=bTypeOf(b),g=b.gen||(GENS.indexOf(b.cut)>=0?b.cut:(bGen(b).length>1?'hepsi':bGen(b)[0])),o=function(v,l,on){return '<option value="'+v+'"'+(on?' selected':'')+'>'+l+'</option>';};
   var h='<div class="three"><label for="bt-'+i+'">Ürün türü<select id="bt-'+i+'" data-btype="'+i+'">'+(t?'':o('','Seç (seçilmezse stüdyoda görünmez)',true))+BTYPES.map(function(x){return o(x[0],x[1],x[0]===t);}).join('')+'</select></label>'+
@@ -3686,7 +3717,7 @@ function adminView(){
       h+='<div class="arow pn-row"'+(open?'':' data-qp="edit" data-id="'+p.id+'"')+'><img src="'+IMG(p)+'" alt=""><div><b>'+esc(p.name||'Adsız')+(p.show===false?' (gizli)':'')+'</b><small><b style="display:inline;font:600 12px var(--ui);color:var(--green)">'+pCode(p)+'</b> · '+(p.old?tl(p.old)+' → ':'')+tl(p.price||0)+' · '+(hasStock(p)?(+p.stock<=0?'Tükendi':'Stok '+p.stock):'Stok girilmedi')+'</small></div><div class="mini"><button data-ad="mv" data-i="'+i+'" data-d="-1" aria-label="Yukarı">▲</button><button data-ad="mv" data-i="'+i+'" data-d="1" aria-label="Aşağı">▼</button>'+(open?'<button data-ad="open" data-id="'+p.id+'" aria-label="Kapat">−</button>':'<button data-qp="edit" data-id="'+p.id+'" aria-label="Düzenle">✎</button>')+'</div></div>';
       if(open){
         h+='<div class="aed">'+fld('Ürün adı',pa+'.name')+'<div class="three">'+fld('Tür (ör. TİŞÖRT)',pa+'.type')+fld('Renk (ör. Gri)',pa+'.color')+fld('Etiket (ör. Yeni)',pa+'.tag')+'</div><p class="note" style="margin:0">Ürün kodu: <b>'+pCode(p)+'</b> (rengin ve türün baş harfi + kalıcı numara; yönetimde ve yapay zekâya talimat verirken bu kodu kullan)</p>'+
-        '<div class="three">'+fld('Fiyat (₺)',pa+'.price','n')+fld('Eski fiyat (₺)',pa+'.old','n','boş = yok')+fld('Stok (adet)',pa+'.stock','n','boş = takip yok')+'</div>'+
+        pcBox(d,p,i)+'<div class="three">'+(p.pc&&pcCalc(d,p.pc)?'<label>Fiyat (₺)<input type="text" readonly value="'+pcCalc(d,p.pc).total+' (otomatik)"></label>':fld('Fiyat (₺)',pa+'.price','n'))+fld('Eski fiyat (₺)',pa+'.old','n','boş = yok')+fld('Stok (adet)',pa+'.stock','n','boş = takip yok')+'</div>'+
         '<label for="'+aid(pa+'.desc')+'">Açıklama (boş = türünün standart açıklaması, - = hiç gösterme)<textarea id="'+aid(pa+'.desc')+'" data-bind="'+pa+'.desc" data-t="s" placeholder="'+esc(pDesc(Object.assign({},p,{desc:''})))+'">'+esc(p.desc||'')+'</textarea></label>'+'<label for="'+aid(pa+'.btnote')+'">Baskı tekniği notu (boş = standart, - = hiç gösterme)<textarea id="'+aid(pa+'.btnote')+'" data-bind="'+pa+'.btnote" data-t="s" style="min-height:60px" placeholder="'+esc(btKindP(p)?btTX(btKindP(p)):'Bu üründe standart not yok')+'">'+esc(p.btnote||'')+'</textarea></label>'+'<label for="'+aid(pa+'.pnote')+'">Kumaş &amp; Duruş Notu (boş = genel not, - = hiç gösterme)<textarea id="'+aid(pa+'.pnote')+'" data-bind="'+pa+'.pnote" data-t="s" style="min-height:70px">'+esc(p.pnote||'')+'</textarea></label>'+'<label for="'+aid(pa+'.sizes')+'">Bedenler (virgülle ayır; boş = türüne göre otomatik, - = bedensiz)<input id="'+aid(pa+'.sizes')+'" data-bind="'+pa+'.sizes" data-t="s" value="'+esc(p.sizes||'')+'" placeholder="'+esc(pSizes(Object.assign({},p,{sizes:''})).join(', ')||'Bedensiz')+'"></label>'+
         '<div><b style="font-size:14px">Kategoriler</b><div class="chk" style="margin-top:6px">'+(d.cats||[]).map(function(c){return '<label><input type="checkbox" data-cat="'+i+'" data-c="'+c.id+'"'+((p.cat||[]).indexOf(c.id)>=0?' checked':'')+'>'+esc(c.name||'Adsız')+'</label>';}).join('')+'<label><input type="checkbox" data-bind="'+pa+'.show" data-t="b"'+(p.show!==false?' checked':'')+'>Sitede göster</label></div>'+
         subPick(d,p,i)+'</div>'+
@@ -3715,7 +3746,13 @@ function adminView(){
     SPEC_DEF.forEach(function(x){var k='spec_'+x[0];h+='<div class="aed" style="max-width:760px"><b>'+esc(x[1])+'</b>'+specTable(specLines(d,x[0]))+'<details><summary style="font:600 14px var(--ui);cursor:pointer">Düzenle</summary><textarea id="'+aid('txt.'+k)+'" aria-label="'+esc(x[1])+' şartnamesi" data-bind="txt.'+k+'" data-t="s" style="min-height:150px;margin-top:8px">'+esc(specLines(d,x[0]).join('\n'))+'</textarea><span class="note">Kaydet’e bastıktan sonra tablo güncellenir.</span></details></div>';});
   }else if(A.tab==='fiyat'){
     h+='<div class="aed" style="max-width:760px"><b>KDV</b><p class="note" style="margin:0">Sitede tüm fiyatlar KDV dahil gösterilir. Aşağıdaki fiyat alanlarına girdiğin tutarlar KDV hariç ise oran eklenerek gösterilir, KDV dahil ise olduğu gibi gösterilir.</p><label for="f-vat-mode">Girdiğim fiyatlar<select id="f-vat-mode" data-bind="vat.mode" data-t="s"><option value="excl"'+((d.vat||{}).mode!=='incl'?' selected':'')+'>KDV hariç (site oranı ekler)</option><option value="incl"'+((d.vat||{}).mode==='incl'?' selected':'')+'>KDV dahil (olduğu gibi gösterilir)</option></select></label><div class="three">'+fld('Koleksiyon KDV %','vat.ready','n')+fld('Boş ürünler KDV %','vat.blank','n')+fld('Baskı ücreti KDV %','vat.print','n')+'</div></div>';
-    h+='<div class="aed" style="max-width:760px">'+fld('A3 baskı katsayısı (A4 ücreti ile çarpılır)','a3','n')+
+    d.pf=d.pf||{};var F0=pfFees(d,null);
+    h+='<div class="aed" style="max-width:760px"><b>Baskı ücretleri · tüm ürünlerde aynı</b><p class="note" style="margin:0">Bir kez yaz, her yerde kullanılsın: Baskı Atölyesi\'nde müşterinin gördüğü fiyat, stüdyodan yaptığın ürünler ve fiyat tablosuna bağlı Koleksiyon ürünleri bu ücretlerle hesaplanır. Örnek: tişört 750 + logo 100 + ön A4 150 + arka A3 300 = 1.300 ₺ (KDV hariç girdiysen sitede KDV eklenir).</p>'+
+      '<div class="three">'+fld('Sol göğüs logo (₺)','pf.logo','n',String(F0.logo))+fld('A4 baskı · ön ya da arka (₺)','pf.a4','n',String(F0.a4))+fld('A3 baskı · ön ya da arka (₺)','pf.a3','n','boş = A4 × '+(+d.a3||2))+'</div>'+
+      '<div class="two">'+fld('Şapka baskısı (₺)','pf.hat','n',String(F0.hat))+fld('Kupa baskısı · 20 × 9 cm (₺)','pf.wrap','n','boş = eklenmez')+'</div></div>';
+    h+='<div class="aed" style="max-width:760px"><b>Taban fiyatlar · baskısız ürün</b><p class="note" style="margin:0">Her ürün türünün baskısız fiyatı. Kaydedince atölyedeki ve fiyat tablosuna bağlı bütün ürünlerin fiyatı kendiliğinden güncellenir.</p><div class="pft">'+
+      (d.blanks||[]).map(function(b,i){if(!b||!b.id)return '';return fld(esc(b.name||b.id)+(b.show===false?' (gizli)':''),'blanks.'+i+'.price','n');}).join('')+'</div></div>';
+    h+='<div class="aed" style="max-width:760px">'+fld('A3 baskı katsayısı (A3 ücreti boşsa A4 ücreti ile çarpılır)','a3','n')+
     '<div class="two">'+fld('Kargo ücreti (₺)','ship.fee','n')+fld('Ücretsiz kargo limiti (₺, 0 = yok)','ship.free','n')+'</div><div class="three">'+d.tiers.map(function(t,i){return fld((i+1)+'. indirim: adet','tiers.'+i+'.0','n')+fld('İndirim %','tiers.'+i+'.1','n');}).join('')+'</div>'+
     '<label for="f-note">Fiyatlandırma açıklaması (her satır bir paragraf)<textarea id="f-note" data-bind="note" data-t="lines" style="min-height:200px">'+esc((d.note||[]).join('\n'))+'</textarea></label></div>';
   }else if(A.tab==='depo'){h+=ffView();

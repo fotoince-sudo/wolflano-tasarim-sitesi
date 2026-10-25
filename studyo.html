@@ -895,10 +895,12 @@ function vatK(g){var v=(PH.site&&PH.site.vat)||{};if(v.mode==='incl')return 1;va
 function sNum(x){return x===null||x===undefined||x===''||isNaN(+x)?null:+x;}
 function priceOf(product,cut){var b=siteBlank(product,cut),v=b&&sNum(b.price);return v!=null?Math.round(v*vatK('blank')*100)/100:PRODUCTS[product].price[cut];}
 function basePrice(){return priceOf(state.product,state.cut);}
-function areaFee(k){var b=siteBlank(state.product,state.cut),f=AREAS[k]?AREAS[k].fee:0;if(!b)return f;
-  var a4=sNum(b.a4),lg=sNum(b.logo),ht=sNum(b.hat),v=null;
-  if(k==='a4')v=a4;else if(k==='a3')v=a4!=null?a4*(+(PH.site&&PH.site.a3)||2):null;else if(k==='logo')v=lg;else if(k==='hat')v=ht;
-  else if(k==='mug'||k==='mugw')v=sNum(b.wrap)!=null?sNum(b.wrap):0;/* kupa: iki baskı türünde tek ücret; boşsa eklenmez */else if(/^cv/.test(k))v=0;
+/* Baskı ücretleri: yönetimdeki "Baskı ücretleri · tüm ürünlerde aynı" (pf) önce gelir; boşsa ürünün kendi ücreti, o da yoksa örnek ücret */
+function areaFee(k){var b=siteBlank(state.product,state.cut),f=AREAS[k]?AREAS[k].fee:0,pf=(PH.site&&PH.site.pf)||{},kat=+(PH.site&&PH.site.a3)||2;
+  var g=function(x){var v=sNum(pf[x]);if(v==null&&b)v=sNum(b[x]);return v;};
+  var a4=g('a4'),v=null;
+  if(k==='a4')v=a4;else if(k==='a3'){v=sNum(pf.a3);if(v==null&&a4!=null)v=a4*kat;}else if(k==='logo')v=g('logo');else if(k==='hat')v=g('hat');
+  else if(k==='mug'||k==='mugw'){v=g('wrap');if(v==null)v=0;}/* kupa: iki baskı türünde tek ücret; boşsa eklenmez */else if(/^cv/.test(k))v=0;
   return v!=null?Math.round(v*vatK('print')*100)/100:f;}
 function siteTiers(){var t=(PH.site&&PH.site.tiers)||null;if(!Array.isArray(t))return;var l=t.filter(function(x){return x&&+x[0]>0&&+x[1]>0;}).map(function(x){return [+x[0],+x[1]/100];}).sort(function(a,b){return b[0]-a[0];});PRICE.tiers=l;}
 function forcedLand(key){var l=P().land;return !!(l&&l[key]);}
@@ -4273,10 +4275,14 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
     var data=await collect();
     var no=(d.products||[]).reduce(function(m,p){return Math.max(m,+p.no||0);},0)+1,id='n'+rnd();
     var ptype=o.type||TYPE_OF[state.product]||'TİŞÖRT',pcol=o.color!=null?o.color:colorName(),code=prodCode(pcol,ptype,no);data.code=code;
+    /* Fiyat elle değiştirilmediyse ürün fiyat tablosuna bağlanır: taban fiyat + baskı yerleri; tablo değişince kendiliğinden güncellenir */
+    var pc=null,sb=siteBlank(state.product,state.cut);
+    if(sb&&sb.id&&Math.abs((+price||0)-defPrice())<0.5){var used=function(sd){return state[sd]&&state[sd].objs&&state[sd].objs.length?state[sd].area:'';};
+      pc={b:sb.id,logo:!!used('logo'),f:used('front'),bk:used('back')};if(/^cv/.test(pc.f))pc.f='';}
     title=uniqName(title,(d.products||[]).map(function(x){return x.name;}));
     var rec=await insertRow({title:title,kind:'urun',status:'yayında',product:state.product,cut:state.cut,color:state.tee,data:data,thumb:pubUrl(imgs[0]),by_wolf:!!byWolf});
     d.products=d.products||[];
-    d.products.unshift({id:id,no:no,name:title,type:ptype,color:pcol,price:+price||0,old:(+o.old>0?+o.old:null),stock:null,tag:o.tag!=null?o.tag:'Yeni',cat:cp.cat,sub:cp.sub,imgs:imgs,desc:o.desc||'',show:true,adesign:rec&&rec.id,dsg:data,depo:(DEPO.cur&&depoBlank(state.product,state.cut))?DEPO.cur.id:undefined});
+    d.products.unshift({id:id,no:no,name:title,type:ptype,color:pcol,price:Math.round((+price||0)/vatK('ready')*100)/100,pc:pc||undefined,old:(+o.old>0?+o.old:null),stock:null,tag:o.tag!=null?o.tag:'Yeni',cat:cp.cat,sub:cp.sub,imgs:imgs,desc:o.desc||'',show:true,adesign:rec&&rec.id,dsg:data,depo:(DEPO.cur&&depoBlank(state.product,state.cut))?DEPO.cur.id:undefined});
     await rq('/rest/v1/site_content?on_conflict=id',{method:'POST',body:{id:'main',data:d,updated_at:new Date().toISOString()},prefer:'resolution=merge-duplicates,return=minimal'});
     if(rec)await rq('/rest/v1/admin_designs?id=eq.'+rec.id,{method:'PATCH',body:{note:'Ürün: '+id}});
     var cn=catLabel(catId);return 'Ürün sitede yayında: "'+title+'" · Kod: '+code+(cn?' → '+cn:'')+'. Fiyatını ve açıklamasını yönetim panelindeki Koleksiyon sekmesinden değiştirebilirsin.';
@@ -4353,6 +4359,8 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
       (c.subs||[]).forEach(function(s){h+='<option value="'+ea(c.id+'|'+s.id)+'">'+ea((c.name||'')+' → '+(s.name||''))+'</option>';
         (s.subs||[]).forEach(function(t){h+='<option value="'+ea(c.id+'|'+s.id+'|'+t.id)+'">'+ea((c.name||'')+' → '+(s.name||'')+' → '+(t.name||''))+'</option>';});});});return h;}
   function catLabel(v){var a=String(v||'').split('|'),cs=(ADM.site&&ADM.site.cats)||[],out=[],lv=cs;a.forEach(function(id){var f=(lv||[]).filter(function(x){return x.id===id;})[0];if(f){out.push(f.name||id);lv=f.subs;}});return out.join(' → ');}
+  function priceNote(){try{var pi=priceInfo(),b=basePrice();return '<p class="note" style="margin:-4px 0 4px">Otomatik fiyat (KDV dahil): ürün '+tlS(b)+(pi.fees?' + baskı '+tlS(pi.fees):'')+' = <b>'+tlS(pi.unit)+'</b>. Değiştirmezsen ürün fiyat tablosuna bağlanır; tabloyu güncelleyince fiyatı da güncellenir.</p>';}catch(_){return '';}}
+  function tlS(n){return '₺'+(Math.round(n*100)/100).toLocaleString('tr-TR');}
   function defPrice(){try{return Math.round(priceInfo().unit);}catch(_){return basePrice();}}
   /* ---- Mankende gör: tasarımı Manken stüdyosundaki fotoğraflara giydirir ----
      Fotoğraflar ve işaretli baskı alanları admin_kv "manken" kaydında. Renkli tişört için bir kerelik "tişört haritası" sunucuda hazırlanır. */
@@ -4441,7 +4449,7 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
     if(mode==='urun')body=prodInfo()+
       '<div class="am-two"><label class="am-f">Ürün türü<select id="amType">'+typeOpts()+'</select></label><label class="am-f">Renk<input id="amColor" maxlength="30" value="'+ea(colorName())+'"></label></div>'+
       '<label class="am-f">Kategori<select id="amCat">'+catOpts()+'</select></label>'+
-      '<div class="am-two"><label class="am-f">Satış fiyatı (₺)<input id="amPrice" type="number" inputmode="decimal" min="0" value="'+defPrice()+'"></label><label class="am-f">Eski fiyat (isteğe bağlı)<input id="amOld" type="number" inputmode="decimal" min="0" placeholder="İndirim için"></label></div>'+
+      '<div class="am-two"><label class="am-f">Satış fiyatı (₺)<input id="amPrice" type="number" inputmode="decimal" min="0" value="'+defPrice()+'"></label><label class="am-f">Eski fiyat (isteğe bağlı)<input id="amOld" type="number" inputmode="decimal" min="0" placeholder="İndirim için"></label></div>'+priceNote()+
       '<label class="am-f">Etiket<input id="amTag" maxlength="20" value="Yeni"></label>'+ortBox()+
       '<label class="am-f">Açıklama<textarea id="amDesc" maxlength="1200" placeholder="Kumaş, kalıp, baskı tekniği…"></textarea></label>'+
       '<p class="note">Ürün, tasarımın ürün üstündeki görüntüsüyle (ön ve arka) Koleksiyon\'a eklenir. Sonra panelden de düzenleyebilirsin.</p>';
