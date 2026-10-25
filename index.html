@@ -555,6 +555,13 @@ footer a{text-decoration:none}footer a:hover{color:var(--green)}
 .kbs{font:600 clamp(10.5px,2.9vw,13px)/1.45 var(--ui);letter-spacing:.04em;color:var(--ink);opacity:.86}
 .kbl{font:500 clamp(10px,2.6vw,12px) var(--ui);letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-top:2px}
 .kbph{position:relative;height:100%;min-height:inherit}
+.kban .kbp{left:var(--x);top:var(--y);width:var(--w);right:auto;bottom:auto;aspect-ratio:4/5;transform:translate(-50%,-50%) rotate(var(--r));transition:left 1.1s ease,top 1.1s ease,width 1.1s ease,transform 1.1s ease,opacity .9s ease;will-change:left,top,width}
+.kban .kbq0{--x:56%;--y:40%;--w:56%;--r:2.5deg;z-index:3;opacity:1}
+.kban .kbq1{--x:30%;--y:72%;--w:40%;--r:-4deg;z-index:2;opacity:1}
+.kban .kbq2{--x:78%;--y:79%;--w:31%;--r:3deg;z-index:1;opacity:1}
+.kban .kbqo{--x:92%;--y:92%;--w:18%;--r:6deg;z-index:0;opacity:0}
+.kban .kbqi{--x:58%;--y:-30%;--w:60%;--r:0deg;z-index:4;opacity:0}
+@media (prefers-reduced-motion:reduce){.kban .kbp{transition:none}}
 .kbh1{margin:0;font-style:normal;font-size:clamp(34px,9.6vw,58px);line-height:.98}.kbh1 em{font-style:italic;color:var(--green);padding:0 .03em}
 .kbq{font:italic 400 clamp(17px,4.6vw,24px)/1.15 'Cormorant Garamond',Georgia,serif;color:var(--ink)}
 .kbtop{display:flex;align-items:center;gap:10px}.kbw{width:34px;height:34px;object-fit:contain;flex:0 0 auto;padding:4px;background:#fff;border:1px solid var(--line);border-radius:10px}
@@ -2620,13 +2627,22 @@ function kolPicks(){var seen={},sc={},out=[];var L=PRODUCTS.filter(function(p){v
 /* Wolf banner'ı: her sayfa için aynı premium kalıp. Wolf o sayfanın ürünlerinden iki fotoğrafı kendisi seçer;
    yönetimde yalnız üst yazı, başlık, kısa yazı ve alt satır değiştirilir (boş bırakılırsa sayfanın hazır metni çıkar). */
 function wBan(k,pics,def){k=k||{};if(k.show===false)return '';
-  var ph=pics.slice(0,2).map(function(u,i){return '<img class="kbp kbp'+i+'" src="'+u+'" alt="" loading="'+(i?'lazy':'eager')+'">';}).join('');
+  var anim=!!def.h1&&pics.length>=2;
+  var ph=anim?kbAnimPics(pics):pics.slice(0,2).map(function(u,i){return '<img class="kbp kbp'+i+'" src="'+u+'" alt="" loading="'+(i?'lazy':'eager')+'">';}).join('');
   var e=k.eyebrow||def.e,t=k.title||def.t,x=k.text||def.x,l=k.line!=null&&k.line!==''?k.line:def.l;
   /* Sayfa başlığı banner'ın içinde (Hediye & Dekor): ayrı üst başlık yok, mobilde yer kaplamaz */
   if(def.h1){e=k.eyebrow&&!/hediye|dekor/i.test(k.eyebrow)?k.eyebrow:def.e;x=k.title||def.x;}
   var hh=def.h1?'<h1 class="kbh kbh1">'+esc(def.h1).replace('&amp;','<em>&amp;</em>')+'</h1>'+(x?'<span class="kbq">'+esc(x)+'</span>':''):'<b class="kbh">'+esc(t)+'</b>'+(x?'<span class="kbs">'+esc(x)+'</span>':'');
   var inner='<div class="kbt"><span class="kbtop"><img class="kbw" src="img/wolflano-logo.png" alt="" aria-hidden="true">'+(e?'<span class="kbe">'+esc(e)+'</span>':'')+'</span>'+hh+(l?'<span class="kbl">'+esc(l)+'</span>':'')+'</div><div class="kbph">'+ph+'</div>';
-  return k.link?'<a class="kbx" href="'+esc(k.link)+'">'+inner+'</a>':'<div class="kbx">'+inner+'</div>';}
+  var cl='kbx'+(anim?' kban':'');kbAnimStart();return k.link?'<a class="'+cl+'" href="'+esc(k.link)+'">'+inner+'</a>':'<div class="'+cl+'">'+inner+'</div>';}
+/* Hareketli banner görselleri: üç yer (üstte büyük, ortada orta, sağ altta küçük ve arkada).
+   Görsel yukarıdan gelir, her adımda biraz küçülüp bir sonraki yere geçer, sağ alttan sonra kaybolur; döngü sürekli. */
+function kbAnimPics(p){var L=p.slice();while(L.length<5)L=L.concat(p);L=L.slice(0,Math.max(5,p.length));
+  return L.map(function(u,i){return '<img class="kbp kbq'+kbSlot(i,L.length)+'" src="'+u+'" alt="" loading="'+(i<3?'eager':'lazy')+'">';}).join('');}
+function kbSlot(pos,n){return pos<3?pos:(pos===3?'o':'i');}
+var KBA=null;function kbAnimStart(){if(KBA)return;var rm=false;try{rm=matchMedia('(prefers-reduced-motion: reduce)').matches;}catch(_){}if(rm)return;
+  KBA=setInterval(function(){[].forEach.call(document.querySelectorAll('.kban .kbph'),function(ph){var im=ph.querySelectorAll('img'),n=im.length;if(n<5)return;var st=((+ph.dataset.st||0)+1)%n;ph.dataset.st=st;
+    [].forEach.call(im,function(e,i){var pos=(i+st)%n;e.className='kbp kbq'+kbSlot(pos,n);});});},3600);}
 var WBAN_DEF={
   hazir:{e:'Yeni sezon',t:'Logoya değil, kumaşa.',x:'240 gr tişört · 280 gr polo · 380 gr sweatshirt',l:'İtalyan estetiği · Wolflano karakteri'},
   hediye:{e:'Wolflano',h1:'Hediye & Dekor',t:'',x:'Anıların, kupada ve duvarda.',l:'Kolajını Wolf hazırlasın'},
@@ -2634,10 +2650,12 @@ var WBAN_DEF={
   sayfa:{e:'Wolflano',t:'',x:'',l:'İtalyan estetiği · Wolflano karakteri'}};
 function wbPics(page){var out=[];
   if(page==='hediye'){var hc=(D.cats||[]).filter(function(c){return /hediye|dekor/i.test(c.name||'');})[0];
-    PRODUCTS.filter(function(p){return hc&&(p.cat||[]).indexOf(hc.id)>=0;}).forEach(function(p){var o=(p.imgs||[]).filter(function(k){return /^img\/ortam-/.test(k);})[0];if(o)out.push(src(o));});
-    BLANKS.forEach(function(b){var t=b.p||b.id;if(t!=='mug'&&t!=='canvas')return;(b.imgs||[]).forEach(function(k){if(/^img\/ortam-/.test(k))out.push(src(k));});});
-    var seen={};out=out.filter(function(u){if(seen[u])return false;seen[u]=1;return true;});
-    if(out.length>2){var cv=out.filter(function(u){return /ortam-canvas/.test(u);})[0];if(cv)out=[out.filter(function(u){return !/ortam-canvas/.test(u);})[0],cv];}
+    /* Hareketli banner: bu kategorideki tasarımı bitmiş baskılı ürünler (kupa, tablo); her ürünün sahne fotoğrafı, yoksa ilk fotoğrafı. Her açılışta karışık sıra, en fazla 8. */
+    PRODUCTS.filter(function(p){return hc&&(p.cat||[]).indexOf(hc.id)>=0&&(p.imgs||[]).length;}).forEach(function(p){var o=(p.imgs||[]).filter(function(k){return /^img\/ortam-/.test(k);})[0];out.push(o?src(o):IMG(p));});
+    var seen={};out=out.filter(function(u){if(!u||seen[u])return false;seen[u]=1;return true;});
+    for(var q=out.length-1;q>0;q--){var r=Math.floor(Math.random()*(q+1)),t=out[q];out[q]=out[r];out[r]=t;}
+    out=out.slice(0,8);
+    if(out.length<2)BLANKS.forEach(function(b){var t=b.p||b.id;if(t!=='mug'&&t!=='canvas')return;(b.imgs||[]).forEach(function(k){if(/^img\/ortam-/.test(k)&&out.indexOf(src(k))<0)out.push(src(k));});});
     return out;}
   if(page==='tasarla'){BLANKS.forEach(function(b){var t=b.p||b.id;if(t==='mug'||t==='canvas'||!bVisible(b))return;var c=bColors(b)[0];var u=c?(c.front||c.back):(b.imgs&&b.imgs[0]);if(u&&out.length<2)out.push(src(u));});return out;}
   return kolPicks().map(function(p){return IMG(p);});}
