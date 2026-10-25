@@ -207,6 +207,8 @@ svg.i{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stro
 .stagebar button[hidden]{display:none}
 .stagebar svg.i{width:17px;height:17px}
 .stagebar:not([hidden])~.hint{display:none}
+.lprice{position:absolute;left:10px;top:10px;z-index:4;pointer-events:none;font:800 14px var(--ui);color:var(--ink);background:var(--panel);border:1px solid var(--line);padding:6px 11px;border-radius:999px;box-shadow:0 4px 12px rgba(16,26,20,.08)}
+.lprice small{font:600 11px var(--ui);color:var(--muted);margin-left:3px}
 .toast{position:absolute;left:50%;top:10px;transform:translateX(-50%);background:var(--ink);color:var(--bg);font:600 13px var(--ui);padding:8px 14px;border-radius:999px;pointer-events:none;max-width:90%;text-align:center;z-index:5}
 .ad-warn{margin:0 0 10px;color:var(--warn);font:600 13px/1.45 var(--ui)}
 .toast.top{position:fixed;top:calc(env(safe-area-inset-top,0px) + 64px);z-index:80}
@@ -421,7 +423,7 @@ svg.i{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stro
   .sub .seg button{padding:6px 8px}
   .sub-r{gap:4px;flex:none}.sub-r .ib{width:34px;height:34px}
 }
-@media (max-width:360px){.brand span{display:none}.top-actions #redoBtn{display:none}}
+@media (max-width:360px){.brand span{display:none}.brand b{font-size:14px;letter-spacing:.06em}.top-actions{gap:3px}.top-actions .ib{width:32px;height:32px}}
 /* Telefonda baskı ölçüleri (A4, A3, logo…) ayrı satırda, hepsi görünür */
 @media (max-width:520px){
   .sub{flex-wrap:wrap;row-gap:6px}
@@ -615,6 +617,7 @@ img{-webkit-touch-callout:none;-webkit-user-drag:none}
     </div>
     <div class="mlive" id="mugLive" hidden aria-label="Kupada gerçek görünüm"><b>Kupada gerçek görünüm</b><div><figure><canvas id="mlR" width="300" height="300"></canvas><figcaption>Sağ elde</figcaption></figure><figure><canvas id="mlL" width="300" height="300"></canvas><figcaption>Sol elde</figcaption></figure></div></div>
     <div class="hint" id="hint">Sürükle: taşı · Beyaz kare: büyüt/küçült · Siyah nokta: döndür · İki parmak: yakınlaştır</div>
+    <div class="lprice" id="livePrice" aria-live="polite" hidden></div>
     <div class="toast" id="toast" role="status" hidden></div>
   </main>
 
@@ -1396,7 +1399,9 @@ function lum(hex){var h=hex.replace('#','');var r=parseInt(h.substr(0,2),16),gg=
 function autoInk(){return lum(state.tee)>0.55?'#111111':'#ffffff';}
 
 function pushHist(){try{mugLiveSoon();}catch(_){}var s=JSON.stringify(state);if(hist[hpos]===s)return;hist=hist.slice(0,hpos+1);hist.push(s);if(hist.length>60){hist.shift();}hpos=hist.length-1;syncUndo();try{draftSoon();}catch(_){}}
-function syncUndo(){$('#undoBtn').disabled=hpos<=0;$('#redoBtn').disabled=hpos>=hist.length-1;}
+function syncUndo(){$('#undoBtn').disabled=hpos<=0;$('#redoBtn').disabled=hpos>=hist.length-1;try{livePrice();}catch(_){}}
+/* Tasarım ekranında anlık birim fiyat: ürün + dolu baskı yerlerinin ücreti (A3'e geçince hemen artar) */
+function livePrice(){var el=$('#livePrice');if(!el)return;var p=priceInfo();if(!(p.unit>0)){el.hidden=true;return;}el.innerHTML=fmt(p.unit)+'<small>/ adet</small>';el.hidden=false;}
 function undo(){if(hpos<=0)return;hpos--;state=JSON.parse(hist[hpos]);afterRestore();try{draftSoon();}catch(_){}}
 function redo(){if(hpos>=hist.length-1)return;hpos++;state=JSON.parse(hist[hpos]);afterRestore();try{draftSoon();}catch(_){}}
 function afterRestore(){if(view.sel&&!objById(view.sel))view.sel=null;renderAll();syncUndo();}
@@ -3024,7 +3029,7 @@ function renderTplPreviews(){
 function syncTeeUI(){if(!$('#prodPage').hidden)renderProdPage();syncOpt();if(view.tab==='opt')renderOpt();}
 /* Stüdyodan çıkmadan ürün rengi ve beden değişimi (üst satırdaki renk noktası) */
 function curSize(){var l=sizeList()||[];if(!l.length||isStd())return '';try{var z=phSize();if(z&&l.indexOf(z)>=0)return z;}catch(_){}var best='',mx=0;l.forEach(function(z){if((state.sizes[z]||0)>mx){mx=state.sizes[z];best=z;}});return best||PH.want||'';}
-function syncOpt(){var d=$('#optDot'),z=$('#optSz');if(!d)return;$('#optBtn').hidden=state.product==='canvas';d.style.background=state.tee;var cs=curSize();z.textContent=cs;z.hidden=!cs;$('#optBtn').classList.toggle('on',view.tab==='opt');}
+function syncOpt(){var d=$('#optDot'),z=$('#optSz');if(!d)return;$('#optBtn').hidden=state.product==='canvas';d.style.background=state.tee;var cs=curSize(),cn=state.product==='mug'?'':shirtName(),zt=[cn,cs].filter(Boolean).join(' · ');z.textContent=zt;z.hidden=!zt;$('#optBtn').classList.toggle('on',view.tab==='opt');try{livePrice();}catch(_){}}
 function renderOpt(){
   var nm='',sw='';TEES.forEach(function(t){if(t[1]===state.tee)nm=teeLabel(t[0]);sw+='<button class="csw'+(t[1]===state.tee?' on':'')+'" data-tee="'+t[1]+'" style="background:'+t[1]+'" aria-label="'+t[0]+'"></button>';});
   $('#optColors').innerHTML=sw;$('#optColorName').textContent=nm;
@@ -3053,7 +3058,7 @@ function syncChips(){
   $('#sideSeg').hidden=Object.keys(q.sides).length<2||mugWrap();
 }
 function renderAll(){
-  renderShirt();updateArea();renderObjects();renderPassive();buildSel();syncCtx();syncTextInput();syncChips();syncTeeUI();syncProduct();layout();
+  renderShirt();updateArea();renderObjects();renderPassive();buildSel();syncCtx();syncTextInput();syncChips();syncTeeUI();syncProduct();layout();try{livePrice();}catch(_){}
   if(tplLastGroup&&tplLastGroup!==tplGroup()){$('#tplQ').value='';renderTpl();}
   if(view.tab==='tpl')renderTplPreviews();
 }
