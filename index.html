@@ -2242,7 +2242,7 @@ function seedBlanks(){D.seeded=D.seeded||{};if(!Array.isArray(D.blanks))return;v
 function applyData(){seedBlanks();autoSub(D);if(!D.vat)D.vat={mode:'excl',ready:20,blank:20,print:20};
  pNums(D.products);ALLP=D.products.map(function(p){return Object.assign({},p,{price:vp(p.price,'ready'),old:vp(p.old,'ready')});});
  PRODUCTS=ALLP.filter(function(p){return p.show!==false;});
- CATS=(D.cats||[]).filter(function(c){if(c.show===false)return false;if(/hediye|dekor/i.test(c.name||''))return PRODUCTS.some(function(p){return (p.cat||[]).indexOf(c.id)>=0;});return true;}).map(function(c){return [c.id,c.name||'Adsız'];});if(CATS.length&&!CATS.some(function(c){return c[0]===catSel;})){catSel=CATS[0][0];subSel='';}
+ CATS=(D.cats||[]).filter(function(c){if(c.show===false)return false;if(/hediye|dekor/i.test(c.name||''))return false;return true;}).map(function(c){return [c.id,c.name||'Adsız'];});if(CATS.length&&!CATS.some(function(c){return c[0]===catSel;})){catSel=CATS[0][0];subSel='';}
  BLANKS=D.blanks.filter(function(b){return b.show!==false;}).map(function(b){return Object.assign({},b,{price:vp(b.price,'blank'),old:vp(b.old,'blank'),a4:vp(b.a4,'print'),logo:vp(b.logo,'print'),hat:vp(b.hat,'print'),wrap:vp(b.wrap!=null?b.wrap:((b.p||b.id)==='mug'?75:null),'print')});});
  A3_KAT=+D.a3||2;TIERS=D.tiers;setTimeout(function(){if(window.seoUpdate)seoUpdate();},0);PRICE_NOTE=(D.note||[]).concat(['Tüm fiyatlara KDV dahildir.']);CONTACT=D.contact;applyLogo();bzMerge();}
 function prBig(x){if(x.old&&x.old>x.price){var pc=Math.round((1-x.price/x.old)*100);return '<s class="old">'+tl(x.old)+'</s><span class="now">'+tl(x.price)+'</span>'+(pc>0?'<em class="pct">%'+pc+' indirim</em>':'');}return '<span class="now">'+tl(x.price)+'</span>';}
@@ -2329,8 +2329,9 @@ function pagesNow(){var l=PAGES.map(function(p){var m={hazir:'menuHazir',atolye:
   var cp=(D.cpages||[]).filter(function(x){return x&&x.show!==false&&x.menu!==false&&x.title;}).map(function(x){return ['p-'+x.id,x.title];});
   if(cp.length){var i=l.length-1;l=l.slice(0,i).concat(cp,l.slice(i));}
   /* "Hediye & Dekor" kategorisi yönetimde "Sitede göster" açılınca menüde Baskı Atölyesi'nden sonra kendiliğinden çıkar */
-  var hd=CATS.filter(function(c){return /hediye|dekor/i.test(c[1]);})[0];
-  if(hd){var ai=-1;l.forEach(function(x,k){if(x[0]==='atolye')ai=k;});l.splice(ai+1,0,['kat-'+hd[0],hd[1]]);}
+  /* Koleksiyon'da sekme olarak görünmez; menüden kendi sayfasına (Hediye & Dekor) gider */
+  var hd=(D.cats||[]).filter(function(c){return c.show!==false&&/hediye|dekor/i.test(c.name||'')&&PRODUCTS.some(function(p){return (p.cat||[]).indexOf(c.id)>=0;});})[0];
+  if(hd&&!cp.some(function(x){return /hediye|dekor/i.test(x[1]);})){var ai=-1;l.forEach(function(x,k){if(x[0]==='atolye')ai=k;});l.splice(ai+1,0,['hediye',hd.name||'Hediye & Dekor']);}
   return l;}
 var CATS=[['kadin','Kadın'],['erkek','Erkek'],['cocuk','Çocuk']],subSel='',sub2Sel='',catOpen='',grpOpen='';
 var SIDES={tee:{front:['a4','a3','logo'],back:['a4','a3']},sweat:{front:['a4','a3','logo'],back:['a4','a3']},polo:{front:['logo'],back:['a4','a3']},hat:{front:['hat'],back:[]}};
@@ -3104,6 +3105,7 @@ function route(){
   if(h.indexOf('urun-')===0){pid=h.slice(5);h='urun';}
   else if(h.indexOf('p-')===0){pid=h.slice(2);h='cp';}
   else if(h.indexOf('bu-')===0){pid=h.slice(3);h='bu';}
+  if(h.indexOf('kat-')===0&&isHdCat(h.slice(4))){h='hediye';}
   var katId='';if(h.indexOf('kat-')===0){katId=h.slice(4);if(CATS.some(function(c){return c[0]===katId;})){catSel=katId;subSel='';sub2Sel='';}else katId='';h='hazir';}
   if(h==='biz'){location.replace('studyo.html?wolf=1');return;}
   if(h==='baski')h='tasarla';if(!VIEWS[h])h='ana';
