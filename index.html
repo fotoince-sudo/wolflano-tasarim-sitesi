@@ -2713,7 +2713,7 @@ function cpBody(t){var h='',ul=false,para=[];function flush(){if(para.length){h+
     para.push(l);});
   flush();if(ul)h+='</ul>';return h;}
 /* Hediye & Dekor sayfası: kupa ve canvas, Baskı Atölyesi'ndeki gibi kart olarak (fotoğraf, isim, fiyat, renk, "Tasarla"); varsa hazır baskılı ürünler de yanında */
-function hdGrid(){var bl=BLANKS.filter(function(b){var t=b.p||b.id;return (t==='mug'||t==='canvas')&&bVisible(b);});
+function hdGrid(){/* Baskısız kupa/canvas burada gösterilmez; onların yeri Baskı Atölyesi → Ürün seç */var bl=[];
   var hc=(D.cats||[]).filter(function(c){return /hediye|dekor/i.test(c.name||'');})[0],rd=hc?PRODUCTS.filter(function(p){return (p.cat||[]).indexOf(hc.id)>=0;}):[];
   if(!bl.length&&!rd.length)return '';
   /* İki ayrı kategori: Kupa ve Canvas Tablo; her kart kendi türüyle işaretlenir, sekme yalnız o türü gösterir */
