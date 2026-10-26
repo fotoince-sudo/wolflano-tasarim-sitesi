@@ -644,7 +644,7 @@ body.cko #nav,body.cko .menu-btn,body.cko .lang,body.cko #cartBtn,body.cko #ann{
 .cobar .btn{flex:1;max-width:420px;justify-content:center;padding:13px 14px;border-radius:999px;font:600 14px var(--ui);border:1px solid #000;margin:0}
 .cobar .btn.off{opacity:.45}
 /* Baskı Atölyesi ürün seçimi: mağaza kartlarıyla aynı */
-.tsp .tsc{grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;max-width:none}
+.tsp .tsc{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;max-width:none}
 .tsp .tsc button{min-width:0;border:1px solid var(--green);background:transparent;color:var(--ink)}
 .tsp .tsc button.on{background:var(--green);border-color:#000;color:#fff}
 .tsph{display:block;width:100%;padding:0;border:0;background:none;cursor:pointer}
@@ -683,7 +683,7 @@ body.cko #nav,body.cko .menu-btn,body.cko .lang,body.cko #cartBtn,body.cko #ann{
 .intro.aint p{font-size:15px;line-height:1.55;max-width:42ch}
 .intro.aint .cta-row{margin-top:16px}
 .ktw{display:grid;gap:10px;width:100%;max-width:520px;margin:0 auto}.ktl{margin:0;text-align:center;font:600 12px/1.2 var(--ui);letter-spacing:.14em;text-transform:uppercase;color:var(--green)}
-.ktb{display:grid;grid-template-columns:1fr 1fr;gap:10px}.ktb .btn{justify-content:center;padding-left:8px;padding-right:8px;white-space:nowrap;font-size:clamp(12.5px,3.6vw,15px)}
+.ktb{display:grid;grid-template-columns:1fr 1fr;gap:10px}.ktb.one{grid-template-columns:1fr;max-width:300px;width:100%;margin:0 auto}.ktb .btn{justify-content:center;padding-left:8px;padding-right:8px;white-space:nowrap;font-size:clamp(12.5px,3.6vw,15px)}
 .page>.intro.aint:first-child{margin-top:-18px}
 .intro.aint+.bizban{margin-top:22px}
 .bizban+.wolfban{margin-top:12px}
@@ -2735,9 +2735,9 @@ var NAVPREV='';window.addEventListener('hashchange',function(e){try{var o=new UR
 function pdBack(p){var hd=(p.cat||[]).some(isHdCat);return backLink(hd?hdHref():'#hazir',hd?'← Hediye & Dekor':'← Koleksiyon');}
 function backLink(def,lbl){return '<a class="link back" href="'+def+'" data-goback>'+(NAVPREV&&NAVPREV!==def?'← Geri':esc(lbl))+'</a>';}
 document.addEventListener('click',function(e){var a=e.target.closest&&e.target.closest('[data-goback]');if(!a||!NAVPREV)return;e.preventDefault();history.back();});
-/* "Kendin tasarla" iki yola ayrılır: Giyim & Moda (#tasarla) ve Hediye & Dekor (kupa, canvas) */
+/* Baskı Atölyesi: tek giriş "Ürün seç" → baskısız ürün seçme sayfası (#tasarla; giyim, şapka, kupa, canvas hepsi orada) */
 function hdHref(){var x=(D.cpages||[]).filter(function(y){return y&&y.show!==false&&/hediye|dekor/i.test(y.title||'');})[0];return x?'#p-'+x.id:'#hediye';}
-function tasarlaBtns(){return '<div class="ktw"><p class="ktl">'+esc(TX('atolyeBtn'))+'</p><div class="ktb"><a class="btn" href="#tasarla">Giyim &amp; Moda '+IC.arrow+'</a><a class="btn" href="'+hdHref()+'">Hediye &amp; Dekor '+IC.arrow+'</a></div></div>';}
+function tasarlaBtns(){return '<div class="ktw"><p class="ktl">'+esc(TX('atolyeBtn'))+'</p><div class="ktb one"><a class="btn" href="#tasarla">Ürün seç '+IC.arrow+'</a></div></div>';}
 /* Stüdyoya giderken bulunulan sayfa saklanır; stüdyodan çıkınca oraya dönülür */
 document.addEventListener('click',function(e){var a=e.target.closest&&e.target.closest('a[href^="studyo.html"]');if(a){try{sessionStorage.setItem('wf_from',location.hash||'#ana');}catch(_){}}},true);
 /* Eski kupa/canvas ürün görselleri (stüdyoda küçük çizilmiş): boşluğu kırpıp ürünü kareye doldurur; yeni görseller zaten dolu gelir */
@@ -3117,7 +3117,7 @@ yorumlar:function(){return rvPage();},
  hediye:function(){var hh=hdHref();if(hh!=='#hediye'){setTimeout(function(){location.replace(hh);},0);return '';}return '<div class="wrap page cpg">'+hdHead()+(hdGrid()||'<p class="empty">Bu bölümde henüz ürün yok.</p>')+'</div>';},
  tasarla:function(){
   /* Sekmeler: Tümü · Kadın · Erkek · Çocuk · Kupa · Canvas; giyim sekmelerinde tür kutusu (Tişört, Sweatshirt, Polo, Şapka) */
-  var all=BLANKS.filter(function(b){var t=b.p||b.id;return t!=='mug'&&t!=='canvas'&&!/kupa|canvas|tablo/i.test(b.name||'')&&bVisible(b);}),inTab=all.filter(function(b){return !tsSel||bGen(b).indexOf(tsSel)>=0;}),types=[];
+  var all=BLANKS.filter(function(b){return bVisible(b);}),inTab=all.filter(function(b){return !tsSel||bGen(b).indexOf(tsSel)>=0;}),types=[];
   inTab.forEach(function(b){var t=bTypeOf(b)||'diger';if(types.indexOf(t)<0)types.push(t);});
   types.sort(function(a,b){return TS_ORD.indexOf(a)-TS_ORD.indexOf(b);});if(tsType&&types.indexOf(tsType)<0)tsType='';
   var list=inTab.filter(function(b){return !tsType||(bTypeOf(b)||'diger')===tsType;}),
@@ -3126,13 +3126,13 @@ yorumlar:function(){return rvPage();},
     it=function(v,name){var on=tsType===v;return '<button type="button" data-tst="'+v+'"'+(on?' class="on" aria-checked="true"':' aria-checked="false"')+' role="menuitemradio"><span>'+esc(name)+'</span>'+(on?OK:'')+'</button>';};
   var dd=types.length>1?'<div class="dd'+(tsOpen?' open':'')+'"><button type="button" class="ddb" data-tsdd aria-haspopup="true" aria-expanded="'+tsOpen+'"><span>'+esc(tsType?tsName(tsType):'Tümü')+'</span><i class="cv">'+CV+'</i></button>'+
     (tsOpen?'<div class="ddl" role="menu">'+it('','Tümü')+types.map(function(t){return it(t,tsName(t));}).join('')+'</div>':'')+'</div>':'';
-  return '<div class="wrap page kolp tsp"><p class="eyebrow">Kendin tasarla</p><h1 class="h2 kolh">Giyim &amp; Moda</h1>'+pageBan('tasarla',(D.banners||{}).tasarla)+'<div class="catbar">'+
+  return '<div class="wrap page kolp tsp"><p class="eyebrow">Kendin tasarla</p><h1 class="h2 kolh">Ürün seç</h1>'+pageBan('tasarla',(D.banners||{}).tasarla)+'<div class="catbar">'+
   '<div class="chips tsc" role="tablist">'+TS_TABS.map(function(c){var on=tsSel===c[0];return '<button role="tab" data-ts="'+c[0]+'"'+(on?' class="on" aria-selected="true"':'')+'>'+c[1]+'</button>';}).join('')+'</div>'+dd+'</div>'+
   (list.length?'<div class="grid">'+list.map(tsCard).join('')+'</div>':'<p class="empty">Bu grupta henüz baskıya uygun ürün yok.</p>')+
   '</div>';
  },
- bu:function(id){var b=BLANKS.filter(function(x){return x.id===id;})[0];szPick='';bcSel=tcSel[id]||0;if(!b)return '<div class="wrap page">'+backLink('#tasarla','← Giyim & Moda')+'<p class="empty">Ürün bulunamadı.</p></div>';gv=0;
-  return '<div class="wrap page bup">'+backLink('#tasarla','← Giyim & Moda')+'<div class="pd"><div class="gal" id="gal">'+galHTML(buGal(b))+'</div><div class="info"><small class="ptype">'+esc(String(b.name||'').toLocaleUpperCase('tr').replace(/SWEATSHİRT/g,'SWEATSHIRT'))+'</small>'+bcBlock(b)+(function(){var zs=bSizes(b);if(!zs.length||soldOut(b))return '';return szBlock(zs,szTable({tee:'tee',sweat:'sweat',hood:'sweat',zip:'sweat',polo:'polo'}[b.p||b.id]||szKind(b.name),bCut(b),zs));})()+'<div class="ptop"><div class="pbig">'+prBig(b)+'</div><small class="pcode">'+((isMugB(b)?!+b.wrap:(b.hat===0||b.hat==='0'))?'Baskı dahil fiyat · ön yüz ve kenarlar':'Baskısız fiyat · baskı ücreti tasarımda eklenir · <a href="#fiyatlar">Baskı fiyatları</a>')+'</small></div>'+stk(b)+(soldOut(b)?'<p class="note" style="margin:0">Bu ürün şu an stokta yok. Tasarımını yine de yapabilirsin; kaydederiz, stoğa gelince e-postana haber veririz.</p>':'')+'<a class="btn" data-tasarla="'+b.id+'" href="'+studioURL(b.p||b.id,b.cut)+'">Tasarla</a>'+(bDesc(b)?'<p style="margin:0;color:var(--muted)">'+esc(bDesc(b))+'</p>':'')+btHTML(btNote(b,btKindB(b),bDesc(b)))+blankInfo(b)+'</div></div></div>';
+ bu:function(id){var b=BLANKS.filter(function(x){return x.id===id;})[0];szPick='';bcSel=tcSel[id]||0;if(!b)return '<div class="wrap page">'+backLink('#tasarla','← Ürün seç')+'<p class="empty">Ürün bulunamadı.</p></div>';gv=0;
+  return '<div class="wrap page bup">'+backLink('#tasarla','← Ürün seç')+'<div class="pd"><div class="gal" id="gal">'+galHTML(buGal(b))+'</div><div class="info"><small class="ptype">'+esc(String(b.name||'').toLocaleUpperCase('tr').replace(/SWEATSHİRT/g,'SWEATSHIRT'))+'</small>'+bcBlock(b)+(function(){var zs=bSizes(b);if(!zs.length||soldOut(b))return '';return szBlock(zs,szTable({tee:'tee',sweat:'sweat',hood:'sweat',zip:'sweat',polo:'polo'}[b.p||b.id]||szKind(b.name),bCut(b),zs));})()+'<div class="ptop"><div class="pbig">'+prBig(b)+'</div><small class="pcode">'+((isMugB(b)?!+b.wrap:(b.hat===0||b.hat==='0'))?'Baskı dahil fiyat · ön yüz ve kenarlar':'Baskısız fiyat · baskı ücreti tasarımda eklenir · <a href="#fiyatlar">Baskı fiyatları</a>')+'</small></div>'+stk(b)+(soldOut(b)?'<p class="note" style="margin:0">Bu ürün şu an stokta yok. Tasarımını yine de yapabilirsin; kaydederiz, stoğa gelince e-postana haber veririz.</p>':'')+'<a class="btn" data-tasarla="'+b.id+'" href="'+studioURL(b.p||b.id,b.cut)+'">Tasarla</a>'+(bDesc(b)?'<p style="margin:0;color:var(--muted)">'+esc(bDesc(b))+'</p>':'')+btHTML(btNote(b,btKindB(b),bDesc(b)))+blankInfo(b)+'</div></div></div>';
  },
  biz:function(){return bizGate()?gateHTML():bzView();},
  kurumsal:function(){return '<div class="wrap page">'+
@@ -3192,7 +3192,7 @@ function kurHTML(full){
 }
 var tsSel='',bcSel=0;
 var tsType='',tsOpen=false,tcSel={};
-var TS_TABS=[['','Tümü'],['kadin','Kadın'],['erkek','Erkek'],['cocuk','Çocuk']],TS_ORD=['tee','sweat','hood','zip','polo','hat','mug','canvas','diger'];
+var TS_TABS=[['','Tümü'],['kadin','Kadın'],['erkek','Erkek'],['cocuk','Çocuk'],['kupa','Kupa'],['canvas','Canvas']],TS_ORD=['tee','sweat','hood','zip','polo','hat','mug','canvas','diger'];
 /* Sitede görünmez: stoğu bitmiş (stok takibi açık ve 0) ya da hiç fotoğrafı yüklenmemiş baskıya uygun ürün */
 function bVisible(b){if(soldOut(b))return false;return !!(bColors(b).length||(b.imgs&&b.imgs.length));}
 function tsName(t){var x=BTYPES.filter(function(y){return y[0]===t;})[0];return x?x[1]:'Diğer';}
@@ -3932,7 +3932,7 @@ function adminView(){
     /* Wolf banner'ları: her sayfa için aynı kalıp; fotoğrafları Wolf o sayfanın ürünlerinden seçer */
     d.banners=d.banners||{};['hediye','tasarla'].forEach(function(k){d.banners[k]=d.banners[k]||{};});
     h+='<div class="aed" style="max-width:760px"><b>Wolf banner\'ları (sayfa başları)</b><span class="note">Her sayfanın başındaki banner. Fotoğrafları Wolf o sayfanın ürünlerinden kendisi seçer, ürün değişince banner da yenilenir. Yazıları boş bırakırsan Wolf\'un hazır metni çıkar. Koleksiyon banner\'ı yukarıda; kendi eklediğin sayfalarda da "Sayfalar" bölümünden açabilirsin.</span>'+
-      [['hediye','Hediye & Dekor'],['tasarla','Kendin tasarla · Giyim & Moda']].map(function(q){var pa='banners.'+q[0],bb=d.banners[q[0]],df=WBAN_DEF[q[0]];
+      [['hediye','Hediye & Dekor'],['tasarla','Kendin tasarla · Ürün seç']].map(function(q){var pa='banners.'+q[0],bb=d.banners[q[0]],df=WBAN_DEF[q[0]];
         return '<div style="border-top:1px solid var(--line);padding-top:10px;margin-top:6px"><b style="font-size:14px">'+q[1]+'</b><div class="chk"><label><input type="checkbox" data-bind="'+pa+'.show" data-t="b"'+(bb.show!==false?' checked':'')+'>Banner\'ı göster</label></div>'+
           fld('Üst küçük yazı',pa+'.eyebrow','s',df.e)+fld('Başlık',pa+'.title','s',df.t)+fld('Kısa yazı',pa+'.text','s',df.x)+fld('Alt satır',pa+'.line','s',df.l)+'</div>';}).join('')+'</div>';
     h+='<div class="aed" style="max-width:760px"><b>Hakkımızda</b>'+fld('Başlık','txt.aboutTitle')+ta('Giriş','aboutLead',110)+fld('Felsefe başlığı','txt.aboutPhilTitle')+ta('Felsefe metni','aboutPhil',110)+fld('Söz başlığı','txt.aboutPromTitle')+ta('Söz metni','aboutProm',100)+'</div>';

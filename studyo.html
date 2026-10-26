@@ -4084,7 +4084,7 @@ syncUndo();
 /* Ürünlere dönüş: stüdyoya hangi sayfadan gelindiyse oraya; ürün o sırada türü değiştiyse (kupa ↔ giyim) ürüne uygun sayfaya (kupa/canvas → Hediye & Dekor, giyim → Giyim & Moda) */
 (function(){var p0=null,from='';try{from=sessionStorage.getItem('wf_from')||'';}catch(_){}
   setTimeout(function(){p0=state.product;},2500);
-  function sec(p){return /^(mug|canvas)$/.test(p||'')?'hediye':'tasarla';}
+  function sec(p){return 'tasarla';}
   function href(){if(from&&p0&&sec(p0)===sec(state.product))return 'index.html'+from;return 'index.html#'+sec(state.product);}
   var L=[document.getElementById('backBtn'),document.querySelector('a.brand[href^="index.html#"]')].filter(Boolean);
   function upd(){L.forEach(function(a){a.href=href();});}upd();setInterval(upd,1000);
