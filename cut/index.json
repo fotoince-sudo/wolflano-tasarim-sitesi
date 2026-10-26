@@ -648,5 +648,165 @@
 237,
 242
 ]
+},
+"img/mvpf5xmpbbxw.png": {
+"color": "Siyah",
+"file": "cut/mvpf5xmpbbxw.webp",
+"ns": 0.0224,
+"rgb": [
+27,
+27,
+27
+]
+},
+"img/mvpf5xqmgee2.png": {
+"color": "Siyah",
+"file": "cut/mvpf5xqmgee2.webp",
+"ns": -0.2212,
+"rgb": [
+31,
+31,
+31
+]
+},
+"img/mvpfbwxwvn1g.png": {
+"color": "Beyaz",
+"file": "cut/mvpfbwxwvn1g.webp",
+"ns": -0.071,
+"rgb": [
+215,
+214,
+217
+]
+},
+"img/mvpfbwxxbg35.png": {
+"color": "Beyaz",
+"file": "cut/mvpfbwxxbg35.webp",
+"ns": -0.2251,
+"rgb": [
+231,
+231,
+234
+]
+},
+"img/mvpfbwxxiuyk.png": {
+"color": "Yeşil",
+"file": "cut/mvpfbwxxiuyk.webp",
+"ns": 0.3004,
+"rgb": [
+219,
+40,
+47
+]
+},
+"img/mvpfbwxxk48g.png": {
+"color": "Yeşil",
+"file": "cut/mvpfbwxxk48g.webp",
+"ns": -0.0729,
+"rgb": [
+68,
+77,
+45
+]
+},
+"img/mvpfbwxxkctg.png": {
+"color": "Beyaz",
+"file": "cut/mvpfbwxxkctg.webp",
+"ns": -0.0344,
+"rgb": [
+252,
+181,
+211
+]
+},
+"img/mvpfbwxxqyzq.png": {
+"color": "Yeşil",
+"file": "cut/mvpfbwxxqyzq.webp",
+"ns": -0.0848,
+"rgb": [
+221,
+35,
+43
+]
+},
+"img/mvpfbwxxtdmo.png": {
+"color": "Beyaz",
+"file": "cut/mvpfbwxxtdmo.webp",
+"ns": -0.2488,
+"rgb": [
+119,
+184,
+245
+]
+},
+"img/mvpfbwxxuezz.png": {
+"color": "Beyaz",
+"file": "cut/mvpfbwxxuezz.webp",
+"ns": -0.3611,
+"rgb": [
+250,
+180,
+210
+]
+},
+"img/mvpfbx5ptyv8.png": {
+"color": "Beyaz",
+"file": "cut/mvpfbx5ptyv8.webp",
+"ns": 0.2042,
+"rgb": [
+120,
+179,
+238
+]
+},
+"img/mvpfbx5py8i0.png": {
+"color": "Yeşil",
+"file": "cut/mvpfbx5py8i0.webp",
+"ns": 0.3248,
+"rgb": [
+68,
+75,
+45
+]
+},
+"img/urun-hood-kadin-mvpf8w8frq0v.png": {
+"color": "Beyaz",
+"file": "cut/urun-hood-kadin-mvpf8w8frq0v.webp",
+"ns": -0.0365,
+"rgb": [
+234,
+233,
+231
+]
+},
+"img/urun-hood-kadin-mvpf9p71jp6m.png": {
+"color": "Beyaz",
+"file": "cut/urun-hood-kadin-mvpf9p71jp6m.webp",
+"ns": -0.2741,
+"rgb": [
+237,
+236,
+235
+]
+},
+"img/urun-tee-erkek-mvpenvwjp47v.png": {
+"color": "Beyaz",
+"file": "cut/urun-tee-erkek-mvpenvwjp47v.webp",
+"ns": -0.1388,
+"rgb": [
+235,
+235,
+234
+]
+},
+"img/urun-tee-erkek-mvpeona1plnu.png": {
+"color": "Beyaz",
+"file": "cut/urun-tee-erkek-mvpeona1plnu.webp",
+"ns": -0.2173,
+"rgb": [
+238,
+237,
+238
+]
 }
 }
