@@ -869,6 +869,86 @@
 238
 ]
 },
+"img/mvr8su6rqaxo.png": {
+"color": "Siyah",
+"file": "cut/mvr8su6rqaxo.webp",
+"ns": -0.3875,
+"rgb": [
+22,
+21,
+21
+]
+},
+"img/mvr8su6szd7w.png": {
+"color": "Siyah",
+"file": "cut/mvr8su6szd7w.webp",
+"ns": 0.1531,
+"rgb": [
+29,
+28,
+29
+]
+},
+"img/mvr93afdzafw.png": {
+"color": "Mavi",
+"file": "cut/mvr93afdzafw.webp",
+"ns": -0.3771,
+"rgb": [
+6,
+86,
+195
+]
+},
+"img/mvr93afegmfg.png": {
+"color": "Yeşil",
+"file": "cut/mvr93afegmfg.webp",
+"ns": -0.3601,
+"rgb": [
+2,
+92,
+49
+]
+},
+"img/mvr93ashpz14.png": {
+"color": "Lacivert",
+"file": "cut/mvr93ashpz14.webp",
+"ns": -0.3755,
+"rgb": [
+18,
+37,
+83
+]
+},
+"img/mvr93asi1nhc.png": {
+"color": "Mavi",
+"file": "cut/mvr93asi1nhc.webp",
+"ns": 0.1636,
+"rgb": [
+18,
+90,
+187
+]
+},
+"img/mvr93asi5h2z.png": {
+"color": "Lacivert",
+"file": "cut/mvr93asi5h2z.webp",
+"ns": 0.1888,
+"rgb": [
+24,
+40,
+79
+]
+},
+"img/mvr93asilb59.png": {
+"color": "Yeşil",
+"file": "cut/mvr93asilb59.webp",
+"ns": 0.2665,
+"rgb": [
+12,
+97,
+58
+]
+},
 "img/urun-hood-cocuk-mvpqyi7jpmoj.png": {
 "color": "Beyaz",
 "file": "cut/urun-hood-cocuk-mvpqyi7jpmoj.webp",
@@ -927,6 +1007,126 @@
 237,
 236,
 235
+]
+},
+"img/urun-polo-erkek-mvr9jbq74ud3.png": {
+"color": "Beyaz",
+"file": "cut/urun-polo-erkek-mvr9jbq74ud3.webp",
+"ns": -0.1945,
+"rgb": [
+233,
+232,
+231
+]
+},
+"img/urun-polo-erkek-mvr9k1zg8wjd.png": {
+"color": "Beyaz",
+"file": "cut/urun-polo-erkek-mvr9k1zg8wjd.webp",
+"ns": -0.3551,
+"rgb": [
+235,
+234,
+234
+]
+},
+"img/urun-polo-erkek-mvr9m2n5yh8l.png": {
+"color": "Beyaz",
+"file": "cut/urun-polo-erkek-mvr9m2n5yh8l.webp",
+"ns": -0.1131,
+"rgb": [
+233,
+233,
+233
+]
+},
+"img/urun-polo-erkek-mvr9mtf2nxqr.png": {
+"color": "Beyaz",
+"file": "cut/urun-polo-erkek-mvr9mtf2nxqr.webp",
+"ns": -0.3541,
+"rgb": [
+236,
+236,
+236
+]
+},
+"img/urun-polo-erkek-mvr9pftv6934.png": {
+"color": "Lacivert",
+"file": "cut/urun-polo-erkek-mvr9pftv6934.webp",
+"ns": 0.0234,
+"rgb": [
+37,
+46,
+77
+]
+},
+"img/urun-polo-erkek-mvr9q5tewxze.png": {
+"color": "Lacivert",
+"file": "cut/urun-polo-erkek-mvr9q5tewxze.webp",
+"ns": -0.3406,
+"rgb": [
+35,
+44,
+73
+]
+},
+"img/urun-polo-erkek-mvr9qve48fzf.png": {
+"color": "Siyah",
+"file": "cut/urun-polo-erkek-mvr9qve48fzf.webp",
+"ns": -0.0961,
+"rgb": [
+30,
+29,
+30
+]
+},
+"img/urun-polo-erkek-mvr9rlcbmvp9.png": {
+"color": "Siyah",
+"file": "cut/urun-polo-erkek-mvr9rlcbmvp9.webp",
+"ns": -0.3452,
+"rgb": [
+27,
+26,
+27
+]
+},
+"img/urun-polo-erkek-mvr9sbne0ew3.png": {
+"color": "Mavi",
+"file": "cut/urun-polo-erkek-mvr9sbne0ew3.webp",
+"ns": 0.0963,
+"rgb": [
+43,
+98,
+198
+]
+},
+"img/urun-polo-erkek-mvr9t1izbp3u.png": {
+"color": "Mavi",
+"file": "cut/urun-polo-erkek-mvr9t1izbp3u.webp",
+"ns": -0.3462,
+"rgb": [
+46,
+100,
+197
+]
+},
+"img/urun-polo-erkek-mvr9trp1eulg.png": {
+"color": "Yeşil",
+"file": "cut/urun-polo-erkek-mvr9trp1eulg.webp",
+"ns": 0.082,
+"rgb": [
+49,
+80,
+62
+]
+},
+"img/urun-polo-erkek-mvr9uh112yyl.png": {
+"color": "Yeşil",
+"file": "cut/urun-polo-erkek-mvr9uh112yyl.webp",
+"ns": -0.3414,
+"rgb": [
+45,
+74,
+58
 ]
 },
 "img/urun-polo-kadin-mvpqeuacziew.png": {
