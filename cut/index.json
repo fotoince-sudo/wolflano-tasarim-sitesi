@@ -949,6 +949,26 @@
 58
 ]
 },
+"img/mvsrf5b1wf1a.png": {
+"color": "Siyah",
+"file": "cut/mvsrf5b1wf1a.webp",
+"ns": 0.0231,
+"rgb": [
+21,
+21,
+20
+]
+},
+"img/mvsrf5b2i4bg.png": {
+"color": "Siyah",
+"file": "cut/mvsrf5b2i4bg.webp",
+"ns": -0.1399,
+"rgb": [
+28,
+27,
+27
+]
+},
 "img/urun-hood-cocuk-mvpqyi7jpmoj.png": {
 "color": "Beyaz",
 "file": "cut/urun-hood-cocuk-mvpqyi7jpmoj.webp",
@@ -1247,6 +1267,46 @@
 238,
 237,
 238
+]
+},
+"img/urun-tee-erkek-mvsqx3m23whg.png": {
+"color": "Beyaz",
+"file": "cut/urun-tee-erkek-mvsqx3m23whg.webp",
+"ns": -0.0236,
+"rgb": [
+236,
+236,
+236
+]
+},
+"img/urun-tee-erkek-mvsqyu6oblae.png": {
+"color": "Beyaz",
+"file": "cut/urun-tee-erkek-mvsqyu6oblae.webp",
+"ns": -0.205,
+"rgb": [
+239,
+238,
+238
+]
+},
+"img/urun-tee-erkek-mvsrfyv8u6kc.png": {
+"color": "Lacivert",
+"file": "cut/urun-tee-erkek-mvsrfyv8u6kc.webp",
+"ns": 0.0245,
+"rgb": [
+40,
+51,
+80
+]
+},
+"img/urun-tee-erkek-mvsrgqe7somm.png": {
+"color": "Lacivert",
+"file": "cut/urun-tee-erkek-mvsrgqe7somm.webp",
+"ns": -0.1989,
+"rgb": [
+38,
+48,
+78
 ]
 }
 }
