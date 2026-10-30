@@ -4810,18 +4810,19 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
     return {Q:Q,mask:M,box:[X0,Y0,X1,Y1],wall:wall,face:face};
   }
   /* Yapay zekânın tablosunu ve gölgesini duvardan sil: maske + çevresi (tablonun gölgesi) yatay ve dikey doğrusal geçişle doldurulur */
-  function cvErase(d,W,H,F,grow){
-    var M=F.mask,g=Math.max(3,Math.round(grow)),E=new Uint8Array(W*H),x,y,k;
+  /* growV: dikey genişleme (verilmezse grow); hOnly: yalnız yatay geçişle doldur (alttaki koltuk duvara doğru sürüklenip çizgi bırakmasın) */
+  function cvErase(d,W,H,F,grow,growV,hOnly){
+    var M=F.mask,g=Math.max(3,Math.round(grow)),gv=Math.max(3,Math.round(growV==null?grow:growV)),E=new Uint8Array(W*H),x,y,k;
     var X0=F.box[0],Y0=F.box[1],X1=F.box[2],Y1=F.box[3];
     /* genişlet (gölge ve kenar yumuşaklığı da gitsin): kare komşuluk, iki geçişte */
     var T=new Uint8Array(W*H);for(y=Y0;y<=Y1;y++){var run=-1e9;for(x=X0-g;x<=X1+g;x++){if(x<0||x>=W)continue;if(x<=X1&&x>=X0&&M[y*W+x])run=x;if(x-run<=g)T[y*W+x]=1;}run=1e9;for(x=X1+g;x>=X0-g;x--){if(x<0||x>=W)continue;if(x<=X1&&x>=X0&&M[y*W+x])run=x;if(run-x<=g)T[y*W+x]=1;}}
-    for(x=Math.max(0,X0-g);x<=Math.min(W-1,X1+g);x++){var rn=-1e9;for(y=Math.max(0,Y0-g);y<=Math.min(H-1,Y1+g);y++){if(T[y*W+x]&&(y>=Y0&&y<=Y1))rn=y;if(y-rn<=g)E[y*W+x]=1;}rn=1e9;for(y=Math.min(H-1,Y1+g);y>=Math.max(0,Y0-g);y--){if(T[y*W+x]&&(y>=Y0&&y<=Y1))rn=y;if(rn-y<=g)E[y*W+x]=1;}}
+    for(x=Math.max(0,X0-g);x<=Math.min(W-1,X1+g);x++){var rn=-1e9;for(y=Math.max(0,Y0-gv);y<=Math.min(H-1,Y1+gv);y++){if(T[y*W+x]&&(y>=Y0&&y<=Y1))rn=y;if(y-rn<=gv)E[y*W+x]=1;}rn=1e9;for(y=Math.min(H-1,Y1+gv);y>=Math.max(0,Y0-gv);y--){if(T[y*W+x]&&(y>=Y0&&y<=Y1))rn=y;if(rn-y<=gv)E[y*W+x]=1;}}
     var o=new Uint8ClampedArray(d);
     for(y=0;y<H;y++)for(x=0;x<W;x++){k=y*W+x;if(!E[k])continue;
       var xa=x,xb=x,ya=y,yb=y;while(xa>0&&E[y*W+xa])xa--;while(xb<W-1&&E[y*W+xb])xb++;while(ya>0&&E[ya*W+x])ya--;while(yb<H-1&&E[yb*W+x])yb++;
       var fx=(x-xa)/Math.max(1,xb-xa),fy=(y-ya)/Math.max(1,yb-ya),i=k*4,A=(y*W+xa)*4,B=(y*W+xb)*4,C=(ya*W+x)*4,D=(yb*W+x)*4,
-        wh=1/Math.min(x-xa,xb-x),wv=1/Math.min(y-ya,yb-y);
-      for(var c=0;c<3;c++){var h=d[A+c]*(1-fx)+d[B+c]*fx,v=d[C+c]*(1-fy)+d[D+c]*fy;o[i+c]=(h*wh+v*wv)/(wh+wv);}}
+        wh=1/Math.min(x-xa,xb-x),wv=hOnly?0:1/Math.min(y-ya,yb-y),gn=hOnly?(Math.random()-0.5)*3:0;
+      for(var c=0;c<3;c++){var h=d[A+c]*(1-fx)+d[B+c]*fx,v=d[C+c]*(1-fy)+d[D+c]*fy;o[i+c]=(h*wh+v*wv)/(wh+wv)+gn;}}
     return {d:o,E:E};
   }
 
@@ -4864,7 +4865,7 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
     var im=await cvLoad(jj.url+(jj.cached?'':'?v='+Date.now())),W=im.naturalWidth,H=im.naturalHeight,F=await cvPrint(),D=CV_DET[jj.url];
     if(!D){var bx=cvBox(cvData(im,200).d,200,Math.round(200*H/W),(land?1.43:0.7)*(yan?0.87:1));if(!bx)return null;
       var full=cvData(im,W),fit=cvFit(full.d,W,H,bx);if(!fit)return null;
-      var fw0=fit.Q[1][0]-fit.Q[0][0],er=cvErase(full.d,W,H,fit,fw0*(yan?0.14:0.05)+4),id=new ImageData(er.d,W,H);
+      var fw0=fit.Q[1][0]-fit.Q[0][0],fh0=((fit.Q[3][1]-fit.Q[0][1])+(fit.Q[2][1]-fit.Q[1][1]))/2,er=yan?cvErase(full.d,W,H,fit,fw0*0.14+4,fh0*0.02+3,true):cvErase(full.d,W,H,fit,fw0*0.05+4),id=new ImageData(er.d,W,H);
       D={Q:fit.Q,bg:id,wall:fit.wall};CV_DET[jj.url]=D;}
     var c=document.createElement('canvas');c.width=W;c.height=H;var x=c.getContext('2d'),Q0=D.Q;
     /* yandan görünüş her zaman SAĞDAN: sahnede kamera soldaysa fotoğraf aynalanır, tablo sağ yanı görünecek şekilde kurulur */
