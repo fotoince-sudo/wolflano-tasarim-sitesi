@@ -137,6 +137,11 @@ def main():
     mp = os.path.join(OUT, 'index.json')
     man = json.load(open(mp)) if os.path.exists(mp) else {}
     d = json.loads(get(SB_URL + '/rest/v1/site_content?select=data&id=eq.main'))[0]['data']
+    # Yönetimden eklenen ek renkler (ör. Bordo): 5 standart rengin yanında aday olur
+    for c in d.get('renkler') or []:
+        h = str(c.get('hex') or '').lstrip('#')
+        if c.get('name') and len(h) == 6 and all(n != c['name'] for n, _ in STD):
+            STD.append((c['name'], (int(h[0:2], 16), int(h[2:4], 16), int(h[4:6], 16))))
     todo = []
     for b in d.get('blanks') or []:
         for r in b.get('raw') or []:

@@ -1496,7 +1496,9 @@ function rawResolve(b,man){var fix=b.rawfix||{},by={},info={};
     /* Etiketsiz fotoğraflar: ön = en "ön görünümlü", arka = en "arka görünümlü" (aynı renk iki kez yüklenince ikinci ön fotoğraf arkaya düşmesin) */var un=l.filter(function(r){return !info[r].side;}).sort(function(a,z){return info[z].ns-info[a].ns;});if(un.length){if(!o.front)o.front=un[0];if(!o.back){var bk=un[un.length-1];if(bk!==o.front&&info[bk].ns!==info[o.front].ns)o.back=bk;else if(un.length>1&&un[1]!==o.front)o.back=un[1];}}
     res[c.name]=o;});
   return {by:res,info:info};}
-function cutMerge(d,man){man=man||{};((d&&d.blanks)||[]).forEach(function(b){if(!b||!(b.raw||[]).length)return;var R=rawResolve(b,man).by,cs=[];
+/* Yönetimde eklenen ek renkler (5 standart rengin ardından) */
+var STDC_BASE=STDC.slice();function stdcSync(d){var ex=((d&&d.renkler)||[]).filter(function(c){return c&&c.name&&/^#[0-9a-f]{6}$/i.test(c.hex||'')&&!STDC_BASE.some(function(s){return s.name===c.name;});});STDC=STDC_BASE.concat(ex.map(function(c){return {name:c.name,hex:c.hex};}));}
+function cutMerge(d,man){man=man||{};stdcSync(d);((d&&d.blanks)||[]).forEach(function(b){if(!b||!(b.raw||[]).length)return;var R=rawResolve(b,man).by,cs=[];
   STDC.forEach(function(c){var o=R[c.name];if(!o)return;var f=o.front&&man[o.front]?man[o.front].file:'',k=o.back&&man[o.back]?man[o.back].file:'';if(!f&&!k)return;cs.push({name:c.name,hex:c.hex,front:f||k,back:f?k:''});});
   if(cs.length)b.colors=cs;});return d;}
 /* Renkler her üründe aynı sırada ve aynı tonda: standart sıra (Beyaz, Lacivert, Siyah, Mavi, Yeşil), sonra diğerleri */

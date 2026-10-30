@@ -145,6 +145,7 @@ main{min-height:60vh}
 .bc{width:34px;height:34px;border-radius:50%;border:1px solid rgba(0,0,0,.2);cursor:pointer;box-shadow:inset 0 0 0 3px var(--bg)}
 .bc.on{outline:2px solid var(--green);outline-offset:2px}
 .ced{display:grid;gap:10px;border-top:1px solid var(--line);padding-top:12px}
+.bq{display:grid;gap:8px}.bql{font:600 13px var(--ui)}.bql em{font-style:normal;color:var(--red);font-weight:600}.qrow{display:flex;flex-wrap:wrap;gap:6px}.qchip{font:600 13px var(--ui);padding:8px 12px;border-radius:999px;border:1.5px solid var(--green);background:transparent;color:inherit;cursor:pointer}.qchip.on{background:var(--green);color:#fff;border-color:#111}.rnew{display:flex;gap:6px;align-items:center;flex-wrap:wrap}.rnew input[type=text]{flex:1;min-width:120px}.rnew input[type=color]{width:52px!important;flex:0 0 52px;height:40px;padding:2px}
 .ced .crow{display:grid;gap:8px;border:1px solid var(--line);border-radius:12px;padding:10px}
 .ced input[type=color]{width:100%;height:42px;padding:2px;border-radius:10px}
 .ced .cph{display:grid;grid-template-columns:1fr 1fr;gap:8px}
@@ -2372,7 +2373,7 @@ function seedBlanks(){D.seeded=D.seeded||{};if(!Array.isArray(D.blanks))return;v
       [['polo-k','kadin','Kadın polo','Kadın'],['polo-c','cocuk','Çocuk polo','Çocuk (3-14 yaş)']].forEach(function(x,k){if(have[x[0]])return;var d0=(DEF.blanks||[]).filter(function(b){return b.id===x[0];})[0]||{};
         var nb=clone(po);nb.id=x[0];nb.cut=x[1];nb.name=x[2];nb.cuts=x[3];if(x[1]==='cocuk'&&d0.price)nb.price=d0.price;D.blanks.splice(at+1+k,0,nb);});}
     D.seeded.polo=true;}}
-function applyData(){seedBlanks();autoSub(D);if(!D.vat)D.vat={mode:'excl',ready:20,blank:20,print:20};
+function applyData(){stdcSync(D);seedBlanks();autoSub(D);if(!D.vat)D.vat={mode:'excl',ready:20,blank:20,print:20};
  pNums(D.products);pcApply(D);ALLP=D.products.map(function(p){return Object.assign({},p,{price:vp(p.price,'ready'),old:vp(p.old,'ready')});});
  PRODUCTS=ALLP.filter(function(p){return p.show!==false;});
  CATS=(D.cats||[]).filter(function(c){if(c.show===false)return false;if(/hediye|dekor/i.test(c.name||''))return false;return true;}).map(function(c){return [c.id,c.name||'Adsız'];});
@@ -3217,7 +3218,14 @@ function tsRe(){var y=window.scrollY;$('#main').innerHTML=VIEWS.tasarla();window
 /* Standart renkler: her üründe aynı sıra. Ürün fotoğrafları (otomatik) bölümüne yüklenen fotoğraflar
    GitHub'da zemini temizlenip cut/ klasörüne konur; cut/index.json hangi fotoğrafın hangi renk olduğunu söyler. */
 var STDC=[{name:'Beyaz',hex:'#f4f4f2'},{name:'Lacivert',hex:'#2b3d82'},{name:'Siyah',hex:'#1b1b1d'},{name:'Mavi',hex:'#2a64c4'},{name:'Yeşil',hex:'#2d5a43'}],MAN={};
-function kCode(name){for(var i=0;i<STDC.length;i++)if(STDC[i].name===name)return 'K0'+(i+1);return '';}
+var STDC_BASE=STDC.slice();
+/* Ek renkler yönetimden eklenir (d.renkler); her üründe 5 standart rengin ardından, eklendiği sırayla gelir.
+   Veri bu satırlardan önce uygulanırsa (sayfa açılışı) iş bekletilir ve burada yapılır. */
+var STDC_PEND=STDC_PEND||null;if(STDC_PEND){var stp=STDC_PEND;STDC_PEND=null;stdcSync(stp);}
+function stdcSync(d){if(!STDC_BASE){STDC_PEND=d;return;}var ex=((d&&d.renkler)||[]).filter(function(c){return c&&c.name&&/^#[0-9a-f]{6}$/i.test(c.hex||'')&&!STDC_BASE.some(function(s){return s.name===c.name;});});
+  STDC=STDC_BASE.concat(ex.map(function(c){return {name:c.name,hex:c.hex};}));}
+function rawMax(){return STDC.length*2;}
+function kCode(name){for(var i=0;i<STDC.length;i++)if(STDC[i].name===name)return 'K'+(i<9?'0':'')+(i+1);return '';}
 function rawResolve(b,man){var fix=b.rawfix||{},by={},info={};
   (b.raw||[]).forEach(function(r){var m=man[r],f=fix[r]||{},col=f.color||(m&&m.color)||'';info[r]={ready:!!m,color:col,auto:!f.color,side:f.side||'',ns:m?+m.ns||0:0};if(col)(by[col]||(by[col]=[])).push(r);});
   var res={};STDC.forEach(function(c){var l=by[c.name];if(!l||!l.length)return;var o={front:'',back:''};
@@ -3225,7 +3233,7 @@ function rawResolve(b,man){var fix=b.rawfix||{},by={},info={};
     var un=l.filter(function(r){return !info[r].side;}).sort(function(a,z){return info[z].ns-info[a].ns;});if(un.length){if(!o.front)o.front=un[0];if(!o.back){var bk=un[un.length-1];if(bk!==o.front&&info[bk].ns!==info[o.front].ns)o.back=bk;else if(un.length>1&&un[1]!==o.front)o.back=un[1];}}
     Object.keys(o).forEach(function(k){if(o[k])info[o[k]].res=k;});res[c.name]=o;});
   return {by:res,info:info};}
-function cutMerge(d,man){man=man||{};((d&&d.blanks)||[]).forEach(function(b){if(!b||!(b.raw||[]).length)return;var R=rawResolve(b,man).by,cs=[];
+function cutMerge(d,man){man=man||{};stdcSync(d);((d&&d.blanks)||[]).forEach(function(b){if(!b||!(b.raw||[]).length)return;var R=rawResolve(b,man).by,cs=[];
   STDC.forEach(function(c){var o=R[c.name];if(!o)return;var f=o.front&&man[o.front]?man[o.front].file:'',k=o.back&&man[o.back]?man[o.back].file:'';if(!f&&!k)return;cs.push({name:c.name,hex:c.hex,front:f||k,back:f?k:''});});
   if(cs.length)b.colors=cs;});return d;}
 function loadMan(){return fetch('cut/index.json?v='+Math.floor(Date.now()/60000),{cache:'no-store'}).then(function(r){return r.ok?r.json():{};}).catch(function(){return {};}).then(function(m){MAN=m||{};return MAN;});}
@@ -3575,9 +3583,9 @@ function rawOrder(b,R){var l=b.raw||[],g=b.rawguess||{},ci={};STDC.forEach(funct
   return l.slice().sort(function(a,z){var A1=key(a),Z1=key(z);return A1[0]-Z1[0]||A1[1]-Z1[1]||l.indexOf(a)-l.indexOf(z);});}
 function rawEd(pa,b){var l=b.raw||[],R=rawResolve(b,MAN),pend0=l.some(function(r){return !R.info[r].ready;});
   var th=function(r){var m=MAN[r];return src(m?m.file:r);};
-  var h='<div class="ced"><b style="font-size:14px">Ürün fotoğrafları (otomatik)</b><p class="note" style="margin:4px 0 8px">Ürünün renk fotoğraflarını tek seferde seç: her renk için ön, istersen arka (en fazla 10). Zemin otomatik temizlenir; renk ve ön/arka kendiliğinden yerleşir. Renk sırası her üründe aynıdır: '+STDC.map(function(c){return c.name;}).join(', ')+'. Kaydet\'e bastıktan sonra temizleme birkaç dakika sürer; bitince burada ve sitede görünür.</p>';
+  var h='<div class="ced"><b style="font-size:14px">Ürün fotoğrafları (otomatik)</b><p class="note" style="margin:4px 0 8px">Ürünün renk fotoğraflarını tek seferde seç: her renk için ön, istersen arka (en fazla '+rawMax()+').'+' Zemin otomatik temizlenir; renk ve ön/arka kendiliğinden yerleşir. Renk sırası her üründe aynıdır. Yeni renk gerekirse en alttan ekle; o renk bütün ürünlerde seçilebilir olur. Kaydet\'e bastıktan sonra temizleme 2–3 dakika sürer; bitince burada ve sitede görünür.</p>';
   h+='<div class="rgrid">'+STDC.map(function(c){var o=R.by[c.name]||{};var sl=function(k,t){var r=o[k];return '<div class="rsl">'+(r?'<img src="'+th(r)+'" alt="">':'<b>yok</b>')+t+'</div>';};
-    return '<div class="rrow"><span class="rn"><i style="background:'+c.hex+'"></i>'+kCode(c.name)+' '+c.name+'</span>'+sl('front','Ön')+sl('back','Arka')+((o.front&&o.back)?'<button class="btn soft sm" data-ad="rswap" data-p="'+pa+'" data-c="'+esc(c.name)+'">Ön ↔ Arka değiştir</button>':'')+'</div>';}).join('')+'</div>';
+    return '<div class="rrow"><span class="rn"><i style="background:'+c.hex+'"></i>'+kCode(c.name)+' '+c.name+'</span>'+sl('front','Ön')+sl('back','Arka')+((o.front&&o.back)?'<button class="btn soft sm" data-ad="rswap" data-p="'+pa+'" data-c="'+esc(c.name)+'">Ön ↔ Arka değiştir</button>':'')+((o.front||o.back)?'<button class="btn soft sm" data-rc="del" data-p="'+pa+'" data-c="'+esc(c.name)+'" style="color:var(--red)">Bu rengi üründen çıkar</button>':(STDC_BASE.some(function(x){return x.name===c.name;})||rcUsed(c.name)?'':'<button class="btn soft sm" data-rc="drop" data-c="'+esc(c.name)+'" style="color:var(--red)">Renk listesinden kaldır</button>'))+'</div>';}).join('')+'</div>'+'<div class="rnew"><input type="text" id="rn-'+aid(pa)+'" maxlength="20" placeholder="Yeni renk adı (ör. Bordo)" aria-label="Yeni renk adı"><input type="color" id="rh-'+aid(pa)+'" value="#7a1f2b" aria-label="Renk tonu"><button class="btn soft sm" data-rc="add" data-p="'+pa+'">+ Renk ekle</button></div>';
   if(l.length){h+='<p class="note" style="margin:10px 0 4px">Yüklenen fotoğraflar'+(pend0?' (zemini temizlenenler birkaç dakika içinde hazır olur)':'')+'. Renk ya da ön/arka yanlış çıkarsa buradan düzelt.</p><div class="rlist">'+rawOrder(b,R).map(function(r){var j=l.indexOf(r),I=R.info[r],fx=(b.rawfix||{})[r]||{};
     return '<div class="ritem"><img src="'+th(r)+'" alt=""><span class="st'+(I.ready?'':' w')+'">'+(I.ready?(I.color||'?')+(I.res?' · '+(I.res==='front'?'Ön':'Arka'):''):'İşleniyor…')+'</span>'+
     '<select data-rfix="'+pa+'" data-r="'+esc(r)+'" data-k="color" aria-label="Renk"><option value="">Renk: otomatik</option>'+STDC.map(function(c){return '<option'+(fx.color===c.name?' selected':'')+'>'+c.name+'</option>';}).join('')+'</select>'+
@@ -3654,6 +3662,45 @@ function bTypeEd(i,b){var t=bTypeOf(b),g=b.gen||(GENS.indexOf(b.cut)>=0?b.cut:(b
     (t==='canvas'?'<label for="bs-'+i+'">Ebat<select id="bs-'+i+'" data-bsize="'+i+'">'+o('c3550','35 × 50',b.cut!=='c5070')+o('c5070','50 × 70',b.cut==='c5070')+'</select></label>':'<span></span>')+'</div>'+
     (t?'':'<p class="note" style="margin:0;color:var(--red)">Ürün türünü seç: türü olmayan ürün "Kendin tasarla" ve stüdyoda görünmez.</p>');
   return h;}
+/* Ürün ekleme sadeleştirildi: tür, grup (Erkek/Kadın/Çocuk) ve ebat dokunmatik düğmelerle seçilir;
+   ad kendiliğinden kurulur (ör. "Erkek polo tişört Slim"), elle yalnız model adı yazılır. */
+var BTLOW={tee:'tişört',sweat:'sweatshirt',hood:'kapüşonlu sweatshirt',zip:'fermuarlı kapüşonlu',polo:'polo tişört',hat:'şapka',mug:'kupa',canvas:'canvas tablo'};
+var GENL={erkek:'Erkek',kadin:'Kadın',cocuk:'Çocuk'};
+function trn(x){return String(x||'').toLocaleLowerCase('tr').replace(/[çğıöşü]/g,function(c){return {'ç':'c','ğ':'g','ı':'i','ö':'o','ş':'s','ü':'u'}[c];});}
+/* eski ürünlerde: addan grup ve tür kelimeleri çıkınca kalan model adı (ör. "Erkek tişört çizgili" → "çizgili") */
+function bModelOf(b){if(b.model!=null)return b.model;var t=bTypeOf(b),rm={};['erkek','kadin','cocuk','bay','bayan'].concat(trn(BTLOW[t]||'').split(' '),t==='canvas'?['35','50','70','x','×']:[]).forEach(function(w){if(w)rm[w]=1;});
+  return String(b.name||'').split(/\s+/).filter(function(w){return w&&!rm[trn(w)]&&w!=='Yeni'&&w!=='ürün';}).join(' ');}
+function bAutoName(b){var t=bTypeOf(b),m=String(b.model||'').trim(),gar=GAR_T.test(t),tl0=BTLOW[t]||'ürün';
+  var n=gar?(GENL[b.gen]||'Erkek')+' '+tl0:tl0.charAt(0).toLocaleUpperCase('tr')+tl0.slice(1);
+  if(t==='canvas')n+=' '+(b.cut==='c5070'?'50 × 70':'35 × 50');return n+(m?' '+m:'');}
+function bQuick(i,b){var t=bTypeOf(b),gar=GAR_T.test(t),chip=function(k,v,l,on){return '<button type="button" class="qchip'+(on?' on':'')+'" data-bq="'+k+'" data-i="'+i+'" data-v="'+v+'" aria-pressed="'+(on?'true':'false')+'">'+l+'</button>';};
+  var h='<div class="bq"><span class="bql">1. Ürün türü</span><div class="qrow">'+BTYPES.map(function(x){return chip('ty',x[0],x[1],x[0]===t);}).join('')+'</div>';
+  if(gar)h+='<span class="bql">2. Kimin için'+(GENS.indexOf(b.gen)<0?' <em>seç</em>':'')+'</span><div class="qrow">'+GENS.map(function(g){return chip('gn',g,GENL[g],b.gen===g);}).join('')+'</div>';
+  else if(t==='canvas')h+='<span class="bql">2. Ebat</span><div class="qrow">'+chip('sz','c3550','35 × 50',b.cut!=='c5070')+chip('sz','c5070','50 × 70',b.cut==='c5070')+'</div>';
+  else if(t==='hat')h+='<span class="bql">2. Kimin için</span><div class="qrow">'+GENS.concat(['hepsi']).map(function(g){return chip('gn',g,g==='hepsi'?'Herkes':GENL[g],(b.gen||'hepsi')===g);}).join('')+'</div>';
+  h+='<label for="bm-'+i+'">'+(gar||t==='canvas'||t==='hat'?'3':'2')+'. Model adı <small style="font-weight:500;opacity:.7">(isteğe bağlı, ör. Slim, Çizgili, Oversize)</small><input id="bm-'+i+'" data-bmodel="'+i+'" maxlength="40" value="'+esc(bModelOf(b))+'" placeholder="Boş bırakabilirsin"></label>'+
+    '<p class="note" style="margin:2px 0 0">Sitede görünen ad: <b id="bnm-'+i+'">'+esc(b.name||bAutoName(b))+'</b></p>';
+  if(!t)h+='<p class="note" style="margin:0;color:var(--red)">Ürün türünü seç: türü olmayan ürün "Kendin tasarla" ve stüdyoda görünmez.</p>';
+  return h+'</div>';}
+document.addEventListener('click',function(e){var q=e.target.closest&&e.target.closest('[data-bq]');if(!q||!A||!A.draft)return;var b=A.draft.blanks[+q.dataset.i];if(!b)return;e.preventDefault();
+  if(b.model==null)b.model=bModelOf(b);var k=q.dataset.bq,v=q.dataset.v;
+  if(k==='ty'){var pg=b.gen||b.lastGen;bSetType(b,v);if(GAR_T.test(v)&&GENS.indexOf(pg)>=0){b.gen=b.cut=pg;}}else if(k==='gn'){b.gen=v;if(GENS.indexOf(v)>=0)b.lastGen=v;if(GAR_T.test(bTypeOf(b)))b.cut=v;}else if(k==='sz')b.cut=v;
+  b.name=bAutoName(b);dirty();var y=window.scrollY;adRender();window.scrollTo(0,y);});
+document.addEventListener('input',function(e){var t=e.target;if(!t||!t.dataset||t.dataset.bmodel==null||!A||!A.draft)return;var b=A.draft.blanks[+t.dataset.bmodel];if(!b)return;
+  b.model=t.value;b.name=bAutoName(b);var n=document.getElementById('bnm-'+t.dataset.bmodel);if(n)n.textContent=b.name;dirty();});
+/* Renk ekle / çıkar: yeni renk bütün ürünlere açılır (d.renkler); üründen çıkarmak o rengin fotoğraflarını siler */
+function rcUsed(n){return ((A&&A.draft&&A.draft.blanks)||[]).some(function(b){var R=rawResolve(b,MAN).by[n];return R&&(R.front||R.back);});}
+document.addEventListener('click',function(e){var q=e.target.closest&&e.target.closest('[data-rc]');if(!q||!A||!A.draft)return;e.preventDefault();var d=A.draft,k=q.dataset.rc,y=window.scrollY;
+  if(k==='add'){var pa=q.dataset.p,ni=document.getElementById('rn-'+aid(pa)),hi=document.getElementById('rh-'+aid(pa)),nm=String(ni&&ni.value||'').trim();
+    nm=nm.charAt(0).toLocaleUpperCase('tr')+nm.slice(1);if(!nm){toast('Renk adını yaz');return;}
+    if(STDC.some(function(c){return trn(c.name)===trn(nm);})){toast(nm+' zaten listede');return;}
+    d.renkler=d.renkler||[];d.renkler.push({name:nm,hex:(hi&&hi.value)||'#888888'});stdcSync(d);toast(nm+' eklendi. Şimdi bu rengin ön ve arka fotoğrafını yükle, sonra Kaydet.');}
+  else if(k==='del'){var b=getp(d,q.dataset.p),c=q.dataset.c;if(!b)return;
+    if(q.dataset.ok!=='1'){q.dataset.ok='1';q.textContent='Emin misin? Tekrar dokun';return;}
+    var R=rawResolve(b,MAN),fx=b.rawfix||{};b.raw=(b.raw||[]).filter(function(r){var cc=(R.info[r]||{}).color||((b.rawguess||{})[r]);if(cc===c){delete fx[r];return false;}return true;});
+    if(b.ai)delete b.ai[c];toast(c+' bu üründen çıkarıldı. Kaydet\'e bas.');}
+  else if(k==='drop'){d.renkler=(d.renkler||[]).filter(function(c){return c.name!==q.dataset.c;});stdcSync(d);}
+  dirty();adRender();window.scrollTo(0,y);});
 function bSetType(b,t){b.p=t;var gar=GAR_T.test(t);
   if(gar){delete b.hat;delete b.fixname;delete b.fixcm;if(b.a4==null)b.a4=0;if(b.logo==null)b.logo=0;var g=b.gen&&b.gen!=='hepsi'?b.gen:(GENS.indexOf(b.cut)>=0?b.cut:'erkek');b.cut=g;b.gen=g;}
   else{if(b.hat==null)b.hat=0;if(t==='canvas'){b.cut=b.cut==='c5070'?'c5070':'c3550';b.fixname=b.fixname||'Baskı';}else delete b.cut;if(t==='hat'){if(!b.gen||b.gen==='kupa'||b.gen==='canvas')b.gen='hepsi';}else delete b.gen;}}
@@ -3669,7 +3716,7 @@ var RAWSTD=[['Beyaz',[229,229,231]],['Lacivert',[36,38,64]],['Siyah',[24,23,25]]
 function rawGuess(x,w,h){var d=x.getImageData(Math.round(w*.35),Math.round(h*.4),Math.max(1,Math.round(w*.3)),Math.max(1,Math.round(h*.3))).data,R=[],G=[],B=[];
   for(var i=0;i<d.length;i+=16){if(d[i+3]<128)continue;R.push(d[i]);G.push(d[i+1]);B.push(d[i+2]);}if(!R.length)return '';
   var md=function(a){a.sort(function(p,q){return p-q;});return a[a.length>>1];},c=[md(R),md(G),md(B)],best='',bd=1e9;
-  RAWSTD.forEach(function(s){var e=0;for(var k=0;k<3;k++)e+=(c[k]-s[1][k])*(c[k]-s[1][k]);if(e<bd){bd=e;best=s[0];}});return best;}
+  RAWSTD.concat(STDC.slice(STDC_BASE.length).map(function(c){var h=c.hex.slice(1);return [c.name,[parseInt(h.slice(0,2),16),parseInt(h.slice(2,4),16),parseInt(h.slice(4,6),16)]];})).forEach(function(s){var e=0;for(var k=0;k<3;k++)e+=(c[k]-s[1][k])*(c[k]-s[1][k]);if(e<bd){bd=e;best=s[0];}});return best;}
 function procRaw(file){return new Promise(function(res,rej){var u=URL.createObjectURL(file),im=new Image();im.onload=function(){var s=Math.min(1,2200/Math.max(im.width,im.height)),c=document.createElement('canvas');c.width=Math.max(1,Math.round(im.width*s));c.height=Math.max(1,Math.round(im.height*s));var x=c.getContext('2d'),png=/png|webp/i.test(file.type);if(!png){x.fillStyle='#fff';x.fillRect(0,0,c.width,c.height);}x.imageSmoothingQuality='high';x.drawImage(im,0,0,c.width,c.height);var gc='';try{gc=rawGuess(x,c.width,c.height);}catch(_){}c.toBlob(function(b){URL.revokeObjectURL(u);b?res({blob:b,ext:png?'png':'jpg',guess:gc}):rej(new Error('blob'));},png?'image/png':'image/jpeg',.93);};im.onerror=function(){rej(new Error('img'));};im.src=u;});}
 function procPhoto(file){return new Promise(function(res,rej){var u=URL.createObjectURL(file),im=new Image();im.onload=function(){var s=Math.min(1,1600/Math.max(im.width,im.height)),c=document.createElement('canvas');c.width=Math.max(1,Math.round(im.width*s));c.height=Math.max(1,Math.round(im.height*s));var x=c.getContext('2d'),png=/png|webp/i.test(file.type);if(!png){x.fillStyle='#fff';x.fillRect(0,0,c.width,c.height);}x.drawImage(im,0,0,c.width,c.height);c.toBlob(function(b){URL.revokeObjectURL(u);b?res({blob:b,ext:png?'png':'jpg'}):rej(new Error('blob'));},png?'image/png':'image/jpeg',.9);};im.onerror=function(){rej(new Error('img'));};im.src=u;});}
 function imgEd(path){
@@ -3841,11 +3888,10 @@ function adminView(){
       var pa='blanks.'+i,open=A.open===b.id;
       h+='<div class="arow"><img src="'+(bColors(b).length?src(bColors(b)[0].front||bColors(b)[0].back):b.imgs&&b.imgs.length?src(b.imgs[0]):PH)+'" alt=""><div><b>'+esc(b.name||'Adsız')+(b.show===false?' (gizli)':'')+'</b><small>'+(b.old?tl(b.old)+' → ':'')+tl(b.price||0)+' · '+(hasStock(b)?(+b.stock<=0?'Tükendi':'Stok '+b.stock):'Stok girilmedi')+'</small></div><div class="mini"><button data-ad="mvb" data-i="'+i+'" data-d="-1" aria-label="Yukarı">▲</button><button data-ad="mvb" data-i="'+i+'" data-d="1" aria-label="Aşağı">▼</button><button data-ad="open" data-id="'+b.id+'" aria-label="Düzenle">'+(open?'−':'✎')+'</button></div></div>';
       if(open){
-        h+='<div class="aed">'+fld('Ürün adı',pa+'.name')+bTypeEd(i,b)+'<div class="three">'+fld('Baskısız fiyat (₺)',pa+'.price','n')+fld('Eski fiyat (₺)',pa+'.old','n','boş = yok')+fld('Stok (adet)',pa+'.stock','n','boş = takip yok')+'</div>'+
+        h+='<div class="aed">'+bQuick(i,b)+'<div class="three">'+fld('Baskısız fiyat (₺)',pa+'.price','n')+fld('Eski fiyat (₺)',pa+'.old','n','boş = yok')+fld('Stok (adet)',pa+'.stock','n','boş = takip yok')+'</div>'+
         (bTypeOf(b)==='mug'?fld('Baskı ücreti · 20 × 9 cm baskı alanı (₺)',pa+'.wrap','n','boş = eklenmez')+'<p class="note">Süblimasyon kupada ve logo baskılı kupada aynı ücret geçerlidir. Boş bırakırsan sepette baskı ücreti eklenmez.</p>':b.hat!=null?fld((b.fixname||'Şapka baskı')+' ücreti (₺)',pa+'.hat','n'):'<div class="two">'+fld('A4 baskı ücreti (₺)',pa+'.a4','n')+fld('Logo ücreti (₺)',pa+'.logo','n')+'</div><p class="note">A3 ücreti = A4 ücreti × '+A3_KAT+' (Fiyatlandırma sekmesinden değişir).</p>')+
-        '<label for="'+aid(pa+'.desc')+'">Açıklama (boş = türünün standart açıklaması, - = hiç gösterme)<textarea id="'+aid(pa+'.desc')+'" data-bind="'+pa+'.desc" data-t="s" style="min-height:70px" placeholder="'+esc(bDesc(Object.assign({},b,{desc:''})))+'">'+esc(b.desc||'')+'</textarea></label>'+'<label for="'+aid(pa+'.btnote')+'">Baskı tekniği notu (boş = standart, - = hiç gösterme)<textarea id="'+aid(pa+'.btnote')+'" data-bind="'+pa+'.btnote" data-t="s" style="min-height:60px" placeholder="'+esc(btTX(btKindB(b))||'Standart not boş')+'">'+esc(b.btnote||'')+'</textarea></label>'+fld('Kısa not',pa+'.note')+fld('Kesim',pa+'.cuts')+
-        '<div class="chk"><label><input type="checkbox" data-bind="'+pa+'.show" data-t="b"'+(b.show!==false?' checked':'')+'>Sitede göster</label></div>'+rawEd(pa,b)+'<details class="ced"'+((b.imgs||[]).length?' open':'')+'><summary style="font:600 14px var(--ui);cursor:pointer">Ek görseller (isteğe bağlı)</summary><p class="note" style="margin:6px 0">Gerek yok: ürün sayfası yukarıdaki renk fotoğraflarını kendiliğinden gösterir. Buraya yalnız ekstra görsel (ör. modelli çekim, kumaş yakını) koymak istersen ekle; renk fotoğraflarından sonra görünür.</p>'+imgEd(pa)+'</details>'+vidEd(pa,b)+colorEd(pa,b)+
-        '<div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn sm" data-ad="save">Kaydet</button><button class="btn soft sm" data-ad="delb" data-id="'+b.id+'" style="color:var(--red)">'+(A.del===b.id?'Silmek için tekrar dokun':'Ürünü sil')+'</button></div></div>';
+        '<div class="chk"><label><input type="checkbox" data-bind="'+pa+'.show" data-t="b"'+(b.show!==false?' checked':'')+'>Sitede göster</label></div>'+rawEd(pa,b)+colorEd(pa,b)+'<details class="ced"><summary style="font:600 14px var(--ui);cursor:pointer">Diğer ayarlar (açıklama, notlar, ek görsel, video, adı elle yazmak)</summary>'+fld('Sitede görünen ad (elle değiştirebilirsin; tür, grup ya da model değişince yeniden otomatik olur)',pa+'.name')+'<label for="'+aid(pa+'.desc')+'">Açıklama (boş = türünün standart açıklaması, - = hiç gösterme)<textarea id="'+aid(pa+'.desc')+'" data-bind="'+pa+'.desc" data-t="s" style="min-height:70px" placeholder="'+esc(bDesc(Object.assign({},b,{desc:''})))+'">'+esc(b.desc||'')+'</textarea></label>'+'<label for="'+aid(pa+'.btnote')+'">Baskı tekniği notu (boş = standart, - = hiç gösterme)<textarea id="'+aid(pa+'.btnote')+'" data-bind="'+pa+'.btnote" data-t="s" style="min-height:60px" placeholder="'+esc(btTX(btKindB(b))||'Standart not boş')+'">'+esc(b.btnote||'')+'</textarea></label>'+fld('Kısa not',pa+'.note')+fld('Kesim notu (ör. Regular fit)',pa+'.cuts')+
+        '<div class="ced"><b style="font-size:14px">Ek görseller</b><p class="note" style="margin:6px 0">Gerek yok: ürün sayfası yukarıdaki renk fotoğraflarını kendiliğinden gösterir. Buraya yalnız ekstra görsel (ör. modelli çekim, kumaş yakını) koymak istersen ekle; renk fotoğraflarından sonra görünür.</p>'+imgEd(pa)+'</div>'+vidEd(pa,b)+'</details>'+'<div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn sm" data-ad="save">Kaydet</button><button class="btn soft sm" data-ad="delb" data-id="'+b.id+'" style="color:var(--red)">'+(A.del===b.id?'Silmek için tekrar dokun':'Ürünü sil')+'</button></div></div>';
       }
     });
     h+='</div><p><button class="btn soft" data-ad="addb">+ Yeni baskıya uygun ürün</button></p>';
@@ -4471,7 +4517,7 @@ document.addEventListener('change',function(e){
   if(t.dataset&&t.dataset.pch!==undefined){var pp=A.draft.products[+t.dataset.pch],ll=pp.ch||(pp.ch=[]),ii=ll.indexOf(t.dataset.c);if(t.checked&&ii<0)ll.push(t.dataset.c);if(!t.checked&&ii>=0)ll.splice(ii,1);dirty();return;}
   if(t.dataset&&t.dataset.psub!==undefined){var ps=A.draft.products[+t.dataset.psub],ls=ps.sub||(ps.sub=[]),xs=ls.indexOf(t.dataset.c);if(t.checked&&xs<0)ls.push(t.dataset.c);if(!t.checked&&xs>=0)ls.splice(xs,1);dirty();var yy=window.scrollY;adRender();window.scrollTo(0,yy);return;}
   if(t.dataset&&t.dataset.upr&&t.files&&t.files.length){var rp=t.dataset.upr,rl=getp(A.draft,rp+'.raw');if(!rl){setp(A.draft,rp+'.raw',[]);rl=getp(A.draft,rp+'.raw');}var fl=Array.prototype.slice.call(t.files);t.value='';
-    if(rl.length+fl.length>10){fl=fl.slice(0,Math.max(0,10-rl.length));if(!fl.length){toast('Bu üründe 10 fotoğraf dolu (5 renk × ön ve arka). Yenisini eklemek için önce eskisini sil.');return;}toast('En fazla 10 fotoğraf: yalnız ilk '+fl.length+' tanesi eklendi.');}
+    var RM=rawMax();if(rl.length+fl.length>RM){fl=fl.slice(0,Math.max(0,RM-rl.length));if(!fl.length){toast('Bu üründe '+RM+' fotoğraf dolu ('+STDC.length+' renk × ön ve arka). Yenisini eklemek için önce o rengin eskisini sil ya da yeni renk ekle.');return;}toast('En fazla '+RM+' fotoğraf: yalnız ilk '+fl.length+' tanesi eklendi.');}
     Promise.all(fl.map(function(f){return procRaw(f).then(function(r){var tk='img/'+Date.now().toString(36)+Math.random().toString(36).slice(2,6)+'.'+r.ext;pend[tk]={blob:r.blob,url:URL.createObjectURL(r.blob)};rl.push(tk);if(r.guess){var gb=getp(A.draft,rp);(gb.rawguess||(gb.rawguess={}))[tk]=r.guess;}});})).then(function(){dirty();adRender();toast('Fotoğraflar eklendi. Şimdi Kaydet\'e bas; zemini 2–3 dakikada temizlenip ürüne yerleşir.');}).catch(function(){toast('Fotoğraf okunamadı');});return;}
   if(t.dataset&&t.dataset.rfix){var fb=getp(A.draft,t.dataset.rfix);if(fb){var fx=fb.rawfix||(fb.rawfix={}),fr=fx[t.dataset.r]||(fx[t.dataset.r]={});if(t.value)fr[t.dataset.k]=t.value;else delete fr[t.dataset.k];if(!fr.color&&!fr.side)delete fx[t.dataset.r];dirty();adRender();}return;}
   if(t.dataset&&t.dataset.upc&&t.files&&t.files[0]){var cf=t.files[0],cpth=t.dataset.upc;t.value='';procPhoto(cf).then(function(r){var tk='img/'+Date.now().toString(36)+Math.random().toString(36).slice(2,6)+'.'+r.ext;pend[tk]={blob:r.blob,url:URL.createObjectURL(r.blob)};setp(A.draft,cpth,tk);dirty();adRender();}).catch(function(){toast('Görsel okunamadı');});return;}
@@ -4513,7 +4559,7 @@ document.addEventListener('click',function(e){
   else if(a==='cadd'){var cpa=b.dataset.p+'.colors',ca=getp(d,cpa);if(!ca){setp(d,cpa,[]);ca=getp(d,cpa);}ca.push({name:'Yeni renk',hex:'#ffffff',front:'',back:''});dirty();adRender();}
   else if(a==='cdel'){var cl=getp(d,b.dataset.p+'.colors');if(cl)cl.splice(+b.dataset.j,1);dirty();adRender();}
   else if(a==='specprint'){specPrint(d);}
-  else if(a==='addb'){var bid=nid('b');d.blanks.push({id:bid,p:'tee',cut:'erkek',gen:'erkek',name:'Yeni ürün',price:0,old:null,stock:null,a4:0,logo:0,note:'',cuts:'',areas:[],imgs:[],show:true,svg:DEF.blanks[0].svg});A.open=bid;dirty();adRender();}
+  else if(a==='addb'){var bid=nid('b');d.blanks.push({id:bid,p:'tee',cut:'erkek',gen:'erkek',model:'',name:'Erkek tişört',price:0,old:null,stock:null,a4:0,logo:0,note:'',cuts:'',areas:[],imgs:[],show:true,svg:DEF.blanks[0].svg});A.open=bid;dirty();adRender();}
   else if(a==='ortb'){bOrtam(+b.dataset.i);}
   else if(a==='delb'){if(A.del===b.dataset.id){d.blanks=d.blanks.filter(function(x){return x.id!==b.dataset.id;});A.del=null;A.open=null;dirty();}else A.del=b.dataset.id;adRender();}
   else if(a==='mvb'){if(swapArr(d.blanks,+b.dataset.i,+b.dataset.d)){dirty();adRender();}}
