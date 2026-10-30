@@ -4864,23 +4864,29 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
     var im=await cvLoad(jj.url+(jj.cached?'':'?v='+Date.now())),W=im.naturalWidth,H=im.naturalHeight,F=await cvPrint(),D=CV_DET[jj.url];
     if(!D){var bx=cvBox(cvData(im,200).d,200,Math.round(200*H/W),(land?1.43:0.7)*(yan?0.87:1));if(!bx)return null;
       var full=cvData(im,W),fit=cvFit(full.d,W,H,bx);if(!fit)return null;
-      var fw0=fit.Q[1][0]-fit.Q[0][0],er=cvErase(full.d,W,H,fit,fw0*0.05+4),id=new ImageData(er.d,W,H);
+      var fw0=fit.Q[1][0]-fit.Q[0][0],er=cvErase(full.d,W,H,fit,fw0*(yan?0.14:0.05)+4),id=new ImageData(er.d,W,H);
       D={Q:fit.Q,bg:id,wall:fit.wall};CV_DET[jj.url]=D;}
-    var c=document.createElement('canvas');c.width=W;c.height=H;var x=c.getContext('2d');x.putImageData(D.bg,0,0);
-    var Q=yan?cvShape(D.Q,(F.cm[0]-8)/(F.cm[1]-8)):D.Q,fwp=Q[1][0]-Q[0][0],fhp=((Q[3][1]-Q[0][1])+(Q[2][1]-Q[1][1]))/2,fw=F.c.width-2*F.sx,fh=F.c.height-2*F.sy;
+    var c=document.createElement('canvas');c.width=W;c.height=H;var x=c.getContext('2d'),Q0=D.Q;
+    /* yandan görünüş her zaman SAĞDAN: sahnede kamera soldaysa fotoğraf aynalanır, tablo sağ yanı görünecek şekilde kurulur */
+    if(yan&&(Q0[3][1]-Q0[0][1])>=(Q0[2][1]-Q0[1][1])){var tc=document.createElement('canvas');tc.width=W;tc.height=H;tc.getContext('2d').putImageData(D.bg,0,0);
+      x.save();x.translate(W,0);x.scale(-1,1);x.drawImage(tc,0,0);x.restore();var mr=function(p){return [W-p[0],p[1]];};Q0=[mr(Q0[1]),mr(Q0[0]),mr(Q0[3]),mr(Q0[2])];}
+    else x.putImageData(D.bg,0,0);
+    var Q=yan?cvShape(Q0,(F.cm[0]-8)/(F.cm[1]-8)):D.Q,fwp=Q[1][0]-Q[0][0],fhp=((Q[3][1]-Q[0][1])+(Q[2][1]-Q[1][1]))/2,fw=F.c.width-2*F.sx,fh=F.c.height-2*F.sy;
     /* görünen yan yüz: kameraya yakın (daha uzun) kenarda; 4 cm derinlik, 30° bakışta yaklaşık yarısı görünür */
     var lh=Q[3][1]-Q[0][1],rh=Q[2][1]-Q[1][1],left=lh>=rh,eh=left?lh:rh,sw=yan?eh/(F.cm[1]-8)*4*0.5:0,SQ=null;
     if(sw>=1.5){var A=left?Q[0]:Q[1],B=left?Q[3]:Q[2],O=left?Q[1]:Q[0],Bo=left?Q[2]:Q[3],dir=left?-1:1,st=(A[1]-O[1])/(A[0]-O[0]),sb=(B[1]-Bo[1])/(B[0]-Bo[0]);
       var oT=[A[0]+dir*sw,A[1]+st*dir*sw],oB=[B[0]+dir*sw,B[1]+sb*dir*sw];SQ=left?[oT,A,B,oB]:[A,oT,oB,B];}
-    /* duvardaki yumuşak gölge */
-    x.save();x.shadowColor='rgba(40,30,20,.32)';x.shadowBlur=Math.max(6,fwp*0.035);x.shadowOffsetX=fwp*(yan?0.02:0.008);x.shadowOffsetY=fhp*0.025;x.fillStyle='#8a8478';cvPath(x,SQ?(left?[SQ[0],Q[1],Q[2],SQ[3]]:[Q[0],SQ[1],SQ[2],Q[3]]):Q);x.fill();x.restore();
+    /* duvara yaslı dursun: önce dar ve koyu temas gölgesi, sonra geniş yumuşak gölge (yandan bakışta gölge uzak kenara düşer) */
+    var shp=SQ?(left?[SQ[0],Q[1],Q[2],SQ[3]]:[Q[0],SQ[1],SQ[2],Q[3]]):Q,sdx=yan?(left?1:-1):1;
+    x.save();x.shadowColor='rgba(30,22,15,.45)';x.shadowBlur=Math.max(3,fwp*0.012);x.shadowOffsetX=sdx*fwp*(yan?0.018:0.004);x.shadowOffsetY=fhp*0.008;x.fillStyle='#8a8478';cvPath(x,shp);x.fill();x.restore();
+    x.save();x.shadowColor='rgba(40,30,20,.28)';x.shadowBlur=Math.max(6,fwp*0.05);x.shadowOffsetX=sdx*fwp*(yan?0.035:0.008);x.shadowOffsetY=fhp*0.025;x.fillStyle='#8a8478';cvPath(x,SQ?(left?[SQ[0],Q[1],Q[2],SQ[3]]:[Q[0],SQ[1],SQ[2],Q[3]]):Q);x.fill();x.restore();
     /* yan yüz: sargı payı, biraz gölgede */
     if(SQ){var srcX=left?0:F.c.width-F.sx;x.save();cvPath(x,SQ);x.clip();cvWarp(x,F.c,srcX,F.sy,F.sx,fh,cvHom(SQ),8);x.fillStyle='rgba(20,15,10,.24)';x.fillRect(0,0,W,H);x.restore();}
     /* ön yüz: tasarım */
     x.save();cvPath(x,Q);x.clip();cvWarp(x,F.c,F.sx,F.sy,fw,fh,cvHom(Q),28);
     /* ortamın ışığı: odanın aydınlığı soldan sağa hafifçe değişir, tuval de öyle */
     var g=x.createLinearGradient(Math.min(Q[0][0],Q[3][0]),0,Math.max(Q[1][0],Q[2][0]),0);
-    g.addColorStop(0,'rgba(255,255,255,0)');g.addColorStop(1,'rgba(0,0,0,'+(yan?0.06:0.03)+')');x.fillStyle=g;x.fillRect(0,0,W,H);x.restore();
+    var gd='rgba(0,0,0,'+(yan?0.06:0.03)+')';g.addColorStop(0,yan&&!left?gd:'rgba(255,255,255,0)');g.addColorStop(1,yan&&!left?'rgba(255,255,255,0)':gd);x.fillStyle=g;x.fillRect(0,0,W,H);x.restore();
     /* ince kenar çizgisi: tuvalin kalınlığı belli olsun */
     x.save();cvPath(x,Q);x.lineWidth=1;x.strokeStyle='rgba(0,0,0,.18)';x.stroke();x.restore();
     var tk='img/ortam-canvas-'+sahne+'-'+rnd()+'.jpg';await upload('site',tk,await canvasBlob(c,'image/jpeg',.9));return tk;}
