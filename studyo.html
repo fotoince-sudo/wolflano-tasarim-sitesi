@@ -4855,11 +4855,15 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
     var cx=(Q[0][0]+Q[1][0]+Q[2][0]+Q[3][0])/4,cy=(Q[0][1]+Q[1][1]+Q[2][1]+Q[3][1])/4,w=(near+far)/2*asp*0.866;
     var xn=left?cx-w/2:cx+w/2,xf=left?cx+w/2:cx-w/2,N0=[xn,cy-near/2],N1=[xn,cy+near/2],F0=[xf,cy-far/2],F1=[xf,cy+far/2];
     return left?[N0,F0,F1,N1]:[F0,N0,N1,F1];}
+  /* Yandan görünüşte iki ölçü de AYNI salonda gösterilir (35 × 50 sahnesi temiz ve doğru ölçekli):
+     50 × 70, 35 × 50'nin 1,4 katıdır; alt kenarın ortası sabit kalır (koltuğa olan mesafe değişmez), tablo yukarı ve yanlara büyür */
+  function cvGrow(Q,k){if(k===1)return Q;var bx=(Q[2][0]+Q[3][0])/2,by=(Q[2][1]+Q[3][1])/2;
+    return Q.map(function(p){return [bx+(p[0]-bx)*k,by+(p[1]-by)*k];});}
   /* Tek giriş: boş mekânı getirir (ilk seferde üretilir), yapay zekânın tablosunu siler, tabloyu baştan çizip kaydeder. yan: açılı görünüş */
   var CV_DET={};
   async function cvShot(sahne,yan,btn){
     var land=isLand('front'),t=await tok();if(!t)return null;if(btn)btn.textContent=yan?'Yandan görünüş hazırlanıyor…':'Mekân hazırlanıyor…';
-    var r=await fetch(SBA.url+'/functions/v1/manken',{method:'POST',headers:{'Content-Type':'application/json',apikey:SBA.key,Authorization:'Bearer '+t},body:JSON.stringify({mode:'sahne',sahne:sahne,yon:land?'yatay':'dikey',olcu:cvOlcu()})});
+    var r=await fetch(SBA.url+'/functions/v1/manken',{method:'POST',headers:{'Content-Type':'application/json',apikey:SBA.key,Authorization:'Bearer '+t},body:JSON.stringify({mode:'sahne',sahne:sahne,yon:land?'yatay':'dikey',olcu:yan?'3550':cvOlcu()})});
     var jj=await r.json().catch(function(){return {};});if(!r.ok||!jj.url){if(jj&&jj.message)longToast(jj.message);return null;}
     if(btn)btn.textContent='Tasarım mekâna yerleştiriliyor…';
     var im=await cvLoad(jj.url+(jj.cached?'':'?v='+Date.now())),W=im.naturalWidth,H=im.naturalHeight,F=await cvPrint(),D=CV_DET[jj.url];
@@ -4872,7 +4876,7 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
     if(yan&&(Q0[3][1]-Q0[0][1])>=(Q0[2][1]-Q0[1][1])){var tc=document.createElement('canvas');tc.width=W;tc.height=H;tc.getContext('2d').putImageData(D.bg,0,0);
       x.save();x.translate(W,0);x.scale(-1,1);x.drawImage(tc,0,0);x.restore();var mr=function(p){return [W-p[0],p[1]];};Q0=[mr(Q0[1]),mr(Q0[0]),mr(Q0[3]),mr(Q0[2])];}
     else x.putImageData(D.bg,0,0);
-    var Q=yan?cvShape(Q0,(F.cm[0]-8)/(F.cm[1]-8)):D.Q,fwp=Q[1][0]-Q[0][0],fhp=((Q[3][1]-Q[0][1])+(Q[2][1]-Q[1][1]))/2,fw=F.c.width-2*F.sx,fh=F.c.height-2*F.sy;
+    var Q=yan?cvGrow(cvShape(Q0,(F.cm[0]-8)/(F.cm[1]-8)),cvOlcu()==='5070'?1.4:1):D.Q,fwp=Q[1][0]-Q[0][0],fhp=((Q[3][1]-Q[0][1])+(Q[2][1]-Q[1][1]))/2,fw=F.c.width-2*F.sx,fh=F.c.height-2*F.sy;
     /* görünen yan yüz: kameraya yakın (daha uzun) kenarda; 4 cm derinlik, 30° bakışta yaklaşık yarısı görünür */
     var lh=Q[3][1]-Q[0][1],rh=Q[2][1]-Q[1][1],left=lh>=rh,eh=left?lh:rh,sw=yan?eh/(F.cm[1]-8)*4*0.5:0,SQ=null;
     if(sw>=1.5){var A=left?Q[0]:Q[1],B=left?Q[3]:Q[2],O=left?Q[1]:Q[0],Bo=left?Q[2]:Q[3],dir=left?-1:1,st=(A[1]-O[1])/(A[0]-O[0]),sb=(B[1]-Bo[1])/(B[0]-Bo[0]);
