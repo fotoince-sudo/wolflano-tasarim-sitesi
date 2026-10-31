@@ -702,7 +702,7 @@ img{-webkit-touch-callout:none;-webkit-user-drag:none}
           <input id="kolajFile" type="file" accept="image/*" multiple hidden>
           <div class="wstep"><i>2</i>Wolf yerleştirsin</div>
           <button class="primary wide" id="kolajGo" type="button" disabled>Fotoğrafları tasarla</button>
-          <p class="note" id="kolajNote">Tabloya en fazla 15 (35 × 50) ya da 30 (50 × 70), süblimasyon kupaya en fazla 7 fotoğraf. Wolf, fotoğrafların dikey ya da yatay oluşuna göre karışık bir kolaj kurar: kimi hafif sola, kimi hafif sağa eğik, kimi düz. Zemin hafif dokulu açık krem, fotoğraflar köşeleri hafif yuvarlak beyaz çerçeveli. Beğenmezsen yeniden dokun, Wolf başka bir yerleşim dener.</p>
+          <p class="note" id="kolajNote">Tabloya en fazla 15 (35 × 50) ya da 30 (50 × 70), süblimasyon kupaya 7, tişört ve sweatshirt'e 12 fotoğraf. Wolf fotoğraflardaki yüzleri bulur: fotoğrafı yüzlere göre kırpar ve hiçbir yüzün üstünü başka fotoğrafla kapatmaz. Fotoğrafların dikey ya da yatay oluşuna göre karışık bir kolaj kurar: kimi hafif sola, kimi hafif sağa eğik, kimi düz. Zemin hafif dokulu açık krem, fotoğraflar köşeleri hafif yuvarlak beyaz çerçeveli. Beğenmezsen yeniden dokun, Wolf başka bir yerleşim dener.</p>
         </div>
       </div>
       <div class="kolaj" id="kosBox" hidden>
@@ -2121,8 +2121,9 @@ function loadFile(file){
    Fotoğraflar tablonun ön yüzünde kalır, yanlara sarılan kısma taşmaz. */
 var KOLAJ=[],KJ_CREAM='#f3ece0';
 /* Süblimasyon kupada da aynı kolaj: en fazla 7 fotoğraf, kupanın çevresini saran 20 × 9 cm alana */
-function kolajMax(){if(state.product==='mug')return 7;return state.cut==='c5070'||cur().area==='cv5070'?30:15;}
-function kolajOn(){return state.product==='canvas'||mugWrap();}
+function kolajMax(){if(state.product==='mug')return 7;if(state.product!=='canvas')return 12;return state.cut==='c5070'||cur().area==='cv5070'?30:15;}
+/* Kolaj: canvas, süblimasyon kupa ve giyim (tişört, sweatshirt, polo, kapüşonlu; ön yüzün A4/A3 alanına) */
+function kolajOn(){return state.product==='canvas'||mugWrap()||/^(tee|sweat|polo|hood|zip)$/.test(state.product);}
 function kolajSync(){var b=$('#kolajBox');if(!b)return;b.hidden=!kolajOn();if(!kolajOn())return;
   var mx=kolajMax();if(KOLAJ.length>mx){KOLAJ=KOLAJ.slice(0,mx);toast('Bu boyutta en fazla '+mx+' fotoğraf olur; fazlası çıkarıldı.');}
   $('#kolajCnt').textContent=KOLAJ.length+' / '+mx;
@@ -2144,17 +2145,50 @@ function kjMix(ids,R){var P=[],Lx=[];ids.forEach(function(id){(assets[id].h>asse
   function sh(a){for(var i=a.length-1;i>0;i--){var j=Math.floor(R()*(i+1)),t=a[i];a[i]=a[j];a[j]=t;}return a;}
   sh(P);sh(Lx);var out=[],big=P.length>=Lx.length?P:Lx,sm=big===P?Lx:P,step=sm.length?big.length/(sm.length+1):0,k=0;
   big.forEach(function(id,i){out.push(id);if(sm.length&&k<sm.length&&i+1>=Math.round(step*(k+1))){out.push(sm[k++]);}});while(k<sm.length)out.push(sm[k++]);return out;}
+/* ---------- Kolajda yüzler: fotoğraflardaki insan yüzleri bulunur (cihazda, ücretsiz; MediaPipe) ----------
+   1) Fotoğraf yüzlere göre hafifçe kırpılır: boş gökyüzü / zemin azalır, yüzler büyür; yüzün etrafında omuzlara kadar pay kalır.
+   2) Kolajda fotoğraflar üst üste binerken hiçbir yüzün üstü başka bir fotoğrafla kapanmaz (sıra değişir, gerekirse küçültülür).
+   Yüz bulunamazsa ya da model yüklenemezse fotoğraf olduğu gibi kullanılır. */
+var KJ_FACE={},KJ_CROP={},KJ_FD=null,KJ_MP='https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/';
+function kjDet(){if(KJ_FD)return KJ_FD;KJ_FD=(async function(){var V=await import(KJ_MP+'vision_bundle.mjs'),fs=await V.FilesetResolver.forVisionTasks(KJ_MP+'wasm');
+  return await V.FaceDetector.createFromOptions(fs,{baseOptions:{modelAssetPath:'https://storage.googleapis.com/mediapipe-models/face_detector/blaze_face_short_range/float16/1/blaze_face_short_range.tflite',delegate:'CPU'},runningMode:'IMAGE',minDetectionConfidence:0.45});})().catch(function(e){console.warn('yüz modeli',e);return null;});return KJ_FD;}
+/* yüzler: fotoğrafa göre 0-1 kutular */
+async function kjFaces(id){if(KJ_FACE[id])return KJ_FACE[id];var det=await kjDet();if(!det){KJ_FACE[id]=[];return [];}
+  try{var im=await loadImg(assets[id].url),W=im.naturalWidth,H=im.naturalHeight,s=Math.min(1,960/Math.max(W,H)),c=document.createElement('canvas');c.width=Math.round(W*s);c.height=Math.round(H*s);c.getContext('2d').drawImage(im,0,0,c.width,c.height);
+    var r=det.detect(c),L=((r&&r.detections)||[]).map(function(d){var b=d.boundingBox;return {x:b.originX/c.width,y:b.originY/c.height,w:b.width/c.width,h:b.height/c.height};}).filter(function(f){return f.w>0.02&&f.h>0.02;});
+    KJ_FACE[id]=L;return L;}catch(e){KJ_FACE[id]=[];return [];}}
+/* yüzlere göre kırpılmış kopya (oran aynı kalır); kırpmaya değmezse asıl fotoğraf */
+async function kjCrop(id){if(KJ_CROP[id])return KJ_CROP[id];var F=await kjFaces(id),a=assets[id];if(!F.length){KJ_CROP[id]=id;return id;}
+  var l=1,t=1,r=0,b=0,fh=0;F.forEach(function(f){l=Math.min(l,f.x);t=Math.min(t,f.y);r=Math.max(r,f.x+f.w);b=Math.max(b,f.y+f.h);fh=Math.max(fh,f.h);});
+  /* yüzlerin çevresi: yanlara ve üste biraz, alta omuzlara kadar */
+  l-=fh*0.9;r+=fh*0.9;t-=fh*0.7;b+=fh*1.6;var need=Math.max(r-l,b-t),s=Math.min(1,Math.max(0.62,r-l,b-t));
+  if(s>0.9){KJ_CROP[id]=id;return id;}
+  var cx=(l+r)/2,cy=(t+b)/2,x0=Math.min(Math.max(cx-s/2,0),1-s),y0=Math.min(Math.max(cy-s/2,0),1-s);
+  try{var im=await loadImg(a.url),W=im.naturalWidth,H=im.naturalHeight,sw=Math.round(W*s),sh=Math.round(H*s),k=Math.min(1,1800/Math.max(sw,sh)),c=document.createElement('canvas');c.width=Math.round(sw*k);c.height=Math.round(sh*k);
+    c.getContext('2d').drawImage(im,Math.round(W*x0),Math.round(H*y0),sw,sh,0,0,c.width,c.height);
+    var bl=await new Promise(function(res){c.toBlob(res,'image/jpeg',0.92);}),nid='a'+(++assetN);assets[nid]={url:URL.createObjectURL(bl),w:c.width,h:c.height,up:true,kjOf:id};assetList.push(nid);
+    KJ_FACE[nid]=F.map(function(f){return {x:(f.x-x0)/s,y:(f.y-y0)/s,w:f.w/s,h:f.h/s};});KJ_CROP[id]=nid;return nid;}catch(e){KJ_CROP[id]=id;return id;}}
+/* tasarımdaki yüz kutuları (eğim küçük: dikdörtgen yaklaşımı) */
+function kjFaceBoxes(o){var F=KJ_FACE[o.assetId]||[];return F.map(function(f){return {l:o.x-o.w/2+f.x*o.w,t:o.y-o.h/2+f.y*o.h,r:o.x-o.w/2+(f.x+f.w)*o.w,b:o.y-o.h/2+(f.y+f.h)*o.h};});}
+function kjCovers(top,fb){var l=top.x-top.w/2,t=top.y-top.h/2,r=l+top.w,b=t+top.h;return l<fb.r-1&&r>fb.l+1&&t<fb.b-1&&b>fb.t+1;}
+/* hiçbir yüzün üstü kapanmasın: önce sıra değiştir, olmazsa üstteki fotoğrafı biraz küçült */
+function kjProtect(objs){for(var pass=0;pass<6;pass++){var moved=false;
+  for(var i=0;i<objs.length;i++){var fb=kjFaceBoxes(objs[i]);if(!fb.length)continue;
+    for(var j=i+1;j<objs.length;j++){if(fb.some(function(f){return kjCovers(objs[j],f);})){
+      var mine=kjFaceBoxes(objs[j]);if(pass<3&&!mine.some(function(f){return kjCovers(objs[i],f);})){var o=objs.splice(i,1)[0];objs.splice(j,0,o);moved=true;i--;break;}
+      var tj=objs[j];tj.w*=0.92;tj.h*=0.92;tj.bw=Math.max(1.6,Math.min(tj.w,tj.h)*0.03);tj.br=Math.min(tj.w,tj.h)*0.035;moved=true;}}}
+  if(!moved)break;}return objs;}
 function kolajLayout(){
   var A=areaBox('front',cur().area),d=dimsOf(cur().area,landFor('front',cur().area)),cm=A.w/d[0],wrap=4*cm;
-  if(state.product==='mug')wrap=0;var F={l:A.l+wrap,t:A.t+wrap,w:A.w-2*wrap,h:A.h-2*wrap},pad=state.product==='mug'?Math.min(F.w,F.h)*0.045:F.w*0.035,W=F.w-2*pad,H=F.h-2*pad,gap=Math.min(W,H)*0.03;
-  var seed=(Date.now()^Math.floor(Math.random()*1e9))>>>0,R=kjRand(seed),n=KOLAJ.length,ids,asp;
+  if(state.product!=='canvas')wrap=0;var F={l:A.l+wrap,t:A.t+wrap,w:A.w-2*wrap,h:A.h-2*wrap},pad=state.product==='mug'?Math.min(F.w,F.h)*0.045:F.w*0.035,W=F.w-2*pad,H=F.h-2*pad,gap=Math.min(W,H)*0.03;
+  var seed=(Date.now()^Math.floor(Math.random()*1e9))>>>0,R=kjRand(seed),SRC=KOLAJ.map(function(id){return KJ_CROP[id]||id;}),n=SRC.length,ids,asp;
   /* Satır sayısını seç: satırlar genişliği tam doldurunca toplam yükseklik tabloya en yakın olan */
   function rowsFor(r){var tot=asp.reduce(function(a,b){return a+b;},0),tgt=tot/r,rows=[],cur0=[],sum=0;
     asp.forEach(function(a,i){var left=n-i,need=r-rows.length;if(cur0.length&&(sum+a/2>tgt&&rows.length<r-1||left<need)){rows.push(cur0);cur0=[];sum=0;}cur0.push(i);sum+=a;});rows.push(cur0);
     var hs=rows.map(function(rw){var sa=rw.reduce(function(a,i){return a+asp[i];},0);return (W-gap*(rw.length-1))/sa;});
     return {rows:rows,hs:hs,th:hs.reduce(function(a,b){return a+b;},0)+gap*(rows.length-1)};}
   /* Wolf birçok karışık sıralama dener; tabloyu en dolu kaplayanı seçer (boş krem alan en az kalsın) */
-  var best=null;for(var tr=0;tr<80;tr++){var tids=kjMix(KOLAJ.slice(),R);ids=tids;asp=tids.map(function(id){return assets[id].w/assets[id].h;});
+  var best=null;for(var tr=0;tr<80;tr++){var tids=kjMix(SRC.slice(),R);ids=tids;asp=tids.map(function(id){return assets[id].w/assets[id].h;});
     for(var r=1;r<=(state.product==='mug'?(n<=5?1:2):n);r++){var c=rowsFor(r),kk=Math.min(1,H*(c.rows.length>1?1.12:1)/c.th),cov=kk*kk*c.rows.reduce(function(a,rw,ri){return a+rw.reduce(function(b,i){return b+asp[i]*c.hs[ri]*c.hs[ri];},0);},0)/(W*H);
       if(!best||cov>best.cov){best=c;best.cov=cov;best.ids=tids;best.asp=asp;}}}
   ids=best.ids;asp=best.asp;
@@ -2172,7 +2206,7 @@ function kolajLayout(){
     y+=h+gap*k+extra;});
   /* Tatlı karışıklık: üst üste binmelerde rastgele sıra */
   for(var q=objs.length-1;q>0;q--){var j=Math.floor(R()*(q+1)),t=objs[q];objs[q]=objs[j];objs[j]=t;}
-  return objs;}
+  return kjProtect(objs);}
 /* Kolaj zemini: düz değil, gözü yormayan hafif dokulu açık krem (yumuşak deri / keten hissi). Baskı alanının oranında üretilir, gerilip bozulmaz. */
 function kjTexture(W,H){var c=document.createElement('canvas');c.width=W;c.height=H;var x=c.getContext('2d'),R=kjRand(20261025),i;
   var g=x.createLinearGradient(0,0,W,H);g.addColorStop(0,'#f6f0e5');g.addColorStop(.5,KJ_CREAM);g.addColorStop(1,'#eee5d6');x.fillStyle=g;x.fillRect(0,0,W,H);
@@ -2188,13 +2222,18 @@ function kjTexture(W,H){var c=document.createElement('canvas');c.width=W;c.heigh
 function kolajBg(){var A=areaBox('front',cur().area),W=1800,H=Math.max(200,Math.round(W*A.h/A.w)),id='kjbg2-'+W+'x'+H;
   if(!assets[id]){var c=kjTexture(W,H);assets[id]={url:c.toDataURL('image/jpeg',.9),w:W,h:H,bg:true};}
   var o=newBase('image');o.assetId=id;o.w=A.w+2;o.h=A.h+2;o.x=A.cx;o.y=A.cy;o.lock=true;o.kj=1;o.kjbg=1;return o;}
-function kolajMake(){if(KOLAJ.length<2){toast('Kolaj için en az 2 fotoğraf seç.');return;}
+var kjBusy=false;
+async function kolajMake(){if(KOLAJ.length<2){toast('Kolaj için en az 2 fotoğraf seç.');return;}if(kjBusy)return;kjBusy=true;
+  var g0=$('#kolajGo');if(g0){g0.disabled=true;g0.textContent='Yüzler bulunuyor…';}
+  try{for(var fi=0;fi<KOLAJ.length;fi++){await kjCrop(KOLAJ[fi]);if(g0)g0.textContent='Yüzler bulunuyor… '+(fi+1)+' / '+KOLAJ.length;}}catch(_){}
+  kjBusy=false;
   if(view.side!=='front'){view.side='front';}
   var keep=cur().objs.filter(function(o){return !o.kj&&!(o.type==='image'&&KOLAJ.indexOf(o.assetId)>=0);});
   var txt=keep.filter(function(o){return o.type==='text'||o.type==='clip';});
-  cur().objs=[kolajBg()].concat(keep.filter(function(o){return txt.indexOf(o)<0;}),kolajLayout(),txt);
+  cur().objs=(state.product==='canvas'||state.product==='mug'?[kolajBg()]:[]).concat(keep.filter(function(o){return txt.indexOf(o)<0;}),kolajLayout(),txt);
   select(null);renderAll();layout();pushHist();kolajSync();
-  toast('Wolf kolajı hazırladı. Beğenmezsen "Yeniden yerleştir"e dokun; her fotoğrafı tek tek de taşıyıp döndürebilirsin.');}
+  var nf=KOLAJ.filter(function(id){var c=KJ_CROP[id]||id;return (KJ_FACE[c]||[]).length;}).length;
+  toast('Wolf kolajı hazırladı'+(nf?' ('+nf+' fotoğrafta yüzler korundu)':'')+'. Beğenmezsen "Yeniden yerleştir"e dokun; her fotoğrafı tek tek de taşıyıp döndürebilirsin.');}
 $('#kolajBtn').addEventListener('click',function(){var w=$('#kolajIn');w.hidden=!w.hidden;this.classList.toggle('on',!w.hidden);if(!w.hidden){kolajSync();if(!KOLAJ.length)$('#kolajFile').click();}});
 $('#kolajFile').addEventListener('change',function(){var f=this.files;kolajAdd(f).then(function(){});this.value='';});
 $('#kolajGo').addEventListener('click',kolajMake);
