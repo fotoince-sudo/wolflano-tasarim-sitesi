@@ -1606,6 +1606,11 @@ function phColors(b){var L=((b&&b.colors)||[]).filter(function(c){return c&&(c.f
   return L.map(function(c,k){var i=ix(c);return {c:i<STDC.length?Object.assign({},c,{hex:STDC[i].hex}):c,i:i,k:k};}).sort(function(a,z){return a.i-z.i||a.k-z.k;}).map(function(x){return x.c;});}
 function phSize(){var l=sizeList(),best=null,mx=0;if(PH.want&&l.indexOf(PH.want)>=0&&(state.sizes[PH.want]||0)>0)return PH.want;l.forEach(function(z){if((state.sizes[z]||0)>mx){mx=state.sizes[z];best=z;}});return best||(l.indexOf(PH.want)>=0?PH.want:'')||l[1]||l[0];}
 function phDims(product,cut){var m=(SZM[product]||{})[cut];if(!m)return null;var z=phSize();return m[z]||m.M||m['7-8']||null;}
+/* Yatay ölçek: fotoğraftaki gövde eni beden tablosundaki göğüs enine (SZM [en, boy]) oturur. Boy dikey ölçeği, en yatay ölçeği belirler;
+   böylece fotoğraf dar ya da geniş çekilmiş olsa bile baskı alanı tişörte göre gerçek oranında görünür.
+   Uzun kollu ürünlerde (sweatshirt, kapüşonlu) kollar gövdenin yanından sarktığı için gövde eni ölçülemez; orada dikey ölçek kullanılır. */
+var PH_BW={tee:1,polo:1};
+function phSX(cal,d,sc,product){if(!cal||!cal.bw||!d||!PH_BW[product||state.product])return sc;var sx=d[0]*PPC/cal.bw;return Math.max(sc*.75,Math.min(sc*1.6,sx));}
 function phCalib(u){
   if(PH.cal[u])return PH.cal[u];
   var rec={ready:false};PH.cal[u]=rec;
@@ -1649,7 +1654,10 @@ function phCalib(u){
     var top=H,bot=-1,l=W,r2=-1;
     for(i=0;i<N;i++){if(p[i*4+3]<=110)continue;y=(i/W)|0;xx=i-y*W;if(y<top)top=y;if(y>bot)bot=y;if(xx<l)l=xx;if(xx>r2)r2=xx;}
     if(bot<0){rec.url=u;rec.W=W;rec.H=H;rec.top=0;rec.bot=H-1;rec.l=0;rec.r=W-1;rec.raw=true;}
-    else{rec.url=c.toDataURL('image/png');rec.W=W;rec.H=H;rec.top=top;rec.bot=bot;rec.l=l;rec.r=r2;}
+    else{rec.url=c.toDataURL('image/png');rec.W=W;rec.H=H;rec.top=top;rec.bot=bot;rec.l=l;rec.r=r2;
+      /* Gövde eni: kolların altında kalan satırlarda (boyun %58, %66, %74'ü) ürünün soldan sağa genişliği; ortanca alınır */
+      var bws=[.58,.66,.74].map(function(f){var yy=Math.round(top+(bot-top)*f),a=-1,z=-1;for(var q2=0;q2<W;q2++){if(p[(yy*W+q2)*4+3]>110){if(a<0)a=q2;z=q2;}}return z>a?z-a+1:0;}).filter(function(v){return v>0;}).sort(function(a,z){return a-z;});
+      rec.bw=bws.length?bws[(bws.length/2)|0]:0;}
     rec.ready=true;try{renderShirt();layout();}catch(_){}
   }catch(er){rec.fail=true;}};
   im.onerror=function(){rec.fail=true;};
@@ -1680,7 +1688,7 @@ function phSVG(side,tee,product,cut){
   var u=phSrc(side==='back'?(co.back||co.front||''):(co.front||co.back||''));if(!u)return null;
   var cal=phCalib(u);if(!cal.ready)return null;
   var d=phDims(product,cut);if(!d)return null;
-  var sc=d[1]*PPC/Math.max(1,cal.bot-cal.top+1),w=cal.W*sc,h=cal.H*sc,topY=NECK_Y[side]-NECK_DROP[side],cx=(cal.l+cal.r)/2*sc;
+  var sc=d[1]*PPC/Math.max(1,cal.bot-cal.top+1),sx=phSX(cal,d,sc,product),w=cal.W*sx,h=cal.H*sc,topY=NECK_Y[side]-NECK_DROP[side],cx=(cal.l+cal.r)/2*sx;
   var X=300-cx,Y=topY-cal.top*sc;
   /* Açık renkli ürün (beyaz, krem) açık zeminde kaybolmasın: ürünün kenarına ince kontur ve altına yumuşak gölge */
   var lt=!cal.raw&&lum(co.hex)>.72,sf=lt?'<defs><filter id="phL" x="-8%" y="-6%" width="116%" height="116%" color-interpolation-filters="sRGB"><feDropShadow dx="0" dy="0" stdDeviation="1.1" flood-color="#1c2420" flood-opacity=".42" result="e"/><feDropShadow in="e" dx="0" dy="9" stdDeviation="10" flood-color="#1c2420" flood-opacity=".22"/></filter></defs>':'';
@@ -1691,7 +1699,7 @@ function fitBox(side){side=face(side);
   var gt=NECK_Y[side]-NECK_DROP[side];
   try{if(phOn()){var b=phBlank(state.product,state.cut),cs=phColors(b),co=cs.filter(function(c){return String(c.hex).toLowerCase()===String(state.tee).toLowerCase();})[0]||cs[0];
     var u=phSrc(side==='back'?(co.back||co.front):(co.front||co.back)),cal=u&&PH.cal[u],m=(SZM[state.product]||{})[state.cut];
-    if(cal&&cal.ready&&m){var mx=null;Object.keys(m).forEach(function(z){if(!mx||m[z][1]>mx[1])mx=m[z];});var hp=mx[1]*PPC,sc=hp/Math.max(1,cal.bot-cal.top+1);return {w:(cal.r-cal.l+1)*sc,top:gt,bot:gt+hp};}}}catch(_){}
+    if(cal&&cal.ready&&m){var mx=null;Object.keys(m).forEach(function(z){if(!mx||m[z][1]>mx[1])mx=m[z];});var hp=mx[1]*PPC,sc=hp/Math.max(1,cal.bot-cal.top+1);return {w:(cal.r-cal.l+1)*phSX(cal,mx,sc),top:gt,bot:gt+hp};}}}catch(_){}
   var k=CUT_K[state.cut]||CUT_K.erkek,ay=NECK_Y[side];return {w:556*k[0],top:ay+(62-ay)*k[1],bot:ay+(618-ay)*k[1]};
 }
 function phOn(){return !!(PH.site&&!P().draw&&phColors(phBlank(state.product,state.cut)).length);}
@@ -1828,7 +1836,7 @@ function brandPos(side){side=face(side);
   if(PH.site&&cs.length){
     var co=cs.filter(function(c){return String(c.hex).toLowerCase()===String(state.tee).toLowerCase();})[0]||cs[0],u=phSrc(co.front||'');
     var cal=u&&PH.cal[u],d=phDims(state.product,state.cut);
-    if(cal&&cal.ready&&d&&!cal.raw){var sc=d[1]*PPC/Math.max(1,cal.bot-cal.top+1),X=300-(cal.l+cal.r)/2*sc,Y=NECK_Y[side]-NECK_DROP[side]-cal.top*sc,half=(cal.r-cal.l)/2*sc;
+    if(cal&&cal.ready&&d&&!cal.raw){var sc=d[1]*PPC/Math.max(1,cal.bot-cal.top+1),sx=phSX(cal,d,sc),X=300-(cal.l+cal.r)/2*sx,Y=NECK_Y[side]-NECK_DROP[side]-cal.top*sc,half=(cal.r-cal.l)/2*sx;
       return {x:300+half*.6,y:Y+cal.bot*sc-4.2*PPC};}
   }
   var k=CUT_K[state.cut]||CUT_K.erkek,ay=NECK_Y[side];
@@ -1987,12 +1995,14 @@ function logoHole(A){return logoOn()?interBox(A,logoBox()):null;}
 /* Ön tasarımda iki logonun kapladığı kareler (logolar öncelikli) */
 function logoHoles(A){var L=[];if(logoOn()){var h=interBox(A,logoBox());if(h)L.push(h);}if(logo2On()){var h2=interBox(A,areaBox('logo2','logo2'));if(h2)L.push(h2);}return L;}
 /* ---------- Ek alan (yalnız yönetici) ----------
-   A4 baskının üstüne ya da altına 21 × 14,85 cm (A4'ün yarısı) ek baskı alanı. Fiyata eklenmez, müşteri görmez.
+   A4 baskının üstüne ya da altına A4'ün yarısı kadar ek baskı alanı (A4 ile aynı en). Fiyata eklenmez, müşteri görmez.
    Yeri dikey kaydırılır (etiketinden sürükle); ext = ek alanın üst kenarının A4 üst kenarına uzaklığı (cm). */
-var EXT_CM=[21,14.85];
+/* Ek alan A4'le aynı eni taşır, alanı A4'ün yarısıdır: A4 yatayda 29,7 × 10,5 cm, A4 dikeyde 21 × 14,8 cm (A5) */
+function extCm(side){return isLand(side)?[29.7,10.5]:[21,14.8];}
+function extText(side){return extCm(side).join(' × ').replace(/\./g,',')+' cm';}
 function isWfAdm(){return document.body.classList.contains('wfadm');}
 function extBox(side){var sd=SS(side);if(!sd||sd.ext==null||sd.area!=='a4'||!(side==='front'||side==='back'))return null;
-  var A=areaBox(side,sd.area),w=EXT_CM[0]*PPC,h=EXT_CM[1]*PPC,t=A.t+sd.ext*PPC;return {l:A.cx-w/2,t:t,r:A.cx+w/2,b:t+h,w:w,h:h,cx:A.cx,cy:t+h/2};}
+  var A=areaBox(side,sd.area),EC=extCm(side),w=EC[0]*PPC,h=EC[1]*PPC,t=A.t+sd.ext*PPC;return {l:A.cx-w/2,t:t,r:A.cx+w/2,b:t+h,w:w,h:h,cx:A.cx,cy:t+h/2};}
 function rectCW(R,k,ox,oy){k=k||1;ox=ox||0;oy=oy||0;var l=(R.l-ox)*k,t=(R.t-oy)*k,r=(R.r-ox)*k,b=(R.b-oy)*k;return 'M'+l.toFixed(1)+' '+t.toFixed(1)+'H'+r.toFixed(1)+'V'+b.toFixed(1)+'H'+l.toFixed(1)+'Z';}
 function rectCCW(R,k,ox,oy){k=k||1;ox=ox||0;oy=oy||0;var l=(R.l-ox)*k,t=(R.t-oy)*k,r=(R.r-ox)*k,b=(R.b-oy)*k;return 'M'+l.toFixed(1)+' '+t.toFixed(1)+'V'+b.toFixed(1)+'H'+r.toFixed(1)+'V'+t.toFixed(1)+'Z';}
 /* Baskı alanı + ek alan − logo delikleri, tek yol (nonzero) */
@@ -2016,12 +2026,12 @@ function renderPassive(){
 function extDrag(eb){var lb=eb.querySelector('#extLabel'),st=null;
   lb.addEventListener('pointerdown',function(e){e.stopPropagation();e.preventDefault();st={y:e.clientY,v:SS(view.side).ext};try{lb.setPointerCapture(e.pointerId);}catch(_){}});
   lb.addEventListener('pointermove',function(e){if(!st)return;e.stopPropagation();var sd=SS(view.side),A=areaBox(view.side,sd.area),dv=(e.clientY-st.y)/(view.s||1)/PPC;
-    var v=Math.round((st.v+dv)*2)/2;v=Math.max(-EXT_CM[1]-8,Math.min(A.h/PPC+8,v));if(v!==sd.ext){sd.ext=v;updateArea();try{setClip($('#clipLayer'),layerClip(view.side));}catch(_){}}});
+    var v=Math.round((st.v+dv)*2)/2;v=Math.max(-extCm(view.side)[1]-8,Math.min(A.h/PPC+8,v));if(v!==sd.ext){sd.ext=v;updateArea();try{setClip($('#clipLayer'),layerClip(view.side));}catch(_){}}});
   ['pointerup','pointercancel'].forEach(function(t){lb.addEventListener(t,function(e){if(!st)return;e.stopPropagation();st=null;renderAll();pushHist();});});}
 function updateArea(){
   var E=extBox(view.side),eb=$('#extBox');
-  if(!eb&&E){eb=document.createElement('div');eb.id='extBox';eb.innerHTML='<span id="extLabel" title="Sürükleyerek yukarı ya da aşağı kaydır">⇕ Ek alan · 21 × 14,85 cm · yalnız sen</span>';$('#areaBox').parentNode.insertBefore(eb,$('#areaBox').nextSibling);extDrag(eb);}
-  if(eb){eb.hidden=!E;if(E){eb.style.left=E.l+'px';eb.style.top=E.t+'px';eb.style.width=E.w+'px';eb.style.height=E.h+'px';}}
+  if(!eb&&E){eb=document.createElement('div');eb.id='extBox';eb.innerHTML='<span id="extLabel" title="Sürükleyerek yukarı ya da aşağı kaydır"></span>';$('#areaBox').parentNode.insertBefore(eb,$('#areaBox').nextSibling);extDrag(eb);}
+  if(eb){eb.hidden=!E;if(E){var xl=eb.querySelector('#extLabel');if(xl)xl.textContent='⇕ Ek alan · '+extText(view.side)+' · yalnız sen';eb.style.left=E.l+'px';eb.style.top=E.t+'px';eb.style.width=E.w+'px';eb.style.height=E.h+'px';}}
   var A=areaBox(view.side,cur().area),b=$('#areaBox');
   b.style.left=A.l+'px';b.style.top=A.t+'px';b.style.width=A.w+'px';b.style.height=A.h+'px';
   $('#areaLabel').textContent=areaTitle(view.side)+' · '+cmText(cur().area,isLand(view.side));
