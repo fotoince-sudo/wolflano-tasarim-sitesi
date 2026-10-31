@@ -2496,10 +2496,10 @@ var PC_NAME={a4:'A4 baskı',a3:'A3 baskı',hat:'Şapka baskısı',mugw:'Kupa bas
 function pcFee(F,k){return k==='a4'?F.a4:k==='a3'?F.a3:k==='hat'?F.hat:(k==='mugw'||k==='mug')?F.wrap:0;}
 function pcCalc(d,pc){if(!pc||!pc.b)return null;var b=(d.blanks||[]).filter(function(x){return x.id===pc.b;})[0];if(!b)return null;
   var F=pfFees(d,b),base=pfNum(b.price)||0,L=[[b.name||'Ürün',base]];
-  if(pc.logo)L.push(['Sol göğüs logo',F.logo]);if(pc.f)L.push(['Ön · '+(PC_NAME[pc.f]||pc.f),pcFee(F,pc.f)]);if(pc.bk)L.push(['Arka · '+(PC_NAME[pc.bk]||pc.bk),pcFee(F,pc.bk)]);
+  if(pc.logo)L.push(['Sol göğüs logo',F.logo]);if(pc.logo2)L.push(['Sağ göğüs logo',F.logo]);if(pc.f)L.push(['Ön · '+(PC_NAME[pc.f]||pc.f),pcFee(F,pc.f)]);if(pc.bk)L.push(['Arka · '+(PC_NAME[pc.bk]||pc.bk),pcFee(F,pc.bk)]);
   var t=0;L.forEach(function(x){t+=x[1];});return {total:Math.round(t*100)/100,lines:L,b:b};}
 function pcApply(d){(d.products||[]).forEach(function(p){if(p&&p.pc){var r=pcCalc(d,p.pc);if(r)p.price=r.total;}});}
-function printFee(b,k){var F=pfFees(D,b);if(k==='a4')return F.a4;if(k==='a3')return F.a3;if(k==='logo')return F.logo;if(k==='mug'||k==='mugw')return F.wrap||0;if(k==='hat')return F.hat;return 0;}
+function printFee(b,k){var F=pfFees(D,b);if(k==='a4')return F.a4;if(k==='a3')return F.a3;if(k==='logo'||k==='logo2')return F.logo;if(k==='mug'||k==='mugw')return F.wrap||0;if(k==='hat')return F.hat;return 0;}
 var cart={},catSel='',cur='ana',favs={};
 try{cart=JSON.parse(localStorage.getItem('wf_cart')||'{}')||{};favs=JSON.parse(localStorage.getItem('wf_fav')||'{}')||{};}catch(_){cart={};favs={};}
 function saveLS(){try{localStorage.setItem('wf_cart',JSON.stringify(cart));localStorage.setItem('wf_fav',JSON.stringify(favs));}catch(_){}}
@@ -3701,7 +3701,7 @@ function pcBox(d,p,i){var pc=p.pc||{},bl=(d.blanks||[]).filter(function(b){retur
   if(ty==='mug')h+='<div class="pcr"><label>Baskı'+opt('f',[['','Baskısız'],['mugw','Kupa baskısı (20 × 9 cm)']])+'</label></div>';
   else if(ty==='hat')h+='<div class="pcr"><label>Baskı'+opt('f',[['','Baskısız'],['hat','Şapka ön baskı']])+'</label></div>';
   else if(ty==='canvas')h+='';
-  else h+='<div class="pcr"><label class="pcc"><input type="checkbox" data-pc="logo" data-i="'+i+'"'+(pc.logo?' checked':'')+'>Sol göğüs logo</label><label>Ön'+opt('f',[['','Baskı yok'],['a4','A4'],['a3','A3']])+'</label><label>Arka'+opt('bk',[['','Baskı yok'],['a4','A4'],['a3','A3']])+'</label></div>';
+  else h+='<div class="pcr"><label class="pcc"><input type="checkbox" data-pc="logo" data-i="'+i+'"'+(pc.logo?' checked':'')+'>Sol göğüs logo</label><label class="pcc"><input type="checkbox" data-pc="logo2" data-i="'+i+'"'+(pc.logo2?' checked':'')+'>Sağ göğüs logo</label><label>Ön'+opt('f',[['','Baskı yok'],['a4','A4'],['a3','A3']])+'</label><label>Arka'+opt('bk',[['','Baskı yok'],['a4','A4'],['a3','A3']])+'</label></div>';
   var shown=vp(r.total,'ready');
   h+='<div class="pcs">'+r.lines.map(function(x,k){return (k?' + ':'')+esc(x[0])+' '+tl(x[1]);}).join('')+' = <b>'+tl(r.total)+'</b>'+(shown!==r.total?' · sitede KDV dahil <b>'+tl(shown)+'</b>':'')+'</div></div>';
   return h;}

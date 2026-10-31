@@ -127,7 +127,7 @@ svg.i{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stro
 .stagewrap{position:relative;flex:1;min-height:0;overflow:hidden;background:var(--stage);touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
 #stage{position:absolute;left:0;top:0;width:600px;height:640px;transform-origin:0 0;transition:transform .3s cubic-bezier(.2,.7,.2,1);--inv:1;--area:#111}
 #shirtHost svg{display:block;pointer-events:none}
-#clipLayer,#objLayer,#passClip,#passLayer{position:absolute;inset:0}
+#clipLayer,#objLayer,#passClip,#passLayer{position:absolute;inset:0}[data-pextra] .obj{pointer-events:none}
 #passClip{pointer-events:none}
 #passLayer{pointer-events:none}#passLayer .obj{pointer-events:none}
 #logoZone{position:absolute;pointer-events:none;border:calc(1.2px*var(--inv)) dashed #2f8f4e;background:rgba(47,143,78,.06)}#logoZone span{position:absolute;left:0;top:100%;margin-top:calc(2px*var(--inv));font:700 calc(9px*var(--inv)) var(--ui);color:#2f8f4e;white-space:nowrap}
@@ -603,7 +603,7 @@ img{-webkit-touch-callout:none;-webkit-user-drag:none}
 
   <div class="sub">
     <button class="optb" id="optBtn" aria-label="Ürün rengi ve beden"><i class="dot" id="optDot"></i><span id="optSz"></span></button>
-    <div class="seg" id="sideSeg"><button id="sideF" class="on">Ön</button><button id="sideL" hidden>Logo</button><button id="sideB">Arka</button></div>
+    <div class="seg" id="sideSeg"><button id="sideF" class="on">Ön</button><button id="sideL" hidden>Sol logo</button><button id="sideL2" hidden>Sağ logo</button><button id="sideB">Arka</button></div>
     <div class="chips" id="areaChips">
     </div>
     <div class="sub-r">
@@ -852,7 +852,8 @@ var REF_W=21*PPC, REF_H=29.7*PPC;
 var AREAS={
   a4:  {name:'A4 baskı',      chip:'A4',    cm:[21,29.7], rot:true,  fee:70},
   a3:  {name:'A3 baskı',      chip:'A3',    cm:[29.7,42], rot:false, fee:140},
-  logo:{name:'Sol göğüs logo',chip:'Logo',  cm:[8,8],     rot:false, fee:40},
+  logo:{name:'Sol göğüs logo',chip:'Sol logo',cm:[8,8],     rot:false, fee:40},
+  logo2:{name:'Sağ göğüs logo',chip:'Sağ logo',cm:[8,8],   rot:false, fee:40},
   hat: {name:'Şapka ön baskı',chip:'Şapka', cm:[20,10],    rot:false, fee:40, at:[300,285]},
   mug: {name:'Kupa baskı',    chip:'Kupa 8×8',  cm:[8,8],  rot:false, fee:0, at:[296.4,305]},
   cv3550:{name:'Canvas 35 × 50',chip:'Canvas',cm:[43,58],rot:true,fee:0,at:[300,320]},
@@ -870,21 +871,21 @@ var NECK_Y={front:101,back:76}, DROP_CM=8, DROP_CM_COCUK=6; /* çocuk bedenlerin
              cuts=kesimler, price=kesim başına örnek fiyat, vb=sabit görünüm kutusu (giysi dışı ürünler), draw=çizim fonksiyonu */
 var PRODUCTS={
   tee:  {name:'Tişört',     cuts:['erkek','kadin','cocuk'],price:{erkek:249,kadin:249,cocuk:199},
-         sides:{front:['a4','a3'],logo:['logo'],back:['a4','a3']},
-         rule:'Önde A4 (yatay veya dikey) ya da A3 dikey, ayrıca sol göğüse logo. Arkada A4 ya da A3.'},
+         sides:{front:['a4','a3'],logo:['logo'],logo2:['logo2'],back:['a4','a3']},
+         rule:'Önde A4 (yatay veya dikey) ya da A3 dikey, ayrıca sol ve sağ göğüse logo. Arkada A4 ya da A3.'},
   sweat:{name:'Sweatshirt', cuts:['erkek','kadin','cocuk'],price:{erkek:399,kadin:399,cocuk:329},
-         sides:{front:['a4','a3'],logo:['logo'],back:['a4','a3']},
-         rule:'Önde A4 (yatay veya dikey) ya da A3 dikey, ayrıca sol göğüse logo. Arkada A4 ya da A3.'},
+         sides:{front:['a4','a3'],logo:['logo'],logo2:['logo2'],back:['a4','a3']},
+         rule:'Önde A4 (yatay veya dikey) ya da A3 dikey, ayrıca sol ve sağ göğüse logo. Arkada A4 ya da A3.'},
   /* Kapüşonlu: önde kanguru cep var, A3 cebe taşar; önde yalnız A4 ve logo */
   hood: {name:'Kapüşonlu sweatshirt',cuts:['erkek','kadin','cocuk'],price:{erkek:449,kadin:449,cocuk:369},
-         sides:{front:['a4'],logo:['logo'],back:['a4','a3']},
+         sides:{front:['a4'],logo:['logo'],logo2:['logo2'],back:['a4','a3']},
          rule:'Önde A4 (yatay veya dikey, kanguru cebin üstünde) ve sol göğüse logo. Arkada A4 ya da A3.'},
   /* Fermuarlı kapüşonlu: ön fermuarla ikiye bölünür; önde yalnız sol göğüs logo */
   zip:  {name:'Fermuarlı kapüşonlu',cuts:['erkek','kadin','cocuk'],price:{erkek:479,kadin:479,cocuk:399},
-         sides:{front:['logo'],back:['a4','a3']},
+         sides:{front:['logo'],logo2:['logo2'],back:['a4','a3']},
          rule:'Önde yalnız sol göğüs logo (fermuar önü böler). Arkada A4 ya da A3.'},
   polo: {name:'Polo tişört',cuts:['erkek','kadin','cocuk'],price:{erkek:329,kadin:329,cocuk:269},
-         sides:{front:['logo'],back:['a4','a3']},land:{a4:true},
+         sides:{front:['logo'],logo2:['logo2'],back:['a4','a3']},land:{a4:true},
          rule:'Önde yalnız sol göğüs logo. Arkada A4 yatay veya A3 dikey.'},
   hat:  {name:'Şapka',      cuts:['std'],price:{std:129},
          sides:{front:['hat']},vb:{cx:300,cy:290,w:440,h:420},
@@ -897,12 +898,16 @@ var PRODUCTS={
          rule:'Ön yüz ve her yanda 4 cm kenar (tuvalin yanlarına sarılır). Dikey ya da yatay.',draw:function(side,tee,cut,thumb){return canvasSVG(cut,thumb);}}
 };
 var PRODUCT_ORDER=['tee','sweat','hood','zip','polo','hat','mug','canvas'];
-var SIDE_NAME={front:'Ön',logo:'Logo',back:'Arka'};
+var SIDE_NAME={front:'Ön',logo:'Sol logo',logo2:'Sağ logo',back:'Arka'};
 /* Logo katmanı: ön yüze basılır, sol göğüste sabit 8×8 cm. Ön tasarımla çakışırsa logo önceliklidir, ön tasarımın o kısmı basılmaz. */
-function face(s){return s==='logo'?'front':s;}
-function SS(s){if(!state[s])state[s]={area:s==='logo'?'logo':'a4',land:false,objs:[]};return state[s];}
+/* İki göğüs logosu: 'logo' giyenin sol göğsü, 'logo2' sağ göğsü (aynı 8 × 8 cm, orta çizgiye göre ayna). İkisi de ön yüze basılır. */
+function isLogoSide(s){return s==='logo'||s==='logo2';}
+function face(s){return isLogoSide(s)?'front':s;}
+function SS(s){if(!state[s])state[s]={area:isLogoSide(s)?s:'a4',land:false,objs:[]};return state[s];}
 function hasLogoSide(){return !!(P().sides.logo)&&!mugWrap();}
+function hasLogo2(){return !!(P().sides.logo2)&&!mugWrap();}
 function logoOn(){return hasLogoSide()&&SS('logo').objs.length>0;}
+function logo2On(){return hasLogo2()&&SS('logo2').objs.length>0;}
 var CUT_NAME={erkek:'Erkek',kadin:'Kadın',cocuk:'Çocuk',std:'Logo baskılı',sub:'Süblimasyon',c3550:'Canvas 35 × 50',c5070:'Canvas 50 × 70'};
 /* Kesim: ürün çizimi boğaz çizgisine sabitlenip ölçeklenir. Böylece 8 cm kuralı ve logo yeri hiçbir kesimde değişmez. [yatay, dikey] oran */
 var CUT_K={erkek:[1,1],kadin:[.92,.94],cocuk:[.74,.72],std:[1,1],sub:[1,1],c3550:[1,1],c5070:[1,1]};
@@ -930,7 +935,7 @@ function basePrice(){return priceOf(state.product,state.cut);}
 function areaFee(k){var b=siteBlank(state.product,state.cut),f=AREAS[k]?AREAS[k].fee:0,pf=(PH.site&&PH.site.pf)||{},kat=+(PH.site&&PH.site.a3)||2;
   var g=function(x){var v=sNum(pf[x]);if(v==null&&b)v=sNum(b[x]);return v;};
   var a4=g('a4'),v=null;
-  if(k==='a4')v=a4;else if(k==='a3'){v=sNum(pf.a3);if(v==null&&a4!=null)v=a4*kat;}else if(k==='logo')v=g('logo');else if(k==='hat')v=g('hat');
+  if(k==='a4')v=a4;else if(k==='a3'){v=sNum(pf.a3);if(v==null&&a4!=null)v=a4*kat;}else if(k==='logo'||k==='logo2')v=g('logo');else if(k==='hat')v=g('hat');
   else if(k==='mug'||k==='mugw'){v=g('wrap');if(v==null)v=0;}/* kupa: iki baskı türünde tek ücret; boşsa eklenmez */else if(/^cv/.test(k))v=0;
   return v!=null?Math.round(v*vatK('print')*100)/100:f;}
 function siteTiers(){var t=(PH.site&&PH.site.tiers)||null;if(!Array.isArray(t))return;var l=t.filter(function(x){return x&&+x[0]>0&&+x[1]>0;}).map(function(x){return [+x[0],+x[1]/100];}).sort(function(a,b){return b[0]-a[0];});PRICE.tiers=l;}
@@ -943,7 +948,7 @@ function areaBox(side,key,land){
   if(land===undefined)land=landFor(side,key);
   var d=dimsOf(key,land),w=d[0]*PPC,h=d[1]*PPC,cx,top,at=AREAS[key].at;
   if(at){cx=at[0];top=at[1]-h/2;}
-  else if(key==='logo'){var LA=((LOGO_AT_P[state.product]||{})[state.cut])||LOGO_AT[state.cut]||LOGO_AT.erkek;cx=300+LA[1]*PPC;top=((P().neck||NECK_Y).front-NECK_DROP.front)+LA[0]*PPC;at=true;}
+  else if(key==='logo'||key==='logo2'){var LA=((LOGO_AT_P[state.product]||{})[state.cut])||LOGO_AT[state.cut]||LOGO_AT.erkek;cx=300+(key==='logo2'?-1:1)*LA[1]*PPC;top=((P().neck||NECK_Y).front-NECK_DROP.front)+LA[0]*PPC;at=true;}
   else{cx=300;top=((P().neck||NECK_Y)[face(side)])+(state.cut==='cocuk'?DROP_CM_COCUK:DROP_CM)*PPC;}
   return {l:cx-w/2,t:top,r:cx+w/2,b:top+h,w:w,h:h,cx:cx,cy:top+h/2,at:!!at};
 }
@@ -959,7 +964,7 @@ function colLabel(c){if(!c)return '';var k=colCode(c);return (k?k+' · ':'Özel 
 function colInk(c){var h=String(c||'').replace('#','');if(h.length!==6)return '#111';var r=parseInt(h.slice(0,2),16),g=parseInt(h.slice(2,4),16),b=parseInt(h.slice(4,6),16);return (r*299+g*587+b*114)/1000>150?'#111':'#fff';}
 function colParse(v){v=String(v||'').trim().toUpperCase().replace(/\s/g,'');var hx=v.match(/#[0-9A-F]{6}\b|#[0-9A-F]{3}\b/),wk=v.match(/^W0*\d{1,2}/);if(v.length>7&&(hx||wk))v=hx?hx[0]:wk[0];var m=v.match(/^W?0*(\d{1,2})$/);if(m){var n=+m[1];return n>=1&&n<=PALETTE.length?PALETTE[n-1]:null;}
   m=v.replace(/^#/,'');if(/^[0-9A-F]{6}$/.test(m))return '#'+m.toLowerCase();if(/^[0-9A-F]{3}$/.test(m))return '#'+m.split('').map(function(x){return x+x;}).join('').toLowerCase();return null;}
-function usedColors(){var seen={},out=[];['front','logo','back'].forEach(function(sd){(state[sd]&&state[sd].objs||[]).forEach(function(o){if(o.type==='image'||(o.type==='clip'&&clipFixed(o.key)))return;[o.color,o.stroke].forEach(function(c){if(!c)return;var k=String(c).toLowerCase();if(!seen[k]){seen[k]=1;out.push(k);}});});});return out;}
+function usedColors(){var seen={},out=[];['front','logo','logo2','back'].forEach(function(sd){(state[sd]&&state[sd].objs||[]).forEach(function(o){if(o.type==='image'||(o.type==='clip'&&clipFixed(o.key)))return;[o.color,o.stroke].forEach(function(c){if(!c)return;var k=String(c).toLowerCase();if(!seen[k]){seen[k]=1;out.push(k);}});});});return out;}
 var FONTS=[['Cormorant Garamond İnce',500,'Cormorant Garamond'],['Cormorant Garamond',700],['Manrope İnce',500,'Manrope'],['Manrope',800],['Bodoni Moda',700],['Marcellus',400],['DM Serif Display',400],['Big Shoulders Display',800],['Unbounded',700],['Saira Stencil One',400],['Great Vibes',400],['Allura',400],['Mrs Saint Delafield',400],['Rubik Spray Paint',400],['Shrikhand',400],['Anton',400],['Oswald',700],['Bebas Neue',400],['Staatliches',400],['Montserrat',800],['Poppins',800],['Archivo Black',400],['Alfa Slab One',400],['Playfair Display',800],['Abril Fatface',400],['Righteous',400],['Bangers',400],['Fredoka',600],['Black Ops One',400],['Press Start 2P',400],['Lobster',400],['Pacifico',400],['Dancing Script',700],['Caveat',700],['Barlow Condensed',700],['Rubik',800],['Teko',600],['Russo One',400],['Saira Condensed',800],['Exo 2',800],['Kanit',800],['Rajdhani',700],['Bungee',400],['Chakra Petch',700],['Lilita One',400],['Kaushan Script',400],['Sacramento',400],['Cinzel',700],['Merriweather',900]];
 function fw(f){for(var i=0;i<FONTS.length;i++){if(FONTS[i][0]===f)return FONTS[i][1];}return 700;}
 /* "İnce" gibi seçenekler aynı yazı ailesinin ince ağırlığıdır */
@@ -1445,7 +1450,7 @@ TPLS.forEach(function(t){t.c0=t.c;}); /* asıl kategori: yönetim panelinde ad d
 
 
 /* ---------- Durum ve geçmiş ---------- */
-var state={product:'tee',cut:'erkek',tee:'#f6f6f4',sizes:{M:1},front:{area:'a4',land:false,objs:[]},logo:{area:'logo',land:false,objs:[]},back:{area:'a4',land:false,objs:[]}};
+var state={product:'tee',cut:'erkek',tee:'#f6f6f4',sizes:{M:1},front:{area:'a4',land:false,objs:[]},logo:{area:'logo',land:false,objs:[]},logo2:{area:'logo2',land:false,objs:[]},back:{area:'a4',land:false,objs:[]}};
 var view={side:'front',sel:null,fit:'shirt',z:1,px:0,py:0,bs:1,cx:0,cy:0,tab:null,font:'Anton',nextId:1,clipCat:'Kurtlar',tplCat:'Tümü',pop:null,s:1};
 var assets={},assetList=[],assetN=0;
 var hist=[],hpos=-1;
@@ -1914,17 +1919,22 @@ function logoBox(){return areaBox('logo','logo');}
 function interBox(a,b){var l=Math.max(a.l,b.l),t=Math.max(a.t,b.t),r=Math.min(a.r,b.r),bb=Math.min(a.b,b.b);return (r>l&&bb>t)?{l:l,t:t,r:r,b:bb,w:r-l,h:bb-t}:null;}
 /* Ön alandan logonun kapladığı kare çıkarılmış hâli (yoksa null) */
 function logoHole(A){return logoOn()?interBox(A,logoBox()):null;}
-function layerClip(side){var A=areaBox(side,SS(side).area),H=side==='front'?logoHole(A):null,P2=function(x,y){return x.toFixed(1)+'px '+y.toFixed(1)+'px';};
-  if(H)return 'polygon(evenodd, '+[P2(A.l,A.t),P2(A.r,A.t),P2(A.r,A.b),P2(A.l,A.b),P2(A.l,A.t),P2(H.l,H.t),P2(H.l,H.b),P2(H.r,H.b),P2(H.r,H.t),P2(H.l,H.t)].join(', ')+')';
+/* Ön tasarımda iki logonun kapladığı kareler (logolar öncelikli) */
+function logoHoles(A){var L=[];if(logoOn()){var h=interBox(A,logoBox());if(h)L.push(h);}if(logo2On()){var h2=interBox(A,areaBox('logo2','logo2'));if(h2)L.push(h2);}return L;}
+function layerClip(side){var A=areaBox(side,SS(side).area),HS=side==='front'?logoHoles(A):[],P2=function(x,y){return x.toFixed(1)+'px '+y.toFixed(1)+'px';};
+  if(HS.length){var pts=[P2(A.l,A.t),P2(A.r,A.t),P2(A.r,A.b),P2(A.l,A.b),P2(A.l,A.t)];HS.forEach(function(H){pts.push(P2(H.l,H.t),P2(H.l,H.b),P2(H.r,H.b),P2(H.r,H.t),P2(H.l,H.t),P2(A.l,A.t));});return 'polygon(evenodd, '+pts.join(', ')+')';}
   return 'inset('+A.t+'px '+(STAGE_W-A.r)+'px '+(STAGE_H-A.b)+'px '+A.l+'px)';}
 function setClip(el,v){el.style.clipPath=v;el.style.webkitClipPath=v;}
 function renderPassive(){
-  var pl=$('#passLayer'),pc=$('#passClip'),lz=$('#logoZone');if(!pl)return;pl.textContent='';setClip(pc,'none');
-  var on=hasLogoSide()&&(view.side==='front'||view.side==='logo'),other=view.side==='front'?'logo':'front';
-  if(lz){var sh=on&&view.side==='front'&&logoOn();lz.hidden=!sh;if(sh){var L=logoBox();lz.style.left=L.l+'px';lz.style.top=L.t+'px';lz.style.width=L.w+'px';lz.style.height=L.h+'px';}}
-  if(!on)return;var objs=SS(other).objs;if(!objs.length)return;
-  setClip(pc,layerClip(other));
-  objs.forEach(function(o){var el=makeEl(o);el.classList.add('pas');pl.appendChild(el);});
+  var pl=$('#passLayer'),pc=$('#passClip'),lz=$('#logoZone');if(!pl)return;pl.textContent='';setClip(pc,'none');$$('[data-pextra]').forEach(function(e){e.remove();});
+  /* ön yüz grubu: ön tasarım + iki logo; düzenlenmeyenler soluk görünür */
+  var grp=['front'].concat(hasLogoSide()?['logo']:[],hasLogo2()?['logo2']:[]),on=grp.length>1&&grp.indexOf(view.side)>=0;
+  var lz2=$('#logoZone2');if(!lz2&&lz){lz2=lz.cloneNode(true);lz2.id='logoZone2';lz.parentNode.insertBefore(lz2,lz.nextSibling);var sp=lz2.querySelector('span');if(sp)sp.textContent='Sağ logo';}
+  [[lz,'logo',logoOn()],[lz2,'logo2',logo2On()]].forEach(function(q){var z=q[0];if(!z)return;var sh=on&&view.side==='front'&&q[2];z.hidden=!sh;if(sh){var L=areaBox(q[1],q[1]);z.style.left=L.l+'px';z.style.top=L.t+'px';z.style.width=L.w+'px';z.style.height=L.h+'px';}});
+  if(!on)return;
+  grp.filter(function(g){return g!==view.side;}).forEach(function(other,gi){var objs=SS(other).objs;if(!objs.length)return;
+    var box=pc;if(gi){box=document.createElement('div');box.style.cssText='position:absolute;inset:0;pointer-events:none';box.dataset.pextra=1;pc.parentNode.insertBefore(box,pc.nextSibling);}
+    setClip(box,layerClip(other));objs.forEach(function(o){var el=makeEl(o);el.classList.add('pas');(gi?box:pl).appendChild(el);});});
 }
 function updateArea(){
   var A=areaBox(view.side,cur().area),b=$('#areaBox');
@@ -2695,7 +2705,7 @@ function phAsset(edge,asp){var key=edge+'|'+asp.toFixed(3);if(PH_CACHE[key]&&ass
   x.fillStyle='#857a6d';x.textAlign='center';x.textBaseline='middle';x.font='700 '+Math.round(Math.min(W,H)*0.085)+'px Manrope, sans-serif';x.fillText('Fotoğrafını ekle',cx,cy+s*1.35);
   var mk=false;if(isBrush(edge)&&brushOk()){c=brushApply(c,edge);mk=true;}
   var id=PH_CACHE[key]||('ph'+(++assetN));assets[id]={url:c.toDataURL('image/png'),w:W,h:H,bg:true,ph:true,mk:mk};PH_CACHE[key]=id;return id;}
-function slotEmpty(){var n=0;['front','logo','back'].forEach(function(sd){((state[sd]&&state[sd].objs)||[]).forEach(function(o){if(o.phEmpty)n++;});});return n;}
+function slotEmpty(){var n=0;['front','logo','logo2','back'].forEach(function(sd){((state[sd]&&state[sd].objs)||[]).forEach(function(o){if(o.phEmpty)n++;});});return n;}
 /* Fotoğraf yerine yeni fotoğraf: yer aynı kalır, fotoğraf ortadan kırpılıp yere sığdırılır, kenar tarzı korunur */
 async function fillSlot(o,file){
   var url=URL.createObjectURL(file),im=await loadImg(url);
@@ -3072,7 +3082,7 @@ function chooseProduct(p,c){
   ensureSizes();
   if(state.product==='canvas'){var ca='cv'+state.cut.slice(1);if(state.front.area!==ca){remap(state.front,areaBox('front',state.front.area),areaBox('front',ca));state.front.area=ca;}view.side='front';}
   if(state.product==='mug'){var wa=state.cut==='sub'?'mugw':'mug';if(state.front.area!==wa){remap(state.front,areaBox('front',state.front.area),areaBox('front',wa));state.front.area=wa;}if(state.cut==='sub')view.side='front';}
-  if(!P().sides[view.side]||(view.side==='logo'&&!hasLogoSide()))view.side='front';
+  if(!P().sides[view.side]||(view.side==='logo'&&!hasLogoSide())||(view.side==='logo2'&&!hasLogo2()))view.side='front';
   view.sel=null;closeProdPage();
   view.fit='shirt';resetZoom();syncFitBtn();
   renderAll();layout();if(ch)pushHist();
@@ -3476,9 +3486,9 @@ function syncChips(){
     else if(k==='a3')chip(k,false);                                   /* A3 hep dikey */
     else chip(k,null);                                                /* logo, şapka */
   });
-  if(view.side==='logo'&&SS('logo').objs.length)h+='<button type="button" class="rmlogo" data-rmlogo="1">Logoyu kaldır</button>';
+  if(isLogoSide(view.side)&&SS(view.side).objs.length)h+='<button type="button" class="rmlogo" data-rmlogo="1">Logoyu kaldır</button>';
   $('#areaChips').innerHTML=h;
-  $('#sideF').classList.toggle('on',view.side==='front');$('#sideB').classList.toggle('on',view.side==='back');var sl=$('#sideL');sl.hidden=!hasLogoSide();sl.classList.toggle('on',view.side==='logo');
+  $('#sideF').classList.toggle('on',view.side==='front');$('#sideB').classList.toggle('on',view.side==='back');var sl=$('#sideL');sl.hidden=!hasLogoSide();sl.classList.toggle('on',view.side==='logo');var sl2=$('#sideL2');if(sl2){sl2.hidden=!hasLogo2();sl2.classList.toggle('on',view.side==='logo2');}
   $('#sideSeg').hidden=Object.keys(q.sides).length<2||mugWrap();
 }
 function renderAll(){
@@ -3548,9 +3558,10 @@ $('#rulerBtn').addEventListener('click',function(){RULER=!RULER;try{localStorage
 $('#fitBtn').addEventListener('click',function(){view.fit=view.fit==='area'?'shirt':'area';resetZoom();syncFitBtn();layout();});
 $('#sideF').addEventListener('click',function(){switchSide('front');});
 $('#sideL').addEventListener('click',function(){switchSide('logo');if(!SS('logo').objs.length)toast('Sol göğüs logo · 8 × 8 cm. Ön tasarımla çakışırsa logo önde kalır.');});
+$('#sideL2').addEventListener('click',function(){switchSide('logo2');if(!SS('logo2').objs.length)toast('Sağ göğüs logo · 8 × 8 cm, sol logonun aynası. Türk bayrağı ya da ikinci bir logo için. Ön tasarımla çakışırsa logo önde kalır.');});
 $('#sideB').addEventListener('click',function(){if(mugWrap()){toast('Süblimasyon kupanın çevresini sarar; arkaya ayrıca baskı gerekmez.');return;}switchSide('back');});
-function switchSide(s){if(view.side===s)return;if(s==='logo'&&!hasLogoSide())return;view.side=s;view.sel=null;view.grp=false;renderAll();}
-$('#areaChips').addEventListener('click',function(e){if(e.target.closest('[data-rmlogo]')){SS('logo').objs=[];view.sel=null;view.grp=false;renderAll();pushHist();toast('Logo kaldırıldı. Ön tasarım artık kesilmeden basılır.');return;}var b=e.target.closest('[data-a]');if(b)selectArea(b.dataset.a,b.dataset.l==='1');});
+function switchSide(s){if(view.side===s)return;if(s==='logo'&&!hasLogoSide())return;if(s==='logo2'&&!hasLogo2())return;view.side=s;view.sel=null;view.grp=false;renderAll();}
+$('#areaChips').addEventListener('click',function(e){if(e.target.closest('[data-rmlogo]')){SS(isLogoSide(view.side)?view.side:'logo').objs=[];view.sel=null;view.grp=false;renderAll();pushHist();toast('Logo kaldırıldı. Ön tasarım artık kesilmeden basılır.');return;}var b=e.target.closest('[data-a]');if(b)selectArea(b.dataset.a,b.dataset.l==='1');});
 $('#pgClose').addEventListener('click',closeProdPage);
 $('#pgBack').addEventListener('click',closeProdPage);
 $('#wfClose').addEventListener('click',closeWolf);
@@ -3720,16 +3731,17 @@ async function printFlat(side,k){
   var x=c.getContext('2d'),objs=state[side].objs;for(var i=0;i<objs.length;i++){await drawObj(x,objs[i],k,A.l,A.t);}return c;
 }
 /* Bir yüzün tüm katmanları: önde önce ön tasarım (logo karesi hariç), sonra logo. */
-async function drawLayer(x,sd,k){var A=areaBox(sd,SS(sd).area),L=sd==='front'?logoHole(A):null;
-  x.save();x.beginPath();x.rect(A.l*k,A.t*k,A.w*k,A.h*k);if(L){x.rect(L.l*k,L.t*k,L.w*k,L.h*k);x.clip('evenodd');}else x.clip();
+async function drawLayer(x,sd,k){var A=areaBox(sd,SS(sd).area),HS=sd==='front'?logoHoles(A):[];
+  x.save();x.beginPath();x.rect(A.l*k,A.t*k,A.w*k,A.h*k);if(HS.length){HS.forEach(function(L){x.rect(L.l*k,L.t*k,L.w*k,L.h*k);});x.clip('evenodd');}else x.clip();
   var objs=SS(sd).objs;for(var i=0;i<objs.length;i++){await drawObj(x,objs[i],k,0,0);}x.restore();}
-async function drawFace(x,side,k){var f=face(side);await drawLayer(x,f,k);if(f==='front'&&hasLogoSide())await drawLayer(x,'logo',k);}
+async function drawFace(x,side,k){var f=face(side);await drawLayer(x,f,k);if(f==='front'&&hasLogoSide())await drawLayer(x,'logo',k);if(f==='front'&&hasLogo2())await drawLayer(x,'logo2',k);}
 /* Logo önizlemesi: göğüs bölgesi yakından */
-async function logoCrop(scale){var L=logoBox(),w=L.w*3.4,h=w*STAGE_H/STAGE_W,out=Math.round(STAGE_W*scale),k=out/w;
+async function logoCrop(scale,key){var L=key==='logo2'?areaBox('logo2','logo2'):logoBox(),w=L.w*3.4,h=w*STAGE_H/STAGE_W,out=Math.round(STAGE_W*scale),k=out/w;
   var full=await renderComposite('front',k),c=document.createElement('canvas');c.width=out;c.height=Math.round(h*k);
   c.getContext('2d').drawImage(full,-(L.cx-w/2)*k,-(L.cy-h/2)*k);return c;}
 async function renderPreview(side,scale,flat){
   if(side==='logo'&&hasLogoSide())return logoCrop(scale);
+  if(side==='logo2'&&hasLogo2())return logoCrop(scale,'logo2');
   var vb=prodVB();if(!vb)return renderComposite(side,scale);
   var out=Math.round(STAGE_W*scale),wrapM=mugWrap()&&side==='front';
   if(wrapM&&flat){var k0=out/((areaBox(side,state[side].area).w)*1.08),fc=await printFlat(side,k0),o=document.createElement('canvas');o.width=out;o.height=Math.round(out*0.62);
@@ -3820,7 +3832,7 @@ async function renderPrint(side){
   var x=c.getContext('2d'),objs=state[side].objs;
   for(var i=0;i<objs.length;i++){await drawObj(x,objs[i],S,A.l,A.t);}
   /* Logo öncelikli: ön baskı dosyasında logonun kapladığı kare boş bırakılır */
-  if(side==='front'&&logoHole(A)){var L=logoHole(A);x.clearRect((L.l-A.l)*S,(L.t-A.t)*S,L.w*S,L.h*S);}
+  if(side==='front')logoHoles(A).forEach(function(L){x.clearRect((L.l-A.l)*S,(L.t-A.t)*S,L.w*S,L.h*S);});
   return {canvas:c,dpi:Math.round(dpi)};
 }
 var dl=null;
@@ -3962,7 +3974,7 @@ $('#rosterList').addEventListener('input',function(e){
 $('#rosterList').addEventListener('change',function(){pushHist();});
 $('#optBtn').addEventListener('click',function(){openTab('opt');});
 /* Ürün rengi değişince otomatik mürekkep rengindeki parçalar da yeni zemine göre açık/koyu olur */
-function teeSwap(hex){var o0=autoInk();state.tee=hex;var o1=autoInk();if(o0!==o1)['front','logo','back'].forEach(function(sd){(state[sd]&&state[sd].objs||[]).forEach(function(o){if(o.color&&String(o.color).toLowerCase()===String(o0).toLowerCase())o.color=o1;});});}
+function teeSwap(hex){var o0=autoInk();state.tee=hex;var o1=autoInk();if(o0!==o1)['front','logo','logo2','back'].forEach(function(sd){(state[sd]&&state[sd].objs||[]).forEach(function(o){if(o.color&&String(o.color).toLowerCase()===String(o0).toLowerCase())o.color=o1;});});}
 $('#optColors').addEventListener('click',function(e){var b=e.target.closest('[data-tee]');if(!b)return;teeSwap(b.dataset.tee);renderShirt();renderObjects();syncOpt();renderOpt();pushHist();});
 $('#optSizes').addEventListener('click',function(e){var b=e.target.closest('[data-oz]');if(!b)return;var z=b.dataset.oz,ks=Object.keys(state.sizes).filter(function(k){return state.sizes[k]>0;});
   if(ks.length<=1){var q=ks.length?state.sizes[ks[0]]:1;state.sizes={};state.sizes[z]=q;}
@@ -3977,7 +3989,7 @@ $('#files').addEventListener('click',async function(e){
   var b=e.target.closest('[data-f]');if(!b||b.disabled)return;
   var s=b.dataset.s;b.disabled=true;
   try{
-    var fn={front:'on',logo:'logo',back:'arka'}[s]||s;
+    var fn={front:'on',logo:'logo',logo2:'logo-sag',back:'arka'}[s]||s;
     if(b.dataset.f==='print'){var r=await renderPrint(s);await saveCanvas(r.canvas,'wolflano-baski-'+fn+'-'+r.dpi+'dpi.png');}
     else{var c=await renderPreview(s,2);await saveCanvas(c,'wolflano-onizleme-'+fn+'.png');}
   }catch(_){toast('Dosya hazırlanamadı');}
@@ -4007,7 +4019,7 @@ var SHIP={fee:89,free:1500};  /* örnek kargo: 1.500 ₺ ve üzeri ücretsiz */
 var CARGO={provider:null,quote:function(q){return Promise.resolve(null);}};
 var shipQuote=null;
 function shipFee(sub){if(SHIP.free>0&&sub>=SHIP.free)return 0;return (shipQuote&&typeof shipQuote.fee==='number')?shipQuote.fee:SHIP.fee;}
-function designSig(){return JSON.stringify([state.product,state.cut,state.tee,brandOn(),needSizesHere()?state.sizes:0,state.front,SS('logo').objs.length&&hasLogoSide()?state.logo:0,state.back,rosterRows()]);}
+function designSig(){return JSON.stringify([state.product,state.cut,state.tee,brandOn(),needSizesHere()?state.sizes:0,state.front,SS('logo').objs.length&&hasLogoSide()?state.logo:0,SS('logo2').objs.length&&hasLogo2()?state.logo2:0,state.back,rosterRows()]);}
 function designLines(){
   var nm='Özel';TEES.forEach(function(x){if(x[1]===state.tee)nm=x[0];});
   var L=['Ürün: '+productLabel(),'Ürün rengi: '+(nm==='Özel'?'Özel · '+String(state.tee).toUpperCase():teeFull(nm,state.tee))];
@@ -4074,12 +4086,12 @@ function sfavGet(){try{return JSON.parse(localStorage.getItem('wf_sfav')||'[]')|
 async function saveSoldDesign(pb){
   var b=$('#addCart');if(b)b.disabled=true;
   try{
-    var used={},out={};['front','logo','back'].forEach(function(sd){(SS(sd).objs||[]).forEach(function(o){if(o.type==='image'&&o.assetId)used[o.assetId]=1;});});
+    var used={},out={};['front','logo','logo2','back'].forEach(function(sd){(SS(sd).objs||[]).forEach(function(o){if(o.type==='image'&&o.assetId)used[o.assetId]=1;});});
     for(var id in used){var a=assets[id];if(!a)continue;var u=a.url;if(!/^(https?:|data:)/.test(u)){try{u=await blobToData(await (await fetch(u)).blob());}catch(_){u='';}}if(u)out[id]={url:u,w:a.w,h:a.h};}
     var c=await renderPreview(sidesOf()[0],0.35),bg=document.createElement('canvas');bg.width=c.width;bg.height=c.height;var bx=bg.getContext('2d');bx.fillStyle='#eef1ef';bx.fillRect(0,0,bg.width,bg.height);bx.drawImage(c,0,0);
     var sig=designSig(),l=sfavGet().filter(function(x){return x.sig!==sig;});
     var it={id:Date.now().toString(36),sig:sig,bid:pb.id,label:productLabel(),thumb:bg.toDataURL('image/jpeg',0.75),ts:Date.now(),
-      data:{v:1,product:state.product,cut:state.cut,tee:state.tee,brand:state.brand!==false,front:JSON.parse(JSON.stringify(state.front)),logo:JSON.parse(JSON.stringify(SS('logo'))),back:JSON.parse(JSON.stringify(state.back)),assets:out}};
+      data:{v:1,product:state.product,cut:state.cut,tee:state.tee,brand:state.brand!==false,front:JSON.parse(JSON.stringify(state.front)),logo:JSON.parse(JSON.stringify(SS('logo'))),logo2:JSON.parse(JSON.stringify(SS('logo2'))),back:JSON.parse(JSON.stringify(state.back)),assets:out}};
     l.push(it);
     for(;;){try{localStorage.setItem('wf_sfav',JSON.stringify(l));break;}catch(_){if(l.length>1)l.shift();else{toast('Tasarım çok büyük, kaydedilemedi.');break;}}}
     var p;try{p=JSON.parse(localStorage.getItem('wf_waitp')||'[]')||[];}catch(_){p=[];}
@@ -4095,7 +4107,7 @@ async function saveSoldDesign(pb){
     '<p class="note" style="margin:0">Mailimiz Gereksiz (Spam) klasörüne düşebilir, oraya da bak.</p><button class="ad-link" data-sdx>Tasarıma geri dön</button></div>';
   w.hidden=false;
 }
-function freshDesign(){['front','logo','back'].forEach(function(s){SS(s).objs=[];});view.sel=null;view.grp=false;view.side='front';}
+function freshDesign(){['front','logo','logo2','back'].forEach(function(s){SS(s).objs=[];});view.sel=null;view.grp=false;view.side='front';}
 $('#addCart').addEventListener('click',function(){addToCart();});
 $('#added').addEventListener('click',function(e){if(e.target.closest('[data-adx]'))hideAdded();});
 $('#adNew').addEventListener('click',function(){
@@ -4123,7 +4135,7 @@ $('#cartList').addEventListener('click',function(e){
   var b=e.target.closest('[data-rm]');if(!b)return;cartItems.splice(+b.dataset.rm,1);renderCart();
 });
 $('#newDesign').addEventListener('click',function(){
-  closeOrder();['front','logo','back'].forEach(function(s){SS(s).objs=[];});view.sel=null;
+  closeOrder();['front','logo','logo2','back'].forEach(function(s){SS(s).objs=[];});view.sel=null;
   renderAll();pushHist();toast('Yeni tasarıma başlayabilirsin. Sepetin duruyor.');
 });
 function cartText(){
@@ -4257,7 +4269,7 @@ libLoad();
 try{if(new URLSearchParams(location.search).get('wolf')){setTimeout(function(){if(!$('#prodPage').hidden)closeProdPage();openTab('wolf');setTimeout(function(){var w=$('#wolfIn');if(w)w.focus();},250);},400);}}catch(_){}
 /* Açılışta örnek: Wolflano reklamı niteliğindeki Güneş kurdu */
 applyTemplate(TPLS.filter(function(t){return t.n==='Güneş kurdu';})[0]||TPLS[0],true);
-(function(){try{var q=new URLSearchParams(location.search),u=q.get('urun'),k=q.get('kesim'),bd=q.get('beden');if(u&&PRODUCTS[u]){var cs=PRODUCTS[u].cuts;chooseProduct(u,cs.indexOf(k)>=0?k:cs[0]);if(bd&&sizeList().indexOf(bd)>=0){state.sizes={};state.sizes[bd]=1;renderAll();}else if(!isStd()&&(sizeList()||[]).length){setTimeout(function(){try{openTab('opt');toast('Bedenini seç. Rengi de buradan değiştirebilirsin.');}catch(_){}},700);}if(PRODUCTS[u].vb){['front','logo','back'].forEach(function(sd){if(state[sd]&&state[sd].objs)state[sd].objs=[];});view.sel=null;renderAll();}}
+(function(){try{var q=new URLSearchParams(location.search),u=q.get('urun'),k=q.get('kesim'),bd=q.get('beden');if(u&&PRODUCTS[u]){var cs=PRODUCTS[u].cuts;chooseProduct(u,cs.indexOf(k)>=0?k:cs[0]);if(bd&&sizeList().indexOf(bd)>=0){state.sizes={};state.sizes[bd]=1;renderAll();}else if(!isStd()&&(sizeList()||[]).length){setTimeout(function(){try{openTab('opt');toast('Bedenini seç. Rengi de buradan değiştirebilirsin.');}catch(_){}},700);}if(PRODUCTS[u].vb){['front','logo','logo2','back'].forEach(function(sd){if(state[sd]&&state[sd].objs)state[sd].objs=[];});view.sel=null;renderAll();}}
   if(q.get('vitrin')==='wolf'){if(!u&&PRODUCTS.tee)chooseProduct('tee',PRODUCTS.tee.cuts[0]);openWolf();}}catch(_){}})();
 syncUndo();
 /* Ürünlere dönüş: stüdyoya hangi sayfadan gelindiyse oraya; ürün o sırada türü değiştiyse (kupa ↔ giyim) ürüne uygun sayfaya (kupa/canvas → Hediye & Dekor, giyim → Giyim & Moda) */
@@ -4278,7 +4290,7 @@ function draftDb(){return new Promise(function(res){if(DRAFT.db)return res(DRAFT
 function draftIO(mode,v){return draftDb().then(function(db){if(!db)return null;return new Promise(function(res){try{var tx=db.transaction('kv',mode==='get'?'readonly':'readwrite'),st=tx.objectStore('kv'),rq=mode==='get'?st.get('draft'):mode==='del'?st.delete('draft'):st.put(v,'draft');
   rq.onsuccess=function(){res(mode==='get'?rq.result:null);};rq.onerror=function(){res(null);};}catch(_){res(null);}});});}
 async function draftSave(){if(!DRAFT.ready)return;try{
-  var ids={};['front','logo','back'].forEach(function(sd){((state[sd]&&state[sd].objs)||[]).forEach(function(o){if(o.type==='image'){if(o.assetId)ids[o.assetId]=1;if(o.base)ids[o.base]=1;}});});
+  var ids={};['front','logo','logo2','back'].forEach(function(sd){((state[sd]&&state[sd].objs)||[]).forEach(function(o){if(o.type==='image'){if(o.assetId)ids[o.assetId]=1;if(o.base)ids[o.base]=1;}});});
   var as={};for(var id in ids){var a=assets[id];if(!a)continue;var c={};for(var k in a)c[k]=a[k];
     if(/^blob:/.test(a.url||'')){try{c.blob=await (await fetch(a.url)).blob();delete c.url;}catch(_){continue;}}as[id]=c;}
   await draftIO('put',{at:Date.now(),state:JSON.stringify(state),side:view.side,assets:as,assetN:assetN,nextId:view.nextId});}catch(_){}}
@@ -4611,13 +4623,13 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
   /* ---- Tasarımı kaydedilebilir hale getir: kullanılan görseller sunucuya yüklenir ---- */
   async function collect(){
     var used={},out={};
-    ['front','logo','back'].forEach(function(s){SS(s).objs.forEach(function(o){if(o.type==='image'&&o.assetId)used[o.assetId]=1;});});
+    ['front','logo','logo2','back'].forEach(function(s){SS(s).objs.forEach(function(o){if(o.type==='image'&&o.assetId)used[o.assetId]=1;});});
     for(var id in used){
       var a=assets[id];if(!a)continue;var u=a.url;
       if(!/^https?:/.test(u)){var b=await (await fetch(u)).blob();var ext=/png/.test(b.type)?'png':(/webp/.test(b.type)?'webp':'jpg');var p='tas/g-'+rnd()+'.'+ext;await upload('site',p,b);u=pubUrl(p);a.url=u;}
       out[id]={url:u,w:a.w,h:a.h};
     }
-    return {v:1,product:state.product,cut:state.cut,tee:state.tee,brand:state.brand!==false,front:JSON.parse(JSON.stringify(state.front)),logo:JSON.parse(JSON.stringify(SS('logo'))),back:JSON.parse(JSON.stringify(state.back)),assets:out};
+    return {v:1,product:state.product,cut:state.cut,tee:state.tee,brand:state.brand!==false,front:JSON.parse(JSON.stringify(state.front)),logo:JSON.parse(JSON.stringify(SS('logo'))),logo2:JSON.parse(JSON.stringify(SS('logo2'))),back:JSON.parse(JSON.stringify(state.back)),assets:out};
   }
   async function thumb(){
     var s=sidesWith()[0]||'front',c=await renderComposite(s,0.5),bg=document.createElement('canvas');bg.width=c.width;bg.height=c.height;
@@ -4642,7 +4654,7 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
     /* Şablon: yalnız şu an açık yüze (Ön, Logo ya da Arka) yerleşir; diğer yüzlerdeki tasarımlar olduğu gibi kalır.
        Kaynak alan yeni alandan büyükse (ör. A4 şablon logoya) tasarım alana sığacak kadar küçültülür. */
     if(!full){
-      var sd=view.side,ks=[sd,'front','logo','back'],src=null,sk=null;
+      var sd=view.side,ks=[sd,'front','logo','logo2','back'],src=null,sk=null;
       for(var qi=0;qi<ks.length;qi++){var z=d[ks[qi]];if(z&&z.objs&&z.objs.length){src=z;sk=ks[qi];break;}}
       if(!src)return;
       var C=cur(),nb=areaBox(sd,C.area),ob=null;try{ob=areaBox(sk,src.area||C.area,!!src.land);}catch(_){ob=nb;}
@@ -4653,11 +4665,11 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
       view.sel=null;view.grp=false;renderAll();layout();pushHist();return;
     }
     if(full&&PRODUCTS[d.product]){var cs=PRODUCTS[d.product].cuts;chooseProduct(d.product,cs.indexOf(d.cut)>=0?d.cut:cs[0]);if(d.tee){state.tee=d.tee;try{if(PH.site)phApplyColors();}catch(_){}}state.brand=d.brand!==false;}
-    SS('logo').objs=[];
+    SS('logo').objs=[];SS('logo2').objs=[];
     /* Eski kayıtlar: önde logo alanı seçilmişse, logo katmanı olan üründe logoya taşınır */
     if(d.front&&d.front.area==='logo'&&!d.logo&&hasLogoSide()){d=Object.assign({},d,{logo:d.front,front:{area:P().sides.front[0],land:false,objs:[]}});}
-    ['front','logo','back'].forEach(function(s){
-      var src=d[s];if(!src||!P().sides[s]){if(s!=='logo'||!P().sides[s])return;src={area:'logo',objs:[]};}
+    ['front','logo','logo2','back'].forEach(function(s){
+      var src=d[s];if(!src||!P().sides[s]){if(!isLogoSide(s)||!P().sides[s])return;src={area:s,objs:[]};}
       var al=P().sides[s],area=al.indexOf(src.area)>=0?src.area:al[0];
       var oldBox=null;try{oldBox=areaBox(s,src.area,!!src.land);}catch(_){}
       var objs=(src.objs||[]).map(function(o){var n=JSON.parse(JSON.stringify(o));n.id=view.nextId++;if(n.assetId&&map[n.assetId])n.assetId=map[n.assetId];return n;});
@@ -4678,7 +4690,7 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
   function trTitle(t){return String(t||'').toLocaleLowerCase('tr').replace(/(^|[\s\-'’])(\S)/g,function(m,a,b){return a+b.toLocaleUpperCase('tr');});}
   function autoName(){
     var txt=[],clip='';
-    ['front','logo','back'].forEach(function(sd){(state[sd]&&state[sd].objs||[]).forEach(function(o){
+    ['front','logo','logo2','back'].forEach(function(sd){(state[sd]&&state[sd].objs||[]).forEach(function(o){
       if(o.type==='text'&&o.value){var v=String(o.value).replace(/\s+/g,' ').trim();if(/^(\S )+\S$/.test(v))v=v.replace(/ /g,'');if(v&&v!=='Yazını yaz')txt.push({v:v,s:+o.size||0});}
       else if(o.type==='clip'&&!clip){var r=clipRow(o.key);if(r)clip=String(r[1]||'').replace(/\s*sahnesi$/i,'');}});});
     txt.sort(function(a,b){return b.s-a.s;});
@@ -4731,7 +4743,7 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
   async function prodImgs(ss){var imgs=[];
     if(state.product==='mug'){var vs=mugViews().filter(function(v){return ss.indexOf(v[0])>=0;});
       for(var m=0;m<vs.length;m++){var mc=await mugScene(vs[m][0],vs[m][1],1400,vs[m][3]),mt='img/tas-hq-'+rnd()+'.jpg';await upload('site',mt,await canvasBlob(mc,'image/jpeg',.9));imgs.push(mt);}
-      ADM.refTok=null;return imgs;}ss=ss.filter(function(q){return q!=='logo'||ss.indexOf('front')<0;});for(var i=0;i<ss.length;i++){var c=/^(mug|canvas)$/.test(state.product)?await renderTight(ss[i]):await renderComposite(ss[i],1.2);var bg=document.createElement('canvas');bg.width=c.width;bg.height=c.height;var x=bg.getContext('2d');x.fillStyle='#f1f3f2';x.fillRect(0,0,bg.width,bg.height);x.drawImage(c,0,0);
+      ADM.refTok=null;return imgs;}ss=ss.filter(function(q){return !isLogoSide(q)||(ss.indexOf('front')<0&&(q==='logo'||ss.indexOf('logo')<0));});for(var i=0;i<ss.length;i++){var c=/^(mug|canvas)$/.test(state.product)?await renderTight(ss[i]):await renderComposite(ss[i],1.2);var bg=document.createElement('canvas');bg.width=c.width;bg.height=c.height;var x=bg.getContext('2d');x.fillStyle='#f1f3f2';x.fillRect(0,0,bg.width,bg.height);x.drawImage(c,0,0);
       var tk='img/tas-'+(/^(mug|canvas)$/.test(state.product)?'hq-':'')+rnd()+'.jpg';await upload('site',tk,await canvasBlob(bg,'image/jpeg',.88));imgs.push(tk);
       /* Ortam fotoğrafı için ayrı referans: beyaz kupa açık zeminde kaybolunca yapay zekâ kupanın boyunu tahmin edip baskıyı küçültüyordu; koyu zeminde kupanın silüeti ve baskının kupayı ne kadar kapladığı net görünür */
       if(i===0&&/^(mug|canvas)$/.test(state.product)){try{var rf=document.createElement('canvas');rf.width=c.width;rf.height=c.height;var rx=rf.getContext('2d');rx.fillStyle='#9aa39e';rx.fillRect(0,0,rf.width,rf.height);rx.drawImage(c,0,0);var rk='img/ref-'+rnd()+'.jpg';await upload('site',rk,await canvasBlob(rf,'image/jpeg',.9));ADM.refTok=rk;}catch(_){ADM.refTok=null;}}}return imgs;}
@@ -4755,7 +4767,7 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
   /* Tasarım kodu: sitedeki (index.html) dKey / wHead / wFree ile aynı */
   function dKey(p){if(p.grp)return 'g:'+p.grp;var d=p.dsg;if(!d||typeof d!=='object')return 'p:'+p.id;
     var s=[p.type||'',(p.cat||[]).join(','),(p.sub||[]).join(','),d.cut||''];
-    ['front','back','logo'].forEach(function(k){var x=d[k];if(!x||!(x.objs||[]).length)return;s.push(k+':'+(x.area||''));
+    ['front','back','logo','logo2'].forEach(function(k){var x=d[k];if(!x||!(x.objs||[]).length)return;s.push(k+':'+(x.area||''));
       (x.objs||[]).forEach(function(o){var A=o.assetId&&d.assets&&d.assets[o.assetId];s.push([o.type||'',(A&&(A.url||A.src))||o.src||o.clip||o.shape||o.k||o.value||o.v||o.text||o.assetId||'',Math.round((+o.w||0)/10)].join('|'));});});
     return s.join('#');}
   var WTYPE={tee:'Tişört',sweat:'Sweatshirt',hood:'Kapüşonlu Sweatshirt',zip:'Fermuarlı Kapüşonlu',polo:'Polo',hat:'Şapka',mug:'Kupa',canvas:'Canvas Tablo'};
@@ -4780,7 +4792,7 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
     /* Fiyat elle değiştirilmediyse ürün fiyat tablosuna bağlanır: taban fiyat + baskı yerleri; tablo değişince kendiliğinden güncellenir */
     var pc=null,sb=siteBlank(state.product,state.cut);
     if(sb&&sb.id&&Math.abs((+price||0)-defPrice())<0.5){var used=function(sd){return state[sd]&&state[sd].objs&&state[sd].objs.length?state[sd].area:'';};
-      pc={b:sb.id,logo:!!used('logo'),f:used('front'),bk:used('back')};if(/^cv/.test(pc.f))pc.f='';}
+      pc={b:sb.id,logo:!!used('logo'),logo2:!!used('logo2'),f:used('front'),bk:used('back')};if(/^cv/.test(pc.f))pc.f='';}
     /* Ad elle yazılmadıysa "Kadın Tişört W012": aynı tasarımın başka rengi varsa onun kodu, yoksa ilk boş numara */
     var np0={type:ptype,cat:cp.cat,sub:cp.sub,dsg:data},k0=dKey(np0),same=(d.products||[]).filter(function(x){return +x.wc&&dKey(x)===k0;})[0],wc=same?+same.wc:wFree(d.products);
     if(ADM.tTyped!==amKey())title=wHead(np0)+' '+wFmt(wc);else title=uniqName(title,(d.products||[]).map(function(x){return x.name;}));
@@ -4827,7 +4839,7 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
   /* Seçili ürün kutusu tasarımla birlikte gösterilir (boş ürün fotoğrafı yerine): ne yayınlanacaksa o görünür */
   var DSV_T=0;
   function dsvFill(){var my=++DSV_T;$$('#admSheet img[data-dsv]').forEach(function(im){var sd=im.dataset.dsv,ss=[];try{ss=sidesWith();}catch(_){}
-    var has=sd==='front'?(ss.indexOf('front')>=0||ss.indexOf('logo')>=0):ss.indexOf('back')>=0;if(!has)return;
+    var has=sd==='front'?(ss.indexOf('front')>=0||ss.indexOf('logo')>=0||ss.indexOf('logo2')>=0):ss.indexOf('back')>=0;if(!has)return;
     renderComposite(sd,0.6).then(function(c){if(my!==DSV_T||!im.isConnected)return;var bg=document.createElement('canvas');bg.width=c.width;bg.height=c.height;var x=bg.getContext('2d');x.fillStyle='#eef0ee';x.fillRect(0,0,bg.width,bg.height);x.drawImage(c,0,0);im.src=bg.toDataURL('image/jpeg',.85);im.style.objectFit='contain';}).catch(function(){});});}
   function depoBox(){
     var sh=curShots(),parts=[typeName(curType())];if(CUT_TR[state.cut])parts.push(CUT_TR[state.cut]);var cn=colorName();if(cn)parts.push(cn);
@@ -4912,7 +4924,7 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
         mask=await mnLoadImg(p.mask);
       }
       var side=p.area.side==='back'?'back':'front',ref=areaBox(side,'a4',false),bxl=p.area.x*W,bxt=p.area.y*H,k=(p.area.w*W)/ref.w,layers=[];
-      var ss=side==='back'?['back']:['front','logo'];
+      var ss=side==='back'?['back']:['front','logo','logo2'];
       for(var i=0;i<ss.length;i++){var s=ss[i];if(!P().sides[s]||!state[s]||!state[s].objs.length)continue;
         var A=areaBox(s,state[s].area),pr=await renderPrint(s);
         layers.push({canvas:pr.canvas,l:bxl+(A.l-ref.l)*k,t:bxt+(A.t-ref.t)*k,w:A.w*k,h:A.h*k});}
@@ -5133,7 +5145,7 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
   function prodInfo(){
     var img='';try{var b=phBlank(state.product,state.cut),cs=phColors(b),co=cs.filter(function(c){return String(c.hex).toLowerCase()===String(state.tee).toLowerCase();})[0]||cs[0];if(co)img=phSrc(co.front||co.back||'');}catch(_){}
     var parts=[typeName(curType())];if(CUT_TR[state.cut])parts.push(CUT_TR[state.cut]);var cn=colorName();if(cn)parts.push(cn);
-    var ss=[];try{ss=sidesWith().map(function(q){return {front:'Ön',back:'Arka',logo:'Logo'}[q]||q;});}catch(_){}
+    var ss=[];try{ss=sidesWith().map(function(q){return {front:'Ön',back:'Arka',logo:'Sol logo',logo2:'Sağ logo'}[q]||q;});}catch(_){}
     return '<div class="am-info"><div>'+ea(parts.join(' · '))+(DEPO.cur?' <small>(depodan: '+ea(DEPO.cur.name||'')+')</small>':'')+'<small>Baskı: '+(ss.length?ea(ss.join(', ')):'henüz tasarım yok')+'</small></div></div>';
   }
   /* Kategori kendiliğinden: kesim + ürün türüne uyan alt kategori (ör. Erkek → Sweatshirt) */
