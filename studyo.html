@@ -6,7 +6,7 @@
 .ib.ayb-btn img{width:34px;height:34px;border-radius:50%;object-fit:cover;display:block;border:2px solid #7fd6b4;box-shadow:0 0 0 2px #fff,0 2px 6px rgba(0,0,0,.18)}
 </style></head><body>
 <title>Wolflano Stüdyo</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:wght@700&family=Marcellus&family=DM+Serif+Display&family=Big+Shoulders+Display:wght@800&family=Unbounded:wght@700&family=Saira+Stencil+One&family=Great+Vibes&family=Allura&family=Mrs+Saint+Delafield&family=Rubik+Spray+Paint&family=Shrikhand&family=Anton&family=Oswald:wght@700&family=Bebas+Neue&family=Staatliches&family=Montserrat:wght@800&family=Poppins:wght@800&family=Archivo+Black&family=Alfa+Slab+One&family=Playfair+Display:wght@800&family=Abril+Fatface&family=Righteous&family=Bangers&family=Fredoka:wght@600&family=Black+Ops+One&family=Press+Start+2P&family=Lobster&family=Pacifico&family=Dancing+Script:wght@700&family=Caveat:wght@700&family=Barlow:wght@500;600;700&family=Barlow+Condensed:wght@600;700&family=Rubik:wght@800&family=Teko:wght@600&family=Russo+One&family=Saira+Condensed:wght@800&family=Exo+2:wght@800&family=Kanit:wght@800&family=Rajdhani:wght@700&family=Bungee&family=Chakra+Petch:wght@700&family=Lilita+One&family=Kaushan+Script&family=Sacramento&family=Cinzel:wght@700&family=Merriweather:wght@900&family=Cormorant+Garamond:wght@500;700&family=Manrope:wght@500;800&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:wght@700&family=Marcellus&family=DM+Serif+Display&family=Big+Shoulders+Display:wght@800&family=Unbounded:wght@700&family=Saira+Stencil+One&family=Great+Vibes&family=Allura&family=Mrs+Saint+Delafield&family=Rubik+Spray+Paint&family=Shrikhand&family=Anton&family=Oswald:wght@700&family=Bebas+Neue&family=Staatliches&family=Montserrat:wght@800;900&family=Poppins:wght@800&family=Archivo+Black&family=Alfa+Slab+One&family=Playfair+Display:wght@800&family=Abril+Fatface&family=Righteous&family=Bangers&family=Fredoka:wght@600&family=Black+Ops+One&family=Press+Start+2P&family=Lobster&family=Pacifico&family=Dancing+Script:wght@700&family=Caveat:wght@700&family=Barlow:wght@500;600;700&family=Barlow+Condensed:wght@600;700&family=Rubik:wght@800;900&family=Teko:wght@600&family=Russo+One&family=Saira+Condensed:wght@800&family=Exo+2:wght@800&family=Kanit:wght@800&family=Rajdhani:wght@700&family=Bungee&family=Chakra+Petch:wght@700&family=Lilita+One&family=Kaushan+Script&family=Sacramento&family=Cinzel:wght@700&family=Merriweather:wght@900&family=Titan+One&family=Passion+One:wght@900&family=Rubik+Mono+One&family=Cormorant+Garamond:wght@500;700&family=Manrope:wght@500;800&display=swap">
 <style>
 /* Layout: tek ekranlık stüdyo. Üstte ürün ve baskı alanı seçimi, ortada sahne, altta bağlamsal araçlar, sayfa ve sekme çubuğu. */
 :root{
@@ -673,6 +673,8 @@ img{-webkit-touch-callout:none;-webkit-user-drag:none}
       <button data-c="edit" data-t="text"><svg class="i" viewBox="0 0 24 24"><path d="M4 20l4-1 11-11-3-3L5 16z"/></svg>Düzenle</button>
       <button data-c="font" data-t="text"><svg class="i" viewBox="0 0 24 24"><path d="M5 6V4h14v2M12 4v16M9 20h6"/></svg>Yazı tipi</button>
       <button data-c="stroke" data-t="text"><svg class="i" viewBox="0 0 24 24"><rect x="5" y="5" width="14" height="14" rx="3" stroke-dasharray="3 2.4"/></svg>Kontur</button>
+      <button data-c="intext" data-t="image" class="aibtn"><svg class="i" viewBox="0 0 24 24"><path d="M4 6V4h16v2M12 4v16M9 20h6"/><rect x="2.5" y="9" width="7" height="7" rx="1" stroke-dasharray="2 1.6"/></svg>Yazının içine</button>
+      <button data-c="tsplit" data-t="image" id="tsplitBtn" hidden><svg class="i" viewBox="0 0 24 24"><path d="M4 6V4h16v2M12 4v16M9 20h6"/><path d="M3 21l4-4M21 21l-4-4"/></svg>Yazıyı ayır</button>
       <button data-c="crop" data-t="image"><svg class="i" viewBox="0 0 24 24"><path d="M6 2v14a2 2 0 0 0 2 2h14"/><path d="M2 6h14a2 2 0 0 1 2 2v14"/></svg>Kırp</button>
       <button data-c="wout" data-t="image" id="woutBtn"><svg class="i" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="4"/><rect x="8" y="8" width="8" height="8" rx="1.5"/></svg>Kontur</button>
       <button data-c="holes" data-t="image"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><rect x="6" y="8" width="5" height="8" rx="1" stroke-dasharray="2 1.6"/><rect x="13" y="8" width="5" height="8" rx="1" stroke-dasharray="2 1.6"/></svg>Fotoğraf yerlerini aç</button>
@@ -990,7 +992,7 @@ function colInk(c){var h=String(c||'').replace('#','');if(h.length!==6)return '#
 function colParse(v){v=String(v||'').trim().toUpperCase().replace(/\s/g,'');var hx=v.match(/#[0-9A-F]{6}\b|#[0-9A-F]{3}\b/),wk=v.match(/^W0*\d{1,2}/);if(v.length>7&&(hx||wk))v=hx?hx[0]:wk[0];var m=v.match(/^W?0*(\d{1,2})$/);if(m){var n=+m[1];return n>=1&&n<=PALETTE.length?PALETTE[n-1]:null;}
   m=v.replace(/^#/,'');if(/^[0-9A-F]{6}$/.test(m))return '#'+m.toLowerCase();if(/^[0-9A-F]{3}$/.test(m))return '#'+m.split('').map(function(x){return x+x;}).join('').toLowerCase();return null;}
 function usedColors(){var seen={},out=[];['front','logo','logo2','back'].forEach(function(sd){(state[sd]&&state[sd].objs||[]).forEach(function(o){if(o.type==='image'||(o.type==='clip'&&clipFixed(o.key)))return;[o.color,o.stroke].forEach(function(c){if(!c)return;var k=String(c).toLowerCase();if(!seen[k]){seen[k]=1;out.push(k);}});});});return out;}
-var FONTS=[['Cormorant Garamond İnce',500,'Cormorant Garamond'],['Cormorant Garamond',700],['Manrope İnce',500,'Manrope'],['Manrope',800],['Bodoni Moda',700],['Marcellus',400],['DM Serif Display',400],['Big Shoulders Display',800],['Unbounded',700],['Saira Stencil One',400],['Great Vibes',400],['Allura',400],['Mrs Saint Delafield',400],['Rubik Spray Paint',400],['Shrikhand',400],['Anton',400],['Oswald',700],['Bebas Neue',400],['Staatliches',400],['Montserrat',800],['Poppins',800],['Archivo Black',400],['Alfa Slab One',400],['Playfair Display',800],['Abril Fatface',400],['Righteous',400],['Bangers',400],['Fredoka',600],['Black Ops One',400],['Press Start 2P',400],['Lobster',400],['Pacifico',400],['Dancing Script',700],['Caveat',700],['Barlow Condensed',700],['Rubik',800],['Teko',600],['Russo One',400],['Saira Condensed',800],['Exo 2',800],['Kanit',800],['Rajdhani',700],['Bungee',400],['Chakra Petch',700],['Lilita One',400],['Kaushan Script',400],['Sacramento',400],['Cinzel',700],['Merriweather',900]];
+var FONTS=[['Cormorant Garamond İnce',500,'Cormorant Garamond'],['Cormorant Garamond',700],['Manrope İnce',500,'Manrope'],['Manrope',800],['Bodoni Moda',700],['Marcellus',400],['DM Serif Display',400],['Big Shoulders Display',800],['Unbounded',700],['Saira Stencil One',400],['Great Vibes',400],['Allura',400],['Mrs Saint Delafield',400],['Rubik Spray Paint',400],['Shrikhand',400],['Anton',400],['Oswald',700],['Bebas Neue',400],['Staatliches',400],['Montserrat',800],['Poppins',800],['Archivo Black',400],['Alfa Slab One',400],['Playfair Display',800],['Abril Fatface',400],['Righteous',400],['Bangers',400],['Fredoka',600],['Black Ops One',400],['Press Start 2P',400],['Lobster',400],['Pacifico',400],['Dancing Script',700],['Caveat',700],['Barlow Condensed',700],['Rubik',800],['Teko',600],['Russo One',400],['Saira Condensed',800],['Exo 2',800],['Kanit',800],['Rajdhani',700],['Bungee',400],['Chakra Petch',700],['Lilita One',400],['Kaushan Script',400],['Sacramento',400],['Cinzel',700],['Merriweather',900],['Titan One',400],['Passion One',900],['Rubik Mono One',400],['Montserrat Black',900,'Montserrat'],['Rubik Black',900,'Rubik']];
 function fw(f){for(var i=0;i<FONTS.length;i++){if(FONTS[i][0]===f)return FONTS[i][1];}return 700;}
 /* "İnce" gibi seçenekler aynı yazı ailesinin ince ağırlığıdır */
 function fam(f){for(var i=0;i<FONTS.length;i++){if(FONTS[i][0]===f)return FONTS[i][2]||f;}return f;}
@@ -2113,6 +2115,7 @@ function syncCtx0(){
   var pop=$('#colorPop');
   if(!o){pop.hidden=true;return;}
   $$('#ctxBar [data-t],#stageBar [data-t]').forEach(function(b){b.hidden=b.dataset.t.split(' ').indexOf(o.type)<0;});
+  if(o.type==='image'){var ts=$('#tsplitBtn'),it=$('#ctxBar [data-c="intext"]');if(ts)ts.hidden=!o.tsrc;if(it)it.hidden=!!o.tsrc||!!o.slot||!cur().objs.some(function(q){return q.type==='text';});}
   if(o.type==='clip'&&clipFixed(o.key)){$$('#ctxBar [data-c="color"],#stageBar [data-c="color"]').forEach(function(b){b.hidden=true;});if(view.pop==='color')view.pop=null;}
   liveWarn(o);
   $('#ctxDot').style.background=o.color||'transparent';
@@ -2878,6 +2881,32 @@ function shapeClip(c,sh){if(!sh||sh==='rect')return c;var W=c.width,H=c.height,o
 function crpShape(sh){CRP.s=sh;var el=$('#crpR');if(el){el.className='crp-r'+(sh&&sh!=='rect'?' s-'+sh:'');el.innerHTML=sh==='heart'?'<svg class="crp-hs" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><path d="M50 92C22 70 4 52 4 31 4 15 16 5 29 5c9 0 16 5 21 13C55 10 62 5 71 5c13 0 25 10 25 26 0 21-18 39-46 61z" fill="none" stroke="#fff" stroke-width="2" vector-effect="non-scaling-stroke"/></svg>':'';}
   $$('.crp-sh [data-crs]').forEach(function(x){x.classList.toggle('on',x.dataset.crs===(sh||'rect'));});
   if(sh==='circle'){$$('.crp-f1 [data-crp]').forEach(function(x){x.classList.toggle('on',x.dataset.crp==='sq');});crpAspect(1);}}
+/* ---------- Fotoğraflı yazı ----------
+   Fotoğraf bir yazının üstüne konur, "Yazının içine"ye basılır: fotoğrafın yalnız harflerin içinde kalan kısmı görünür, dışı kesilir.
+   Yazının konturu varsa harflerin çevresinde kalır. Sonuç tek bir görsel olur; "Yazıyı ayır" ile yazı ve fotoğraf eski hâline döner. */
+function objBB(o){var w=o.w||10,h=o.h||10,a=(o.rot||0)*PI/180,hw=(Math.abs(w*Math.cos(a))+Math.abs(h*Math.sin(a)))/2,hh=(Math.abs(w*Math.sin(a))+Math.abs(h*Math.cos(a)))/2;return {l:o.x-hw,r:o.x+hw,t:o.y-hh,b:o.y+hh};}
+async function intextGo(){var im=selObj();if(!im||im.type!=='image'||im.lock)return;
+  var objs=cur().objs,ib=objBB(im),best=null,ba=0;
+  objs.forEach(function(q){if(q.type!=='text'||q.lock)return;if(!isWarped(q))measureText(q);var tb=objBB(q),ov=Math.max(0,Math.min(ib.r,tb.r)-Math.max(ib.l,tb.l))*Math.max(0,Math.min(ib.b,tb.b)-Math.max(ib.t,tb.t));if(ov>ba){ba=ov;best=q;}});
+  if(!best){toast('Önce fotoğrafı bir yazının üstüne sürükle, sonra "Yazının içine"ye bas.');return;}
+  bgToast('Fotoğraf yazının içine yerleştiriliyor…');
+  try{var t=best,pad=(t.size||20)*(t.stroke?0.14:0.06),tb=objBB(t);tb={l:tb.l-pad,r:tb.r+pad,t:tb.t-pad,b:tb.b+pad};
+    var bw=tb.r-tb.l,bh=tb.b-tb.t,K=Math.min(300/2.54/PPC,4000/Math.max(bw,bh));
+    var c=document.createElement('canvas');c.width=Math.max(2,Math.round(bw*K));c.height=Math.max(2,Math.round(bh*K));var x=c.getContext('2d');
+    var m=JSON.parse(JSON.stringify(t));m.look='fill';m.stroke=null;m.color='#000';
+    await drawObj(x,m,K,tb.l,tb.t);
+    x.globalCompositeOperation='source-in';await drawObj(x,im,K,tb.l,tb.t);
+    if(t.stroke||lookOf(t)==='shadow'){var m2=JSON.parse(JSON.stringify(t));m2.color=t.stroke||shadowCol(t);if(lookOf(t)==='hollow')m2.look='fill';x.globalCompositeOperation='destination-over';await drawObj(x,m2,K,tb.l,tb.t);}
+    x.globalCompositeOperation='source-over';
+    var blob=await new Promise(function(r){c.toBlob(r,'image/png');}),url=URL.createObjectURL(blob),id='a'+(++assetN);
+    assets[id]={url:url,w:c.width,h:c.height,nobg:true,fx:1};
+    var o=newBase('image');o.assetId=id;o.base=id;o.x=(tb.l+tb.r)/2;o.y=(tb.t+tb.b)/2;o.w=bw;o.h=bh;o.phs='none';o.phe='none';
+    o.tsrc={text:JSON.parse(JSON.stringify(t)),img:JSON.parse(JSON.stringify(im))};
+    var at=Math.min(objs.indexOf(t),objs.indexOf(im));cur().objs=objs.filter(function(q){return q!==t&&q!==im;});cur().objs.splice(at,0,o);
+    renderObjects();select(o.id);pushHist();var tt=$('#toast');if(tt)tt.hidden=true;toast('Fotoğraf yazının içine yerleşti. Beğenmezsen "Yazıyı ayır" ya da ↶');}
+  catch(_){toast('Yapılamadı, tekrar dene.');}}
+function intextSplit(){var o=selObj();if(!o||!o.tsrc)return;var a=cur().objs,i=a.indexOf(o),t=o.tsrc.text,im=o.tsrc.img;t.id=view.nextId++;im.id=view.nextId++;
+  a.splice(i,1,t,im);renderObjects();select(im.id);pushHist();toast('Yazı ve fotoğraf ayrıldı. Fotoğrafı kaydırıp yeniden "Yazının içine"ye basabilirsin.');}
 function openCrop(){
   var o=selObj();if(!o||o.type!=='image'||o.lock)return;if(!o.base||!assets[o.base])o.base=o.assetId;
   var a=assets[o.base];if(!a)return;popClose();
@@ -3717,6 +3746,8 @@ function ctxClick(e){
   else if(c==='nobg')removeBg();
   else if(c==='holes')openHoles();
   else if(c==='crop')openCrop();
+  else if(c==='intext')intextGo();
+  else if(c==='tsplit')intextSplit();
   else if(c==='wout')showWout();
   else if(c==='fx')showFx();
   else if(c==='del')deleteSel();
