@@ -1,0 +1,53 @@
+# Canva şablon görsellerini A3 300 dpi baskı dosyasına çevirir (sablon/is.json değişince).
+# Tam boy dosyalar "baski" dalına, stüdyo önizlemeleri main'deki sablon/web/ klasörüne yazılır.
+name: Şablon baskı hazırlama
+
+on:
+  push:
+    branches: [main]
+    paths: ['sablon/is.json', '.github/sablon.py', '.github/workflows/sablon.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: sablon
+  cancel-in-progress: false
+
+jobs:
+  hazirla:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Model önbelleği
+        uses: actions/cache@v4
+        with:
+          path: RealESRGAN_x4plus.pth
+          key: realesrgan-x4plus-v1
+      - name: Araçları kur
+        run: |
+          pip install -q torch --index-url https://download.pytorch.org/whl/cpu
+          pip install -q spandrel pillow numpy
+          [ -f RealESRGAN_x4plus.pth ] || curl -fsSL -o RealESRGAN_x4plus.pth https://github.com/xinntao/Real-ESRGAN/releases/download/v0.1.0/RealESRGAN_x4plus.pth
+      - name: Hazırla
+        run: python3 .github/sablon.py
+      - name: Kaydet
+        run: |
+          git config user.name "fotoince-sudo"
+          git config user.email "fotoince@gmail.com"
+          mkdir -p /tmp/baski && cp baski/*.png /tmp/baski/ 2>/dev/null || true
+          git add sablon/web sablon/rapor.json
+          git commit -q -m "Şablonlar: baskı dosyaları hazırlandı" || true
+          for i in 1 2 3; do git pull -q --rebase origin main && git push -q origin HEAD:main && break; sleep 5; done
+          # tam boy dosyalar ayrı dala (siteye yüklenmez)
+          if ls /tmp/baski/*.png >/dev/null 2>&1; then
+            git fetch -q origin baski || true
+            if git rev-parse -q --verify origin/baski >/dev/null; then git checkout -q -B baski origin/baski; else git checkout -q --orphan baski; git rm -rq --cached . || true; fi
+            mkdir -p baski && cp /tmp/baski/*.png baski/
+            git add baski/*.png && git commit -q -m "Baskı dosyaları (A3 300 dpi)" && git push -q origin baski || true
+          fi
