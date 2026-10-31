@@ -7,4 +7,6 @@ try:
 except Exception:
     print(0); raise SystemExit
 man = json.load(open('cut/index.json')) if os.path.exists('cut/index.json') else {}
-print(len([r for b in d.get('blanks') or [] for r in (b.get('raw') or []) if r and r not in man]))
+# Telefonda kesin temizlenmiş olanlar (rawcut, tmp değil) GitHub'da yeniden işlenmez
+ok = lambda b, r: ((b.get('rawcut') or {}).get(r) or {}).get('file') and not ((b.get('rawcut') or {}).get(r) or {}).get('tmp')
+print(len([r for b in d.get('blanks') or [] for r in (b.get('raw') or []) if r and r not in man and not ok(b, r)]))

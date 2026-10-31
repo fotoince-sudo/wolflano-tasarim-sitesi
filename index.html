@@ -2519,7 +2519,7 @@ function szKind(t){t=String(t||'').toLocaleLowerCase('tr');if(/sweat|kapüşon|h
 function szTable(kind,cut,sizes){var m=(SZM[kind]||{})[cut];if(!m)return null;var r={};(sizes||[]).forEach(function(z){var k=String(z).replace(/\s*yaş$/,'');if(m[k])r[z]=m[k];});return Object.keys(r).length?r:null;}
 function pCut(p){var c=(p.cat||[]).map(function(x){return String(x).toLocaleLowerCase('tr');});if(c.indexOf('erkek')>=0)return 'erkek';if(c.indexOf('kadin')>=0)return 'kadin';if(c.some(function(x){return /cocuk|çocuk/.test(x);}))return 'cocuk';return 'erkek';}
 function szBlock(zs,ch){if(!zs.length)return '';return '<div class="szs" data-ch="'+esc(JSON.stringify(ch||{}))+'"><p>Beden: <b id="szT">Seç</b><span id="szM" class="szm"></span></p><div role="radiogroup" aria-label="Beden">'+zs.map(function(z){return '<button type="button" class="sz" role="radio" aria-checked="false" data-sz="'+esc(z)+'">'+esc(z)+'</button>';}).join('')+'</div>'+(ch?'<details class="szt"><summary>Beden tablosu (cm)</summary><table><thead><tr><th>Beden</th><th>En</th><th>Boy</th></tr></thead><tbody>'+Object.keys(ch).map(function(z){return '<tr><td>'+esc(z)+'</td><td>'+ch[z][0]+'</td><td>'+ch[z][1]+'</td></tr>';}).join('')+'</tbody></table><p class="note">En: koltuk altından koltuk altına düz ölçülen göğüs genişliği. Boy: omuz dikişinden etek ucuna. Avrupa standart kalıp; ±1-2 cm fark olabilir.</p></details>':'')+'</div>';}
-function usedTokens(d){var o={};function add(s){if(s&&(s.indexOf('img/')===0||s.indexOf('vid/')===0))o[s]=1;}d.products.forEach(function(p){(p.imgs||[]).forEach(add);add(p.video);});d.blanks.forEach(function(p){(p.imgs||[]).forEach(add);(p.raw||[]).forEach(add);add(p.video);(p.colors||[]).forEach(function(c){if(c){add(c.front);add(c.back);}});});add(d.hero);add(d.logo);(d.cpages||[]).forEach(function(p){(p.imgs||[]).forEach(add);});((d.kolban||{}).imgs||[]).forEach(add);((d.makine||{}).imgs||[]).forEach(add);['clipCats','tplCats'].forEach(function(k){((d.studio||{})[k]||[]).forEach(function(c){(c.items||[]).forEach(function(it){add(it.img);});});});return o;}
+function usedTokens(d){var o={};function add(s){if(s&&(s.indexOf('img/')===0||s.indexOf('vid/')===0))o[s]=1;}d.products.forEach(function(p){(p.imgs||[]).forEach(add);add(p.video);});d.blanks.forEach(function(p){(p.imgs||[]).forEach(add);(p.raw||[]).forEach(add);Object.keys(p.rawcut||{}).forEach(function(r){if((p.raw||[]).indexOf(r)>=0)add(p.rawcut[r].file);});add(p.video);(p.colors||[]).forEach(function(c){if(c){add(c.front);add(c.back);}});});add(d.hero);add(d.logo);(d.cpages||[]).forEach(function(p){(p.imgs||[]).forEach(add);});((d.kolban||{}).imgs||[]).forEach(add);((d.makine||{}).imgs||[]).forEach(add);['clipCats','tplCats'].forEach(function(k){((d.studio||{})[k]||[]).forEach(function(c){(c.items||[]).forEach(function(it){add(it.img);});});});return o;}
 applyData();
 var PAGES=[['ana','Ana Sayfa'],['hazir','Koleksiyon'],['atolye','Baskı Atölyesi'],['kurumsal','Kurumsal'],['hakkimizda','Hakkımızda'],['kurdun','Kurdun İzinde']];
 function pagesNow(){var l=PAGES.map(function(p){var m={hazir:'menuHazir',atolye:'menuAtolye',hakkimizda:'menuAbout'}[p[0]];return [p[0],m?TX(m):p[1]];});
@@ -3392,15 +3392,16 @@ function stdcSync(d){if(!STDC_BASE){STDC_PEND=d;return;}var ex=((d&&d.renkler)||
   STDC=STDC_BASE.concat(ex.map(function(c){return {name:c.name,hex:c.hex};}));}
 function rawMax(){return STDC.length*2;}
 function kCode(name){for(var i=0;i<STDC.length;i++)if(STDC[i].name===name)return 'K'+(i<9?'0':'')+(i+1);return '';}
+function manGet(b,man,r){var c=b&&b.rawcut&&b.rawcut[r],m=man&&man[r];if(c&&!c.tmp)return c;return m||c||null;}
 function rawResolve(b,man){var fix=b.rawfix||{},by={},info={};
-  (b.raw||[]).forEach(function(r){var m=man[r],f=fix[r]||{},col=f.color||(m&&m.color)||'';info[r]={ready:!!m,color:col,auto:!f.color,side:f.side||'',ns:m?+m.ns||0:0};if(col)(by[col]||(by[col]=[])).push(r);});
+  (b.raw||[]).forEach(function(r){var m=manGet(b,man,r),f=fix[r]||{},col=f.color||(m&&m.color)||'';info[r]={ready:!!m,color:col,auto:!f.color,side:f.side||'',ns:m?+m.ns||0:0};if(col)(by[col]||(by[col]=[])).push(r);});
   var res={};STDC.forEach(function(c){var l=by[c.name];if(!l||!l.length)return;var o={front:'',back:''};
     l.filter(function(r){return info[r].side;}).forEach(function(r){if(!o[info[r].side])o[info[r].side]=r;});
     var un=l.filter(function(r){return !info[r].side;}).sort(function(a,z){return info[z].ns-info[a].ns;});if(un.length){if(!o.front)o.front=un[0];if(!o.back){var bk=un[un.length-1];if(bk!==o.front&&info[bk].ns!==info[o.front].ns)o.back=bk;else if(un.length>1&&un[1]!==o.front)o.back=un[1];}}
     Object.keys(o).forEach(function(k){if(o[k])info[o[k]].res=k;});res[c.name]=o;});
   return {by:res,info:info};}
 function cutMerge(d,man){man=man||{};stdcSync(d);((d&&d.blanks)||[]).forEach(function(b){if(!b||!(b.raw||[]).length)return;var R=rawResolve(b,man).by,cs=[];
-  STDC.forEach(function(c){var o=R[c.name];if(!o)return;var f=o.front&&man[o.front]?man[o.front].file:'',k=o.back&&man[o.back]?man[o.back].file:'';if(!f&&!k)return;cs.push({name:c.name,hex:c.hex,front:f||k,back:f?k:''});});
+  STDC.forEach(function(c){var o=R[c.name];if(!o)return;var mf=o.front&&manGet(b,man,o.front),mk=o.back&&manGet(b,man,o.back),f=mf?mf.file:'',k=mk?mk.file:'';if(!f&&!k)return;cs.push({name:c.name,hex:c.hex,front:f||k,back:f?k:''});});
   if(cs.length)b.colors=cs;});return d;}
 function loadMan(){return fetch('cut/index.json?v='+Math.floor(Date.now()/60000),{cache:'no-store'}).then(function(r){return r.ok?r.json():{};}).catch(function(){return {};}).then(function(m){MAN=m||{};return MAN;});}
 /* Yönetimde "İşleniyor…" yazan fotoğraf varken her 20 saniyede bir zemin temizleme listesine bakılır; fotoğraf hazır olunca sayfa yenilemeden güncellenir */
@@ -3751,11 +3752,11 @@ function rawOrder(b,R){var l=b.raw||[],g=b.rawguess||{},ci={};STDC.forEach(funct
   var key=function(r){var I=R.info[r]||{},c=I.color||g[r]||'',sd=I.side||I.res||'';return [c in ci?ci[c]:99,sd==='front'?0:sd==='back'?1:0.5];};
   return l.slice().sort(function(a,z){var A1=key(a),Z1=key(z);return A1[0]-Z1[0]||A1[1]-Z1[1]||l.indexOf(a)-l.indexOf(z);});}
 function rawEd(pa,b){var l=b.raw||[],R=rawResolve(b,MAN),pend0=l.some(function(r){return !R.info[r].ready;});
-  var th=function(r){var m=MAN[r];return src(m?m.file:r);};
+  var th=function(r){var m=manGet(b,MAN,r);return src(m?m.file:r);};
   var h='<div class="ced"><b style="font-size:14px">Ürün fotoğrafları (otomatik)</b><p class="note" style="margin:4px 0 8px">Ürünün renk fotoğraflarını tek seferde seç: her renk için ön, istersen arka (en fazla '+rawMax()+').'+' Zemin otomatik temizlenir; renk ve ön/arka kendiliğinden yerleşir. Renk sırası her üründe aynıdır. Yeni renk gerekirse en alttan ekle; o renk bütün ürünlerde seçilebilir olur. Kaydet\'e bastıktan sonra temizleme 2–3 dakika sürer; bitince burada ve sitede görünür.</p>';
   h+='<div class="rgrid">'+STDC.map(function(c){var o=R.by[c.name]||{};var sl=function(k,t){var r=o[k];return '<div class="rsl">'+(r?'<img src="'+th(r)+'" alt="">':'<b>yok</b>')+t+'</div>';};
     return '<div class="rrow"><span class="rn"><i style="background:'+c.hex+'"></i>'+kCode(c.name)+' '+c.name+'</span>'+sl('front','Ön')+sl('back','Arka')+((o.front&&o.back)?'<button class="btn soft sm" data-ad="rswap" data-p="'+pa+'" data-c="'+esc(c.name)+'">Ön ↔ Arka değiştir</button>':'')+((o.front||o.back)?'<button class="btn soft sm" data-rc="del" data-p="'+pa+'" data-c="'+esc(c.name)+'" style="color:var(--red)">Bu rengi üründen çıkar</button>':(STDC_BASE.some(function(x){return x.name===c.name;})||rcUsed(c.name)?'':'<button class="btn soft sm" data-rc="drop" data-c="'+esc(c.name)+'" style="color:var(--red)">Renk listesinden kaldır</button>'))+'</div>';}).join('')+'</div>'+'<div class="rnew"><input type="text" id="rn-'+aid(pa)+'" maxlength="20" placeholder="Yeni renk adı (ör. Bordo)" aria-label="Yeni renk adı"><input type="color" id="rh-'+aid(pa)+'" value="#7a1f2b" aria-label="Renk tonu"><button class="btn soft sm" data-rc="add" data-p="'+pa+'">+ Renk ekle</button></div>';
-  if(l.length){h+='<p class="note" style="margin:10px 0 4px">Yüklenen fotoğraflar'+(pend0?' (zemini temizlenenler birkaç dakika içinde hazır olur)':'')+'. Renk ya da ön/arka yanlış çıkarsa buradan düzelt.</p><div class="rlist">'+rawOrder(b,R).map(function(r){var j=l.indexOf(r),I=R.info[r],fx=(b.rawfix||{})[r]||{};
+  if(l.length){h+='<p class="note" style="margin:10px 0 4px">Yüklenen fotoğraflar'+(pend0?' (zemini karışık olanlar birkaç dakika içinde hazır olur)':'')+'. Renk ya da ön/arka yanlış çıkarsa buradan düzelt.</p><div class="rlist">'+rawOrder(b,R).map(function(r){var j=l.indexOf(r),I=R.info[r],fx=(b.rawfix||{})[r]||{};
     return '<div class="ritem"><img src="'+th(r)+'" alt=""><span class="st'+(I.ready?'':' w')+'">'+(I.ready?(I.color||'?')+(I.res?' · '+(I.res==='front'?'Ön':'Arka'):''):'İşleniyor…')+'</span>'+
     '<select data-rfix="'+pa+'" data-r="'+esc(r)+'" data-k="color" aria-label="Renk"><option value="">Renk: otomatik</option>'+STDC.map(function(c){return '<option'+(fx.color===c.name?' selected':'')+'>'+c.name+'</option>';}).join('')+'</select>'+
     '<select data-rfix="'+pa+'" data-r="'+esc(r)+'" data-k="side" aria-label="Ön veya arka"><option value="">Ön/arka: otomatik</option><option value="front"'+(fx.side==='front'?' selected':'')+'>Ön</option><option value="back"'+(fx.side==='back'?' selected':'')+'>Arka</option></select>'+
@@ -3801,6 +3802,8 @@ async function aiGen(pa,step){
       var R=rawResolve(b,MAN),fx=b.rawfix||(b.rawfix={});
       b.raw=(b.raw||[]).filter(function(r){var c=(R.info[r]||{}).color||((b.rawguess||{})[r]);if(c===rk){delete fx[r];return false;}return true;});
       b.raw.push(got.front,got.back);fx[got.front]={color:rk,side:'front'};fx[got.back]={color:rk,side:'back'};
+      /* Zemin telefonda hemen temizlenir (beklemeden); olmazsa GitHub'daki yapay zekâya kalır */
+      aiSay(rk+' · zemin temizleniyor…');for(var yk of ['front','back']){try{var rsp=await fetch(aiUrl(got[yk]));if(!rsp.ok)continue;var oc=await cutRaw(await rsp.blob());if(!oc)continue;var ck=got[yk].replace(/\.[a-z]+$/i,'')+'-k.'+oc.ext;pend[ck]={blob:oc.blob,url:URL.createObjectURL(oc.blob)};var ce={file:ck,color:rk,ns:oc.ns,rgb:oc.rgb};if(oc.tmp)ce.tmp=1;(b.rawcut||(b.rawcut={}))[got[yk]]=ce;}catch(_){}}
       b.ai[rk]={front:got.front,back:got.back};ok++;
       dirty();await adSave();b=getp(A.draft,pa);
     }
@@ -3891,6 +3894,93 @@ function rawGuess(x,w,h){var d=x.getImageData(Math.round(w*.35),Math.round(h*.4)
   var md=function(a){a.sort(function(p,q){return p-q;});return a[a.length>>1];},c=[md(R),md(G),md(B)],best='',bd=1e9;
   RAWSTD.concat(STDC.slice(STDC_BASE.length).map(function(c){var h=c.hex.slice(1);return [c.name,[parseInt(h.slice(0,2),16),parseInt(h.slice(2,4),16),parseInt(h.slice(4,6),16)]];})).forEach(function(s){var e=0;for(var k=0;k<3;k++)e+=(c[k]-s[1][k])*(c[k]-s[1][k]);if(e<bd){bd=e;best=s[0];}});return best;}
 function procRaw(file){return new Promise(function(res,rej){var u=URL.createObjectURL(file),im=new Image();im.onload=function(){var s=Math.min(1,2200/Math.max(im.width,im.height)),c=document.createElement('canvas');c.width=Math.max(1,Math.round(im.width*s));c.height=Math.max(1,Math.round(im.height*s));var x=c.getContext('2d'),png=/png|webp/i.test(file.type);if(!png){x.fillStyle='#fff';x.fillRect(0,0,c.width,c.height);}x.imageSmoothingQuality='high';x.drawImage(im,0,0,c.width,c.height);var gc='';try{gc=rawGuess(x,c.width,c.height);}catch(_){}c.toBlob(function(b){URL.revokeObjectURL(u);b?res({blob:b,ext:png?'png':'jpg',guess:gc}):rej(new Error('blob'));},png?'image/png':'image/jpeg',.93);};im.onerror=function(){rej(new Error('img'));};im.src=u;});}
+/* Telefonda anında zemin temizleme (düz zeminli ürün fotoğrafı: Manken stüdyosunun açık gri zemini gibi).
+   Zemin düz değilse null döner; o fotoğrafı GitHub'daki yapay zekâ temizler.
+   Çıktı GitHub'dakiyle aynı biçimde: 1200 × 1500 tuval, ürün ortada, renk + ön/arka puanı. */
+function cutLocal(img,extra){try{
+  var s=Math.min(1,1500/Math.max(img.width,img.height)),W=Math.max(1,Math.round(img.width*s)),H=Math.max(1,Math.round(img.height*s));
+  var c=document.createElement('canvas');c.width=W;c.height=H;var x=c.getContext('2d',{willReadFrequently:true});x.fillStyle='#fff';x.fillRect(0,0,W,H);x.imageSmoothingQuality='high';x.drawImage(img,0,0,W,H);
+  var D=x.getImageData(0,0,W,H),p=D.data,N=W*H,i,y,xx,k;
+  /* 1) Zemin düz mü: kenar şeridindeki piksellerin renk dağılımı */
+  var sm=[0,0,0],sq=0,sn=0,lum=function(j){return (p[j]+p[j+1]+p[j+2])/3;};
+  var edge=function(cb){for(k=0;k<W;k+=2){cb((k)*4);cb(((H-1)*W+k)*4);}for(y=0;y<H;y+=2){cb((y*W)*4);cb((y*W+W-1)*4);}};
+  edge(function(j){sm[0]+=p[j];sm[1]+=p[j+1];sm[2]+=p[j+2];var v=lum(j);sq+=v*v;sn++;});
+  var bm=[sm[0]/sn,sm[1]/sn,sm[2]/sn],bl=(bm[0]+bm[1]+bm[2])/3,bsd=Math.sqrt(Math.max(0,sq/sn-bl*bl));
+  if(bsd>9||bl<120)return null;
+  /* 2) Her satırın zemin rengi (kenarlardan) ve zemine uzaklık */
+  var BR=new Float32Array(H*3),dist=new Float32Array(N);
+  for(y=0;y<H;y++){var r=0,g=0,b=0,n=0;for(k=0;k<4;k++){var o1=(y*W+k)*4,o2=(y*W+W-1-k)*4;r+=p[o1]+p[o2];g+=p[o1+1]+p[o2+1];b+=p[o1+2]+p[o2+2];n+=2;}
+    BR[y*3]=r/n;BR[y*3+1]=g/n;BR[y*3+2]=b/n;
+    for(xx=0;xx<W;xx++){var o=(y*W+xx)*4,dr=p[o]-BR[y*3],dg=p[o+1]-BR[y*3+1],db=p[o+2]-BR[y*3+2];dist[y*W+xx]=Math.sqrt(dr*dr+dg*dg+db*db);}}
+  var T=Math.max(8,Math.min(20,bsd*3+6));
+  /* 3) Kenardan başlayan dolgu: zemine benzeyen ve zeminden koyu, renksiz (yumuşak gölge) pikseller zemin sayılır */
+  var bg=new Uint8Array(N),q=new Int32Array(N),qh=0,qt=0;
+  var isBg=function(j,lim){if(dist[j]<=T)return true;var o=j*4,l=(p[o]+p[o+1]+p[o+2])/3,ch=Math.max(p[o],p[o+1],p[o+2])-Math.min(p[o],p[o+1],p[o+2]);return lim!=null&&ch<14&&l<bl-2&&l>lim;};
+  var flood=function(lim){qh=0;qt=0;var push=function(j){if(!bg[j]&&isBg(j,lim)){bg[j]=1;q[qt++]=j;}};
+    for(xx=0;xx<W;xx++){push(xx);push((H-1)*W+xx);}for(y=0;y<H;y++){push(y*W);push(y*W+W-1);}
+    for(i=0;i<N;i++)if(bg[i])q[qt++]=i;
+    while(qh<qt){i=q[qh++];y=(i/W)|0;xx=i-y*W;if(xx>0)push(i-1);if(xx<W-1)push(i+1);if(y>0)push(i-W);if(y<H-1)push(i+W);}};
+  flood(null);
+  var box=function(){var t=H,bo=-1,l=W,rr=-1;for(i=0;i<N;i++){if(bg[i])continue;y=(i/W)|0;xx=i-y*W;if(y<t)t=y;if(y>bo)bo=y;if(xx<l)l=xx;if(xx>rr)rr=xx;}return bo<0?null:{t:t,b:bo,l:l,r:rr};};
+  var B=box();if(!B)return null;
+  /* Ürünün göğüs-bel bölgesinin rengi */
+  var mid=function(){var R=[],G=[],Bl=[];for(y=B.t+Math.round((B.b-B.t)*.35);y<B.t+Math.round((B.b-B.t)*.75);y+=2)for(xx=B.l+Math.round((B.r-B.l)*.3);xx<B.l+Math.round((B.r-B.l)*.7);xx+=2){i=y*W+xx;if(bg[i])continue;var o=i*4;R.push(p[o]);G.push(p[o+1]);Bl.push(p[o+2]);}
+    var md=function(a){a.sort(function(u,v){return u-v;});return a[a.length>>1];};return R.length<50?null:[md(R),md(G),md(Bl)];};
+  var med=mid();if(!med)return null;
+  var gl=(med[0]+med[1]+med[2])/3;
+  /* Koyu ürünlerde zemin üstündeki gri gölge de temizlenir (ürünle karışmaz) */
+  /* Gölge: zeminden koyu, renksiz pikseller (yumuşak gölge) zemine katılır. Ürün içine sızmasın diye ilk geçişte ürünün
+     kenarından 24 pikselden derinde kalan pikseller geri verilir. Koyu üründe gölge üründen açık olduğu için sınır ürün tonuna göre */
+  /* Açık renkli üründe (beyaz vb.) gölge ile ürünün gri kenarı karışır: gölge temizliği yapılmaz, sonuç geçicidir (yapay zekâ sonra iyileştirir) */
+  var light=gl>=bl-40,bg0=bg.slice(),slim=gl<bl-60?gl+45:bl-75;if(!light)flood(slim);
+  var dt=new Float32Array(N);for(i=0;i<N;i++)dt[i]=bg0[i]?0:1e9;
+  for(y=0;y<H;y++)for(xx=0;xx<W;xx++){i=y*W+xx;if(xx>0)dt[i]=Math.min(dt[i],dt[i-1]+1);if(y>0)dt[i]=Math.min(dt[i],dt[i-W]+1);}
+  for(y=H-1;y>=0;y--)for(xx=W-1;xx>=0;xx--){i=y*W+xx;if(xx<W-1)dt[i]=Math.min(dt[i],dt[i+1]+1);if(y<H-1)dt[i]=Math.min(dt[i],dt[i+W]+1);}
+  var deep=Math.max(24,Math.round(Math.max(W,H)*.02));for(i=0;i<N;i++)if(bg[i]&&!bg0[i]&&dt[i]>deep)bg[i]=0;
+  /* Kol ile gövde arasında kapalı kalan zemin cepleri (renkli/koyu üründe): zemin renginde ve en az 120 piksel ise silinir */
+  if(gl<bl-40){var seen=new Uint8Array(N);for(i=0;i<N;i++){if(bg[i]||seen[i]||!isBg(i,slim))continue;qh=0;qt=0;q[qt++]=i;seen[i]=1;
+    while(qh<qt){var jj=q[qh++];y=(jj/W)|0;xx=jj-y*W;var nb2=[xx>0?jj-1:-1,xx<W-1?jj+1:-1,y>0?jj-W:-1,y<H-1?jj+W:-1];for(k=0;k<4;k++){var e2=nb2[k];if(e2>=0&&!bg[e2]&&!seen[e2]&&isBg(e2,slim)){seen[e2]=1;q[qt++]=e2;}}}
+    if(qt>=120)for(k=0;k<qt;k++)bg[q[k]]=1;}}
+  B=box();if(!B)return null;med=mid()||med;
+  var fg=0;for(i=0;i<N;i++)if(!bg[i])fg++;var fr=fg/N;if(fr<.12||fr>.85)return null;
+  /* Ürün kenara değiyorsa (kırpılmış fotoğraf) güvenli değil */
+  if(B.t<2||B.l<2||B.r>W-3||B.b>H-3)return null;
+  /* Yalnız en büyük parça kalır (zeminde kalan leke, kırıntı silinir) */
+  var lab2=new Int32Array(N),best=0,bestN=0,id=0;
+  for(i=0;i<N;i++){if(bg[i]||lab2[i])continue;id++;var cnt=0;qh=0;qt=0;q[qt++]=i;lab2[i]=id;
+    while(qh<qt){var j=q[qh++];cnt++;y=(j/W)|0;xx=j-y*W;var nb=[xx>0?j-1:-1,xx<W-1?j+1:-1,y>0?j-W:-1,y<H-1?j+W:-1];for(k=0;k<4;k++){var e=nb[k];if(e>=0&&!bg[e]&&!lab2[e]){lab2[e]=id;q[qt++]=e;}}}
+    if(cnt>bestN){bestN=cnt;best=id;}}
+  for(i=0;i<N;i++)if(!bg[i]&&lab2[i]!==best)bg[i]=1;
+  /* 4) Yumuşak kenar: zemine 2 piksel yakın ürün pikselleri zemine uzaklığına göre kısmi saydam */
+  var A=new Float32Array(N),band=new Uint8Array(N);for(i=0;i<N;i++)A[i]=bg[i]?0:1;
+  var f0=bg;for(var it=0;it<2;it++){var nx=new Uint8Array(N);for(y=0;y<H;y++)for(xx=0;xx<W;xx++){i=y*W+xx;if(f0[i]){nx[i]=1;continue;}if((xx>0&&f0[i-1])||(xx<W-1&&f0[i+1])||(y>0&&f0[i-W])||(y<H-1&&f0[i+W])){nx[i]=1;band[i]=1;}}f0=nx;}
+  var T2=T*4;for(i=0;i<N;i++)if(band[i])A[i]=Math.max(0,Math.min(1,(dist[i]-T)/(T2-T)));
+  var A2=A.slice();for(y=1;y<H-1;y++)for(xx=1;xx<W-1;xx++){i=y*W+xx;if(!band[i]&&!(bg[i]&&(band[i-1]||band[i+1]||band[i-W]||band[i+W])))continue;A2[i]=(A[i]*4+A[i-1]+A[i+1]+A[i-W]+A[i+W])/8;}A=A2;
+  /* Kenardaki zemin rengi arındırılır */
+  for(i=0;i<N;i++){var al=A[i],o=i*4;if(al<=.004){p[o+3]=0;continue;}if(al<.999){y=(i/W)|0;for(var ch=0;ch<3;ch++){var v=(p[o+ch]-(1-al)*BR[y*3+ch])/al;p[o+ch]=v<0?0:v>255?255:v;}}p[o+3]=Math.round(al*255);}
+  x.putImageData(D,0,0);
+  /* 5) Renk: standart renklerden Lab'da en yakını (GitHub'daki kes.py ile aynı ölçülmüş tonlar) */
+  var toLab=function(c){var f=function(u){u/=255;return u>.04045?Math.pow((u+.055)/1.055,2.4):u/12.92;},R=f(c[0]),G=f(c[1]),Bb=f(c[2]);
+    var X=(R*.4124+G*.3576+Bb*.1805)/.95047,Y=R*.2126+G*.7152+Bb*.0722,Z=(R*.0193+G*.1192+Bb*.9505)/1.08883,h=function(t){return t>.008856?Math.cbrt(t):7.787*t+16/116;};
+    return [116*h(Y)-16,500*(h(X)-h(Y)),200*(h(Y)-h(Z))];};
+  var STD=[['Beyaz',[229,229,231]],['Lacivert',[36,38,64]],['Siyah',[24,23,25]],['Mavi',[25,68,151]],['Yeşil',[44,72,60]]].concat(extra||[]);
+  var L0=toLab(med),color='',bd=1e9;STD.forEach(function(sx){var L=toLab(sx[1]),d=Math.hypot(L[0]-L0[0],L[1]-L0[1],L[2]-L0[2]);if(d<bd){bd=d;color=sx[0];}});
+  /* 6) Ön/arka puanı: önde yaka daha derin oyulur, yakanın içinden ürünün iç yüzü görünür (koyu) */
+  var hh=B.b-B.t,ww=B.r-B.l,top=function(xc){for(var yy=B.t;yy<=B.b;yy++)if(A[yy*W+xc]>.5)return yy;return NaN;};
+  var medA=function(a){a=a.filter(function(v){return !isNaN(v);}).sort(function(u,v){return u-v;});return a.length?a[a.length>>1]:NaN;};
+  var rng=function(f0,f1){var a=[];for(var xc=B.l+Math.round(ww*f0);xc<=B.l+Math.round(ww*f1);xc++)a.push(top(xc));return a;};
+  var neck=medA(rng(.42,.58)),sh=medA(rng(.22,.32).concat(rng(.68,.78))),notch=(neck-sh)/Math.max(hh,1);if(isNaN(notch))notch=0;
+  var gm=.299*med[0]+.587*med[1]+.114*med[2],dk=0,dn=0;
+  for(y=B.t;y<B.t+Math.round(hh*.2);y++)for(xx=B.l+Math.round(ww*.38);xx<B.l+Math.round(ww*.62);xx++){i=y*W+xx;if(A[i]<=.9)continue;var o2=i*4,gv=.299*p[o2]+.587*p[o2+1]+.114*p[o2+2];dn++;if(gv<gm-Math.max(12,gm*.18))dk++;}
+  var ns=Math.round((notch*4+(dn?dk/dn:0))*1e4)/1e4;
+  /* 7) 1200 × 1500 tuvale ortalanır */
+  var cw=B.r-B.l+1,chh=B.b-B.t+1,sc=Math.min(1200*.9/cw,1500*.92/chh),nw=Math.max(1,Math.round(cw*sc)),nh=Math.max(1,Math.round(chh*sc));
+  var o3=document.createElement('canvas');o3.width=1200;o3.height=1500;var x3=o3.getContext('2d');x3.imageSmoothingQuality='high';x3.drawImage(c,B.l,B.t,cw,chh,Math.round((1200-nw)/2),Math.round((1500-nh)/2),nw,nh);
+  return {canvas:o3,color:color,ns:ns,rgb:med.map(Math.round),tmp:light};
+}catch(_){return null;}}
+/* Yüklenen ürün fotoğrafı telefonda hemen temizlenir; olmazsa GitHub'daki yapay zekâya kalır */
+function cutRaw(blob){return new Promise(function(res){var u=URL.createObjectURL(blob),im=new Image();im.onload=function(){URL.revokeObjectURL(u);var ex=STDC.slice(STDC_BASE.length).map(function(c){var h=c.hex.slice(1);return [c.name,[parseInt(h.slice(0,2),16),parseInt(h.slice(2,4),16),parseInt(h.slice(4,6),16)]];});
+  var o=cutLocal(im,ex);if(!o)return res(null);o.canvas.toBlob(function(bb){if(!bb)return res(null);o.blob=bb;o.ext=/webp/.test(bb.type)?'webp':'png';delete o.canvas;res(o);},'image/webp',.92);};im.onerror=function(){URL.revokeObjectURL(u);res(null);};im.src=u;});}
 function procPhoto(file){return new Promise(function(res,rej){var u=URL.createObjectURL(file),im=new Image();im.onload=function(){var s=Math.min(1,1600/Math.max(im.width,im.height)),c=document.createElement('canvas');c.width=Math.max(1,Math.round(im.width*s));c.height=Math.max(1,Math.round(im.height*s));var x=c.getContext('2d'),png=/png|webp/i.test(file.type);if(!png){x.fillStyle='#fff';x.fillRect(0,0,c.width,c.height);}x.drawImage(im,0,0,c.width,c.height);c.toBlob(function(b){URL.revokeObjectURL(u);b?res({blob:b,ext:png?'png':'jpg'}):rej(new Error('blob'));},png?'image/png':'image/jpeg',.9);};im.onerror=function(){rej(new Error('img'));};im.src=u;});}
 function imgEd(path){
   var l=getp(A.draft,path+'.imgs')||[],h='<div class="ims">';
@@ -4708,7 +4798,10 @@ document.addEventListener('change',function(e){
   if(t.dataset&&t.dataset.psub!==undefined){var ps=A.draft.products[+t.dataset.psub],ls=ps.sub||(ps.sub=[]),xs=ls.indexOf(t.dataset.c);if(t.checked&&xs<0)ls.push(t.dataset.c);if(!t.checked&&xs>=0)ls.splice(xs,1);dirty();var yy=window.scrollY;adRender();window.scrollTo(0,yy);return;}
   if(t.dataset&&t.dataset.upr&&t.files&&t.files.length){var rp=t.dataset.upr,rl=getp(A.draft,rp+'.raw');if(!rl){setp(A.draft,rp+'.raw',[]);rl=getp(A.draft,rp+'.raw');}var fl=Array.prototype.slice.call(t.files);t.value='';
     var RM=rawMax();if(rl.length+fl.length>RM){fl=fl.slice(0,Math.max(0,RM-rl.length));if(!fl.length){toast('Bu üründe '+RM+' fotoğraf dolu ('+STDC.length+' renk × ön ve arka). Yenisini eklemek için önce o rengin eskisini sil ya da yeni renk ekle.');return;}toast('En fazla '+RM+' fotoğraf: yalnız ilk '+fl.length+' tanesi eklendi.');}
-    Promise.all(fl.map(function(f){return procRaw(f).then(function(r){var tk='img/'+Date.now().toString(36)+Math.random().toString(36).slice(2,6)+'.'+r.ext;pend[tk]={blob:r.blob,url:URL.createObjectURL(r.blob)};rl.push(tk);if(r.guess){var gb=getp(A.draft,rp);(gb.rawguess||(gb.rawguess={}))[tk]=r.guess;}});})).then(function(){dirty();adRender();toast('Fotoğraflar eklendi. Şimdi Kaydet\'e bas; zemini 2–3 dakikada temizlenip ürüne yerleşir.');}).catch(function(){toast('Fotoğraf okunamadı');});return;}
+    var nOk=0,nTmp=0;toast('Fotoğraflar hazırlanıyor…');
+    Promise.all(fl.map(function(f){return procRaw(f).then(function(r){var base=Date.now().toString(36)+Math.random().toString(36).slice(2,6),tk='img/'+base+'.'+r.ext;pend[tk]={blob:r.blob,url:URL.createObjectURL(r.blob)};rl.push(tk);var gb=getp(A.draft,rp);if(r.guess){(gb.rawguess||(gb.rawguess={}))[tk]=r.guess;}
+      return cutRaw(r.blob).then(function(o){if(!o)return;var ck='img/'+base+'-k.'+o.ext;pend[ck]={blob:o.blob,url:URL.createObjectURL(o.blob)};var e={file:ck,color:o.color,ns:o.ns,rgb:o.rgb};if(o.tmp){e.tmp=1;nTmp++;}else nOk++;(gb.rawcut||(gb.rawcut={}))[tk]=e;});});})).then(function(){dirty();adRender();var nAi=fl.length-nOk-nTmp;
+      toast(nAi===0&&nTmp===0?'Fotoğraflar hazır, zemini temizlendi. Şimdi Kaydet\'e bas.':'Fotoğraflar eklendi'+(nOk+nTmp?' ve önizlemesi hazır':'')+'. Kaydet\'e bas; '+(nTmp?'açık renkli olanların kenarı ':'')+(nAi?'zemini karışık olanlar ':'')+'birkaç dakikada yapay zekâyla temizlenir.');}).catch(function(){toast('Fotoğraf okunamadı');});return;}
   if(t.dataset&&t.dataset.rfix){var fb=getp(A.draft,t.dataset.rfix);if(fb){var fx=fb.rawfix||(fb.rawfix={}),fr=fx[t.dataset.r]||(fx[t.dataset.r]={});if(t.value)fr[t.dataset.k]=t.value;else delete fr[t.dataset.k];if(!fr.color&&!fr.side)delete fx[t.dataset.r];dirty();adRender();}return;}
   if(t.dataset&&t.dataset.upc&&t.files&&t.files[0]){var cf=t.files[0],cpth=t.dataset.upc;t.value='';procPhoto(cf).then(function(r){var tk='img/'+Date.now().toString(36)+Math.random().toString(36).slice(2,6)+'.'+r.ext;pend[tk]={blob:r.blob,url:URL.createObjectURL(r.blob)};setp(A.draft,cpth,tk);dirty();adRender();}).catch(function(){toast('Görsel okunamadı');});return;}
   if(t.dataset&&t.dataset.repl&&t.files&&t.files[0]){var rf=t.files[0],rpth=t.dataset.repl,rj=+t.dataset.j;t.value='';procImg(rf).then(function(b){var tk='img/'+Date.now().toString(36)+Math.random().toString(36).slice(2,6)+'.jpg';pend[tk]={blob:b,url:URL.createObjectURL(b)};var l=getp(A.draft,rpth+'.imgs');if(l&&rj<l.length){l[rj]=tk;dirty();adRender();toast('Görsel değişti. Kaydet’e basmayı unutma.');}}).catch(function(){toast('Görsel okunamadı. Başka bir fotoğraf dene.');});return;}
@@ -4744,7 +4837,7 @@ document.addEventListener('click',function(e){
   else if(a==='mvcp'){var ci=+b.dataset.i,cj=ci+(+b.dataset.d),cl=d.cpages||[];if(cj>=0&&cj<cl.length){var cx=cl[ci];cl[ci]=cl[cj];cl[cj]=cx;dirty();adRender();}}
   else if(a==='txtreset'){if(confirm('Sayfa metinleri ilk haline dönsün mü?')){d.txt=clone(DEF.txt);dirty();adRender();}}
   else if(a==='aigen'){aiGen(b.dataset.p,b.dataset.s);}
-  else if(a==='rdel'){var rb=getp(d,b.dataset.p),rr=rb&&rb.raw&&rb.raw[+b.dataset.j];if(rr){rb.raw.splice(+b.dataset.j,1);if(rb.rawfix)delete rb.rawfix[rr];dirty();adRender();}}
+  else if(a==='rdel'){var rb=getp(d,b.dataset.p),rr=rb&&rb.raw&&rb.raw[+b.dataset.j];if(rr){rb.raw.splice(+b.dataset.j,1);if(rb.rawfix)delete rb.rawfix[rr];if(rb.rawcut)delete rb.rawcut[rr];dirty();adRender();}}
   else if(a==='rswap'){var sb=getp(d,b.dataset.p),RR=rawResolve(sb,MAN).by[b.dataset.c];if(RR&&RR.front&&RR.back){var sx=sb.rawfix||(sb.rawfix={});(sx[RR.front]||(sx[RR.front]={})).side='back';(sx[RR.back]||(sx[RR.back]={})).side='front';dirty();adRender();}}
   else if(a==='cadd'){var cpa=b.dataset.p+'.colors',ca=getp(d,cpa);if(!ca){setp(d,cpa,[]);ca=getp(d,cpa);}ca.push({name:'Yeni renk',hex:'#ffffff',front:'',back:''});dirty();adRender();}
   else if(a==='cdel'){var cl=getp(d,b.dataset.p+'.colors');if(cl)cl.splice(+b.dataset.j,1);dirty();adRender();}

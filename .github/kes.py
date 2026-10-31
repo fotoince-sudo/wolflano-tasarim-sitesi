@@ -144,7 +144,11 @@ def main():
             STD.append((c['name'], (int(h[0:2], 16), int(h[2:4], 16), int(h[4:6], 16))))
     todo = []
     for b in d.get('blanks') or []:
+        rc = b.get('rawcut') or {}
         for r in b.get('raw') or []:
+            # telefonda kesin temizlenmiş fotoğraf (rawcut, geçici değil) atlanır
+            if (rc.get(r) or {}).get('file') and not (rc.get(r) or {}).get('tmp'):
+                continue
             if r and r not in man and r not in todo:
                 todo.append(r)
     print('işlenecek:', len(todo))
