@@ -4505,9 +4505,14 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
       if(o.type==='text'&&o.value){var v=String(o.value).replace(/\s+/g,' ').trim();if(/^(\S )+\S$/.test(v))v=v.replace(/ /g,'');if(v&&v!=='Yazını yaz')txt.push({v:v,s:+o.size||0});}
       else if(o.type==='clip'&&!clip){var r=clipRow(o.key);if(r)clip=String(r[1]||'').replace(/\s*sahnesi$/i,'');}});});
     txt.sort(function(a,b){return b.s-a.s;});
-    var base=txt.length?txt[0].v:(clip||'Wolflano');if(base.length>34)base=base.slice(0,34).replace(/\s+\S*$/,'');
+    var base=txt.length?txt[0].v:(clip||'');if(base.length>34)base=base.slice(0,34).replace(/\s+\S*$/,'');
     base=trTitle(base);var w=PWORD[state.product]||'Tasarım';
-    return base.toLocaleLowerCase('tr').indexOf(w.toLocaleLowerCase('tr'))>=0?base:base+' '+w;
+    /* Ad önce kimin için ve ne olduğunu söyler (Koleksiyon'da "Tümü"nde karışmasın): "Kadın Tişört – Çeşme", "Kupa – Babacığım".
+       Tasarımda yazı ya da sahne yoksa yalnız "Erkek Polo" (renk adda yok: aynı tasarımın renkleri tek kartta toplanır). */
+    var g={erkek:'Erkek',kadin:'Kadın',cocuk:'Çocuk'}[state.cut],head=(g&&!/^(mug|canvas)$/.test(state.product)?g+' ':'')+w;
+    if(state.product==='canvas')head+=' '+(cvOlcu()==='3550'?'35 × 50':'50 × 70');
+    if(base&&head.toLocaleLowerCase('tr').indexOf(base.toLocaleLowerCase('tr'))<0){var bl=base.toLocaleLowerCase('tr'),wl=w.toLocaleLowerCase('tr');if(bl.indexOf(wl)>=0)base=trTitle(base.replace(new RegExp('\\s*'+w+'\\s*','i'),' ').trim());return base?head+' – '+base:head;}
+    return head;
   }
   function uniqName(n,names){var h={};(names||[]).forEach(function(x){h[String(x||'').trim().toLocaleLowerCase('tr')]=1;});if(!h[n.toLocaleLowerCase('tr')])return n;for(var i=2;i<999;i++){var c=n+' '+i;if(!h[c.toLocaleLowerCase('tr')])return c;}return n;}
   function up1(t){var c=String(t||'').trim().charAt(0).toLocaleUpperCase('tr');return ({'Ç':'C','Ş':'S','İ':'I','Ğ':'G','Ö':'O','Ü':'U'})[c]||c;}
