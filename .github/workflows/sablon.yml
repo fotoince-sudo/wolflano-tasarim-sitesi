@@ -32,7 +32,7 @@ jobs:
       - name: Araçları kur
         run: |
           pip install -q torch torchvision --index-url https://download.pytorch.org/whl/cpu
-          pip install -q spandrel pillow numpy
+          pip install -q spandrel pillow numpy scipy
           python3 -c "import torch, torchvision, spandrel; print('torch', torch.__version__, 'spandrel ok')"
           [ -f realesr-general-x4v3.pth ] || curl -fsSL -o realesr-general-x4v3.pth https://github.com/xinntao/Real-ESRGAN/releases/download/v0.2.5.0/realesr-general-x4v3.pth
       - name: Hazırla
@@ -45,11 +45,13 @@ jobs:
           mkdir -p /tmp/out/web /tmp/baski
           cp sablon/web/*.webp /tmp/out/web/ 2>/dev/null || true
           cp sablon/rapor.json sablon/son-calisma.txt /tmp/out/ 2>/dev/null || true
+          mkdir -p /tmp/out/kaynak && cp sablon/kaynak/*.png /tmp/out/kaynak/ 2>/dev/null || true
           cp baski/*.png /tmp/baski/ 2>/dev/null || true
           for i in 1 2 3 4 5; do
             git fetch -q origin main && git reset -q --hard origin/main
             mkdir -p sablon/web && cp /tmp/out/web/*.webp sablon/web/ 2>/dev/null || true
             cp /tmp/out/rapor.json /tmp/out/son-calisma.txt sablon/ 2>/dev/null || true
+            mkdir -p sablon/kaynak && cp /tmp/out/kaynak/*.png sablon/kaynak/ 2>/dev/null || true
             git add sablon
             git commit -q -m "Şablonlar: baskı dosyaları hazırlandı" || break
             git push -q origin HEAD:main && break

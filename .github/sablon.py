@@ -6,6 +6,7 @@
 #   sablon/rapor.json -> her işin kaynak ölçüsü ve sonucu
 import io, json, os, sys, traceback, urllib.request
 import numpy as np
+from scipy import ndimage
 from PIL import Image
 import torch
 from spandrel import ModelLoader
@@ -42,8 +43,13 @@ for j in jobs:
     if rap.get(ad, {}).get('tamam') and not j.get('yeniden'):
         continue
     try:
-        data = urllib.request.urlopen(j['url'], timeout=120).read()
-        im = Image.open(io.BytesIO(data)).convert('RGB')
+        kp = f'sablon/kaynak/{ad}.png'
+        if os.path.exists(kp):
+            im = Image.open(kp).convert('RGB')
+        else:
+            data = urllib.request.urlopen(j['url'], timeout=120).read()
+            im = Image.open(io.BytesIO(data)).convert('RGB')
+            os.makedirs('sablon/kaynak', exist_ok=True); im.save(kp, optimize=True)
         src = im.size
         a = np.asarray(im).astype(np.int16)
         d = (255 - a.min(axis=2))
@@ -57,7 +63,16 @@ for j in jobs:
         big = big.resize((round(big.width * s), round(big.height * s)), Image.LANCZOS)
         f = np.asarray(big).astype(np.float32)
         dist = 255 - f.min(axis=2)
-        al = np.clip((dist - 6) / 38, 0, 1)
+        # Yalnız dış kenara bağlı saf beyaz zemin saydam olur; resmin içindeki beyazlar (bulut, kurdun göğsü, beyaz evler, kedi) dolu kalır
+        pure = dist <= 7
+        lab, n = ndimage.label(pure)
+        edge = np.unique(np.concatenate([lab[0], lab[-1], lab[:, 0], lab[:, -1]]))
+        bgm = np.isin(lab, edge[edge > 0])
+        band = ndimage.binary_dilation(bgm, iterations=3) & ~bgm
+        al = np.ones(dist.shape, np.float32)
+        al[bgm] = 0
+        al[band] = np.clip((dist[band] - 4) / 34, 0, 1)
+        al = np.where(band | bgm, ndimage.uniform_filter(al, 3), al)
         safe = np.maximum(al, 1e-3)[..., None]
         rgb = np.clip((f - (1 - al[..., None]) * 255) / safe, 0, 255)
         rgba = np.dstack([rgb, al * 255]).round().astype(np.uint8)
