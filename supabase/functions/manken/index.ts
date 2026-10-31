@@ -195,7 +195,10 @@ Deno.serve(async (req) => {
       // ref yoksa: beyaz ön sıfırdan; ref varsa: aynı ürünün arkası (yuz=back) ya da başka rengi (aynı yüz)
       const gar = URUN[String(b.tur)];
       const fit = KESIM[String(b.kesim)] || KESIM.erkek;
-      const col = RENK[String(b.renk)];
+      // Standart 5 renk tanımlı tonuyla; yönetimde eklenen renkler (ör. Bordo) adı ve tonuyla (#hex) gelir
+      const rhex = /^#[0-9a-f]{6}$/i.test(String(b.renkHex || '')) ? String(b.renkHex) : '';
+      const rname = String(b.renk || '').replace(/[^\p{L}\p{N} -]/gu, '').slice(0, 24).trim();
+      const col = RENK[String(b.renk)] || (rname && rhex ? `${rname} (exact tone ${rhex})` : '');
       const back = b.yuz === 'back';
       if (!gar || !col) return j({ error: 'bad', message: 'Ürün türü ya da renk geçersiz.' }, 400);
       const u = String(b.ref || '');

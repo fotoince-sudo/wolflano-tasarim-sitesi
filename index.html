@@ -3636,20 +3636,22 @@ function aiEd(pa,b){if(!aiTur(b)||!sbAdmin())return '';var ai=b.ai||{},w=ai['Bey
   var h='<div class="aig"><b style="font-size:14px">Yapay zekâyla üret</b><p class="note" style="margin:4px 0 8px">Baskısız, görünmez manken tarzı ürün fotoğrafı. Önce beyaz ön ve arka üretilir; beğenirsen diğer 4 renk aynı beyazdan boyanır, böylece bütün renklerde kesim ve kıvrımlar birebir aynı olur. Üretilen fotoğraf o rengin eski fotoğraflarının yerine geçer ve kendiliğinden kaydedilir. Her fotoğraf 1-2 dakika sürer ve OpenAI hesabından ücretlendirilir.</p>';
   if(hasW)h+='<div class="aiw"><figure><img src="'+aiUrl(w.front)+'" alt="Beyaz ön"><figcaption>Beyaz ön</figcaption></figure><figure><img src="'+aiUrl(w.back)+'" alt="Beyaz arka"><figcaption>Beyaz arka</figcaption></figure></div>';
   h+='<div class="aib"><button class="btn sm" data-ad="aigen" data-p="'+pa+'" data-s="w"'+(busy?' disabled':'')+'>'+(hasW?'Beyazı yeniden üret (2 fotoğraf)':'1. Beyaz ön ve arka üret (2 fotoğraf)')+'</button>'+
-    '<button class="btn sm" data-ad="aigen" data-p="'+pa+'" data-s="c"'+(busy||!hasW?' disabled':'')+'>2. '+AI_DIGER.join(', ')+' üret (8 fotoğraf)</button></div>';
+    '<button class="btn sm" data-ad="aigen" data-p="'+pa+'" data-s="c"'+(busy||!hasW?' disabled':'')+'>2. '+AI_DIGER.join(', ')+' üret (8 fotoğraf)</button>'+
+    /* yönetimde eklenen renkler (ör. Bordo): her biri ayrı düğme, 2'şer fotoğraf */
+    STDC.slice(STDC_BASE.length).map(function(c){var has=b.ai&&b.ai[c.name];return '<button class="btn soft sm" data-ad="aigen" data-p="'+pa+'" data-s="c:'+esc(c.name)+'"'+(busy||!hasW?' disabled':'')+'><i style="display:inline-block;width:10px;height:10px;border-radius:50%;background:'+c.hex+';margin-right:6px;vertical-align:-1px;border:1px solid #0003"></i>'+esc(c.name)+(has?' yeniden':'')+' üret (2 fotoğraf)</button>';}).join('')+'</div>';
   h+='<p class="note" id="aig-'+aid(pa)+'" style="margin:6px 0 0'+(mine?';color:var(--accent,#159b91);font-weight:600':'')+'">'+(mine?esc(AIG.txt):(busy?'Başka bir ürün için üretim sürüyor…':''))+'</p>';
   return h+'</div>';}
 function aiSay(t){AIG.txt=t;var el=document.getElementById('aig-'+aid(AIG.pa));if(el)el.textContent=t;}
 async function aiGen(pa,step){
   if(AIG.pa)return;var d=A.draft,b=getp(d,pa);if(!b)return;var tur=aiTur(b);if(!tur)return;
   var cut=GENS.indexOf(b.cut)>=0?b.cut:'erkek';b.ai=b.ai||{};
-  var renkler=step==='w'?['Beyaz']:AI_DIGER.slice(),toplam=renkler.length*2,n=0,ok=0;
-  if(step==='c'&&!(b.ai['Beyaz']&&b.ai['Beyaz'].front&&b.ai['Beyaz'].back))return;
+  var renkler=step==='w'?['Beyaz']:/^c:/.test(step)?[step.slice(2)]:AI_DIGER.slice(),toplam=renkler.length*2,n=0,ok=0;
+  if(step!=='w'&&!(b.ai['Beyaz']&&b.ai['Beyaz'].front&&b.ai['Beyaz'].back))return;
   AIG.pa=pa;AIG.txt='';adRender();
   async function one(body){for(var t=0;;t++){try{return await mnCall(body);}catch(e){if(t>=2||/bakiye|Oturum|yalnız|geçersiz/.test(String(e.message)))throw e;aiSay(e.message+' Yeniden deneniyor…');await new Promise(function(r){setTimeout(r,(t+1)*20000);});}}}
   try{
     for(var i=0;i<renkler.length;i++){var rk=renkler[i],W=b.ai['Beyaz']||{},got={};
-      for(var s=0;s<2;s++){var yuz=s?'back':'front',body={mode:'urun',tur:tur,kesim:cut,renk:rk,yuz:yuz};
+      for(var s=0;s<2;s++){var yuz=s?'back':'front',body={mode:'urun',tur:tur,kesim:cut,renk:rk,yuz:yuz},rx=STDC.filter(function(c){return c.name===rk;})[0];if(rx)body.renkHex=rx.hex;
         if(rk==='Beyaz'){if(yuz==='back'){body.ref=aiUrl(got.front);body.ref_yuz='front';}}
         else{body.ref=aiUrl(W[yuz]);body.ref_yuz=yuz;}
         n++;aiSay(n+' / '+toplam+' · '+rk+' '+(yuz==='front'?'ön':'arka')+' hazırlanıyor… (1-2 dakika)');
