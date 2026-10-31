@@ -2786,7 +2786,7 @@ function kolPicks(){var seen={},sc={},out=[];var L=PRODUCTS.filter(function(p){v
 /* Wolf banner'ı: her sayfa için aynı premium kalıp. Wolf o sayfanın ürünlerinden iki fotoğrafı kendisi seçer;
    yönetimde yalnız üst yazı, başlık, kısa yazı ve alt satır değiştirilir (boş bırakılırsa sayfanın hazır metni çıkar). */
 function wBan(k,pics,def){k=k||{};if(k.show===false)return '';
-  var anim=!!def.h1&&pics.length>=2;
+  var anim=(!!def.h1||!!def.anim)&&pics.length>=2;
   var ph=anim?kbAnimPics(pics):pics.slice(0,2).map(function(u,i){return '<img class="kbp kbp'+i+'" src="'+u+'" alt="" loading="'+(i?'lazy':'eager')+'">';}).join('');
   var e=k.eyebrow||def.e,t=k.title||def.t,x=k.text||def.x,l=k.line!=null&&k.line!==''?k.line:def.l;
   /* Sayfa başlığı banner'ın içinde (Hediye & Dekor): ayrı üst başlık yok, mobilde yer kaplamaz */
@@ -2805,7 +2805,7 @@ var KBA=null;function kbAnimStart(){if(KBA)return;var rm=false;try{rm=matchMedia
 var WBAN_DEF={
   hazir:{e:'Yeni sezon',t:'Paranı savurma, logo algısına değil kumaşa öde.',x:'240 gr tişört · 280 gr polo · 380 gr sweatshirt',l:'İtalyan estetiği · Wolflano karakteri'},
   hediye:{e:'Wolflano',h1:'Hediye & Dekor',t:'',x:'Anıların, kupada ve duvarda.',l:'Kolajını Wolf hazırlasın'},
-  tasarla:{e:'Kendin tasarla',t:'Fikrin senin, kalitesi bizim.',x:'Tişört · Sweatshirt · Şapka · Kupa · Canvas',l:'Wolf seninle tasarlar'},
+  tasarla:{e:'Kendin tasarla',t:'Fikrin senin, kalitesi bizim.',x:'Tişört · Sweatshirt · Şapka · Kupa · Canvas',l:'Wolf seninle tasarlar',anim:true},
   sayfa:{e:'Wolflano',t:'',x:'',l:'İtalyan estetiği · Wolflano karakteri'}};
 function wbPics(page){var out=[];
   if(page==='hediye'){var hc=(D.cats||[]).filter(function(c){return /hediye|dekor/i.test(c.name||'');})[0];
@@ -2816,7 +2816,22 @@ function wbPics(page){var out=[];
     out=out.slice(0,8);
     if(out.length<2)BLANKS.forEach(function(b){var t=b.p||b.id;if(t!=='mug'&&t!=='canvas')return;(b.imgs||[]).forEach(function(k){if(/^img\/ortam-/.test(k)&&out.indexOf(src(k))<0)out.push(src(k));});});
     return out;}
-  if(page==='tasarla'){BLANKS.forEach(function(b){var t=b.p||b.id;if(t==='mug'||t==='canvas'||!bVisible(b))return;var c=bColors(b)[0];var u=c?(c.front||c.back):(b.imgs&&b.imgs[0]);if(u&&out.length<2)out.push(src(u));});return out;}
+  /* Kendin tasarla: Koleksiyondaki baskılı (tasarlanmış) giyim ürünleri döner; renkliler önce, aynı renk art arda gelmez, her açılışta karışık, en fazla 8.
+     Yeterli baskılı ürün yoksa baskısız ürünlerin renkli fotoğrafları eklenir (beyaz en sona). */
+  if(page==='tasarla'){
+    var gw=function(p){var t=String(p.type||'').toLocaleLowerCase('tr');return /ti[sş][oö]rt|polo|sweat|kap[uü][sş]/.test(t)&&!/kupa|canvas|tablo/.test(t);};
+    var printed=function(p){var d=p.dsg;if(d){return ['front','logo','logo2','back'].some(function(k){return d[k]&&(d[k].objs||[]).length;});}return true;};
+    var white=function(c){return /beyaz|white|krem|ekru/i.test(String(c||''));};
+    var L=PRODUCTS.filter(function(p){return p.show!==false&&p.imgs&&p.imgs[0]&&gw(p)&&!soldOut(p)&&printed(p);});
+    for(var q2=L.length-1;q2>0;q2--){var r2=Math.floor(Math.random()*(q2+1)),t2=L[q2];L[q2]=L[r2];L[r2]=t2;}
+    L.sort(function(a,b){return (white(a.color)?1:0)-(white(b.color)?1:0);});
+    /* Aynı renk art arda gelmesin */
+    var ord=[],rest=L.slice();while(rest.length&&ord.length<8){var last=ord.length?String(ord[ord.length-1].color||'').toLocaleLowerCase('tr'):null,k2=0;
+      for(var z=0;z<rest.length;z++){if(String(rest[z].color||'').toLocaleLowerCase('tr')!==last){k2=z;break;}}ord.push(rest.splice(k2,1)[0]);}
+    var seen2={};ord.forEach(function(p){var u=IMG(p);if(u&&!seen2[u]){seen2[u]=1;out.push(u);}});
+    if(out.length<3){var wb=[];BLANKS.forEach(function(b){var t=b.p||b.id;if(t==='mug'||t==='canvas'||!bVisible(b))return;bColors(b).forEach(function(c){var u=c&&(c.front||c.back);if(!u)return;u=src(u);if(seen2[u])return;seen2[u]=1;(white(c.name||c.ad||c.label||c.id)?wb:out).push(u);});});
+      out=out.concat(wb).slice(0,Math.max(3,out.length));}
+    return out.slice(0,8);}
   return kolPicks().map(function(p){return IMG(p);});}
 function pageBan(page,k){return wBan(k,wbPics(page),WBAN_DEF[page]||WBAN_DEF.sayfa);}
 function kolDesign(k){return pageBan('hazir',k);}
