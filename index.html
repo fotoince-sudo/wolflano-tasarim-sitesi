@@ -2435,7 +2435,14 @@ function trUp1(t){var c=String(t||'').trim().charAt(0).toLocaleUpperCase('tr');r
 function pNums(list){var mx=0;(list||[]).forEach(function(x){if(+x.no>mx)mx=+x.no;});(list||[]).forEach(function(x){if(!(+x.no>0))x.no=++mx;});return mx;}
 function pCode(p){if(!p)return '';var a=trUp1(p.color)||'W',b=trUp1(p.type)||'U',n=String(+p.no||0);while(n.length<3)n='0'+n;return a+b+'-'+n;}
 function cDot(c){var h=RENK[String(c||'').trim().toLocaleLowerCase('tr')];return h?'<i class="cdot" style="background:'+h+'"></i>':'';}
-function pTypeColor(p){var k=p.color?kCode(String(p.color).trim()):'';return esc(p.type||'')+(p.color?' <span class="pclr">· '+cDot(p.color)+esc(p.color)+(k?' <small style="opacity:.65;font-weight:600">'+k+'</small>':'')+'</span>':'');}
+/* Canvas tablonun ölçüsü (kartta ve ürün sayfasında görünür): tasarım verisinden, yoksa addan */
+function land0(p){return !!(p&&p.dsg&&p.dsg.front&&p.dsg.front.land);}
+function pDim(p){var d=p&&p.dsg||{},isC=d.product==='canvas'||/canvas|tablo/i.test(String(p&&p.type||''));if(!isC)return '';
+  var a=(d.front&&d.front.area)||d.cut||'',land=!!(d.front&&d.front.land);
+  var m=/3550/.test(a)?[35,50]:/5070/.test(a)?[50,70]:null;
+  if(!m){var t=String((p.name||'')+' '+(p.color||'')).match(/(\d{2})\s*[x×*]\s*(\d{2})/);if(t)m=[+t[1],+t[2]];}
+  if(!m)return '';return (land?m[1]+' × '+m[0]:m[0]+' × '+m[1])+' cm';}
+function pTypeColor(p){var dm=pDim(p);if(dm)return esc(p.type||'')+' <span class="pclr">· <b>'+dm+'</b>'+(land0(p)?' · yatay':' · dikey')+'</span>';var k=p.color?kCode(String(p.color).trim()):'';return esc(p.type||'')+(p.color?' <span class="pclr">· '+cDot(p.color)+esc(p.color)+(k?' <small style="opacity:.65;font-weight:600">'+k+'</small>':'')+'</span>':'');}
 function ckId(k){return String(k).split('~')[0];}
 function ckSz(k){return String(k).split('~')[1]||'';}
 function ckKey(id,sz){return sz?id+'~'+sz:id;}
@@ -2879,7 +2886,7 @@ function pImgCls(p){return p.dsg&&!/kupa|canvas/i.test(p.type||'')&&/\/?img\/tas
 function card(p){
   var V=p._vars||null,nm=pName(p);
   return '<article class="card'+(V?' cg':'')+'"'+(V?' data-cg="'+esc(JSON.stringify(V.map(function(v){return {i:v.id,u:IMG(v),p:pr(v),c:v.color||'',d:v.dsg?1:0,s:soldOut(v)?1:0,f:pImgCls(v)?1:0};})))+'"':'')+'><div class="phw"><a class="ph" href="#urun-'+p.id+'" aria-label="'+esc(p.name)+' detay"><img src="'+IMG(p)+'"'+pImgCls(p)+' alt="'+esc(p.name)+'" loading="lazy">'+pTag(p)+'</a>'+favBtn(p.id)+(V?'<div class="cgd" role="radiogroup" aria-label="Renk">'+V.map(function(v,i){var h=cHex(v.color)||'#ccc';return '<button type="button" data-cgi="'+i+'"'+(i?'':' class="on"')+' role="radio" aria-checked="'+(i?'false':'true')+'" aria-label="'+esc(v.color||'Renk')+'" style="background:'+h+'"></button>';}).join('')+'</div>':'')+'</div>'+
-  '<div class="meta">'+'<b class="pnm">'+esc(nm)+'</b>'+'<div class="row"><small>'+p.type+'</small><span class="price">'+pr(p)+'</span></div>'+
+  '<div class="meta">'+'<b class="pnm">'+esc(nm)+'</b>'+'<div class="row"><small>'+p.type+(pDim(p)?' · <b>'+pDim(p)+'</b>':'')+'</small><span class="price">'+pr(p)+'</span></div>'+
   stk(p)+'</div>'+
   (soldOut(p)?'<button type="button" class="btn sm add sold" data-soldout="'+p.id+'">Sepete ekle</button>':'<button class="btn sm add" data-add="'+p.id+'">Sepete ekle</button>')+(p.dsg?'<a class="cedit" href="studyo.html?hazir='+encodeURIComponent(p.id)+'"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13.5 6.5l4 4"/></svg>Düzenle, ismini ekle</a>':'')+((sbAdmin()||WF_ADM)?'<button type="button" class="cdel" data-pdel="'+esc((V?V.map(function(v){return v.id;}):[p.id]).join(','))+'">Sil <small>(yalnız sen görürsün)</small></button>':'')+'</article>';
 }
