@@ -98,18 +98,18 @@
    4961
   ],
   "buyutulmus": [
-   4324,
-   5784
+   6348,
+   8980
   ],
   "dpi": 300,
   "kat": "Şehirler",
   "kaynak": [
-   1088,
-   1456
+   1587,
+   2245
   ],
   "kirpilmis": [
-   1081,
-   1446
+   1587,
+   2245
   ],
   "tamam": true,
   "yon": "dikey"
@@ -133,6 +133,98 @@
   "kirpilmis": [
    1493,
    1016
+  ],
+  "tamam": true,
+  "yon": "yatay"
+ },
+ "kupa-antalya": {
+  "ad": "Antalya",
+  "baski": [
+   2362,
+   1063
+  ],
+  "buyutulmus": [
+   7080,
+   3456
+  ],
+  "dpi": 300,
+  "kat": "Şehirler",
+  "kaynak": [
+   1776,
+   896
+  ],
+  "kirpilmis": [
+   1770,
+   864
+  ],
+  "tamam": true,
+  "yon": "yatay"
+ },
+ "kupa-bodrum": {
+  "ad": "Bodrum",
+  "baski": [
+   2362,
+   1063
+  ],
+  "buyutulmus": [
+   7028,
+   3252
+  ],
+  "dpi": 300,
+  "kat": "Şehirler",
+  "kaynak": [
+   1776,
+   896
+  ],
+  "kirpilmis": [
+   1757,
+   813
+  ],
+  "tamam": true,
+  "yon": "yatay"
+ },
+ "kupa-istanbul": {
+  "ad": "İstanbul",
+  "baski": [
+   2362,
+   1063
+  ],
+  "buyutulmus": [
+   7080,
+   3336
+  ],
+  "dpi": 300,
+  "kat": "Şehirler",
+  "kaynak": [
+   1776,
+   896
+  ],
+  "kirpilmis": [
+   1770,
+   834
+  ],
+  "tamam": true,
+  "yon": "yatay"
+ },
+ "kupa-van": {
+  "ad": "Van",
+  "baski": [
+   2362,
+   1063
+  ],
+  "buyutulmus": [
+   7104,
+   3560
+  ],
+  "dpi": 300,
+  "kat": "Şehirler",
+  "kaynak": [
+   1776,
+   896
+  ],
+  "kirpilmis": [
+   1776,
+   890
   ],
   "tamam": true,
   "yon": "yatay"
