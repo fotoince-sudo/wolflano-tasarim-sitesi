@@ -42,14 +42,23 @@ jobs:
         run: |
           git config user.name "fotoince-sudo"
           git config user.email "fotoince@gmail.com"
-          mkdir -p /tmp/baski && cp baski/*.png /tmp/baski/ 2>/dev/null || true
-          git add sablon/web sablon/rapor.json sablon/son-calisma.txt 2>/dev/null || git add sablon
-          git commit -q -m "Şablonlar: baskı dosyaları hazırlandı" || true
-          for i in 1 2 3; do git pull -q --rebase origin main && git push -q origin HEAD:main && break; sleep 5; done
+          mkdir -p /tmp/out/web /tmp/baski
+          cp sablon/web/*.webp /tmp/out/web/ 2>/dev/null || true
+          cp sablon/rapor.json sablon/son-calisma.txt /tmp/out/ 2>/dev/null || true
+          cp baski/*.png /tmp/baski/ 2>/dev/null || true
+          for i in 1 2 3 4 5; do
+            git fetch -q origin main && git reset -q --hard origin/main
+            mkdir -p sablon/web && cp /tmp/out/web/*.webp sablon/web/ 2>/dev/null || true
+            cp /tmp/out/rapor.json /tmp/out/son-calisma.txt sablon/ 2>/dev/null || true
+            git add sablon
+            git commit -q -m "Şablonlar: baskı dosyaları hazırlandı" || break
+            git push -q origin HEAD:main && break
+            sleep 5
+          done
           # tam boy dosyalar ayrı dala (siteye yüklenmez)
           if ls /tmp/baski/*.png >/dev/null 2>&1; then
             git fetch -q origin baski || true
-            if git rev-parse -q --verify origin/baski >/dev/null; then git checkout -q -B baski origin/baski; else git checkout -q --orphan baski; git rm -rq --cached . || true; fi
+            if git rev-parse -q --verify origin/baski >/dev/null; then git checkout -q -f -B baski origin/baski; else git checkout -q -f --orphan baski; git rm -rqf --cached . >/dev/null || true; fi
             mkdir -p baski && cp /tmp/baski/*.png baski/
-            git add baski/*.png && git commit -q -m "Baskı dosyaları (A3 300 dpi)" && git push -q origin baski || true
+            git add baski/*.png && git commit -q -m "Baskı dosyaları (A3 300 dpi)" && git push -q origin baski
           fi
