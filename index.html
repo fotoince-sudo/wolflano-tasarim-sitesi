@@ -3403,6 +3403,9 @@ function cutMerge(d,man){man=man||{};stdcSync(d);((d&&d.blanks)||[]).forEach(fun
   STDC.forEach(function(c){var o=R[c.name];if(!o)return;var f=o.front&&man[o.front]?man[o.front].file:'',k=o.back&&man[o.back]?man[o.back].file:'';if(!f&&!k)return;cs.push({name:c.name,hex:c.hex,front:f||k,back:f?k:''});});
   if(cs.length)b.colors=cs;});return d;}
 function loadMan(){return fetch('cut/index.json?v='+Math.floor(Date.now()/60000),{cache:'no-store'}).then(function(r){return r.ok?r.json():{};}).catch(function(){return {};}).then(function(m){MAN=m||{};return MAN;});}
+/* Yönetimde "İşleniyor…" yazan fotoğraf varken her 20 saniyede bir zemin temizleme listesine bakılır; fotoğraf hazır olunca sayfa yenilemeden güncellenir */
+setInterval(function(){try{if(document.hidden||!document.querySelector('.ritem .st.w'))return;var ae=document.activeElement;if(ae&&/^(INPUT|SELECT|TEXTAREA)$/.test(ae.tagName))return;
+  var n0=Object.keys(MAN||{}).length;fetch('cut/index.json?t='+Date.now(),{cache:'no-store'}).then(function(r){return r.ok?r.json():null;}).then(function(m){if(!m||Object.keys(m).length===n0)return;MAN=m;var y=window.scrollY;adRender();window.scrollTo(0,y);toast('Fotoğraf hazır: zemini temizlendi.');}).catch(function(){});}catch(_){}},20000);
 /* Renkler her üründe aynı sırada ve aynı tonda: standart sıra (Beyaz, Lacivert, Siyah, Mavi, Yeşil), sonra diğerleri */
 function bColors(b){var L=((b&&b.colors)||[]).filter(function(c){return c&&(c.front||c.back)&&/^#[0-9a-f]{6}$/i.test(c.hex||'');}),ix=function(c){for(var i=0;i<STDC.length;i++)if(STDC[i].name===c.name)return i;return STDC.length;};
   return L.map(function(c,k){var i=ix(c);return {c:i<STDC.length?Object.assign({},c,{hex:STDC[i].hex}):c,i:i,k:k};}).sort(function(a,z){return a.i-z.i||a.k-z.k;}).map(function(x){return x.c;});}
