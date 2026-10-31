@@ -1,4 +1,4 @@
-# Canva'da üretilen şehir/şablon görsellerini baskıya hazırlar (GitHub Actions'ta çalışır).
+# Canva'da üretilen şehir/şablon görsellerini baskıya hazırlar (tuval verilmişse o ölçüye, ör. kupa 20 x 9 cm = 2362 x 1063) (GitHub Actions'ta çalışır).
 # sablon/is.json içindeki her iş için: Canva dışa aktarma bağlantısından indir, kenardaki boş beyazı kırp,
 # Real-ESRGAN general-x4v3 (x4, hızlı, ücretsiz) ile büyütüp keskinleştir, beyaz zemini saydam yap, A3 300 dpi tuvale ortala.
 #   baski/<ad>.png  -> tam boy (dikey 3508 x 4961, yatay 4961 x 3508), "baski" dalına yazılır (siteye gitmez)
@@ -52,7 +52,7 @@ for j in jobs:
         crop = im.size
         big = up4(im)
         land = big.width > big.height
-        W, H = (A3[1], A3[0]) if land else A3
+        W, H = tuple(j['tuval']) if j.get('tuval') else ((A3[1], A3[0]) if land else A3)
         s = min(W * .96 / big.width, H * .96 / big.height)
         big = big.resize((round(big.width * s), round(big.height * s)), Image.LANCZOS)
         f = np.asarray(big).astype(np.float32)
