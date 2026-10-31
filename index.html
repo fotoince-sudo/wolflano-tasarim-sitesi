@@ -3791,7 +3791,7 @@ async function aiGen(pa,step){
   async function one(body){for(var t=0;;t++){try{return await mnCall(body);}catch(e){if(t>=2||/bakiye|Oturum|yalnız|geçersiz/.test(String(e.message)))throw e;aiSay(e.message+' Yeniden deneniyor…');await new Promise(function(r){setTimeout(r,(t+1)*20000);});}}}
   try{
     for(var i=0;i<renkler.length;i++){var rk=renkler[i],W=b.ai['Beyaz']||{},got={};
-      for(var s=0;s<2;s++){var yuz=s?'back':'front',body={mode:'urun',tur:tur,kesim:cut,renk:rk,yuz:yuz},rx=STDC.filter(function(c){return c.name===rk;})[0];if(rx)body.renkHex=rx.hex;
+      for(var s=0;s<2;s++){var yuz=s?'back':'front',body={mode:'urun',tur:tur,kesim:cut,renk:rk,yuz:yuz,cg:cut==='cocuk'?(b.cg||''):''},rx=STDC.filter(function(c){return c.name===rk;})[0];if(rx)body.renkHex=rx.hex;
         if(rk==='Beyaz'){if(yuz==='back'){body.ref=aiUrl(got.front);body.ref_yuz='front';}}
         else{body.ref=aiUrl(W[yuz]);body.ref_yuz=yuz;}
         n++;aiSay(n+' / '+toplam+' · '+rk+' '+(yuz==='front'?'ön':'arka')+' hazırlanıyor… (1-2 dakika)');
@@ -3841,16 +3841,19 @@ function bTypeEd(i,b){var t=bTypeOf(b),g=b.gen||(GENS.indexOf(b.cut)>=0?b.cut:(b
    ad kendiliğinden kurulur (ör. "Erkek polo tişört Slim"), elle yalnız model adı yazılır. */
 var BTLOW={tee:'tişört',sweat:'sweatshirt',hood:'kapüşonlu sweatshirt',zip:'fermuarlı kapüşonlu',polo:'polo tişört',hat:'şapka',mug:'kupa',canvas:'canvas tablo'};
 var GENL={erkek:'Erkek',kadin:'Kadın',cocuk:'Çocuk'};
+/* Çocuk ürünlerinde kız / erkek ayrımı (beden ve baskı ölçüleri aynı çocuk kalıbıdır; ad, kategori ve yapay zekâ fotoğrafı buna göre) */
+var CGL={kiz:'Kız çocuk',erkek:'Erkek çocuk'};
 function trn(x){return String(x||'').toLocaleLowerCase('tr').replace(/[çğıöşü]/g,function(c){return {'ç':'c','ğ':'g','ı':'i','ö':'o','ş':'s','ü':'u'}[c];});}
 /* eski ürünlerde: addan grup ve tür kelimeleri çıkınca kalan model adı (ör. "Erkek tişört çizgili" → "çizgili") */
-function bModelOf(b){if(b.model!=null)return b.model;var t=bTypeOf(b),rm={};['erkek','kadin','cocuk','bay','bayan'].concat(trn(BTLOW[t]||'').split(' '),t==='canvas'?['35','50','70','x','×']:[]).forEach(function(w){if(w)rm[w]=1;});
+function bModelOf(b){if(b.model!=null)return b.model;var t=bTypeOf(b),rm={};['erkek','kadin','cocuk','kiz','bay','bayan'].concat(trn(BTLOW[t]||'').split(' '),t==='canvas'?['35','50','70','x','×']:[]).forEach(function(w){if(w)rm[w]=1;});
   return String(b.name||'').split(/\s+/).filter(function(w){return w&&!rm[trn(w)]&&w!=='Yeni'&&w!=='ürün';}).join(' ');}
 function bAutoName(b){var t=bTypeOf(b),m=String(b.model||'').trim(),gar=GAR_T.test(t),tl0=BTLOW[t]||'ürün';
-  var n=gar?(GENL[b.gen]||'Erkek')+' '+tl0:tl0.charAt(0).toLocaleUpperCase('tr')+tl0.slice(1);
+  var n=gar?(b.gen==='cocuk'&&CGL[b.cg]?CGL[b.cg]:(GENL[b.gen]||'Erkek'))+' '+tl0:tl0.charAt(0).toLocaleUpperCase('tr')+tl0.slice(1);
   if(t==='canvas')n+=' '+(b.cut==='c5070'?'50 × 70':'35 × 50');return n+(m?' '+m:'');}
 function bQuick(i,b){var t=bTypeOf(b),gar=GAR_T.test(t),chip=function(k,v,l,on){return '<button type="button" class="qchip'+(on?' on':'')+'" data-bq="'+k+'" data-i="'+i+'" data-v="'+v+'" aria-pressed="'+(on?'true':'false')+'">'+l+'</button>';};
   var h='<div class="bq"><span class="bql">1. Ürün türü</span><div class="qrow">'+BTYPES.map(function(x){return chip('ty',x[0],x[1],x[0]===t);}).join('')+'</div>';
   if(gar)h+='<span class="bql">2. Kimin için'+(GENS.indexOf(b.gen)<0?' <em>seç</em>':'')+'</span><div class="qrow">'+GENS.map(function(g){return chip('gn',g,GENL[g],b.gen===g);}).join('')+'</div>';
+  if(gar&&b.gen==='cocuk')h+='<span class="bql">Kız mı, erkek mi?</span><div class="qrow">'+chip('cg','kiz','Kız çocuk',b.cg==='kiz')+chip('cg','erkek','Erkek çocuk',b.cg==='erkek')+chip('cg','','İkisi de (unisex)',!b.cg)+'</div>';
   else if(t==='canvas')h+='<span class="bql">2. Ebat</span><div class="qrow">'+chip('sz','c3550','35 × 50',b.cut!=='c5070')+chip('sz','c5070','50 × 70',b.cut==='c5070')+'</div>';
   else if(t==='hat')h+='<span class="bql">2. Kimin için</span><div class="qrow">'+GENS.concat(['hepsi']).map(function(g){return chip('gn',g,g==='hepsi'?'Herkes':GENL[g],(b.gen||'hepsi')===g);}).join('')+'</div>';
   h+='<label for="bm-'+i+'">'+(gar||t==='canvas'||t==='hat'?'3':'2')+'. Model adı <small style="font-weight:500;opacity:.7">(isteğe bağlı, ör. Slim, Çizgili, Oversize)</small><input id="bm-'+i+'" data-bmodel="'+i+'" maxlength="40" value="'+esc(bModelOf(b))+'" placeholder="Boş bırakabilirsin"></label>'+
@@ -3859,7 +3862,7 @@ function bQuick(i,b){var t=bTypeOf(b),gar=GAR_T.test(t),chip=function(k,v,l,on){
   return h+'</div>';}
 document.addEventListener('click',function(e){var q=e.target.closest&&e.target.closest('[data-bq]');if(!q||!A||!A.draft)return;var b=A.draft.blanks[+q.dataset.i];if(!b)return;e.preventDefault();
   if(b.model==null)b.model=bModelOf(b);var k=q.dataset.bq,v=q.dataset.v;
-  if(k==='ty'){var pg=b.gen||b.lastGen;bSetType(b,v);if(GAR_T.test(v)&&GENS.indexOf(pg)>=0){b.gen=b.cut=pg;}}else if(k==='gn'){b.gen=v;if(GENS.indexOf(v)>=0)b.lastGen=v;if(GAR_T.test(bTypeOf(b)))b.cut=v;}else if(k==='sz')b.cut=v;
+  if(k==='ty'){var pg=b.gen||b.lastGen;bSetType(b,v);if(GAR_T.test(v)&&GENS.indexOf(pg)>=0){b.gen=b.cut=pg;}}else if(k==='cg'){if(v)b.cg=v;else delete b.cg;}else if(k==='gn'){b.gen=v;if(v!=='cocuk')delete b.cg;if(GENS.indexOf(v)>=0)b.lastGen=v;if(GAR_T.test(bTypeOf(b)))b.cut=v;}else if(k==='sz')b.cut=v;
   b.name=bAutoName(b);dirty();var y=window.scrollY;adRender();window.scrollTo(0,y);});
 document.addEventListener('input',function(e){var t=e.target;if(!t||!t.dataset||t.dataset.bmodel==null||!A||!A.draft)return;var b=A.draft.blanks[+t.dataset.bmodel];if(!b)return;
   b.model=t.value;b.name=bAutoName(b);var n=document.getElementById('bnm-'+t.dataset.bmodel);if(n)n.textContent=b.name;dirty();});
