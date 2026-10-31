@@ -26,7 +26,7 @@ jobs:
       SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
       PROJE: wgovwmeirlzwalelazfj
       # Giriş kontrolünü kendisi yapan (ya da herkese açık) fonksiyonlar: canlıdaki ayarla aynı kalmalı
-      ACIK: 'order-create stok-haber dogum-gunu'
+      ACIK: 'order-create stok-haber dogum-gunu yardim'
     steps:
       - uses: actions/checkout@v4
         with:
