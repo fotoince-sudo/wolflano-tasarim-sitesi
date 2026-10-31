@@ -1,0 +1,25 @@
+{
+ "istanbul-dikey": {
+  "ad": "İstanbul",
+  "baski": [
+   3508,
+   4961
+  ],
+  "buyutulmus": [
+   6348,
+   8980
+  ],
+  "dpi": 300,
+  "kat": "Şehirler",
+  "kaynak": [
+   1587,
+   2245
+  ],
+  "kirpilmis": [
+   1587,
+   2245
+  ],
+  "tamam": true,
+  "yon": "dikey"
+ }
+}
