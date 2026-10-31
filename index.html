@@ -4746,29 +4746,42 @@ var DATA_P=(async function(){
     try{c.push('Baskısız ürünler (Baskı Atölyesi, fiyat + baskı): '+(BLANKS||[]).filter(function(b){return !out(b);}).slice(0,24).map(function(b){return b.name+' '+money(b.price)+(b.a4?' (logo +'+money(b.logo)+', A4 +'+money(b.a4)+', A3 +'+money(b.a4*(A3_KAT||2))+')':'');}).join('; '));}catch(_){}
     var L=prods(),s='';L.forEach(function(p){var n='';try{n=pName(p);}catch(_){n=p.name||'';}var r=p.id+' | '+n+(p.color?' '+p.color:'')+' | '+money(p.price)+(p.old&&p.old>p.price?' (eski '+money(p.old)+')':'')+(out(p)?' | Tükendi':'')+'\n';if(s.length+r.length<4600)s+=r;});
     c.push('Ürünler:\n'+s);return c.join('\n');}
-  function say(t){if(!TTS||!ttsOn||!t)return;try{speechSynthesis.cancel();var u=new SpeechSynthesisUtterance(String(t).replace(/["“”]/g,'').replace(/\s*\n+\s*/g,'. '));u.lang='tr-TR';var v=speechSynthesis.getVoices().filter(function(x){return /^tr/i.test(x.lang);});if(v[0])u.voice=v[0];u.rate=1.02;speechSynthesis.speak(u);}catch(_){}}
+  /* Aybüke'nin sesi: önce yapay zekâ sesi (sunucu: yardim, mode: ses; doğal kadın sesi, ücretli, kuruşlar), olmazsa telefonun en iyi Türkçe sesi.
+     iPhone sesin çalmasına yalnız dokunuşla izin verir: her dokunuşta (sor, mikrofon, aç) ses kanalı açık tutulur (aysAc). */
+  var AYS_AC=null,AYS_SRC=null,AYS_SEQ=0;
+  function aysAc(){try{if(!AYS_AC){var C=window.AudioContext||window.webkitAudioContext;if(!C)return;AYS_AC=new C();}if(AYS_AC.state==='suspended')AYS_AC.resume();var b=AYS_AC.createBuffer(1,1,22050),s=AYS_AC.createBufferSource();s.buffer=b;s.connect(AYS_AC.destination);s.start(0);}catch(_){}}
+  function aysStop(){AYS_SEQ++;try{if(AYS_SRC)AYS_SRC.stop();}catch(_){}AYS_SRC=null;try{speechSynthesis.cancel();}catch(_){}}
+  function aysVoice(){try{var v=speechSynthesis.getVoices().filter(function(x){return /^tr/i.test(x.lang);});var sc=function(x){var n=x.name||'';return (/premium/i.test(n)?4:0)+(/enhanced|geli[sş]mi[sş]|geli[sş]tirilmi[sş]|natural|neural/i.test(n)?3:0)+(/yelda|female|kad[iı]n|seda|filiz|emel/i.test(n)?1:0);};v.sort(function(a,b){return sc(b)-sc(a);});return v[0]||null;}catch(_){return null;}}
+  function aysLocal(t){try{speechSynthesis.cancel();var v=aysVoice();(String(t).replace(/["“”*]/g,'').replace(/\s*\n+\s*/g,'. ').match(/[^.!?…:]+[.!?…:]*/g)||[]).forEach(function(c){c=c.trim();if(!c)return;var u=new SpeechSynthesisUtterance(c);u.lang='tr-TR';if(v)u.voice=v;u.rate=0.97;u.pitch=1.02;speechSynthesis.speak(u);});}catch(_){}}
+  async function aysSay(t){t=String(t||'').trim();if(!t)return;aysStop();var my=AYS_SEQ;
+    try{if(!AYS_AC)throw 0;var r=await fetch(SB.url+'/functions/v1/yardim',{method:'POST',headers:{'Content-Type':'application/json',apikey:SB.key},body:JSON.stringify({mode:'ses',text:t})});
+      if(!r.ok||!/audio/.test(r.headers.get('content-type')||''))throw 0;var buf=await r.arrayBuffer();if(my!==AYS_SEQ)return;
+      var ab=await new Promise(function(ok,no){AYS_AC.decodeAudioData(buf,ok,no);});if(my!==AYS_SEQ)return;if(AYS_AC.state==='suspended')await AYS_AC.resume();
+      var s=AYS_AC.createBufferSource();s.buffer=ab;s.connect(AYS_AC.destination);s.start(0);AYS_SRC=s;}
+    catch(_){if(my===AYS_SEQ)aysLocal(t);}}
+  function say(t){if(!TTS||!ttsOn||!t)return;aysSay(t);}
   async function send(t){t=String(t||'').trim();if(!t||busy)return;M.push({role:'user',text:t});M=M.slice(-16);busy=true;paint();
     var a='',ur=[],g='';try{var r=await fetch(SB.url+'/functions/v1/yardim',{method:'POST',headers:{'Content-Type':'application/json',apikey:SB.key},body:JSON.stringify({mode:'site',messages:M.slice(-8).map(function(m){return {role:m.role,text:m.text};}),context:ctx()})});
       var j=await r.json().catch(function(){return {};});a=j.cevap||j.message||'';ur=Array.isArray(j.urunler)?j.urunler:[];g=j.git||'';}catch(_){}
     M.push({role:'assistant',text:a||'Şu an cevap veremedim. Biraz sonra yeniden dene ya da WhatsApp 0530 764 17 17 üzerinden bize yaz.',urunler:ur,git:g});busy=false;say(a);
     try{sessionStorage.setItem('wf_ask_site',JSON.stringify(M.slice(-16)));}catch(_){}paint();}
   function micStop(){micOn=false;try{if(rec)rec.stop();}catch(_){}var m=pn.querySelector('.mic');if(m)m.classList.remove('on');var i=pn.querySelector('.ayi input');if(i)i.placeholder='Örn. Babama hediye tişört';}
-  function micStart(){if(!SR)return;if(micOn){micStop();return;}try{speechSynthesis.cancel();}catch(_){}
+  function micStart(){if(!SR)return;aysAc();if(micOn){micStop();return;}aysStop();
     rec=new SR();rec.lang='tr-TR';rec.interimResults=true;rec.continuous=false;var fin='';var inp=pn.querySelector('.ayi input');
     rec.onresult=function(ev){var t='';for(var k=ev.resultIndex;k<ev.results.length;k++){if(ev.results[k].isFinal)fin+=ev.results[k][0].transcript;else t+=ev.results[k][0].transcript;}if(inp)inp.value=(fin+t).trim();};
     rec.onerror=function(ev){micStop();if(ev&&/not-allowed|service-not-allowed/.test(ev.error))try{toast('Mikrofon izni verilmedi. Telefonun ayarlarından bu siteye mikrofon izni ver.');}catch(_){}};
     rec.onend=function(){var was=micOn;micStop();var v=fin.trim();if(was&&v){if(inp)inp.value='';send(v);}};
     try{rec.start();micOn=true;var m=pn.querySelector('.mic');if(m)m.classList.add('on');if(inp){inp.value='';inp.placeholder='Dinliyorum, konuş…';}}catch(_){micStop();}}
-  function open(){hideBal(true);if(!pn.innerHTML)build();else paint();pn.hidden=false;fab.hidden=true;}
-  function close(){micStop();try{speechSynthesis.cancel();}catch(_){}pn.hidden=true;sync();}
+  function open(){aysAc();hideBal(true);if(!pn.innerHTML)build();else paint();pn.hidden=false;fab.hidden=true;}
+  function close(){micStop();aysStop();pn.hidden=true;sync();}
   function hideBal(seen){bal.hidden=true;if(seen)try{sessionStorage.setItem('wf_ayb_hi','1');}catch(_){}}
   fab.addEventListener('click',open);
   bal.addEventListener('click',function(ev){if(ev.target.closest('.x')){hideBal(true);return;}open();});
-  pn.addEventListener('click',function(ev){var t=ev.target;var q=t.closest('[data-ayq]');if(q){send(q.dataset.ayq);return;}
+  pn.addEventListener('click',function(ev){var t=ev.target;var q=t.closest('[data-ayq]');if(q){aysAc();send(q.dataset.ayq);return;}
     var a=t.closest('[data-ay]');if(a&&a.dataset.ay==='close'){close();return;}if(a&&a.dataset.ay==='mic'){micStart();return;}
     if(t.closest('[data-aygo]')){var hr=t.closest('a').getAttribute('href')||'';if(hr.charAt(0)==='#'){setTimeout(close,30);}}});
-  pn.addEventListener('change',function(ev){var t=ev.target;if(t&&t.dataset&&t.dataset.ay==='tts'){ttsOn=t.checked;try{localStorage.setItem('wf_ask_tts',ttsOn?'1':'0');}catch(_){}if(!ttsOn)try{speechSynthesis.cancel();}catch(_){}else say('Merhaba, ben Aybüke. Cevaplarımı sesli okuyacağım.');}});
-  pn.addEventListener('submit',function(ev){ev.preventDefault();var i=pn.querySelector('.ayi input');var v=i.value;i.value='';send(v);});
+  pn.addEventListener('change',function(ev){var t=ev.target;if(t&&t.dataset&&t.dataset.ay==='tts'){ttsOn=t.checked;try{localStorage.setItem('wf_ask_tts',ttsOn?'1':'0');}catch(_){}aysAc();if(!ttsOn)aysStop();else say('Merhaba, ben Aybüke. Cevaplarımı sesli okuyacağım.');}});
+  pn.addEventListener('submit',function(ev){ev.preventDefault();aysAc();var i=pn.querySelector('.ayi input');var v=i.value;i.value='';send(v);});
   document.addEventListener('keydown',function(ev){if(ev.key==='Escape'&&!pn.hidden)close();});
   /* Görünürlük: yönetimde gizli; alttaki sabit çubuk (sepete ekle / ödeme) varsa onun üstüne çıkar */
   function sync(){var h=(location.hash||'').slice(1),adm=/^(yonetim|crm)/.test(h)||/[?&]admin=/.test(location.search);

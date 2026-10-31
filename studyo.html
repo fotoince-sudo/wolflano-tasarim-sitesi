@@ -5442,6 +5442,8 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
 
 /* ---------- Kullanım rehberi: ilk girişte bir kez 4 kartlık tanıtım; üstteki ? ile kısa rehber ve sık sorulanlar ---------- */
 (function(){
+  /* Bu bölüm ana kodun dışında: sunucu adresi burada da tanımlı olmalı (yoksa Aybüke cevap veremez) */
+  var SB={url:'https://wgovwmeirlzwalelazfj.supabase.co',key:'sb_publishable_PP5xFd7ga61xaDOCHeET_Q_zfMaE_4G'};
   var GD=[
     {t:'Ürününü seç',p:'Alttaki Ürün düğmesinden tişört, sweatshirt, polo, şapka ya da kupa seç, sonra rengini belirle.',
      a:'<svg viewBox="0 0 64 64"><path d="M22 10l-12 6 4 12 6-2v28h24V26l6 2 4-12-12-6c-1 4-5 7-10 7s-9-3-10-7z"/></svg>'},
@@ -5487,10 +5489,22 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
   /* Sesli: telefonun / tarayıcının kendi ses tanıması ve okuması (ücretsiz). Desteklenmeyen tarayıcıda düğmeler görünmez. */
   var SR=window.SpeechRecognition||window.webkitSpeechRecognition,TTS=!!window.speechSynthesis,micOn=false,rec=null,ttsOn=false;
   try{ttsOn=localStorage.getItem('wf_ask_tts')==='1';}catch(_){}
-  function trVoice(){try{var v=speechSynthesis.getVoices().filter(function(x){return /^tr/i.test(x.lang);});return v.filter(function(x){return /female|kadın|yelda|seda|filiz/i.test(x.name);})[0]||v[0]||null;}catch(_){return null;}}
-  function say(t){if(!TTS||!ttsOn||!t)return;try{speechSynthesis.cancel();var u=new SpeechSynthesisUtterance(String(t).replace(/["“”]/g,'').replace(/\s*\n+\s*/g,'. '));u.lang='tr-TR';var v=trVoice();if(v)u.voice=v;u.rate=1.02;u.pitch=1.05;speechSynthesis.speak(u);}catch(_){}}
+  /* Aybüke'nin sesi: önce yapay zekâ sesi (sunucu: yardim, mode: ses; doğal kadın sesi, ücretli, kuruşlar), olmazsa telefonun en iyi Türkçe sesi.
+     iPhone sesin çalmasına yalnız dokunuşla izin verir: her dokunuşta (sor, mikrofon, aç) ses kanalı açık tutulur (aysAc). */
+  var AYS_AC=null,AYS_SRC=null,AYS_SEQ=0;
+  function aysAc(){try{if(!AYS_AC){var C=window.AudioContext||window.webkitAudioContext;if(!C)return;AYS_AC=new C();}if(AYS_AC.state==='suspended')AYS_AC.resume();var b=AYS_AC.createBuffer(1,1,22050),s=AYS_AC.createBufferSource();s.buffer=b;s.connect(AYS_AC.destination);s.start(0);}catch(_){}}
+  function aysStop(){AYS_SEQ++;try{if(AYS_SRC)AYS_SRC.stop();}catch(_){}AYS_SRC=null;try{speechSynthesis.cancel();}catch(_){}}
+  function aysVoice(){try{var v=speechSynthesis.getVoices().filter(function(x){return /^tr/i.test(x.lang);});var sc=function(x){var n=x.name||'';return (/premium/i.test(n)?4:0)+(/enhanced|geli[sş]mi[sş]|geli[sş]tirilmi[sş]|natural|neural/i.test(n)?3:0)+(/yelda|female|kad[iı]n|seda|filiz|emel/i.test(n)?1:0);};v.sort(function(a,b){return sc(b)-sc(a);});return v[0]||null;}catch(_){return null;}}
+  function aysLocal(t){try{speechSynthesis.cancel();var v=aysVoice();(String(t).replace(/["“”*]/g,'').replace(/\s*\n+\s*/g,'. ').match(/[^.!?…:]+[.!?…:]*/g)||[]).forEach(function(c){c=c.trim();if(!c)return;var u=new SpeechSynthesisUtterance(c);u.lang='tr-TR';if(v)u.voice=v;u.rate=0.97;u.pitch=1.02;speechSynthesis.speak(u);});}catch(_){}}
+  async function aysSay(t){t=String(t||'').trim();if(!t)return;aysStop();var my=AYS_SEQ;
+    try{if(!AYS_AC)throw 0;var r=await fetch(SB.url+'/functions/v1/yardim',{method:'POST',headers:{'Content-Type':'application/json',apikey:SB.key},body:JSON.stringify({mode:'ses',text:t})});
+      if(!r.ok||!/audio/.test(r.headers.get('content-type')||''))throw 0;var buf=await r.arrayBuffer();if(my!==AYS_SEQ)return;
+      var ab=await new Promise(function(ok,no){AYS_AC.decodeAudioData(buf,ok,no);});if(my!==AYS_SEQ)return;if(AYS_AC.state==='suspended')await AYS_AC.resume();
+      var s=AYS_AC.createBufferSource();s.buffer=ab;s.connect(AYS_AC.destination);s.start(0);AYS_SRC=s;}
+    catch(_){if(my===AYS_SEQ)aysLocal(t);}}
+  function say(t){if(!TTS||!ttsOn||!t)return;aysSay(t);}
   function micStop(){micOn=false;try{if(rec)rec.stop();}catch(_){}var m=document.querySelector('.gd-mic');if(m)m.classList.remove('on');var i2=document.getElementById('gdAsk');if(i2)i2.placeholder='Örn. Logoyu sağ göğse nasıl koyarım?';}
-  function micStart(){if(!SR)return;if(micOn){micStop();return;}try{speechSynthesis&&speechSynthesis.cancel();}catch(_){}
+  function micStart(){if(!SR)return;aysAc();if(micOn){micStop();return;}aysStop();
     rec=new SR();rec.lang='tr-TR';rec.interimResults=true;rec.continuous=false;rec.maxAlternatives=1;var fin='';
     rec.onresult=function(e){var t='';for(var k=e.resultIndex;k<e.results.length;k++){if(e.results[k].isFinal)fin+=e.results[k][0].transcript;else t+=e.results[k][0].transcript;}var i2=document.getElementById('gdAsk');if(i2)i2.value=(fin+t).trim();};
     rec.onerror=function(e){micStop();if(e&&/not-allowed|service-not-allowed/.test(e.error))toast('Mikrofon izni verilmedi. Telefonun ayarlarından bu siteye mikrofon izni ver.');};
@@ -5510,13 +5524,13 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
       var jj=await r.json().catch(function(){return {};});a=jj.cevap||jj.message||'';}catch(_){}
     ASK.push({role:'assistant',text:a||'Şu an cevap veremedim. Biraz sonra yeniden dene ya da WhatsApp 0530 764 17 17 üzerinden bize yaz.'});askBusy=false;say(a);
     try{sessionStorage.setItem('wf_ask',JSON.stringify(ASK.slice(-16)));}catch(_){}askPaint();}
-  el.addEventListener('change',function(e){var t=e.target;if(!t||!t.dataset||!t.dataset.gdtts)return;ttsOn=t.checked;try{localStorage.setItem('wf_ask_tts',ttsOn?'1':'0');}catch(_){}if(!ttsOn)try{speechSynthesis.cancel();}catch(_){}else say('Merhaba, ben Aybüke. Cevaplarımı sesli okuyacağım.');});
-  el.addEventListener('submit',function(e){var f=e.target;if(!f||f.id!=='gdAskF')return;e.preventDefault();var i2=document.getElementById('gdAsk');var v=i2.value;i2.value='';askSend(v);});
+  el.addEventListener('change',function(e){var t=e.target;if(!t||!t.dataset||!t.dataset.gdtts)return;ttsOn=t.checked;try{localStorage.setItem('wf_ask_tts',ttsOn?'1':'0');}catch(_){}aysAc();if(!ttsOn)aysStop();else say('Merhaba, ben Aybüke. Cevaplarımı sesli okuyacağım.');});
+  el.addEventListener('submit',function(e){var f=e.target;if(!f||f.id!=='gdAskF')return;e.preventDefault();aysAc();var i2=document.getElementById('gdAsk');var v=i2.value;i2.value='';askSend(v);});
   el.addEventListener('click',function(e){
     if(e.target===el){close();return;}
     var b=e.target.closest('[data-gd]');if(!b)return;var a=b.dataset.gd;
     if(a==='mic'){micStart();return;}
-    if(a==='skip'){micStop();try{speechSynthesis.cancel();}catch(_){}close();}else if(a==='tour')tour(0);
+    if(a==='skip'){micStop();aysStop();close();}else if(a==='tour')tour(0);
     else if(a==='next'){if(i>=GD.length-1)close();else tour(i+1);}
   });
   var sx=null;

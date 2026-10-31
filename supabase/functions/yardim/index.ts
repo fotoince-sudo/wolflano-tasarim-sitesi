@@ -75,6 +75,44 @@ function allow(ip: string): boolean {
   return true;
 }
 
+// Aybüke'nin sesi (mode: 'ses'): cevabı OpenAI'ın ses modeliyle doğal bir kadın sesine çevirir (mp3).
+// Yalnız müşteri "sesli okusun"u açtıysa çağrılır. Maliyet sınırı: metin en fazla 700 karakter, IP başına günde 60,
+// sunucu örneği başına günde 1500 ses. Sınır dolunca 429 döner; site telefonun kendi sesine geçer.
+const SES_IP = new Map<string, number[]>();
+let SES_GUN = '', SES_TOP = 0;
+function sesAllow(ip: string): boolean {
+  const gun = new Date().toISOString().slice(0, 10);
+  if (gun !== SES_GUN) { SES_GUN = gun; SES_TOP = 0; SES_IP.clear(); }
+  if (SES_TOP >= 1500) return false;
+  const now = Date.now(), a = (SES_IP.get(ip) || []).filter((t) => now - t < 86400_000);
+  if (a.length >= 60) { SES_IP.set(ip, a); return false; }
+  a.push(now); SES_IP.set(ip, a); SES_TOP++;
+  return true;
+}
+const SES_TARIF = 'Türkçe konuş, doğal İstanbul Türkçesi telaffuzuyla. Sen Aybüke\'sin: genç, sıcak, güler yüzlü ve kendinden emin bir kadın mağaza danışmanı. ' +
+  'Samimi ve sakin konuş, sanki karşındaki müşteriye gülümseyerek anlatıyorsun. Ne çok hızlı ne yavaş; cümle aralarında doğal kısa duraklar ver. Robotik ya da reklam spikeri gibi değil, gerçek bir insan gibi.';
+async function ses(req: Request, key: string, body: any): Promise<Response> {
+  const ip = (req.headers.get('x-forwarded-for') || req.headers.get('cf-connecting-ip') || 'x').split(',')[0].trim();
+  const text = String(body.text || '').replace(/https?:\/\/\S+/g, '').replace(/[*_#>`]/g, '').replace(/\s+/g, ' ').trim().slice(0, 700);
+  if (!text) return j({ error: 'empty' }, 400);
+  if (!sesAllow(ip)) return j({ error: 'limit' }, 429);
+  const model = Deno.env.get('OPENAI_TTS_MODEL') || 'gpt-4o-mini-tts';
+  const voices = [Deno.env.get('OPENAI_TTS_VOICE') || '', 'marin', 'coral', 'nova'].filter((v, i, a) => v && a.indexOf(v) === i);
+  for (const voice of voices) {
+    const r = await fetch('https://api.openai.com/v1/audio/speech', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ model, voice, input: text, instructions: SES_TARIF, response_format: 'mp3', speed: 1.0 }),
+      signal: AbortSignal.timeout(30000),
+    });
+    if (r.ok) return new Response(r.body, { headers: { ...cors, 'Content-Type': 'audio/mpeg', 'Cache-Control': 'no-store' } });
+    const t = (await r.text().catch(() => '')).toLowerCase();
+    console.error('tts', voice, r.status, t.slice(0, 200));
+    if (!(r.status === 400 && /voice/.test(t))) break;
+  }
+  return j({ error: 'fail' }, 502);
+}
+
 type Msg = { role: 'user' | 'assistant'; text?: string };
 
 Deno.serve(async (req) => {
@@ -83,9 +121,10 @@ Deno.serve(async (req) => {
     const key = Deno.env.get('OPENAI_API_KEY');
     if (!key) return j({ error: 'not_configured', message: 'Asistan şu an kullanılamıyor.' }, 503);
     const ip = (req.headers.get('x-forwarded-for') || req.headers.get('cf-connecting-ip') || 'x').split(',')[0].trim();
+    const body = await req.json();
+    if (body.mode === 'ses') return await ses(req, key, body);
     if (!allow(ip)) return j({ error: 'limit', message: 'Kısa sürede çok soru geldi. Biraz sonra yeniden dene ya da WhatsApp 0530 764 17 17 üzerinden bize yaz.' }, 429);
 
-    const body = await req.json();
     const list: Msg[] = Array.isArray(body.messages) ? body.messages.slice(-8) : [];
     if (!list.length) return j({ error: 'empty', message: 'Sorunu yaz.' }, 400);
     const site = body.mode === 'site';
