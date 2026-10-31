@@ -213,6 +213,7 @@ Deno.serve(async (req) => {
       if (body.style && STY[body.style] && body.style !== 'illus') K.push(`Preferred style, only where the instructions do not say otherwise: ${STY[body.style]}.`);
       if (shirt) K.push(shirt);
       K.push('Text: write ONLY the words the owner asked to be written (usually in quotation marks), spelled exactly, including Turkish letters such as ç, ğ, ı, İ, ö, ş, ü. No other text, captions, signatures or watermarks.');
+      K.push('If the owner asks for empty, blank or transparent photo areas (places where photos will be inserted later), draw each of them as a clean empty shape filled with plain flat light grey (#CCCCCC) and nothing inside it, with any requested border around it; the studio will cut these areas out automatically.');
       K.push('Do not draw any brand logo unless asked. Do not draw a T-shirt, mug, wall or mockup; draw only the artwork itself.');
       if (canvas) K.push('Full-bleed: fill the whole image edge to edge; keep important details away from the outer 7% (it wraps around the canvas edges).');
       else if (mug === 'wrap') K.push('Full-bleed wide image; keep the outer 8% at the left and right ends calm (the handle covers the seam).');

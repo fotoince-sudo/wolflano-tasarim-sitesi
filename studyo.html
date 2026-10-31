@@ -652,6 +652,7 @@ img{-webkit-touch-callout:none;-webkit-user-drag:none}
       <button data-c="stroke" data-t="text"><svg class="i" viewBox="0 0 24 24"><rect x="5" y="5" width="14" height="14" rx="3" stroke-dasharray="3 2.4"/></svg>Kontur</button>
       <button data-c="crop" data-t="image"><svg class="i" viewBox="0 0 24 24"><path d="M6 2v14a2 2 0 0 0 2 2h14"/><path d="M2 6h14a2 2 0 0 1 2 2v14"/></svg>Kırp</button>
       <button data-c="wout" data-t="image" id="woutBtn"><svg class="i" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="4"/><rect x="8" y="8" width="8" height="8" rx="1.5"/></svg>Beyaz kontur</button>
+      <button data-c="holes" data-t="image"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><rect x="6" y="8" width="5" height="8" rx="1" stroke-dasharray="2 1.6"/><rect x="13" y="8" width="5" height="8" rx="1" stroke-dasharray="2 1.6"/></svg>Fotoğraf yerlerini aç</button>
       <button data-c="nobg" data-t="image" id="nobgBtn"><svg class="i" viewBox="0 0 24 24"><path d="M4 20l10-10"/><path d="M15 3l1 2 2 1-2 1-1 2-1-2-2-1 2-1z"/><path d="M19 11l.6 1.4L21 13l-1.4.6L19 15l-.6-1.4L17 13l1.4-.6z"/></svg>Arka planı sil</button>
       <span class="pill" id="qPill" data-t="image"></span>
       <span class="pill mid" id="ovPill" data-t="text clip image" hidden>Taşan kısım basılmaz</span>
@@ -2095,7 +2096,8 @@ function addClip(key){
 function addImageObj(assetId){
   var A=areaBox(view.side,cur().area),a=assets[assetId],o=newBase('image'),asp=a.w/a.h;
   o.assetId=assetId;o.w=Math.min(A.w*0.8,A.h*0.8*asp);o.h=o.w/asp;
-  cur().objs.push(o);renderObjects();select(o.id);pushHist();
+  cur().objs.push(o);var hf=holeFit(o);renderObjects();select(o.id);pushHist();
+  if(hf)toast('Fotoğraf çerçevedeki yerine oturdu. Kaydırıp büyüterek ayarlayabilirsin.');
 }
 function loadFile(file){
   var url=URL.createObjectURL(file),im=new Image();
@@ -2484,6 +2486,68 @@ async function simpleRemoveBg(url){
   var blob=await new Promise(function(r){c.toBlob(r,'image/png');});
   return {blob:blob,ratio:ratio};
 }
+/* ---------- Fotoğraf yerlerini aç: çerçeve tasarımlarında boş bırakılan alanları gerçekten şeffaf yapar ----------
+   Yapay zekâ "boş/şeffaf bırak" denince çoğu zaman gerçek boşluk yerine gri-beyaz dama deseni ya da düz gri kutu çizer.
+   Bu araç o kutuları bulur (dama deseni ya da düz açık gri, büyük, köşeli/yuvarlak dikdörtgen) ve içini saydam yapar;
+   beyaz kenar çizgisi yerinde kalır. Bulunan yerler görselde saklanır: sonra eklenen fotoğraflar sırayla bu yerlere,
+   çerçevenin ARKASINA oturur. */
+function holeScan(im){
+  var W=im.naturalWidth,H=im.naturalHeight,c=document.createElement('canvas');c.width=W;c.height=H;var x=c.getContext('2d');x.drawImage(im,0,0);
+  var id=x.getImageData(0,0,W,H),d=id.data,N=W*H,Gc=new Uint8Array(N),Wc=new Uint8Array(N),Bd=new Uint8Array(N),Pl=new Uint8Array(N),i,k,y,xx;
+  for(i=0;i<N;i++){k=i*4;if(d[k+3]<20){Bd[i]=1;continue;}var r=d[k],g=d[k+1],b=d[k+2],sat=Math.max(r,g,b)-Math.min(r,g,b),l=(r+g+b)/3;
+    if(sat>28||l<150)Bd[i]=1;else{if(sat<=16&&l>=185&&l<=222)Gc[i]=1;if(sat<=14&&l>=236)Wc[i]=1;if(sat<=16&&l>=150&&l<=236)Pl[i]=1;}}
+  /* dama hücresi boyu: kısa yatay gri koşuların ortancası */
+  var runs=[];for(y=0;y<H;y+=2){var s0=-1;for(xx=0;xx<=W;xx++){var on=xx<W&&Gc[y*W+xx];if(on&&s0<0)s0=xx;if(!on&&s0>=0){var L=xx-s0;if(L>=2&&L<W*0.05)runs.push(L);s0=-1;}}}
+  runs.sort(function(a,b){return a-b;});var cell=runs.length>50?runs[runs.length>>1]:4,R=Math.max(3,Math.min(40,Math.round(cell*1.6)));
+  function integ(M){var I=new Int32Array((W+1)*(H+1)),yy,xq;for(yy=0;yy<H;yy++){var rs=0;for(xq=0;xq<W;xq++){rs+=M[yy*W+xq];I[(yy+1)*(W+1)+xq+1]=I[yy*(W+1)+xq+1]+rs;}}return I;}
+  var IG=integ(Gc),IW=integ(Wc),IB=integ(Bd),IP=integ(Pl);
+  function sum(I,x0,y0,x1,y1){return I[y1*(W+1)+x1]-I[y0*(W+1)+x1]-I[y1*(W+1)+x0]+I[y0*(W+1)+x0];}
+  /* dama deseni: pencerede hem gri hem beyaz hücre var, renkli ya da koyu piksel yok; düz gri kutu: pencerenin tamamı düz açık gri */
+  var C=new Uint8Array(N);
+  for(y=0;y<H;y++)for(xx=0;xx<W;xx++){var a0=Math.max(0,xx-R),b1=Math.max(0,y-R),c1=Math.min(W,xx+R+1),e1=Math.min(H,y+R+1),ar=(c1-a0)*(e1-b1);
+    if(sum(IB,a0,b1,c1,e1))continue;var gf=sum(IG,a0,b1,c1,e1)/ar,wf=sum(IW,a0,b1,c1,e1)/ar;
+    if((gf>=0.18&&wf>=0.18&&gf+wf>=0.75)||sum(IP,a0,b1,c1,e1)===ar)C[y*W+xx]=1;}
+  /* desen penceresi kenarda biraz eksik kalır: yakındaki gri ve beyaz hücreler de katılır (renkli/koyu piksele kadar) */
+  var IC=integ(C),C2=new Uint8Array(N);for(y=0;y<H;y++)for(xx=0;xx<W;xx++){var q=y*W+xx;if(C[q]){C2[q]=1;continue;}if(!(Gc[q]||Wc[q]||Pl[q]))continue;
+    var a2=Math.max(0,xx-R),b2=Math.max(0,y-R),c2=Math.min(W,xx+R+1),e2=Math.min(H,y+R+1);if(sum(IC,a2,b2,c2,e2)>0&&!Wc[q]||sum(IC,Math.max(0,xx-cell),Math.max(0,y-cell),Math.min(W,xx+cell+1),Math.min(H,y+cell+1))>0)C2[q]=1;}
+  C=C2;
+  /* bileşenler: büyük, dikdörtgene yakın, görselin kenarına değmeyen gri alanlar = fotoğraf yeri */
+  var lab=new Int32Array(N),holes=[],mask=new Uint8Array(N),nid=0;
+  for(i=0;i<N;i++){if(!C[i]||lab[i])continue;nid++;var st=[i],pix=[],l0=W,t0=H,r0=0,b0=0,edge=false;lab[i]=nid;
+    while(st.length){var p=st.pop(),px=p%W,py=(p/W)|0;pix.push(p);if(px<l0)l0=px;if(px>r0)r0=px;if(py<t0)t0=py;if(py>b0)b0=py;if(px===0||py===0||px===W-1||py===H-1)edge=true;
+      if(px>0&&C[p-1]&&!lab[p-1]){lab[p-1]=nid;st.push(p-1);}if(px<W-1&&C[p+1]&&!lab[p+1]){lab[p+1]=nid;st.push(p+1);}
+      if(py>0&&C[p-W]&&!lab[p-W]){lab[p-W]=nid;st.push(p-W);}if(py<H-1&&C[p+W]&&!lab[p+W]){lab[p+W]=nid;st.push(p+W);}}
+    var bw=r0-l0+1,bh=b0-t0+1,fill=pix.length/(bw*bh);
+    if(edge||pix.length<N*0.004||fill<0.7||bw<W*0.04||bh<H*0.04)continue;
+    pix.forEach(function(p){mask[p]=1;});holes.push({x:l0/W,y:t0/H,w:bw/W,h:bh/H});}
+  if(!holes.length)return null;
+  /* saydam yap; kenarda 1 piksel yumuşak geçiş */
+  for(i=0;i<N;i++){if(mask[i]){d[i*4+3]=0;continue;}var px2=i%W,py2=(i/W)|0;
+    if((px2>0&&mask[i-1])||(px2<W-1&&mask[i+1])||(py2>0&&mask[i-W])||(py2<H-1&&mask[i+W]))d[i*4+3]=Math.min(d[i*4+3],140);}
+  x.putImageData(id,0,0);
+  holes.sort(function(a,b){return Math.abs(a.y-b.y)>0.15?a.y-b.y:a.x-b.x;});
+  return {canvas:c,holes:holes};
+}
+async function openHoles(o,quiet){
+  o=o||selObj();if(!o||o.type!=='image')return false;var a=assets[o.assetId];if(!a)return false;
+  try{var im=await loadImg(a.url),r=holeScan(im);
+    if(!r){if(!quiet)toast('Boş bırakılmış fotoğraf yeri bulunamadı.');return false;}
+    var blob=await new Promise(function(res){r.canvas.toBlob(res,'image/png');}),url=URL.createObjectURL(blob);
+    var id='a'+(++assetN);assets[id]={url:url,w:r.canvas.width,h:r.canvas.height,nobg:true,up:!!a.up,ai:a.ai,holes:r.holes};assetList.push(id);
+    o.assetId=id;o.base=id;o.crop=null;o.phs='none';o.phe='none';o.wout=0;
+    renderObjects();renderUploads();syncCtx();pushHist();
+    toast(r.holes.length+' fotoğraf yeri açıldı. Şimdi fotoğraf ekle: her biri sırayla bir yere, çerçevenin arkasına oturur.');return true;}
+  catch(e){if(!quiet)toast('Fotoğraf yerleri açılamadı.');return false;}
+}
+/* Çerçeve varsa yeni fotoğraf sıradaki boş yere, çerçevenin arkasına yerleşir */
+function holeFit(o){var L=cur().objs,a=assets[o.assetId];if(!a)return false;
+  var fr=L.filter(function(f){return f!==o&&f.type==='image'&&assets[f.assetId]&&assets[f.assetId].holes&&!f.rot;});if(!fr.length)return false;
+  for(var fi=fr.length-1;fi>=0;fi--){var f=fr[fi],H=assets[f.assetId].holes;
+    for(var h=0;h<H.length;h++){var q=H[h],cx=f.x+(q.x+q.w/2-0.5)*f.w,cy=f.y+(q.y+q.h/2-0.5)*f.h,hw=q.w*f.w,hh=q.h*f.h;
+      var used=L.some(function(z){return z!==o&&z!==f&&z.type==='image'&&Math.abs(z.x-cx)<hw/2&&Math.abs(z.y-cy)<hh/2;});if(used)continue;
+      var k=Math.max(hw/a.w,hh/a.h)*1.04;o.w=a.w*k;o.h=a.h*k;o.x=cx;o.y=cy;o.rot=0;
+      var oi=L.indexOf(o);if(oi>=0)L.splice(oi,1);L.splice(L.indexOf(f),0,o);return true;}}
+  return false;}
 async function removeBg(){
   var o=selObj();if(!o||o.type!=='image'||bgBusy)return;
   var a=assets[o.assetId];if(!a)return;
@@ -3474,6 +3538,7 @@ function ctxClick(e){
   else if(c==='dup')dupSel();
   else if(c==='center'){var co=selObj();if(co){var CA=areaBox(view.side,cur().area),ci=inkCenter(co);co.x+=CA.cx-ci.x;co.y+=CA.cy-ci.y;place(els[co.id],co);updateSel();var ab=$('#areaBox');ab.classList.add('onV','onH');setTimeout(centerOff,900);pushHist();toast('Baskı alanına ortalandı');}}
   else if(c==='nobg')removeBg();
+  else if(c==='holes')openHoles();
   else if(c==='crop')openCrop();
   else if(c==='wout')showWout();
   else if(c==='fx')showFx();
@@ -5181,6 +5246,7 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
     var m=WC.msgs[i];if(!m||!m.res)return;
     try{var id=await aiAsset(m.res);addImageObj(id);
       if(state.product==='canvas'||mugWrap()){var A=areaBox(view.side,cur().area),o=selObj(),na=assets[id];if(o&&na){var k=Math.max(A.w/na.w,A.h/na.h);o.w=na.w*k;o.h=na.h*k;o.x=A.cx;o.y=A.cy;o.rot=0;renderObjects();updateSel();syncCtx();pushHist();}}
+      try{var po=selObj();if(po&&po.type==='image')await openHoles(po,true);}catch(_){}
       m.placed=1;$('#wchat').hidden=true;document.documentElement.style.overflow='';toast('Wolf\'un çizimi tasarımda. Taşıyabilir, büyütebilirsin.');}
     catch(e){toast('Çizim tasarıma eklenemedi');}
   }
