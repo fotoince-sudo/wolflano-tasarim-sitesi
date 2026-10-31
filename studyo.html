@@ -2235,7 +2235,12 @@ function kolajSync(){var b=$('#kolajBox');if(!b)return;b.hidden=!kolajOn();if(!k
   $('#kolajCnt').textContent=KOLAJ.length+' / '+mx;
   $('#kolajGrid').innerHTML=KOLAJ.map(function(id,i){return '<div><img alt="" src="'+assets[id].url+'"><button type="button" data-kjx="'+i+'" aria-label="Fotoğrafı çıkar">×</button></div>';}).join('');
   var g=$('#kolajGo');g.disabled=KOLAJ.length<2;g.textContent=KOLAJ.length&&cur().objs.some(function(o){return o.kj;})?'Yeniden yerleştir':'Fotoğrafları tasarla';
-  $('#kolajNote').hidden=false;}
+  /* Ürüne göre kısa açıklama (uzun genel metin yerine) */
+  var kn=$('#kolajNote'),dz=KJ_MODE==='duzenli',ds=dz?'Fotoğraflar eşit kutulara düz dizilir.':'Fotoğraflar hafif eğik, albüm gibi dizilir.',tx;
+  if(state.product==='canvas')tx='Bu tabloya en fazla '+mx+' fotoğraf. '+ds+' Zemin açık krem, fotoğraflar beyaz çerçeveli.';
+  else if(state.product==='mug')tx='Kupaya en fazla '+mx+' fotoğraf, çevresini saran alana. '+ds;
+  else tx='En fazla '+mx+' fotoğraf, ön yüzün baskı alanına. '+ds;
+  if(kn){kn.textContent=tx+' Wolf yüzleri kesmez. Beğenmezsen yeniden dokun.';kn.hidden=false;}}
 function kolajLoad(file){return new Promise(function(ok){var url=URL.createObjectURL(file),im=new Image();
   im.onload=function(){var id='a'+(++assetN);assets[id]={url:url,w:im.naturalWidth,h:im.naturalHeight,up:true};assetList.push(id);ok(id);};
   im.onerror=function(){ok(null);};im.src=url;});}
