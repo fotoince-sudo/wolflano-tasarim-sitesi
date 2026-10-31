@@ -91,6 +91,190 @@
   "tamam": true,
   "yon": "yatay"
  },
+ "hastane-ankara-dikey": {
+  "ad": "Ankara",
+  "baski": [
+   3508,
+   4961
+  ],
+  "buyutulmus": [
+   4292,
+   5780
+  ],
+  "dpi": 300,
+  "kat": "Kurt geziyor · Şehir hastaneleri",
+  "kaynak": [
+   1088,
+   1456
+  ],
+  "kirpilmis": [
+   1073,
+   1445
+  ],
+  "tamam": true,
+  "yon": "dikey"
+ },
+ "hastane-ankara-yatay": {
+  "ad": "Ankara",
+  "baski": [
+   4961,
+   3508
+  ],
+  "buyutulmus": [
+   6072,
+   4096
+  ],
+  "dpi": 300,
+  "kat": "Kurt geziyor · Şehir hastaneleri",
+  "kaynak": [
+   1536,
+   1024
+  ],
+  "kirpilmis": [
+   1518,
+   1024
+  ],
+  "tamam": true,
+  "yon": "yatay"
+ },
+ "hastane-istanbul-dikey": {
+  "ad": "İstanbul",
+  "baski": [
+   3508,
+   4961
+  ],
+  "buyutulmus": [
+   4236,
+   5740
+  ],
+  "dpi": 300,
+  "kat": "Kurt geziyor · Şehir hastaneleri",
+  "kaynak": [
+   1088,
+   1456
+  ],
+  "kirpilmis": [
+   1059,
+   1435
+  ],
+  "tamam": true,
+  "yon": "dikey"
+ },
+ "hastane-istanbul-yatay": {
+  "ad": "İstanbul",
+  "baski": [
+   4961,
+   3508
+  ],
+  "buyutulmus": [
+   6104,
+   4068
+  ],
+  "dpi": 300,
+  "kat": "Kurt geziyor · Şehir hastaneleri",
+  "kaynak": [
+   1536,
+   1024
+  ],
+  "kirpilmis": [
+   1526,
+   1017
+  ],
+  "tamam": true,
+  "yon": "yatay"
+ },
+ "hastane-izmir-dikey": {
+  "ad": "İzmir",
+  "baski": [
+   3508,
+   4961
+  ],
+  "buyutulmus": [
+   4220,
+   5524
+  ],
+  "dpi": 300,
+  "kat": "Kurt geziyor · Şehir hastaneleri",
+  "kaynak": [
+   1088,
+   1456
+  ],
+  "kirpilmis": [
+   1055,
+   1381
+  ],
+  "tamam": true,
+  "yon": "dikey"
+ },
+ "hastane-izmir-yatay": {
+  "ad": "İzmir",
+  "baski": [
+   4961,
+   3508
+  ],
+  "buyutulmus": [
+   5944,
+   4060
+  ],
+  "dpi": 300,
+  "kat": "Kurt geziyor · Şehir hastaneleri",
+  "kaynak": [
+   1536,
+   1024
+  ],
+  "kirpilmis": [
+   1486,
+   1015
+  ],
+  "tamam": true,
+  "yon": "yatay"
+ },
+ "hastane-kayseri-dikey": {
+  "ad": "Kayseri",
+  "baski": [
+   3508,
+   4961
+  ],
+  "buyutulmus": [
+   4312,
+   5700
+  ],
+  "dpi": 300,
+  "kat": "Kurt geziyor · Şehir hastaneleri",
+  "kaynak": [
+   1088,
+   1456
+  ],
+  "kirpilmis": [
+   1078,
+   1425
+  ],
+  "tamam": true,
+  "yon": "dikey"
+ },
+ "hastane-kayseri-yatay": {
+  "ad": "Kayseri",
+  "baski": [
+   4961,
+   3508
+  ],
+  "buyutulmus": [
+   6036,
+   4036
+  ],
+  "dpi": 300,
+  "kat": "Kurt geziyor · Şehir hastaneleri",
+  "kaynak": [
+   1536,
+   1024
+  ],
+  "kirpilmis": [
+   1509,
+   1009
+  ],
+  "tamam": true,
+  "yon": "yatay"
+ },
  "istanbul-dikey": {
   "ad": "İstanbul",
   "baski": [
@@ -179,6 +363,98 @@
   "kirpilmis": [
    1757,
    813
+  ],
+  "tamam": true,
+  "yon": "yatay"
+ },
+ "kupa-hastane-ankara": {
+  "ad": "Ankara",
+  "baski": [
+   2362,
+   1063
+  ],
+  "buyutulmus": [
+   7104,
+   3496
+  ],
+  "dpi": 300,
+  "kat": "Kurt geziyor · Şehir hastaneleri",
+  "kaynak": [
+   1776,
+   896
+  ],
+  "kirpilmis": [
+   1776,
+   874
+  ],
+  "tamam": true,
+  "yon": "yatay"
+ },
+ "kupa-hastane-istanbul": {
+  "ad": "İstanbul",
+  "baski": [
+   2362,
+   1063
+  ],
+  "buyutulmus": [
+   6940,
+   3116
+  ],
+  "dpi": 300,
+  "kat": "Kurt geziyor · Şehir hastaneleri",
+  "kaynak": [
+   1776,
+   896
+  ],
+  "kirpilmis": [
+   1735,
+   779
+  ],
+  "tamam": true,
+  "yon": "yatay"
+ },
+ "kupa-hastane-izmir": {
+  "ad": "İzmir",
+  "baski": [
+   2362,
+   1063
+  ],
+  "buyutulmus": [
+   7072,
+   3528
+  ],
+  "dpi": 300,
+  "kat": "Kurt geziyor · Şehir hastaneleri",
+  "kaynak": [
+   1776,
+   896
+  ],
+  "kirpilmis": [
+   1768,
+   882
+  ],
+  "tamam": true,
+  "yon": "yatay"
+ },
+ "kupa-hastane-kayseri": {
+  "ad": "Kayseri",
+  "baski": [
+   2362,
+   1063
+  ],
+  "buyutulmus": [
+   7084,
+   3408
+  ],
+  "dpi": 300,
+  "kat": "Kurt geziyor · Şehir hastaneleri",
+  "kaynak": [
+   1776,
+   896
+  ],
+  "kirpilmis": [
+   1771,
+   852
   ],
   "tamam": true,
   "yon": "yatay"
