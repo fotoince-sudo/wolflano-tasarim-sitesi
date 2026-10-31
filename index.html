@@ -4680,6 +4680,107 @@ var DATA_P=(async function(){
   try{var r=await fetch(SB.url+'/rest/v1/site_content?select=data&id=eq.main',{headers:{apikey:SB.key},cache:'no-store'});if(r.ok){var a=await r.json();if(a&&a[0]&&a[0].data)j=a[0].data;}}catch(_){}
   if(!j){try{var r2=await fetch('data.json',{cache:'no-store'});if(r2.ok)j=await r2.json();}catch(_){}}
   if(j&&j.v===1){try{cutMerge(j,await loadMan());}catch(_){}D=Object.assign(clone(DEF),j);applyData();SAVEDTOK=usedTokens(D);DLOADED=true;if(cur!=='yonetim')route();}
+/* AYBÜKE (sitenin her sayfasında): sağ alttaki yuvarlak resim; müşteriye ürün bulmada yardım edip satışa yönlendirir.
+   Cevabı sunucudaki yardım asistanı (yardim, mode: site) verir; ürün listesi ve fiyatlar buradan gider, önerilen ürünler kart olarak gösterilir.
+   Ses: telefonun/tarayıcının kendi ses tanıması ve okuması (ücretsiz). Konuşma yalnız bu sekmede tutulur. Yönetimde görünmez. */
+(function(){
+  var IMG='assets/aybuke/aybuke.webp',FB='assets/aybuke/aybuke.svg';
+  var css='.ayf{position:fixed;right:14px;bottom:calc(18px + env(safe-area-inset-bottom,0px));z-index:35;width:58px;height:58px;border-radius:50%;padding:0;border:0;background:none;cursor:pointer;transition:bottom .2s,transform .15s}'+
+  '.ayf img{width:58px;height:58px;border-radius:50%;object-fit:cover;display:block;border:3px solid #7fd6b4;box-shadow:0 0 0 2px #fff,0 6px 18px rgba(0,0,0,.25)}'+
+  '.ayf:active{transform:scale(.94)}.ayf.up{bottom:calc(92px + env(safe-area-inset-bottom,0px))}.ayf[hidden],.ayb[hidden],.ayp[hidden],.ayq[hidden]{display:none!important}'+
+  '.ayb{position:fixed;right:82px;bottom:calc(30px + env(safe-area-inset-bottom,0px));z-index:35;max-width:min(64vw,250px);background:#fff;color:#101a14;border:1px solid #cfe9dd;border-radius:16px 16px 4px 16px;padding:10px 30px 10px 12px;font:500 14px/1.4 var(--ui,system-ui);box-shadow:0 6px 18px rgba(0,0,0,.16);cursor:pointer}'+
+  '.ayb.up{bottom:calc(104px + env(safe-area-inset-bottom,0px))}.ayb b{display:block;font-weight:700}.ayb .x{position:absolute;top:4px;right:6px;border:0;background:none;font-size:18px;line-height:1;color:#596760;padding:4px;cursor:pointer}'+
+  '.ayp{position:fixed;left:0;right:0;bottom:0;margin:0 auto;max-width:480px;height:min(78vh,620px);z-index:45;background:var(--bg,#f8fbf9);color:var(--ink,#101a14);border-radius:18px 18px 0 0;box-shadow:0 -10px 34px rgba(0,0,0,.28);display:flex;flex-direction:column;padding-bottom:env(safe-area-inset-bottom,0px)}'+
+  '@media(min-width:700px){.ayp{left:auto;right:18px;bottom:18px;border-radius:18px;height:min(76vh,640px);width:400px}}'+
+  '.ayh{display:flex;align-items:center;gap:10px;padding:12px 12px 10px 14px;border-bottom:1px solid var(--line,#dde7e1)}.ayh img{width:44px;height:44px;border-radius:50%;object-fit:cover;border:2px solid #7fd6b4}.ayh span{flex:1;min-width:0}.ayh b{display:block;font:700 16px var(--ui,system-ui)}.ayh small{color:var(--muted,#596760);font-size:12.5px}'+
+  '.ayh .x{width:38px;height:38px;border-radius:50%;border:1px solid var(--line,#dde7e1);background:none;color:inherit;font-size:20px;cursor:pointer}'+
+  '.aym{flex:1;overflow-y:auto;padding:12px 14px 18px;display:flex;flex-direction:column;gap:10px;-webkit-overflow-scrolling:touch}'+
+  '.aym .r{display:flex;gap:8px;align-items:flex-start}.aym .r>img{width:28px;height:28px;border-radius:50%;object-fit:cover;flex:none}'+
+  '.aym .m{margin:0;padding:9px 12px;border-radius:14px;font:15px/1.45 var(--ui,system-ui);max-width:85%;white-space:normal}.aym .as{background:var(--mint,#ebf6f0);border-top-left-radius:4px}.aym .me{align-self:flex-end;background:#00723b;color:#fff;border-top-right-radius:4px}.aym .wait{opacity:.7;font-style:italic}'+
+  '.ayc{display:flex;gap:8px;overflow-x:auto;padding:2px 0 2px 36px}.ayc a{flex:none;width:118px;text-decoration:none;color:inherit;border:1px solid var(--line,#dde7e1);border-radius:12px;background:#fff;overflow:hidden}.ayc img{width:118px;height:118px;object-fit:cover;display:block;background:#f2f5f3}.ayc span{display:block;padding:6px 8px 8px;font:600 12.5px/1.3 var(--ui,system-ui)}.ayc em{display:block;font-style:normal;color:#00723b;font-weight:700;margin-top:2px}'+
+  '.aygo{margin-left:36px;align-self:flex-start;display:inline-block;padding:9px 14px;border-radius:12px;background:#30a46c;color:#fff;border:1.5px solid #101a14;font:700 14px var(--ui,system-ui);text-decoration:none}'+
+  '.ayq{display:flex;gap:6px;overflow-x:auto;padding:0 14px 8px}.ayq button{flex:none;border:1px solid #30a46c;background:none;color:inherit;border-radius:999px;padding:7px 12px;font:600 13px var(--ui,system-ui);cursor:pointer}'+
+  '.ayi{display:flex;gap:8px;align-items:center;padding:8px 12px 10px;border-top:1px solid var(--line,#dde7e1)}.ayi input{flex:1;min-width:0;height:44px;border:1px solid var(--line,#dde7e1);border-radius:12px;padding:0 12px;font:16px var(--ui,system-ui);background:#fff;color:#101a14}'+
+  '.ayi .mic{width:44px;height:44px;border-radius:50%;border:1px solid var(--line,#dde7e1);background:none;color:inherit;display:grid;place-items:center;cursor:pointer;flex:none}.ayi .mic.on{background:#d33;color:#fff;border-color:#d33;animation:aypl 1s infinite}@keyframes aypl{50%{opacity:.55}}'+
+  '.ayi .snd{height:44px;padding:0 16px;border-radius:12px;background:#30a46c;color:#fff;border:1.5px solid #101a14;font:700 15px var(--ui,system-ui);cursor:pointer;flex:none}'+
+  '.ayp label.ayt{display:flex!important;flex-direction:row;align-items:center;justify-content:flex-start;gap:8px;padding:0 14px 8px;margin:0;font:13px var(--ui,system-ui);color:var(--muted,#596760);text-transform:none;letter-spacing:0}.ayp .ayt input{width:18px!important;height:18px!important;min-height:0;margin:0;padding:0;flex:none}';
+  var st=document.createElement('style');st.textContent=css;document.head.appendChild(st);
+  function im(cls,sz){return '<img src="'+IMG+'" alt="" width="'+sz+'" height="'+sz+'"'+(cls?' class="'+cls+'"':'')+' onerror="this.onerror=null;this.src=\''+FB+'\'">';}
+  var fab=document.createElement('button');fab.type='button';fab.className='ayf';fab.setAttribute('aria-label','Aybüke\'ye sor: alışveriş yardımı');fab.setAttribute('data-notr','');fab.innerHTML=im('',58);
+  var bal=document.createElement('div');bal.className='ayb';bal.hidden=true;bal.setAttribute('data-notr','');bal.setAttribute('role','status');
+  bal.innerHTML='<b>Merhaba, ben Aybüke 👋</b>Aradığını bulmana ya da kendi tasarımını yapmana yardım edeyim mi?<button type="button" class="x" aria-label="Kapat">×</button>';
+  var pn=document.createElement('div');pn.className='ayp';pn.hidden=true;pn.setAttribute('data-notr','');pn.setAttribute('data-notr-sk','');pn.setAttribute('role','dialog');pn.setAttribute('aria-label','Aybüke');
+  document.body.appendChild(bal);document.body.appendChild(fab);document.body.appendChild(pn);
+
+  var SR=window.SpeechRecognition||window.webkitSpeechRecognition,TTS=!!window.speechSynthesis,micOn=false,rec=null,ttsOn=false,busy=false,M=[];
+  try{ttsOn=localStorage.getItem('wf_ask_tts')==='1';}catch(_){}
+  try{M=JSON.parse(sessionStorage.getItem('wf_ask_site')||'[]')||[];}catch(_){M=[];}
+  var QS=['Hediye için ne önerirsin?','Kendi tasarımımı nasıl yaparım?','Okulumuz için toplu sipariş','Hangi indirimler var?'];
+  function e(t){return String(t==null?'':t).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+  function prods(){try{return (PRODUCTS||[]).slice();}catch(_){return [];}}
+  function byId(id){var L=prods();for(var i=0;i<L.length;i++)if(String(L[i].id)===String(id))return L[i];return null;}
+  function out(p){try{return soldOut(p);}catch(_){return false;}}
+  function money(n){try{return tl(n);}catch(_){return Math.round(n)+' TL';}}
+  function pimg(p){try{return src((p.imgs||[])[0]||p.img||'');}catch(_){return '';}}
+  function waUrl(msg){try{return kurWa(msg||'Merhaba, Aybüke yönlendirdi. Bilgi almak istiyorum.');}catch(_){return 'https://wa.me/905307641717';}}
+  var GO={koleksiyon:['#hazir','Koleksiyona göz at'],atolye:['#tasarla','Baskı Atölyesi\'ne git'],studyo:['studyo.html','Tasarım stüdyosunu aç'],hediye:['#hediye','Hediye & Dekor\'a bak'],whatsapp:['','WhatsApp\'tan yaz']};
+  function goHTML(g){var x=GO[g];if(!x)return '';var u=g==='whatsapp'?waUrl():x[0];return '<a class="aygo" href="'+e(u)+'"'+(g==='whatsapp'?' target="_blank" rel="noopener"':'')+' data-aygo>'+x[1]+' →</a>';}
+  function cardsHTML(ids){var h='';(ids||[]).forEach(function(id){var p=byId(id);if(!p||out(p))return;var n='';try{n=pName(p);}catch(_){n=p.name||'';}
+    h+='<a href="#urun-'+encodeURIComponent(p.id)+'" data-aygo>'+(pimg(p)?'<img src="'+e(pimg(p))+'" alt="" loading="lazy">':'')+'<span>'+e(n)+'<em>'+e(money(p.price))+'</em></span></a>';});return h?'<div class="ayc">'+h+'</div>':'';}
+  function intro(){return 'Merhaba, ben Aybüke! Wolflano\'da sana yardım etmek için buradayım. Ne arıyorsun? Kendin için mi, hediye mi, yoksa ekibin ya da okulun için mi?';}
+  function msgs(){var h='<div class="r">'+im('',28)+'<p class="m as">'+e(intro())+'</p></div>';
+    M.forEach(function(m){if(m.role==='user')h+='<p class="m me">'+e(m.text)+'</p>';else h+='<div class="r">'+im('',28)+'<p class="m as">'+e(m.text).replace(/\n/g,'<br>')+'</p></div>'+cardsHTML(m.urunler)+goHTML(m.git);});
+    if(busy)h+='<div class="r">'+im('',28)+'<p class="m as wait">Aybüke yazıyor…</p></div>';return h;}
+  function paint(){var b=pn.querySelector('.aym');if(b){b.innerHTML=msgs();b.scrollTop=b.scrollHeight;}var q=pn.querySelector('.ayq');if(q)q.hidden=M.length>0;}
+  function build(){pn.innerHTML='<div class="ayh">'+im('',44)+'<span><b>Aybüke</b><small>Wolflano danışmanın · ürün, tasarım, sipariş</small></span><button type="button" class="x" data-ay="close" aria-label="Kapat">×</button></div>'+
+    '<div class="aym" aria-live="polite"></div>'+
+    '<div class="ayq">'+QS.map(function(q){return '<button type="button" data-ayq="'+e(q)+'">'+e(q)+'</button>';}).join('')+'</div>'+
+    (TTS?'<label class="ayt"><input type="checkbox" data-ay="tts"'+(ttsOn?' checked':'')+'> Aybüke cevapları sesli okusun</label>':'')+
+    '<form class="ayi">'+(SR?'<button type="button" class="mic" data-ay="mic" aria-label="Konuşarak sor"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></button>':'')+
+    '<input maxlength="400" placeholder="Örn. Babama hediye tişört" autocomplete="off" enterkeyhint="send" aria-label="Sorun"><button type="submit" class="snd">Sor</button></form>';paint();}
+  function ctx(){var c=[],h=(location.hash||'#ana').slice(1);
+    try{var pg={ana:'Ana sayfa',hazir:'Wolflano Koleksiyonu',tasarla:'Baskı Atölyesi',hediye:'Hediye & Dekor',sepet:'Sepet',odeme:'Ödeme',hakkimizda:'Hakkımızda',fiyatlar:'Baskı fiyatları'};
+      var cp=h.indexOf('urun-')===0?byId(h.slice(5)):null;c.push('Sayfa: '+(cp?'Ürün sayfası, baktığı ürün: '+cp.id+' '+(cp.name||'')+' '+money(cp.price):(pg[h]||h)));}catch(_){}
+    try{var cq=0;for(var k in cart)cq+=cart[k]||0;cq+=scQtyAll();if(cq)c.push('Sepetinde '+cq+' ürün var');}catch(_){}
+    try{var tr=(TIERS||[]).filter(function(t){return t[0]>0&&t[1]>0;}).map(function(t){return t[0]+' adet ve üzeri %'+t[1];});if(tr.length)c.push('Adet indirimi: '+tr.join(', '));}catch(_){}
+    try{c.push('Baskısız ürünler (Baskı Atölyesi, fiyat + baskı): '+(BLANKS||[]).filter(function(b){return !out(b);}).slice(0,24).map(function(b){return b.name+' '+money(b.price)+(b.a4?' (logo +'+money(b.logo)+', A4 +'+money(b.a4)+', A3 +'+money(b.a4*(A3_KAT||2))+')':'');}).join('; '));}catch(_){}
+    var L=prods(),s='';L.forEach(function(p){var n='';try{n=pName(p);}catch(_){n=p.name||'';}var r=p.id+' | '+n+(p.color?' '+p.color:'')+' | '+money(p.price)+(p.old&&p.old>p.price?' (eski '+money(p.old)+')':'')+(out(p)?' | Tükendi':'')+'\n';if(s.length+r.length<4600)s+=r;});
+    c.push('Ürünler:\n'+s);return c.join('\n');}
+  function say(t){if(!TTS||!ttsOn||!t)return;try{speechSynthesis.cancel();var u=new SpeechSynthesisUtterance(String(t).replace(/["“”]/g,'').replace(/\s*\n+\s*/g,'. '));u.lang='tr-TR';var v=speechSynthesis.getVoices().filter(function(x){return /^tr/i.test(x.lang);});if(v[0])u.voice=v[0];u.rate=1.02;speechSynthesis.speak(u);}catch(_){}}
+  async function send(t){t=String(t||'').trim();if(!t||busy)return;M.push({role:'user',text:t});M=M.slice(-16);busy=true;paint();
+    var a='',ur=[],g='';try{var r=await fetch(SB.url+'/functions/v1/yardim',{method:'POST',headers:{'Content-Type':'application/json',apikey:SB.key},body:JSON.stringify({mode:'site',messages:M.slice(-8).map(function(m){return {role:m.role,text:m.text};}),context:ctx()})});
+      var j=await r.json().catch(function(){return {};});a=j.cevap||j.message||'';ur=Array.isArray(j.urunler)?j.urunler:[];g=j.git||'';}catch(_){}
+    M.push({role:'assistant',text:a||'Şu an cevap veremedim. Biraz sonra yeniden dene ya da WhatsApp 0530 764 17 17 üzerinden bize yaz.',urunler:ur,git:g});busy=false;say(a);
+    try{sessionStorage.setItem('wf_ask_site',JSON.stringify(M.slice(-16)));}catch(_){}paint();}
+  function micStop(){micOn=false;try{if(rec)rec.stop();}catch(_){}var m=pn.querySelector('.mic');if(m)m.classList.remove('on');var i=pn.querySelector('.ayi input');if(i)i.placeholder='Örn. Babama hediye tişört';}
+  function micStart(){if(!SR)return;if(micOn){micStop();return;}try{speechSynthesis.cancel();}catch(_){}
+    rec=new SR();rec.lang='tr-TR';rec.interimResults=true;rec.continuous=false;var fin='';var inp=pn.querySelector('.ayi input');
+    rec.onresult=function(ev){var t='';for(var k=ev.resultIndex;k<ev.results.length;k++){if(ev.results[k].isFinal)fin+=ev.results[k][0].transcript;else t+=ev.results[k][0].transcript;}if(inp)inp.value=(fin+t).trim();};
+    rec.onerror=function(ev){micStop();if(ev&&/not-allowed|service-not-allowed/.test(ev.error))try{toast('Mikrofon izni verilmedi. Telefonun ayarlarından bu siteye mikrofon izni ver.');}catch(_){}};
+    rec.onend=function(){var was=micOn;micStop();var v=fin.trim();if(was&&v){if(inp)inp.value='';send(v);}};
+    try{rec.start();micOn=true;var m=pn.querySelector('.mic');if(m)m.classList.add('on');if(inp){inp.value='';inp.placeholder='Dinliyorum, konuş…';}}catch(_){micStop();}}
+  function open(){hideBal(true);if(!pn.innerHTML)build();else paint();pn.hidden=false;fab.hidden=true;}
+  function close(){micStop();try{speechSynthesis.cancel();}catch(_){}pn.hidden=true;sync();}
+  function hideBal(seen){bal.hidden=true;if(seen)try{sessionStorage.setItem('wf_ayb_hi','1');}catch(_){}}
+  fab.addEventListener('click',open);
+  bal.addEventListener('click',function(ev){if(ev.target.closest('.x')){hideBal(true);return;}open();});
+  pn.addEventListener('click',function(ev){var t=ev.target;var q=t.closest('[data-ayq]');if(q){send(q.dataset.ayq);return;}
+    var a=t.closest('[data-ay]');if(a&&a.dataset.ay==='close'){close();return;}if(a&&a.dataset.ay==='mic'){micStart();return;}
+    if(t.closest('[data-aygo]')){var hr=t.closest('a').getAttribute('href')||'';if(hr.charAt(0)==='#'){setTimeout(close,30);}}});
+  pn.addEventListener('change',function(ev){var t=ev.target;if(t&&t.dataset&&t.dataset.ay==='tts'){ttsOn=t.checked;try{localStorage.setItem('wf_ask_tts',ttsOn?'1':'0');}catch(_){}if(!ttsOn)try{speechSynthesis.cancel();}catch(_){}else say('Merhaba, ben Aybüke. Cevaplarımı sesli okuyacağım.');}});
+  pn.addEventListener('submit',function(ev){ev.preventDefault();var i=pn.querySelector('.ayi input');var v=i.value;i.value='';send(v);});
+  document.addEventListener('keydown',function(ev){if(ev.key==='Escape'&&!pn.hidden)close();});
+  /* Görünürlük: yönetimde gizli; alttaki sabit çubuk (sepete ekle / ödeme) varsa onun üstüne çıkar */
+  function sync(){var h=(location.hash||'').slice(1),adm=/^(yonetim|crm)/.test(h)||/[?&]admin=/.test(location.search);
+    var bar=!!document.querySelector('.sbar,.cobar');fab.classList.toggle('up',bar);bal.classList.toggle('up',bar);
+    var hide=adm||!pn.hidden;fab.hidden=hide;if(hide||/^(odeme)$/.test(h))bal.hidden=true;}
+  window.addEventListener('hashchange',function(){setTimeout(sync,80);});
+  try{var mn=document.getElementById('main');if(mn&&window.MutationObserver)new MutationObserver(function(){sync();}).observe(mn,{childList:true});}catch(_){}
+  sync();setTimeout(sync,600);
+  /* Selam balonu: oturumda bir kez, sayfa açıldıktan 6 sn sonra; 12 sn sonra kendiliğinden kaybolur */
+  var seen=false;try{seen=sessionStorage.getItem('wf_ayb_hi')==='1';}catch(_){}
+  if(!seen)setTimeout(function(){var h=(location.hash||'').slice(1);if(fab.hidden||!pn.hidden||/^(odeme|sepet|yonetim|crm)/.test(h))return;bal.hidden=false;try{sessionStorage.setItem('wf_ayb_hi','1');}catch(_){}setTimeout(function(){hideBal(false);},12000);},6000);
+})();
 })();
 (async function(){
   try{if(window.claude&&window.claude.use){var u=await window.claude.use('user');ART=await window.claude.use('artifact');

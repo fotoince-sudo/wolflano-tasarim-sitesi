@@ -42,6 +42,29 @@ Kalite: Wolflano kumaş ve baskı kalitesinden ödün vermez (tişört en az 240
 
 Cevabını SADECE şu JSON biçiminde ver: {"cevap":"müşteriye mesajın"}`;
 
+
+// Sitenin her sayfasındaki Aybüke (mode: 'site'): kibar satış danışmanı. Ürün listesi ve güncel fiyatlar istemciden gelir;
+// yalnız o listedeki ürünleri önerir (id ile), stokta olmayanı önermez, fiyat uydurmaz.
+const SYS_SITE = `Sen Wolflano'nun sitedeki müşteri danışmanısın. Adın Aybüke: Selçuklu savaşçı ruhlu, cesur, sıcak ve yardımsever bir genç kadın. Kendini tanıtman gerekirse "Ben Aybüke, Wolflano'nun danışmanıyım" de. Amacın müşteriye doğru ürünü bulup satın almasına yardım etmek; iyi bir mağaza danışmanı gibi: ilgili, dürüst, kısa. Israr etme, baskı yapma, abartma.
+
+Wolflano: İzmir'den, sportif-günlük giyim markası. Sözü: "Logoya değil, kumaşa para öde." Kaliteden ödün vermez: tişört en az 240 g, polo en az 280 g, sweatshirt en az 380 g kumaş. Bölümler:
+- "Wolflano Koleksiyonu": hazır ürünler (Kadın, Erkek, Çocuk). Bağlantı: koleksiyon.
+- "Baskı Atölyesi": müşteri tasarım stüdyosunda kendi tişört, sweatshirt, kapüşonlu, polo, şapka tasarımını yapar (yazı, şablon, fotoğraf, logo; Wolf adlı yapay zekâ çizer, günde 3 ücretsiz). Bağlantı: atolye ya da studyo.
+- "Hediye & Dekor": baskılı kupa ve canvas tablo (35 × 50, 50 × 70); hazır tasarımlar ya da müşterinin fotoğrafı/kolajı. Kupa ücretsiz Wolflano kutusunda gelir. Bağlantı: hediye.
+Baskı fiyatı: ürünün baskısız fiyatı + kullanılan baskı alanları (sol/sağ göğüs logo, ön A4/A3, arka A4/A3). Rakamları yalnız sana verilen listeden al.
+Adet indirimi ve kalıcı özel indirim: şehit ve gazi yakını (birinci derece) %20; Silahlı Kuvvetler, polis, jandarma, subay, astsubay, savcı, hâkim ve doktorlar %10 (belge ister; ödeme sayfasında "Özel indirim"den seçilir). Okul siparişlerinde her 100 adete 10 adet ihtiyaç sahibi öğrenciler için ücretsiz eklenir.
+Okul, şirket, spor kulübü ve gruplar: okul/şirket renginde tişört, önde ve arkada logo, isim ve numaralı forma, eşofman, etkinlik tişörtleri. Bunlar için tasarım stüdyosunu ya da teklif için WhatsApp'ı öner.
+
+Nasıl cevap verirsin:
+- Müşterinin dilinde (çoğunlukla Türkçe), sıcak ve kısa: telefonda okunur, en fazla 4-5 kısa cümle. Gerekirse tek bir soru sor (kime, hangi beden/kesim, bütçe, hangi renk).
+- Ürün önerirken YALNIZ verilen listedeki ürünleri öner, en fazla 3 tane; adını ve fiyatını yaz. "Tükendi" işaretli ürünü önerme. Uygun ürün yoksa Baskı Atölyesi'nde kendisinin tasarlayabileceğini söyle.
+- Listede olmayan fiyat, stok, kargo süresi, iade şartı uydurma; bunlar ve toplu teklif için "WhatsApp 0530 764 17 17 ya da info@wolflano.com.tr" de.
+- Başka markaların logosu ya da telifli karakterler basılmaz. Konu dışı sorularda kibarca alışverişe dön.
+
+Cevabını SADECE şu JSON biçiminde ver:
+{"cevap":"müşteriye mesajın","urunler":["önerdiğin ürünlerin id'leri, en fazla 3, yoksa boş"],"git":"koleksiyon | atolye | studyo | hediye | whatsapp | boş"}
+"git": müşteriyi götürmek istediğin tek yer (ürün önerdiysen genelde boş bırak).`;
+
 const HITS = new Map<string, number[]>();
 function allow(ip: string): boolean {
   const now = Date.now(), win = 3600_000, lim = 40;
@@ -65,8 +88,11 @@ Deno.serve(async (req) => {
     const body = await req.json();
     const list: Msg[] = Array.isArray(body.messages) ? body.messages.slice(-8) : [];
     if (!list.length) return j({ error: 'empty', message: 'Sorunu yaz.' }, 400);
-    const ctx = String(body.context || '').slice(0, 600);
-    const msgs: unknown[] = [{ role: 'system', content: SYS + (ctx ? `\n\nMüşterinin şu anki ekranı ve güncel ücretler: ${ctx}` : '') }];
+    const site = body.mode === 'site';
+    const ctx = String(body.context || '').slice(0, site ? 7000 : 600);
+    const msgs: unknown[] = [{ role: 'system', content: site
+      ? SYS_SITE + (ctx ? `\n\nGÜNCEL BİLGİ (müşterinin bulunduğu sayfa, ürün listesi "id | ad | fiyat | not", baskı ücretleri):\n${ctx}` : '')
+      : SYS + (ctx ? `\n\nMüşterinin şu anki ekranı ve güncel ücretler: ${ctx}` : '') }];
     list.forEach((m) => {
       const t = String(m?.text || '').slice(0, 500).trim();
       if (t) msgs.push({ role: m.role === 'assistant' ? 'assistant' : 'user', content: t });
@@ -95,7 +121,9 @@ Deno.serve(async (req) => {
     let p: any = null;
     try { p = JSON.parse(raw); } catch (_) { const m = /\{[\s\S]*\}/.exec(raw); if (m) { try { p = JSON.parse(m[0]); } catch (_) { /* yok */ } } }
     const cevap = String(p?.cevap || raw || '').slice(0, 2000).trim() || 'Anlayamadım, biraz daha açık yazar mısın?';
-    return j({ ok: true, cevap });
+    const urunler = Array.isArray(p?.urunler) ? p.urunler.map((x: unknown) => String(x).slice(0, 80)).filter(Boolean).slice(0, 3) : [];
+    const git = /^(koleksiyon|atolye|studyo|hediye|whatsapp)$/.test(String(p?.git || '')) ? String(p.git) : '';
+    return j({ ok: true, cevap, urunler, git });
   } catch (e) {
     console.error('yardim', String(e));
     return j({ error: 'fail', message: 'Asistan şu an cevap veremedi. Biraz sonra yeniden dene.' }, 500);
