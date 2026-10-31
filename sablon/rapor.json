@@ -1,4 +1,96 @@
 {
+ "antalya-dikey": {
+  "ad": "Antalya",
+  "baski": [
+   3508,
+   4961
+  ],
+  "buyutulmus": [
+   4352,
+   5824
+  ],
+  "dpi": 300,
+  "kat": "Şehirler",
+  "kaynak": [
+   1088,
+   1456
+  ],
+  "kirpilmis": [
+   1088,
+   1456
+  ],
+  "tamam": true,
+  "yon": "dikey"
+ },
+ "antalya-yatay": {
+  "ad": "Antalya",
+  "baski": [
+   4961,
+   3508
+  ],
+  "buyutulmus": [
+   6144,
+   4096
+  ],
+  "dpi": 300,
+  "kat": "Şehirler",
+  "kaynak": [
+   1536,
+   1024
+  ],
+  "kirpilmis": [
+   1536,
+   1024
+  ],
+  "tamam": true,
+  "yon": "yatay"
+ },
+ "bodrum-dikey": {
+  "ad": "Bodrum",
+  "baski": [
+   3508,
+   4961
+  ],
+  "buyutulmus": [
+   4188,
+   5616
+  ],
+  "dpi": 300,
+  "kat": "Şehirler",
+  "kaynak": [
+   1088,
+   1456
+  ],
+  "kirpilmis": [
+   1047,
+   1404
+  ],
+  "tamam": true,
+  "yon": "dikey"
+ },
+ "bodrum-yatay": {
+  "ad": "Bodrum",
+  "baski": [
+   4961,
+   3508
+  ],
+  "buyutulmus": [
+   6100,
+   3976
+  ],
+  "dpi": 300,
+  "kat": "Şehirler",
+  "kaynak": [
+   1536,
+   1024
+  ],
+  "kirpilmis": [
+   1525,
+   994
+  ],
+  "tamam": true,
+  "yon": "yatay"
+ },
  "istanbul-dikey": {
   "ad": "İstanbul",
   "baski": [
@@ -6,20 +98,89 @@
    4961
   ],
   "buyutulmus": [
-   6348,
-   8980
+   4324,
+   5784
   ],
   "dpi": 300,
   "kat": "Şehirler",
   "kaynak": [
-   1587,
-   2245
+   1088,
+   1456
   ],
   "kirpilmis": [
-   1587,
-   2245
+   1081,
+   1446
   ],
   "tamam": true,
   "yon": "dikey"
+ },
+ "istanbul-yatay": {
+  "ad": "İstanbul",
+  "baski": [
+   4961,
+   3508
+  ],
+  "buyutulmus": [
+   5972,
+   4064
+  ],
+  "dpi": 300,
+  "kat": "Şehirler",
+  "kaynak": [
+   1536,
+   1024
+  ],
+  "kirpilmis": [
+   1493,
+   1016
+  ],
+  "tamam": true,
+  "yon": "yatay"
+ },
+ "van-dikey": {
+  "ad": "Van",
+  "baski": [
+   3508,
+   4961
+  ],
+  "buyutulmus": [
+   4312,
+   5816
+  ],
+  "dpi": 300,
+  "kat": "Şehirler",
+  "kaynak": [
+   1088,
+   1456
+  ],
+  "kirpilmis": [
+   1078,
+   1454
+  ],
+  "tamam": true,
+  "yon": "dikey"
+ },
+ "van-yatay": {
+  "ad": "Van",
+  "baski": [
+   4961,
+   3508
+  ],
+  "buyutulmus": [
+   6032,
+   3980
+  ],
+  "dpi": 300,
+  "kat": "Şehirler",
+  "kaynak": [
+   1536,
+   1024
+  ],
+  "kirpilmis": [
+   1508,
+   995
+  ],
+  "tamam": true,
+  "yon": "yatay"
  }
 }
