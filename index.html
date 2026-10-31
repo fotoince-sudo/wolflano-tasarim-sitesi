@@ -2840,6 +2840,27 @@ function dKey(p){if(p.grp)return 'g:'+p.grp;var d=p.dsg;if(!d||typeof d!=='objec
   ['front','back','logo'].forEach(function(k){var x=d[k];if(!x||!(x.objs||[]).length)return;s.push(k+':'+(x.area||''));
     (x.objs||[]).forEach(function(o){var A=o.assetId&&d.assets&&d.assets[o.assetId];s.push([o.type||'',(A&&(A.url||A.src))||o.src||o.clip||o.shape||o.k||o.value||o.v||o.text||o.assetId||'',Math.round((+o.w||0)/10)].join('|'));});});
   return s.join('#');}
+/* ---- Tasarım kodu (W001, W002 …) ----
+   Her tasarıma bir kod; aynı tasarımın renkleri (tek kartta toplananlar) aynı kodu paylaşır. Ürün türü ne olursa olsun tek sıra.
+   Silinen tasarımın numarası boşa çıkar; sonraki yeni tasarım ilk boş numarayı alır. Ad: "Kadın Tişört W012". */
+var WTYPE={tee:'Tişört',sweat:'Sweatshirt',hood:'Kapüşonlu Sweatshirt',zip:'Fermuarlı Kapüşonlu',polo:'Polo',hat:'Şapka',mug:'Kupa',canvas:'Canvas Tablo'};
+var WTYPE2={'TİŞÖRT':'Tişört','POLO':'Polo','SWEATSHIRT':'Sweatshirt','KAPÜŞONLU':'Kapüşonlu Sweatshirt','FERMUARLI KAPÜŞONLU':'Fermuarlı Kapüşonlu','EŞOFMAN':'Eşofman','JEANS':'Jeans','AKSESUAR':'Aksesuar','AYAKKABI':'Ayakkabı','ŞAPKA':'Şapka','KUPA':'Kupa','CANVAS':'Canvas Tablo','CANVAS TABLO':'Canvas Tablo'};
+function wHead(p){var d=p.dsg||{},pr=d.product,g='',t='';
+  if(pr){t=WTYPE[pr]||'';if(pr==='canvas')t+=' '+(d.cut==='c3550'?'35 × 50':'50 × 70');if(!/^(mug|canvas)$/.test(pr))g={erkek:'Erkek',kadin:'Kadın',cocuk:'Çocuk'}[d.cut]||'';}
+  if(!t)t=WTYPE2[String(p.type||'').toLocaleUpperCase('tr')]||'Ürün';
+  if(!g&&!/^(Kupa|Canvas)/.test(t)){var c=p.cat||[];g=c.indexOf('kadin')>=0&&c.indexOf('erkek')>=0?'Unisex':c.indexOf('kadin')>=0?'Kadın':c.indexOf('erkek')>=0?'Erkek':c.indexOf('cocuk')>=0?'Çocuk':'';}
+  return (g?g+' ':'')+t;}
+function wFmt(n){var x=String(n);while(x.length<3)x='0'+x;return 'W'+x;}
+function wFree(list){var u={};(list||[]).forEach(function(p){if(p&&+p.wc)u[+p.wc]=1;});for(var i=1;;i++)if(!u[i])return i;}
+function wAuto(p){return !!p.dsg||/^wolflano\b/i.test(p.name||'')||/\bW\d{3,}$/.test(p.name||'');}
+/* Bütün ürünlere kod ver ve stüdyodan yapılanların adını düzenle; dönen: adı değişen ürün sayısı */
+function wAssign(list){var groups={},order=[];list.forEach(function(p){var k=dKey(p);if(!groups[k]){groups[k]=[];order.push(k);}groups[k].push(p);});
+  /* eski ürün önce numara alsın */
+  order.sort(function(a,b){var m=function(k){return Math.min.apply(null,groups[k].map(function(p){return +p.no||1e9;}));};return m(a)-m(b);});
+  var used={};order.forEach(function(k){var w=groups[k].map(function(p){return +p.wc||0;}).filter(Boolean);if(w.length){var c=Math.min.apply(null,w);if(used[c]){groups[k].forEach(function(p){delete p.wc;});return;}used[c]=1;groups[k].forEach(function(p){p.wc=c;});}else groups[k].forEach(function(p){delete p.wc;});});
+  var n=0;order.forEach(function(k){var g=groups[k];if(!g[0].wc){var c=1;while(used[c])c++;used[c]=1;g.forEach(function(p){p.wc=c;});}
+    g.forEach(function(p){if(!wAuto(p))return;var nm=wHead(p)+' '+wFmt(p.wc);if(p.name!==nm){p.name=nm;n++;}});});
+  return n;}
 function cIx(c){c=String(c||'').trim().toLocaleLowerCase('tr');for(var i=0;i<STDC.length;i++)if(STDC[i].name.toLocaleLowerCase('tr')===c)return i;return STDC.length;}
 function cHex(c){var n=String(c||'').trim().toLocaleLowerCase('tr');for(var i=0;i<STDC.length;i++)if(STDC[i].name.toLocaleLowerCase('tr')===n)return STDC[i].hex;return RENK[n]||'';}
 function grpP(list){var by={},out=[];list.forEach(function(p){var k=dKey(p),c=String(p.color||'').trim().toLocaleLowerCase('tr');
@@ -3701,6 +3722,8 @@ document.addEventListener('click',function(e){var q=e.target.closest&&e.target.c
     if(b.ai)delete b.ai[c];toast(c+' bu üründen çıkarıldı. Kaydet\'e bas.');}
   else if(k==='drop'){d.renkler=(d.renkler||[]).filter(function(c){return c.name!==q.dataset.c;});stdcSync(d);}
   dirty();adRender();window.scrollTo(0,y);});
+document.addEventListener('click',function(e){var q=e.target.closest&&e.target.closest('[data-wcode]');if(!q||!A||!A.draft)return;e.preventDefault();
+  var n=wAssign(A.draft.products||[]);dirty();adRender();toast(n?n+' ürünün adı düzenlendi. Kontrol et, sonra Kaydet\'e bas.':'Bütün adlar zaten düzende. Kodlar güncellendi; Kaydet\'e bas.');});
 function bSetType(b,t){b.p=t;var gar=GAR_T.test(t);
   if(gar){delete b.hat;delete b.fixname;delete b.fixcm;if(b.a4==null)b.a4=0;if(b.logo==null)b.logo=0;var g=b.gen&&b.gen!=='hepsi'?b.gen:(GENS.indexOf(b.cut)>=0?b.cut:'erkek');b.cut=g;b.gen=g;}
   else{if(b.hat==null)b.hat=0;if(t==='canvas'){b.cut=b.cut==='c5070'?'c5070':'c3550';b.fixname=b.fixname||'Baskı';}else delete b.cut;if(t==='hat'){if(!b.gen||b.gen==='kupa'||b.gen==='canvas')b.gen='hepsi';}else delete b.gen;}}
@@ -3779,7 +3802,7 @@ function qpSubsOf(c){var out=[];(c.subs||[]).forEach(function(s){if(s.subs&&s.su
    Tür seçilince her seçili grubun aynı adlı alt kategorisi kendiliğinden işaretlenir (Erkek + Tişört → Erkek › Tişört);
    ad boşsa renk ve türden kendiliğinden yazılır (ör. "Siyah polo tişört"), istersen değiştirirsin. */
 function qpTypeLabel(t){var f=QP_TYPES.filter(function(x){return x[0]===t;})[0];return f?f[1]:'';}
-function qpAutoName(){var t=qpTypeLabel(QP.type).toLocaleLowerCase('tr'),c=QP.color||'';if(!t&&!c)return '';return ((c?c+' ':'')+t).trim().replace(/^./,function(m){return m.toLocaleUpperCase('tr');});}
+function qpAutoName(){if(!QP.type&&!QP.cat.length)return '';var ex=QP.edit&&(A.draft.products||[]).filter(function(x){return x.id===QP.edit;})[0],wc=ex&&ex.wc?ex.wc:wFree(A.draft.products);return wHead({type:QP.type||'',cat:QP.cat})+' '+wFmt(wc);}
 function qpAutoSub(){if(!QP.type)return;var cats=A.draft.cats||[],keep=[];
   cats.forEach(function(c){var sl=qpSubsOf(c),ids=sl.map(function(s){return s.id;});
     if(QP.cat.indexOf(c.id)<0){return;}
@@ -3805,7 +3828,7 @@ function qpView(){
   h+='</section>';
   var cl=QP_COLORS.slice();if(q.color&&cl.indexOf(q.color)<0)cl.push(q.color);
   h+='<section>'+step(3,'Renk')+'<div class="qp-ch sm">'+cl.map(function(c){var hx=(typeof RENK!=='undefined'&&RENK[c.toLocaleLowerCase('tr')])||'#ccc';return '<button type="button" data-qp="color" data-v="'+esc(c)+'"'+(q.color===c?' class="on"':'')+'><i style="background:'+hx+'"></i>'+esc(c)+'</button>';}).join('')+'<button type="button" data-qp="color2">+ Başka renk</button></div></section>';
-  h+='<section>'+step(4,'Ad ve fiyat')+'<label class="qp-f">Ürün adı <small style="font-weight:500;opacity:.7">'+(q.autoNm?'(renk ve türden otomatik; istersen değiştir)':'')+'</small><input data-qpf="name" value="'+esc(q.name)+'" placeholder="Renk ve tür seçince kendiliğinden yazılır" autocomplete="off"></label>'+
+  h+='<section>'+step(4,'Ad ve fiyat')+'<label class="qp-f">Ürün adı <small style="font-weight:500;opacity:.7">'+(q.autoNm?'(otomatik: kimin için + tür + tasarım kodu; istersen değiştir)':'')+'</small><input data-qpf="name" value="'+esc(q.name)+'" placeholder="Kimin için ve tür seçince kendiliğinden yazılır" autocomplete="off"></label>'+
     '<div class="qp-2"><label class="qp-f">Satış fiyatı (₺)<input data-qpf="price" type="number" inputmode="decimal" min="0" value="'+esc(q.price)+'" placeholder="0"></label>'+
     '<label class="qp-f">İndirim öncesi fiyat<input data-qpf="old" type="number" inputmode="decimal" min="0" value="'+esc(q.old)+'" placeholder="İndirim yoksa boş"></label></div></section>';
   var auto=qpAuto(),sel=qpSizes(),all=auto.slice();sel.forEach(function(s){if(all.indexOf(s)<0)all.push(s);});
@@ -3837,7 +3860,7 @@ document.addEventListener('click',async function(e){
   if(a==='close'){QP=null;A.tab='urun';adRender();window.scrollTo(0,0);return;}
   if(a==='first'){var i=+b.dataset.i,t=QP.imgs.splice(i,1)[0];QP.imgs.unshift(t);qpRe();return;}
   if(a==='rmimg'){QP.imgs.splice(+b.dataset.i,1);qpRe();return;}
-  if(a==='cat'){var ix=QP.cat.indexOf(v);if(ix>=0){QP.cat.splice(ix,1);var c=(A.draft.cats||[]).filter(function(x){return x.id===v;})[0];if(c){var ids=qpSubsOf(c).map(function(s){return s.id;});QP.sub=QP.sub.filter(function(s){return ids.indexOf(s)<0;});}}else QP.cat.push(v);qpAutoSub();qpRe();return;}
+  if(a==='cat'){var ix=QP.cat.indexOf(v);if(ix>=0){QP.cat.splice(ix,1);var c=(A.draft.cats||[]).filter(function(x){return x.id===v;})[0];if(c){var ids=qpSubsOf(c).map(function(s){return s.id;});QP.sub=QP.sub.filter(function(s){return ids.indexOf(s)<0;});}}else QP.cat.push(v);qpAutoSub();if(QP.autoNm)QP.name=qpAutoName();qpRe();return;}
   if(a==='sub'){var j=QP.sub.indexOf(v);if(j>=0)QP.sub.splice(j,1);else{QP.sub.push(v);var ty=qpTypeOfSub(b.dataset.n);if(ty)QP.type=ty;}qpRe();return;}
   if(a==='type'){QP.type=QP.type===v?'':v;qpAutoSub();if(QP.autoNm)QP.name=qpAutoName();qpRe();return;}
   if(a==='subopen'){QP.subOpen=!QP.subOpen;qpRe();return;}
@@ -3861,7 +3884,7 @@ document.addEventListener('click',async function(e){
     var fields={name:q.name.trim(),price:pr,old:od>pr?od:null,cat:q.cat.slice(),sub:q.sub.slice(),type:q.type||'TİŞÖRT',color:q.color,sizes:q.sizes,stock:st,desc:q.desc||'',show:!!q.show,imgs:q.imgs.slice()};
     var list=A.draft.products=A.draft.products||[];
     if(q.edit){var p=list.filter(function(x){return x.id===q.edit;})[0];if(p)Object.assign(p,fields);}
-    else{var np=Object.assign({id:'n'+Date.now().toString(36),no:pNums(list)+1,tag:''},fields);list.push(np);}
+    else{var np=Object.assign({id:'n'+Date.now().toString(36),no:pNums(list)+1,tag:'',wc:wFree(list)},fields);list.push(np);}
     A.dirty=true;var sv=document.getElementById('qpSave');if(sv){sv.disabled=true;sv.textContent='Kaydediliyor…';}
     var keep=QP;await adSave();
     if(!A.dirty){QP=null;A.tab='urun';adRender();window.scrollTo(0,0);toast(keep.edit?'Ürün güncellendi':'Ürün yayında');}
@@ -3882,6 +3905,7 @@ function adminView(){
   if(A.tab==='qp')return h+qpView()+'</div>';
   var d=A.draft;
   if(A.tab==='urun'){pNums(d.products);
+    h+='<div class="aed" style="margin-bottom:10px"><b>Ürün adları ve tasarım kodları</b><p class="note" style="margin:0">Stüdyodan yapılan ürünler "Kadın Tişört W001" biçiminde adlanır: önce kimin için ve ne olduğu, sonra tasarım kodu. Aynı tasarımın renkleri aynı kodu taşır; silinen tasarımın numarasını sonraki yeni tasarım alır. Eski adları bu düzene çevirmek için dokun, sonra Kaydet\'e bas.</p><div><button class="btn soft sm" data-wcode="1">Adları ve kodları düzenle</button></div></div>';
     h+='<div class="alist">';
     d.products.forEach(function(p,i){
       var pa='products.'+i,open=A.open===p.id;

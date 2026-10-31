@@ -4575,6 +4575,21 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
     setTimeout(function(){location.href='index.html#urun-'+encodeURIComponent(p.id);},1800);
     return '"'+nm+'" güncellendi. Ürün sayfasına dönülüyor…';
   }
+  /* Tasarım kodu: sitedeki (index.html) dKey / wHead / wFree ile aynı */
+  function dKey(p){if(p.grp)return 'g:'+p.grp;var d=p.dsg;if(!d||typeof d!=='object')return 'p:'+p.id;
+    var s=[p.type||'',(p.cat||[]).join(','),(p.sub||[]).join(','),d.cut||''];
+    ['front','back','logo'].forEach(function(k){var x=d[k];if(!x||!(x.objs||[]).length)return;s.push(k+':'+(x.area||''));
+      (x.objs||[]).forEach(function(o){var A=o.assetId&&d.assets&&d.assets[o.assetId];s.push([o.type||'',(A&&(A.url||A.src))||o.src||o.clip||o.shape||o.k||o.value||o.v||o.text||o.assetId||'',Math.round((+o.w||0)/10)].join('|'));});});
+    return s.join('#');}
+  var WTYPE={tee:'Tişört',sweat:'Sweatshirt',hood:'Kapüşonlu Sweatshirt',zip:'Fermuarlı Kapüşonlu',polo:'Polo',hat:'Şapka',mug:'Kupa',canvas:'Canvas Tablo'};
+  var WTYPE2={'TİŞÖRT':'Tişört','POLO':'Polo','SWEATSHIRT':'Sweatshirt','KAPÜŞONLU':'Kapüşonlu Sweatshirt','FERMUARLI KAPÜŞONLU':'Fermuarlı Kapüşonlu','EŞOFMAN':'Eşofman','JEANS':'Jeans','AKSESUAR':'Aksesuar','AYAKKABI':'Ayakkabı','ŞAPKA':'Şapka','KUPA':'Kupa','CANVAS':'Canvas Tablo','CANVAS TABLO':'Canvas Tablo'};
+  function wHead(p){var d=p.dsg||{},pr=d.product,g='',t='';
+    if(pr){t=WTYPE[pr]||'';if(pr==='canvas')t+=' '+(d.cut==='c3550'?'35 × 50':'50 × 70');if(!/^(mug|canvas)$/.test(pr))g={erkek:'Erkek',kadin:'Kadın',cocuk:'Çocuk'}[d.cut]||'';}
+    if(!t)t=WTYPE2[String(p.type||'').toLocaleUpperCase('tr')]||'Ürün';
+    if(!g&&!/^(Kupa|Canvas)/.test(t)){var c=p.cat||[];g=c.indexOf('kadin')>=0&&c.indexOf('erkek')>=0?'Unisex':c.indexOf('kadin')>=0?'Kadın':c.indexOf('erkek')>=0?'Erkek':c.indexOf('cocuk')>=0?'Çocuk':'';}
+    return (g?g+' ':'')+t;}
+  function wFmt(n){var x=String(n);while(x.length<3)x='0'+x;return 'W'+x;}
+  function wFree(list){var u={};(list||[]).forEach(function(p){if(p&&+p.wc)u[+p.wc]=1;});for(var i=1;;i++)if(!u[i])return i;}
   async function doProd(title,catId,price,byWolf,o){
     o=o||{};var cp=catPath(catId);
     var ss=sidesWith();if(!ss.length)throw {msg:'Önce bir tasarım yap.'};
@@ -4589,10 +4604,12 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
     var pc=null,sb=siteBlank(state.product,state.cut);
     if(sb&&sb.id&&Math.abs((+price||0)-defPrice())<0.5){var used=function(sd){return state[sd]&&state[sd].objs&&state[sd].objs.length?state[sd].area:'';};
       pc={b:sb.id,logo:!!used('logo'),f:used('front'),bk:used('back')};if(/^cv/.test(pc.f))pc.f='';}
-    title=uniqName(title,(d.products||[]).map(function(x){return x.name;}));
+    /* Ad elle yazılmadıysa "Kadın Tişört W012": aynı tasarımın başka rengi varsa onun kodu, yoksa ilk boş numara */
+    var np0={type:ptype,cat:cp.cat,sub:cp.sub,dsg:data},k0=dKey(np0),same=(d.products||[]).filter(function(x){return +x.wc&&dKey(x)===k0;})[0],wc=same?+same.wc:wFree(d.products);
+    if(ADM.tTyped!==amKey())title=wHead(np0)+' '+wFmt(wc);else title=uniqName(title,(d.products||[]).map(function(x){return x.name;}));
     var rec=await insertRow({title:title,kind:'urun',status:'yayında',product:state.product,cut:state.cut,color:state.tee,data:data,thumb:pubUrl(imgs[0]),by_wolf:!!byWolf});
     d.products=d.products||[];
-    d.products.unshift({id:id,no:no,name:title,type:ptype,color:pcol,price:Math.round((+price||0)/vatK('ready')*100)/100,pc:pc||undefined,old:(+o.old>0?+o.old:null),stock:null,tag:o.tag||'',cat:cp.cat,sub:cp.sub,imgs:imgs,desc:o.desc||'',show:true,adesign:rec&&rec.id,dsg:data,depo:(DEPO.cur&&depoBlank(state.product,state.cut))?DEPO.cur.id:undefined});
+    d.products.unshift({id:id,no:no,wc:wc,name:title,type:ptype,color:pcol,price:Math.round((+price||0)/vatK('ready')*100)/100,pc:pc||undefined,old:(+o.old>0?+o.old:null),stock:null,tag:o.tag||'',cat:cp.cat,sub:cp.sub,imgs:imgs,desc:o.desc||'',show:true,adesign:rec&&rec.id,dsg:data,depo:(DEPO.cur&&depoBlank(state.product,state.cut))?DEPO.cur.id:undefined});
     await rq('/rest/v1/site_content?on_conflict=id',{method:'POST',body:{id:'main',data:d,updated_at:new Date().toISOString()},prefer:'resolution=merge-duplicates,return=minimal'});
     if(rec)await rq('/rest/v1/admin_designs?id=eq.'+rec.id,{method:'PATCH',body:{note:'Ürün: '+id}});
     var cn=catLabel(catId);return 'Ürün sitede yayında: "'+title+'" · Kod: '+code+(cn?' → '+cn:'')+'. Fiyatını ve açıklamasını yönetim panelindeki Koleksiyon sekmesinden değiştirebilirsin.';
@@ -4956,7 +4973,8 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
   /* Ürün yap özeti: ne kaydedileceği tek satırda; ayrıntılar kapalı kutuda */
   function amSumFill(){var el=$('#amSum');if(!el)return;var c=$('#amCat'),t=$('#amType'),co=$('#amColor'),p=$('#amPrice');
     var cl=c&&c.value?catLabel(c.value):'',tn=t?typeName(t.value):'';
-    el.innerHTML='<b>'+ea(tn)+(co&&co.value?' · '+ea(co.value):'')+'</b><span>'+(cl?'Yeri: '+ea(cl):'<em>Kategori bulunamadı, aşağıdan seç</em>')+'</span><span>Fiyat: '+(p?ea(p.value):'')+' ₺ (otomatik)</span>';
+    var wn='';try{var cp0=catPath(c&&c.value),np0={type:t?t.value:'',cat:cp0.cat,sub:cp0.sub,dsg:{product:state.product,cut:state.cut}},L0=(ADM.site&&ADM.site.products)||[];wn=wHead(np0)+' W…';}catch(_){}
+    el.innerHTML='<b>'+(ADM.tTyped===amKey()?ea(($('#amTitle')||{}).value||''):ea(wn)+' <small style="font-weight:500;opacity:.7">(tasarım kodu kaydedince verilir)</small>')+'</b><span>'+ea(tn)+(co&&co.value?' · '+ea(co.value):'')+'</span><span>'+(cl?'Yeri: '+ea(cl):'<em>Kategori bulunamadı, aşağıdan seç</em>')+'</span><span>Fiyat: '+(p?ea(p.value):'')+' ₺ (otomatik)</span>';
     if(!cl){var m=$('.am-more');if(m)m.open=true;}}
   /* Pencere her açılışta Şablon sekmesiyle başlar (ürün düzenlenirken Güncelle); önceki sekme hatırlanıp yanlışlıkla ürün yayınlanmasın */
   /* Tasarım adı: elle yazılan ad yalnız AYNI ürün (tür + kesim) için korunur; ürün değişince (ör. kupadan tişörte) ad yeniden otomatik kurulur.
