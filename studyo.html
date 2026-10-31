@@ -58,7 +58,7 @@ svg.i{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stro
 .gd-list li{display:grid;grid-template-columns:28px 1fr;gap:10px;align-items:start;font:500 14px/1.45 var(--ui);color:var(--muted)}
 .gd-list li b{display:block;color:var(--ink);font-weight:700}
 .gd-list .n{width:28px;height:28px;border-radius:50%;background:var(--accent-soft);color:var(--accent);display:grid;place-items:center;font:700 13px var(--ui)}
-.gd-ah{display:flex;gap:10px;align-items:center}.gd-ah img{border-radius:50%;flex:0 0 44px;object-fit:cover;box-shadow:0 0 0 2px var(--green,#30703f)}.gd-ah span{display:grid;gap:2px}.gd-row{display:flex;gap:6px;align-items:flex-end}.gd-row img{border-radius:50%;flex:0 0 26px;object-fit:cover}.gd-ask{display:grid;gap:8px;border:1.5px solid var(--green,#30703f);border-radius:14px;padding:12px}.gd-ask small{font-size:12.5px;opacity:.75}.gd-msgs{display:grid;gap:6px;max-height:42vh;overflow:auto}.gd-msgs:empty{display:none}.gd-m{margin:0;padding:8px 10px;border-radius:12px;font-size:14px;line-height:1.45;max-width:92%}.gd-m.me{justify-self:end;background:var(--green,#30703f);color:#fff}.gd-m.as{justify-self:start;background:var(--panel2,#eef1ef)}.gd-m.wait{opacity:.7;font-style:italic}.gd-in{display:flex;gap:6px}.gd-in input{flex:1;min-width:0;font:inherit;font-size:16px;padding:9px 11px;border-radius:10px;border:1px solid var(--line)}.gd-in button{padding:0 14px}.gd-faq details{border-top:1px solid var(--line);padding:10px 0}
+.gd-ah{display:flex;gap:10px;align-items:center}.gd-ah img{border-radius:50%;flex:0 0 44px;object-fit:cover;box-shadow:0 0 0 2px var(--green,#30703f)}.gd-ah span{display:grid;gap:2px}.gd-row{display:flex;gap:6px;align-items:flex-end}.gd-row img{border-radius:50%;flex:0 0 26px;object-fit:cover}.gd-ask{display:grid;gap:8px;min-width:0;grid-template-columns:minmax(0,1fr);border:1.5px solid var(--green,#30703f);border-radius:14px;padding:12px}.gd-ask small{font-size:12.5px;opacity:.75}.gd-msgs{display:grid;gap:6px;max-height:42vh;overflow:auto}.gd-msgs:empty{display:none}.gd-m{margin:0;padding:8px 10px;border-radius:12px;font-size:14px;line-height:1.45;max-width:92%}.gd-m.me{justify-self:end;background:var(--green,#30703f);color:#fff}.gd-m.as{justify-self:start;background:var(--panel2,#eef1ef)}.gd-m.wait{opacity:.7;font-style:italic}.gd-in{display:flex;gap:6px;min-width:0}.gd-in input{width:auto}.gd-mic{flex:0 0 40px;border-radius:10px;border:1.5px solid var(--green,#30703f);background:transparent;color:inherit;display:grid;place-items:center}.gd-mic.on{background:#c0392b;border-color:#111;color:#fff;animation:gdpulse 1s infinite}@keyframes gdpulse{50%{opacity:.6}}.gd-tts{display:flex;gap:6px;align-items:center;font-size:13px}.gd-tts input{width:auto}.gd-in input{flex:1;min-width:0;font:inherit;font-size:16px;padding:9px 11px;border-radius:10px;border:1px solid var(--line)}.gd-in button{padding:0 14px}.gd-faq details{border-top:1px solid var(--line);padding:10px 0}
 .gd-faq summary{cursor:pointer;font:700 14px var(--ui);color:var(--ink)}
 .gd-faq p{margin-top:6px;font-size:14px}
 .gd-top{display:flex;justify-content:space-between;align-items:center}
@@ -5471,7 +5471,8 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
     mode='help';
     el.innerHTML='<div class="gd-card gd-help"><div class="gd-top"><h2 id="gdTitle">Nasıl kullanılır?</h2><button type="button" class="ib" data-gd="skip" aria-label="Kapat"><svg class="i" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>'+
       '<div class="gd-ask"><div class="gd-ah"><img src="'+AYB+'" alt="" width="44" height="44"><span><b>Aybüke\'ye sor</b><small>Ben Aybüke, tasarım asistanın. Takıldığın yeri yaz; nasıl yapacağını adım adım anlatayım.</small></span></div><div class="gd-msgs" id="gdMsgs">'+askHtml()+'</div>'+
-      '<form class="gd-in" id="gdAskF"><input id="gdAsk" maxlength="400" placeholder="Örn. Logoyu sağ göğse nasıl koyarım?" autocomplete="off" enterkeyhint="send"><button type="submit" class="primary" aria-label="Gönder">Sor</button></form></div>'+
+      '<form class="gd-in" id="gdAskF">'+(SR?'<button type="button" class="gd-mic'+(micOn?' on':'')+'" data-gd="mic" aria-label="Konuşarak sor"><svg class="i" viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></button>':'')+'<input id="gdAsk" maxlength="400" placeholder="'+(micOn?'Dinliyorum, konuş…':'Örn. Logoyu sağ göğse nasıl koyarım?')+'" autocomplete="off" enterkeyhint="send"><button type="submit" class="primary" aria-label="Gönder">Sor</button></form>'+
+      (TTS?'<label class="gd-tts"><input type="checkbox" data-gdtts="1"'+(ttsOn?' checked':'')+'> Aybüke cevapları sesli okusun</label>':'')+'</div>'+
       '<ol class="gd-list">'+GD.map(function(d,k){return '<li><span class="n">'+(k+1)+'</span><span><b>'+d.t+'</b>'+d.p+'</span></li>';}).join('')+'</ol>'+
       '<h3>Sık sorulanlar</h3><div class="gd-faq">'+FAQ.map(function(q){return '<details><summary>'+q[0]+'</summary><p>'+q[1]+'</p></details>';}).join('')+'</div>'+
       '<div class="gd-nav"><button type="button" class="gd-skip" data-gd="tour">Tanıtımı yeniden izle</button><button type="button" class="primary" data-gd="skip">Tamam</button></div></div>';
@@ -5480,6 +5481,19 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
   /* Asistan: sorular stüdyonun kurallarını bilen yardım asistanına (sunucu: yardim) gider; konuşma yalnız bu cihazda tutulur */
   /* Asistanın görseli: assets/aybuke içinde aybuke.webp/png/jpg varsa o, yoksa çizim (aybuke.svg) */
   var AYB='assets/aybuke/aybuke.svg';['webp','png','jpg'].some(function(x){var im=new Image();im.onload=function(){AYB=im.src;};im.src='assets/aybuke/aybuke.'+x;return false;});
+  /* Sesli: telefonun / tarayıcının kendi ses tanıması ve okuması (ücretsiz). Desteklenmeyen tarayıcıda düğmeler görünmez. */
+  var SR=window.SpeechRecognition||window.webkitSpeechRecognition,TTS=!!window.speechSynthesis,micOn=false,rec=null,ttsOn=false;
+  try{ttsOn=localStorage.getItem('wf_ask_tts')==='1';}catch(_){}
+  function trVoice(){try{var v=speechSynthesis.getVoices().filter(function(x){return /^tr/i.test(x.lang);});return v.filter(function(x){return /female|kadın|yelda|seda|filiz/i.test(x.name);})[0]||v[0]||null;}catch(_){return null;}}
+  function say(t){if(!TTS||!ttsOn||!t)return;try{speechSynthesis.cancel();var u=new SpeechSynthesisUtterance(String(t).replace(/["“”]/g,'').replace(/\s*\n+\s*/g,'. '));u.lang='tr-TR';var v=trVoice();if(v)u.voice=v;u.rate=1.02;u.pitch=1.05;speechSynthesis.speak(u);}catch(_){}}
+  function micStop(){micOn=false;try{if(rec)rec.stop();}catch(_){}var m=document.querySelector('.gd-mic');if(m)m.classList.remove('on');var i2=document.getElementById('gdAsk');if(i2)i2.placeholder='Örn. Logoyu sağ göğse nasıl koyarım?';}
+  function micStart(){if(!SR)return;if(micOn){micStop();return;}try{speechSynthesis&&speechSynthesis.cancel();}catch(_){}
+    rec=new SR();rec.lang='tr-TR';rec.interimResults=true;rec.continuous=false;rec.maxAlternatives=1;var fin='';
+    rec.onresult=function(e){var t='';for(var k=e.resultIndex;k<e.results.length;k++){if(e.results[k].isFinal)fin+=e.results[k][0].transcript;else t+=e.results[k][0].transcript;}var i2=document.getElementById('gdAsk');if(i2)i2.value=(fin+t).trim();};
+    rec.onerror=function(e){micStop();if(e&&/not-allowed|service-not-allowed/.test(e.error))toast('Mikrofon izni verilmedi. Telefonun ayarlarından bu siteye mikrofon izni ver.');};
+    rec.onend=function(){var was=micOn;micStop();var v=(fin||'').trim();if(was&&v){var i2=document.getElementById('gdAsk');if(i2)i2.value='';askSend(v);}};
+    try{rec.start();micOn=true;var m=document.querySelector('.gd-mic');if(m)m.classList.add('on');var i3=document.getElementById('gdAsk');if(i3){i3.value='';i3.placeholder='Dinliyorum, konuş…';}}catch(_){micStop();}}
+  if(TTS)try{speechSynthesis.getVoices();speechSynthesis.onvoiceschanged=function(){};}catch(_){}
   var ASK=[],askBusy=false;try{ASK=JSON.parse(sessionStorage.getItem('wf_ask')||'[]')||[];}catch(_){ASK=[];}
   function askEsc(t){return String(t).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}).replace(/\n/g,'<br>');}
   function askHtml(){return ASK.map(function(m){return m.role==='user'?'<p class="gd-m me">'+askEsc(m.text)+'</p>':'<div class="gd-row"><img src="'+AYB+'" alt="Aybüke" width="26" height="26"><p class="gd-m as">'+askEsc(m.text)+'</p></div>';}).join('')+(askBusy?'<p class="gd-m as wait">Aybüke yazıyor…</p>':'');}
@@ -5491,13 +5505,15 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
   async function askSend(t){t=String(t||'').trim();if(!t||askBusy)return;ASK.push({role:'user',text:t});ASK=ASK.slice(-16);askBusy=true;askPaint();
     var a='';try{var r=await fetch(SB.url+'/functions/v1/yardim',{method:'POST',headers:{'Content-Type':'application/json',apikey:SB.key},body:JSON.stringify({messages:ASK.slice(-8),context:askCtx()})});
       var jj=await r.json().catch(function(){return {};});a=jj.cevap||jj.message||'';}catch(_){}
-    ASK.push({role:'assistant',text:a||'Şu an cevap veremedim. Biraz sonra yeniden dene ya da WhatsApp 0530 764 17 17 üzerinden bize yaz.'});askBusy=false;
+    ASK.push({role:'assistant',text:a||'Şu an cevap veremedim. Biraz sonra yeniden dene ya da WhatsApp 0530 764 17 17 üzerinden bize yaz.'});askBusy=false;say(a);
     try{sessionStorage.setItem('wf_ask',JSON.stringify(ASK.slice(-16)));}catch(_){}askPaint();}
+  el.addEventListener('change',function(e){var t=e.target;if(!t||!t.dataset||!t.dataset.gdtts)return;ttsOn=t.checked;try{localStorage.setItem('wf_ask_tts',ttsOn?'1':'0');}catch(_){}if(!ttsOn)try{speechSynthesis.cancel();}catch(_){}else say('Merhaba, ben Aybüke. Cevaplarımı sesli okuyacağım.');});
   el.addEventListener('submit',function(e){var f=e.target;if(!f||f.id!=='gdAskF')return;e.preventDefault();var i2=document.getElementById('gdAsk');var v=i2.value;i2.value='';askSend(v);});
   el.addEventListener('click',function(e){
     if(e.target===el){close();return;}
     var b=e.target.closest('[data-gd]');if(!b)return;var a=b.dataset.gd;
-    if(a==='skip')close();else if(a==='tour')tour(0);
+    if(a==='mic'){micStart();return;}
+    if(a==='skip'){micStop();try{speechSynthesis.cancel();}catch(_){}close();}else if(a==='tour')tour(0);
     else if(a==='next'){if(i>=GD.length-1)close();else tour(i+1);}
   });
   var sx=null;
