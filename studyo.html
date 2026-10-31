@@ -4464,7 +4464,9 @@ try{if(new URLSearchParams(location.search).get('wolf')){setTimeout(function(){i
 /* Açılışta örnek: Wolflano reklamı niteliğindeki Güneş kurdu */
 applyTemplate(TPLS.filter(function(t){return t.n==='Güneş kurdu';})[0]||TPLS[0],true);
 (function(){try{var q=new URLSearchParams(location.search),u=q.get('urun'),k=q.get('kesim'),bd=q.get('beden');if(u&&PRODUCTS[u]){var cs=PRODUCTS[u].cuts;chooseProduct(u,cs.indexOf(k)>=0?k:cs[0]);if(bd&&sizeList().indexOf(bd)>=0){state.sizes={};state.sizes[bd]=1;renderAll();}else if(!isStd()&&(sizeList()||[]).length){setTimeout(function(){try{openTab('opt');toast('Bedenini seç. Rengi de buradan değiştirebilirsin.');}catch(_){}},700);}if(PRODUCTS[u].vb){['front','logo','logo2','back'].forEach(function(sd){if(state[sd]&&state[sd].objs)state[sd].objs=[];});view.sel=null;renderAll();}}
-  if(q.get('vitrin')==='wolf'){if(!u&&PRODUCTS.tee)chooseProduct('tee',PRODUCTS.tee.cuts[0]);openWolf();}}catch(_){}})();
+  if(q.get('vitrin')==='wolf'){if(!u&&PRODUCTS.tee)chooseProduct('tee',PRODUCTS.tee.cuts[0]);openWolf();}
+  /* Şablon kategorisiyle açılış: studyo.html?sablon=Wolf%20tasarımları (Kurdun İzinde sayfasından) */
+  var sbq=q.get('sablon');if(sbq){if(!u&&PRODUCTS.tee)chooseProduct('tee',PRODUCTS.tee.cuts[0]);setTimeout(function(){try{view.tplCat=TPL_CATS.indexOf(sbq)>=0?sbq:'Tümü';openTab('tpl');renderTpl();renderTplPreviews();}catch(_){}},400);}}catch(_){}})();
 syncUndo();
 /* Ürünlere dönüş: stüdyoya hangi sayfadan gelindiyse oraya; ürün o sırada türü değiştiyse (kupa ↔ giyim) ürüne uygun sayfaya (kupa/canvas → Hediye & Dekor, giyim → Giyim & Moda) */
 (function(){var p0=null,from='';try{from=sessionStorage.getItem('wf_from')||'';}catch(_){}
