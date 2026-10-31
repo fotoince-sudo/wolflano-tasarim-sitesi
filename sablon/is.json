@@ -1,3 +1,58 @@
 [
- {"ad": "istanbul-dikey", "baslik": "İstanbul", "kat": "Şehirler", "url": "https://export-download.canva.com/Yfjqs/DAHZnWYfjqs/-1/0/0001-6490207808517472626.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAQYCGKMUH4R7NKVBA%2F20261031%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20261031T122633Z&X-Amz-Expires=40771&X-Amz-Signature=36d05f0c1363d85c7b95d61f4764e808b8e1ad59672679b565901e46fdd7cb5a&X-Amz-SignedHeaders=host%3Bx-amz-expected-bucket-owner&response-expires=Sat%2C%2031%20Oct%202026%2023%3A46%3A04%20GMT"}
+ {
+  "ad": "istanbul-yatay",
+  "baslik": "İstanbul",
+  "kat": "Şehirler",
+  "url": "https://export-download.canva.com/DWuLI/DAHZnQDWuLI/-1/0/0002-7524909827707491478.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAQYCGKMUH4R7NKVBA%2F20261031%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20261031T065341Z&X-Amz-Expires=60826&X-Amz-Signature=6400b6299278b527b2458413b3df66df9d5b49c021cef5824c985af6c3fd3cc4&X-Amz-SignedHeaders=host%3Bx-amz-expected-bucket-owner&response-expires=Sat%2C%2031%20Oct%202026%2023%3A47%3A27%20GMT",
+  "yeniden": false
+ },
+ {
+  "ad": "antalya-yatay",
+  "baslik": "Antalya",
+  "kat": "Şehirler",
+  "url": "https://export-download.canva.com/DWuLI/DAHZnQDWuLI/-1/0/0003-7524909827707491478.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAQYCGKMUH4R7NKVBA%2F20261031%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20261031T032750Z&X-Amz-Expires=71789&X-Amz-Signature=71251869930f732fb1380fead271bc6eb840480859f1fa05e4e02c5a0336944f&X-Amz-SignedHeaders=host%3Bx-amz-expected-bucket-owner&response-expires=Sat%2C%2031%20Oct%202026%2023%3A24%3A19%20GMT",
+  "yeniden": false
+ },
+ {
+  "ad": "van-yatay",
+  "baslik": "Van",
+  "kat": "Şehirler",
+  "url": "https://export-download.canva.com/DWuLI/DAHZnQDWuLI/-1/0/0004-7524909827707491478.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAQYCGKMUH4R7NKVBA%2F20261031%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20261031T001210Z&X-Amz-Expires=83221&X-Amz-Signature=2e64c621e55b96def9e697b69ee6a93f278b8e2ad5cd0d62cf06fdbdd6096129&X-Amz-SignedHeaders=host%3Bx-amz-expected-bucket-owner&response-expires=Sat%2C%2031%20Oct%202026%2023%3A19%3A11%20GMT",
+  "yeniden": false
+ },
+ {
+  "ad": "bodrum-yatay",
+  "baslik": "Bodrum",
+  "kat": "Şehirler",
+  "url": "https://export-download.canva.com/DWuLI/DAHZnQDWuLI/-1/0/0005-7524909827707491478.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAQYCGKMUH4R7NKVBA%2F20261031%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20261031T182428Z&X-Amz-Expires=18836&X-Amz-Signature=0cfdefb6a1486124a67387498023ada12502f21f96603f25c243bfd7c3f1c7b7&X-Amz-SignedHeaders=host%3Bx-amz-expected-bucket-owner&response-expires=Sat%2C%2031%20Oct%202026%2023%3A38%3A24%20GMT",
+  "yeniden": false
+ },
+ {
+  "ad": "istanbul-dikey",
+  "baslik": "İstanbul",
+  "kat": "Şehirler",
+  "url": "https://export-download.canva.com/DWuLI/DAHZnQDWuLI/-1/0/0006-7524909827707491478.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAQYCGKMUH4R7NKVBA%2F20261031%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20261031T060508Z&X-Amz-Expires=62642&X-Amz-Signature=366406af03043b7f999afcaf9061b92ae4368e071d68e21c7e2d8a3d4343873c&X-Amz-SignedHeaders=host%3Bx-amz-expected-bucket-owner&response-expires=Sat%2C%2031%20Oct%202026%2023%3A29%3A10%20GMT",
+  "yeniden": true
+ },
+ {
+  "ad": "antalya-dikey",
+  "baslik": "Antalya",
+  "kat": "Şehirler",
+  "url": "https://export-download.canva.com/DWuLI/DAHZnQDWuLI/-1/0/0007-7524909827707491478.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAQYCGKMUH4R7NKVBA%2F20261031%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20261031T142035Z&X-Amz-Expires=31780&X-Amz-Signature=ce92a1f3bd1183a3f2f5b7d2c44416a8bcf615a034e2f31eb5b1c32f4b0a5a87&X-Amz-SignedHeaders=host%3Bx-amz-expected-bucket-owner&response-expires=Sat%2C%2031%20Oct%202026%2023%3A10%3A15%20GMT",
+  "yeniden": false
+ },
+ {
+  "ad": "van-dikey",
+  "baslik": "Van",
+  "kat": "Şehirler",
+  "url": "https://export-download.canva.com/DWuLI/DAHZnQDWuLI/-1/0/0008-7524909827707491478.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAQYCGKMUH4R7NKVBA%2F20261031%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20261031T170745Z&X-Amz-Expires=24511&X-Amz-Signature=7a1d889c02950602456f42b4ade90587c38b6e5dce38ddd2b854664c758ab498&X-Amz-SignedHeaders=host%3Bx-amz-expected-bucket-owner&response-expires=Sat%2C%2031%20Oct%202026%2023%3A56%3A16%20GMT",
+  "yeniden": false
+ },
+ {
+  "ad": "bodrum-dikey",
+  "baslik": "Bodrum",
+  "kat": "Şehirler",
+  "url": "https://export-download.canva.com/DWuLI/DAHZnQDWuLI/-1/0/0009-7524909827707491478.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAQYCGKMUH4R7NKVBA%2F20261031%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20261031T193201Z&X-Amz-Expires=15333&X-Amz-Signature=d275ecd9857abf81d403504e7ba0b9b703d2d44c48f146aed5af673cdea0f7da&X-Amz-SignedHeaders=host%3Bx-amz-expected-bucket-owner&response-expires=Sat%2C%2031%20Oct%202026%2023%3A47%3A34%20GMT",
+  "yeniden": false
+ }
 ]
