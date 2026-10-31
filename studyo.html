@@ -494,7 +494,7 @@ svg.i{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stro
 .am-f{display:grid;gap:4px;font:600 12px var(--ui);color:var(--muted)}
 .am-f textarea{min-height:70px;border-radius:10px;border:1px solid var(--line2);background:var(--panel2);color:var(--ink);padding:8px 12px;font:500 15px var(--ui);resize:vertical}
 .am-two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px}.am-two .am-f{min-width:0}.am-two select{width:100%;min-width:0;text-overflow:ellipsis}
-.am-info{display:flex;gap:10px;align-items:center;border:1px solid var(--line2);border-radius:12px;padding:8px;background:var(--panel2)}.am-info img{width:56px;height:56px;object-fit:contain;border-radius:8px;background:#eef1ef;flex:0 0 56px}.am-info div{display:grid;gap:2px;font:600 13px var(--ui);color:var(--ink)}.am-info small{font:600 12px var(--ui);color:var(--muted)}
+.am-sum{display:grid;gap:3px;border:1.5px solid var(--green,#30703f);border-radius:12px;padding:10px 12px;font-size:14px}.am-sum em{font-style:normal;color:#c0392b}.am-more{border:1px solid var(--line2);border-radius:12px;padding:8px 10px}.am-more>summary{cursor:pointer;font-weight:600;font-size:13px}.am-more[open]{display:grid;gap:10px}.am-info{display:flex;gap:10px;align-items:center;border:1px solid var(--line2);border-radius:12px;padding:8px;background:var(--panel2)}.am-info img{width:56px;height:56px;object-fit:contain;border-radius:8px;background:#eef1ef;flex:0 0 56px}.am-info div{display:grid;gap:2px;font:600 13px var(--ui);color:var(--ink)}.am-info small{font:600 12px var(--ui);color:var(--muted)}
 .am-f input,.am-f select{height:40px;border-radius:10px;border:1px solid var(--line2);background:var(--panel2);color:var(--ink);padding:0 12px;font:600 16px var(--ui)}
 .mn-ph{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;-webkit-overflow-scrolling:touch}
 .mn-ph button{flex:0 0 88px;display:grid;gap:4px;border:1px solid var(--line);border-radius:12px;padding:4px;background:var(--panel2);font:600 11px var(--ui);color:var(--muted)}
@@ -4905,13 +4905,14 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
     if(mode==='sablon')body='<div class="am-two"><label class="am-f">Kimler görsün<select id="amVis"><option value="herkes"'+(tplVis==='herkes'?' selected':'')+'>Herkes (müşteriler de)</option><option value="ozel"'+(tplVis==='ozel'?' selected':'')+'>Sadece Wolflano</option></select></label>'+
       '<label class="am-f">Kategori<select id="amTCat"><option value="">'+ea(TPL_CAT_ADM)+'</option>'+TPL_CATS.filter(function(c){return c!=='Tümü'&&c!==TPL_CAT_ADM&&c!==TPL_CAT_PRIV;}).map(function(c){return '<option'+(c===tplCat?' selected':'')+'>'+ea(c)+'</option>';}).join('')+'</select></label></div>'+
       '<p class="note">'+(tplVis==='ozel'?'Yalnız sen ve yetkililer Şablon panelinde "'+TPL_CAT_PRIV+'" altında görürsünüz; müşterinin sayfasına hiç yüklenmez.':'Müşteriler Şablon panelinde seçtiğin kategoride görür; seçince kendi ürününe uyarlanır.')+'</p>';
-    if(mode==='urun')body=prodInfo()+
+    if(mode==='urun')body='<div class="am-sum" id="amSum"></div>'+
+      '<details class="am-more"><summary>Ayrıntıları değiştir (tür, renk, kategori, fiyat, etiket, açıklama)</summary>'+prodInfo()+
       '<div class="am-two"><label class="am-f">Ürün türü<select id="amType">'+typeOpts()+'</select></label><label class="am-f">Renk<input id="amColor" maxlength="30" value="'+ea(colorName())+'"></label></div>'+
       '<label class="am-f">Kategori<select id="amCat">'+catOpts()+'</select></label>'+
       '<div class="am-two"><label class="am-f">Satış fiyatı (₺)<input id="amPrice" type="number" inputmode="decimal" min="0" value="'+defPrice()+'"></label><label class="am-f">Eski fiyat (isteğe bağlı)<input id="amOld" type="number" inputmode="decimal" min="0" placeholder="İndirim için"></label></div>'+priceNote()+
       '<label class="am-f">Etiket<input id="amTag" maxlength="20" placeholder="Boş bırakabilirsin"></label>'+ortBox()+
       '<label class="am-f">Açıklama<textarea id="amDesc" maxlength="1200" placeholder="Kumaş, kalıp, baskı tekniği…"></textarea></label>'+
-      '<p class="note">Ürün, tasarımın ürün üstündeki görüntüsüyle (ön ve arka) Koleksiyon\'a eklenir. Sonra panelden de düzenleyebilirsin.</p>';
+      '<p class="note">Ürün, tasarımın ürün üstündeki görüntüsüyle (ön ve arka) Koleksiyon\'a eklenir. Sonra panelden de düzenleyebilirsin.</p></details>';
     if(mode==='baski')body='<div class="am-grid">'+sizeGrid()+'</div><p class="note">Sepet ve ödeme olmadan baskıya gider; baskı dosyaları (300 dpi PNG) kaydedilir ve panelde "Baskıda" olarak görünür.</p>';
     if(mode==='manken')body=mnBody();
     if(mode==='taslak')body='<p class="note">Sonra devam etmek veya başkasına göstermek için yalnız kaydeder. Panelden "Stüdyoda aç" ile geri gelir.</p>';
@@ -4920,7 +4921,7 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
       depoBox()+'<label class="am-f">Tasarım adı <small style="font-weight:500;opacity:.7">(otomatik, istersen değiştir)</small><input id="amTitle" maxlength="80" placeholder="Boş bırakırsan otomatik adlanır" value="'+ea(amTitleVal())+'"></label>'+
       '<div class="am-tabs">'+tabs.map(function(t){return '<button type="button" data-amm="'+t[0]+'"'+(t[0]===mode?' class="on"':'')+'>'+t[1]+'</button>';}).join('')+'</div>'+body+
       '<button type="button" class="primary wide" id="amGo">'+{guncelle:'Ürünü güncelle',sablon:'Şablon olarak kaydet',urun:'Ürün olarak yayınla',baski:'Baskıya gönder',taslak:'Taslak kaydet',manken:'Mankene giydir'}[mode]+'</button></div>';
-    if(mode==='urun')autoCat();
+    if(mode==='urun'){autoCat();amSumFill();var md=w.querySelector('.am-more');if(md)md.addEventListener('change',amSumFill);}
     if(state.product==='mug')mscFill();
     dsvFill();
   }
@@ -4941,8 +4942,17 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
   function autoCat(){var sel=$('#amCat'),ty=$('#amType');if(!sel||!ty)return;
     /* Kupa ve canvas kendiliğinden Hediye & Dekor altına */
     var hd={mug:'hediye|hd-kupa',canvas:'hediye|hd-canvas'}[state.product];if(hd){if([].some.call(sel.options,function(o){return o.value===hd;}))sel.value=hd;return;}var k=SUBKEY[ty.value];if(!k)return;
-    var want=state.cut==='kadin'?'kadin':state.cut==='erkek'?'erkek':'';if(!want)return;
-    var opt=[].filter.call(sel.options,function(o){var a=o.value.split('|');return a[0]===want&&a.length===2&&new RegExp('-'+k+'$').test(a[1]);})[0];if(opt)sel.value=opt.value;}
+    var want=/^(kadin|erkek|cocuk)$/.test(state.cut)?state.cut:(state.product==='hat'?'erkek':'');if(!want)return;
+    var has=function(v){return [].some.call(sel.options,function(o){return o.value===v;});};
+    /* önce doğrudan alt kategori (Erkek → Tişört), sonra iç içe (Çocuk → Erkek çocuk → Tişört), olmazsa yalnız ana kategori */
+    var L=[].filter.call(sel.options,function(o){var a=o.value.split('|');return a[0]===want&&a.length>=2&&new RegExp('-'+k+'$').test(a[a.length-1]);});
+    L.sort(function(x,y){return x.value.split('|').length-y.value.split('|').length;});
+    if(L[0])sel.value=L[0].value;else if(has(want))sel.value=want;}
+  /* Ürün yap özeti: ne kaydedileceği tek satırda; ayrıntılar kapalı kutuda */
+  function amSumFill(){var el=$('#amSum');if(!el)return;var c=$('#amCat'),t=$('#amType'),co=$('#amColor'),p=$('#amPrice');
+    var cl=c&&c.value?catLabel(c.value):'',tn=t?typeName(t.value):'';
+    el.innerHTML='<b>'+ea(tn)+(co&&co.value?' · '+ea(co.value):'')+'</b><span>'+(cl?'Yeri: '+ea(cl):'<em>Kategori bulunamadı, aşağıdan seç</em>')+'</span><span>Fiyat: '+(p?ea(p.value):'')+' ₺ (otomatik)</span>';
+    if(!cl){var m=$('.am-more');if(m)m.open=true;}}
   /* Pencere her açılışta Şablon sekmesiyle başlar (ürün düzenlenirken Güncelle); önceki sekme hatırlanıp yanlışlıkla ürün yayınlanmasın */
   /* Tasarım adı: elle yazılan ad yalnız AYNI ürün (tür + kesim) için korunur; ürün değişince (ör. kupadan tişörte) ad yeniden otomatik kurulur.
      Önceden pencere gizli kalırken eski ad (ör. "… Kupa") sonraki ürüne taşınıyordu. */
