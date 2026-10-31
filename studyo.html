@@ -4917,7 +4917,7 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
     if(mode==='taslak')body='<p class="note">Sonra devam etmek veya başkasına göstermek için yalnız kaydeder. Panelden "Stüdyoda aç" ile geri gelir.</p>';
     w.innerHTML='<div class="am-card" role="dialog" aria-modal="true" aria-label="Yönetici tasarımı"><div class="am-h"><b>Yönetici tasarımı</b><button type="button" class="ib" data-amx aria-label="Kapat"><svg class="i" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>'+
       '<small class="am-who">'+ea(ADM.email)+'</small>'+
-      depoBox()+'<label class="am-f">Tasarım adı <small style="font-weight:500;opacity:.7">(otomatik, istersen değiştir)</small><input id="amTitle" maxlength="80" placeholder="Boş bırakırsan otomatik adlanır" value="'+ea($('#amTitle')&&$('#amTitle').value?$('#amTitle').value:autoName())+'"></label>'+
+      depoBox()+'<label class="am-f">Tasarım adı <small style="font-weight:500;opacity:.7">(otomatik, istersen değiştir)</small><input id="amTitle" maxlength="80" placeholder="Boş bırakırsan otomatik adlanır" value="'+ea(amTitleVal())+'"></label>'+
       '<div class="am-tabs">'+tabs.map(function(t){return '<button type="button" data-amm="'+t[0]+'"'+(t[0]===mode?' class="on"':'')+'>'+t[1]+'</button>';}).join('')+'</div>'+body+
       '<button type="button" class="primary wide" id="amGo">'+{guncelle:'Ürünü güncelle',sablon:'Şablon olarak kaydet',urun:'Ürün olarak yayınla',baski:'Baskıya gönder',taslak:'Taslak kaydet',manken:'Mankene giydir'}[mode]+'</button></div>';
     if(mode==='urun')autoCat();
@@ -4944,6 +4944,11 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
     var want=state.cut==='kadin'?'kadin':state.cut==='erkek'?'erkek':'';if(!want)return;
     var opt=[].filter.call(sel.options,function(o){var a=o.value.split('|');return a[0]===want&&a.length===2&&new RegExp('-'+k+'$').test(a[1]);})[0];if(opt)sel.value=opt.value;}
   /* Pencere her açılışta Şablon sekmesiyle başlar (ürün düzenlenirken Güncelle); önceki sekme hatırlanıp yanlışlıkla ürün yayınlanmasın */
+  /* Tasarım adı: elle yazılan ad yalnız AYNI ürün (tür + kesim) için korunur; ürün değişince (ör. kupadan tişörte) ad yeniden otomatik kurulur.
+     Önceden pencere gizli kalırken eski ad (ör. "… Kupa") sonraki ürüne taşınıyordu. */
+  function amKey(){return state.product+'|'+(state.cut||'');}
+  function amTitleVal(){var el=$('#amTitle');if(el&&el.value&&ADM.tTyped===amKey())return el.value;return autoName();}
+  document.addEventListener('input',function(e){if(e.target&&e.target.id==='amTitle')ADM.tTyped=e.target.value.trim()?amKey():null;});
   function openAdm(){if(!ADM.edit)mode='sablon';closeTab();select(null);var w=$('#admSheet');if(!w){w=document.createElement('div');w.id='admSheet';document.body.appendChild(w);bindAdm(w);}
     var t=$('#amTitle');renderAdm();w.hidden=false;}
   function closeAdm(){var w=$('#admSheet');if(w)w.hidden=true;}
