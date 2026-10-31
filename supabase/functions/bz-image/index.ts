@@ -86,7 +86,7 @@ Deno.serve(async (req) => {
     }
 
     const body = await req.json();
-    const idea = String(body.prompt || '').slice(0, 500).trim();
+    const idea = String(body.prompt || '').slice(0, 1000).trim();
     const style = STY[body.style] ? body.style : 'illus';
     const orient = body.orient === 'landscape' ? 'landscape' : 'portrait';
     const size = orient === 'landscape' ? '1536x1024' : '1024x1536';
@@ -195,7 +195,30 @@ Deno.serve(async (req) => {
     else parts.push(transparent
       ? 'Isolated artwork on a fully transparent background. No background color, no card, no frame, no border, no vignette, no mockup, no watermark.'
       : 'Clean plain background. No frame, no mockup, no watermark.');
-    const prompt = parts.join(' ');
+    /* Kesin talimat (yalnız yönetici, Wolf'la konuş): uzun hazır kalıplar ve "kısa konu" tahmini devre dışı.
+       Yöneticinin KENDİ sözleri (Türkçe) ve Wolf'un İngilizce özeti esas alınır; yalnız baskı için gereken teknik kurallar eklenir. */
+    const kesin = isAdm && body.kesin === true;
+    const orig = String(body.orig || '').slice(0, 1500).trim();
+    let prompt = parts.join(' ');
+    if (kesin) {
+      const K: string[] = [];
+      K.push(canvas ? 'Print-ready artwork for a stretched canvas wall painting.'
+        : mug === 'wrap' ? 'Print-ready wide artwork that wraps around a white ceramic mug (sublimation).'
+        : mug === 'logo' ? 'Print-ready compact artwork for one side of a white ceramic mug.'
+        : 'Print-ready artwork for a garment (T-shirt) print.');
+      K.push("FOLLOW THE OWNER'S INSTRUCTIONS EXACTLY AND LITERALLY. Draw only what is asked: the requested subject, composition, layout, colors, style and text. Do not add unrequested objects, animals, people, frames, badges, backgrounds, themes or decorations, and do not turn the request into something else. Specific instructions override any default style or habit.");
+      if (img) K.push("An image is attached. Unless the instructions say otherwise, treat it as the current version of the design and change ONLY what the instructions ask, keeping everything else (subject, layout, colors, text, style) the same. If the instructions say it is only a reference (for example a person's photo), keep faces and identities recognizable.");
+      if (orig) K.push(`The owner's own words in Turkish (the most important source; every detail in them must appear in the artwork): «${orig}»`);
+      if (idea) K.push(`Summary of the request in English: ${idea}`);
+      if (body.style && STY[body.style] && body.style !== 'illus') K.push(`Preferred style, only where the instructions do not say otherwise: ${STY[body.style]}.`);
+      if (shirt) K.push(shirt);
+      K.push('Text: write ONLY the words the owner asked to be written (usually in quotation marks), spelled exactly, including Turkish letters such as ç, ğ, ı, İ, ö, ş, ü. No other text, captions, signatures or watermarks.');
+      K.push('Do not draw any brand logo unless asked. Do not draw a T-shirt, mug, wall or mockup; draw only the artwork itself.');
+      if (canvas) K.push('Full-bleed: fill the whole image edge to edge; keep important details away from the outer 7% (it wraps around the canvas edges).');
+      else if (mug === 'wrap') K.push('Full-bleed wide image; keep the outer 8% at the left and right ends calm (the handle covers the seam).');
+      else K.push(transparent ? 'Isolated artwork on a fully transparent background: no background color, no card, no border.' : 'Clean plain background, no border.');
+      prompt = K.join(' ');
+    }
 
     // OpenAI model adları zamanla değişiyor (gpt-image-1 kaldırıldı): sırayla dene, olmayan modeli atla
     const envModel = Deno.env.get('OPENAI_IMAGE_MODEL') || '';

@@ -28,8 +28,9 @@ Nasıl konuşursun:
 Cevabını SADECE şu JSON biçiminde ver:
 {"cevap":"yöneticiye Türkçe mesajın","ciz":null}
 Onay geldiyse:
-{"cevap":"...","ciz":{"istem":"çizecek ressama İNGİLİZCE, ayrıntılı ama en fazla 480 karakterlik tarif: konu, kompozisyon, renk paleti, tarz, varsa tasarıma yazılacak yazı tırnak içinde ve Türkçe harfleriyle","tarz":"illus|cartoon|pencil|canvas|real|tisort|kurt|tarih","yon":"portrait|landscape","gorseli_kullan":true}}
-"gorseli_kullan": sohbette eklenen son görsel çizimin temeli olacaksa true (ör. az önceki tasarımı yeniden yorumla), sıfırdan çizilecekse false.
+{"cevap":"...","ciz":{"istem":"çizecek ressama İNGİLİZCE, en fazla 900 karakterlik tarif. Yöneticinin söylediği HER ayrıntıyı (konu, yerleşim, renkler, tarz, yazı) eksiksiz ve aynen aktar; kendinden konu, nesne, çerçeve ya da süs EKLEME. Tasarıma yazılacak yazı tırnak içinde ve Türkçe harfleriyle","tarz":"illus|cartoon|pencil|canvas|real|tisort|kurt|tarih","yon":"portrait|landscape","gorseli_kullan":true}}
+"gorseli_kullan": yönetici son çizimde ya da eklediği görselde DEĞİŞİKLİK istiyorsa (ör. "rengini değiştir", "kurdu büyüt", "yazıyı düzelt") MUTLAKA true: böylece çizim baştan değil, son hâlinin üzerinden yalnız istenen yer değiştirilerek yapılır. Tamamen yeni bir tasarım isteniyorsa false.
+- Plan yazarken yöneticinin istediğinden sapma; kendi fikrini ancak sorulursa öner. Talimat belirsizse çizmeden önce bir kısa soru sor.
 "tarz" seçimi: tişört grafiği için çoğunlukla "tisort"; kurtla insan portresi "kurt"; kurt ve tarihi yer "tarih"; sade vektör "illus"; karikatür "cartoon"; kalem "pencil"; yağlı boya/tablo "canvas".`;
 
 type Msg = { role: 'user' | 'assistant'; text?: string; image?: string };
@@ -98,7 +99,7 @@ Deno.serve(async (req) => {
     if (c && typeof c === 'object' && String(c.istem || '').trim()) {
       const ok = ['illus', 'cartoon', 'pencil', 'canvas', 'real', 'tisort', 'kurt', 'tarih'];
       ciz = {
-        istem: String(c.istem).slice(0, 500).trim(),
+        istem: String(c.istem).slice(0, 1000).trim(),
         tarz: ok.includes(c.tarz) ? c.tarz : 'tisort',
         yon: c.yon === 'landscape' ? 'landscape' : 'portrait',
         gorseli_kullan: c.gorseli_kullan === true && lastImg >= 0,

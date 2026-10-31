@@ -5150,7 +5150,7 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
       clearTimeout(tm);var j=await r.json().catch(function(){return {};});
       if(!r.ok||!j.cevap)throw {msg:j.message||'Wolf şu an cevap veremedi. Biraz sonra yeniden dene.'};
       a={role:'assistant',text:j.cevap};
-      if(j.ciz){a.ciz=j.ciz;if(j.ciz.gorseli_kullan){for(var k=WC.msgs.length-1;k>=0;k--){if(WC.msgs[k].img){a.src=WC.msgs[k].img;break;}}}}
+      if(j.ciz){a.ciz=j.ciz;if(j.ciz.gorseli_kullan){for(var k=WC.msgs.length-1;k>=0;k--){if(WC.msgs[k].img||WC.msgs[k].res){a.src=WC.msgs[k].img||WC.msgs[k].res;break;}}}}
       WC.msgs.push(a);}
     catch(e){WC.msgs.push({role:'assistant',text:(e&&e.msg)||'Wolf şu an cevap veremedi. Bağlantını kontrol edip yeniden dene.'});}
     wcSave();wcBusy(false);
@@ -5164,6 +5164,8 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
     var body={prompt:c.istem,style:c.tarz,orient:c.yon,shirt:(cvs||mg)?'':shirtName(),shirtHex:(cvs||mg)?'':(state.tee||'')};
     if(state.product==='canvas')body.canvas=true;if(mg)body.mug=mugWrap()?'wrap':'logo';if(cvs)body.transparent=false;
     if(c.gorseli_kullan&&a.src)body.image=a.src;
+    /* Kesin talimat: yöneticinin kendi sözleri (son çizimden bu yana yazdıkları) çizime aynen gider; Wolf'un özeti yalnız yardımcı */
+    body.kesin=true;var ow=[];for(var q=i-1;q>=0;q--){var mm=WC.msgs[q];if(mm.res)break;if(mm.role==='user'&&mm.text)ow.unshift(mm.text);}body.orig=ow.slice(-6).join(' / ').slice(0,1500);
     var img=null,err='';
     try{var tk=await tok();if(!tk)throw {msg:'Oturum süresi doldu. Yönetim panelinden yeniden giriş yap.'};
       var ac=new AbortController(),tm=setTimeout(function(){ac.abort();},170000);
