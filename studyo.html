@@ -5184,9 +5184,12 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
   }
 
   /* ---- Yayındaki yönetici şablonları (herkese görünür) ---- */
-  async function loadTpls(){
-    try{ADM.tpls=await rq('/rest/v1/admin_designs?select=id,title,thumb,data,product,note,published&kind=eq.sablon&published=eq.true&order=created_at.desc&limit=300',{anon:true})||[];}catch(_){ADM.tpls=[];}
-    if(ADM.on){try{var pv=await rq('/rest/v1/admin_designs?select=id,title,thumb,data,product,note,published&kind=eq.sablon&published=eq.false&order=created_at.desc&limit=300')||[];ADM.tpls=pv.concat(ADM.tpls);}catch(_){}}
+  /* İki yükleme üst üste binerse (sayfa açılışı + yönetici girişi) yalnız sonuncusu yazar: özel şablonlar kaybolmasın */
+  var tplSeq=0;
+  async function loadTpls(){var my=++tplSeq,L=[];
+    try{L=await rq('/rest/v1/admin_designs?select=id,title,thumb,data,product,note,published&kind=eq.sablon&published=eq.true&order=created_at.desc&limit=500',{anon:true})||[];}catch(_){L=[];}
+    if(ADM.on){try{var pv=await rq('/rest/v1/admin_designs?select=id,title,thumb,data,product,note,published&kind=eq.sablon&published=eq.false&order=created_at.desc&limit=500')||[];L=pv.concat(L);}catch(_){}}
+    if(my!==tplSeq)return;ADM.tpls=L;
     try{renderTpl();if(view.tab==='tpl')renderTplPreviews();}catch(_){}
   }
   /* yönetici şablonları da ürüne göre: kupada kaydedilen kupada, giyimde kaydedilen giyimde çıkar (eski kayıtlar giyim sayılır) */

@@ -1862,8 +1862,11 @@ document.addEventListener('click',async function(e){var b=e.target.closest&&e.ta
 async function adxLoad(){
   if(ADX.busy)return;ADX.busy=true;ADX.err='';
   try{var tk=await sbToken();if(!tk){ADX.err='Oturum süresi doldu, yeniden giriş yap.';ADX.rows=[];}
-    else{var r=await sbReq('/rest/v1/admin_designs?select=id,title,code:data->>code,kind,status,product,cut,color,qty,sizes,thumb,files,published,by_wolf,note,created_by,created_at&order=created_at.desc&limit=120',{token:tk});
-      if(!r.ok){ADX.err='Admin tasarımları okunamadı.';ADX.rows=[];}else ADX.rows=r.j||[];
+    else{/* Şablon, baskı ve taslaklar ayrı okunur: yüzlerce ürün kaydı onları listeden itmesin (önce son 120 kayıt okunuyordu, şablonlar görünmüyordu) */
+      var SEL='/rest/v1/admin_designs?select=id,title,code:data->>code,kind,status,product,cut,color,qty,sizes,thumb,files,published,by_wolf,note,created_by,created_at&order=created_at.desc';
+      var rr=await Promise.all([sbReq(SEL+'&kind=neq.urun&limit=1000',{token:tk}),sbReq(SEL+'&kind=eq.urun&limit=300',{token:tk})]);
+      if(!rr[0].ok&&!rr[1].ok){ADX.err='Admin tasarımları okunamadı.';ADX.rows=[];}
+      else ADX.rows=[].concat(rr[0].ok?rr[0].j||[]:[],rr[1].ok?rr[1].j||[]:[]).sort(function(x,y){return String(y.created_at).localeCompare(String(x.created_at));});
       var ps=[];ADX.rows.forEach(function(x){(x.files||[]).forEach(function(f){if(f.path&&!ADX.urls[f.path])ps.push(f.path);});});
       if(ps.length){var sg=await fetch(SB.url+'/storage/v1/object/sign/designs',{method:'POST',headers:{apikey:SB.key,Authorization:'Bearer '+tk,'Content-Type':'application/json'},body:JSON.stringify({expiresIn:3600,paths:ps})}).then(function(x){return x.json();}).catch(function(){return [];});
         (Array.isArray(sg)?sg:[]).forEach(function(q){if(q.signedURL)ADX.urls[q.path]=SB.url+'/storage/v1'+q.signedURL;});}}
