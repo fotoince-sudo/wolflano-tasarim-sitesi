@@ -4,7 +4,7 @@
 #   baski/<ad>.png  -> tam boy (dikey 3508 x 4961, yatay 4961 x 3508), "baski" dalına yazılır (siteye gitmez)
 #   sablon/web/<ad>.webp -> stüdyoda kullanılan saydam önizleme (uzun kenar 1600 px)
 #   sablon/rapor.json -> her işin kaynak ölçüsü ve sonucu
-import io, json, os, sys, urllib.request
+import io, json, os, sys, traceback, urllib.request
 import numpy as np
 from PIL import Image
 import torch
@@ -69,6 +69,6 @@ for j in jobs:
                    'baski': [W, H], 'dpi': 300, 'yon': 'yatay' if land else 'dikey', 'ad': j.get('baslik', ad), 'kat': j.get('kat', '')}
         print(ad, 'kaynak', src, '->', W, 'x', H)
     except Exception as e:
-        rap[ad] = {'tamam': False, 'hata': str(e)[:300]}
+        rap[ad] = {'tamam': False, 'hata': traceback.format_exc()[-1500:]}
         print('HATA', ad, e)
 json.dump(rap, open(rp, 'w'), ensure_ascii=False, indent=1, sort_keys=True)

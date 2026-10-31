@@ -31,17 +31,19 @@ jobs:
           key: realesrgan-x4plus-v1
       - name: Araçları kur
         run: |
-          pip install -q torch --index-url https://download.pytorch.org/whl/cpu
+          pip install -q torch torchvision --index-url https://download.pytorch.org/whl/cpu
           pip install -q spandrel pillow numpy
+          python3 -c "import torch, torchvision, spandrel; print('torch', torch.__version__, 'spandrel ok')"
           [ -f RealESRGAN_x4plus.pth ] || curl -fsSL -o RealESRGAN_x4plus.pth https://github.com/xinntao/Real-ESRGAN/releases/download/v0.1.0/RealESRGAN_x4plus.pth
       - name: Hazırla
-        run: python3 .github/sablon.py
+        run: python3 .github/sablon.py 2>&1 | tee sablon/son-calisma.txt
       - name: Kaydet
+        if: always()
         run: |
           git config user.name "fotoince-sudo"
           git config user.email "fotoince@gmail.com"
           mkdir -p /tmp/baski && cp baski/*.png /tmp/baski/ 2>/dev/null || true
-          git add sablon/web sablon/rapor.json
+          git add sablon/web sablon/rapor.json sablon/son-calisma.txt 2>/dev/null || git add sablon
           git commit -q -m "Şablonlar: baskı dosyaları hazırlandı" || true
           for i in 1 2 3; do git pull -q --rebase origin main && git push -q origin HEAD:main && break; sleep 5; done
           # tam boy dosyalar ayrı dala (siteye yüklenmez)
