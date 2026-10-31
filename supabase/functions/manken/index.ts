@@ -90,6 +90,18 @@ const RENK: Record<string, string> = {
   Mavi: 'royal blue (#2a64c4)',
   'Yeşil': 'deep forest green (#2d5a43)',
 };
+// Ürün oranı: stüdyo fotoğrafı boya göre ölçekler, bu yüzden fotoğraftaki gövde eni/boyu beden tablosuyla (M beden, cm) aynı oranda olmalı.
+// [göğüs eni (koltuk altından koltuk altına, düz), boy (omuz üstünden etek ucuna)] — studyo.html SZM ile aynı.
+const ORAN: Record<string, Record<string, [number, number]>> = {
+  tee: { erkek: [53, 72], kadin: [47, 64], cocuk: [38, 52] },
+  sweat: { erkek: [56, 70], kadin: [51, 64], cocuk: [40, 52] },
+};
+ORAN.polo = ORAN.tee; ORAN.hood = ORAN.sweat; ORAN.zip = ORAN.sweat;
+function oranText(tur: string, kesim: string): string {
+  const o = (ORAN[tur] || ORAN.tee)[kesim] || (ORAN[tur] || ORAN.tee).erkek;
+  const pct = Math.round((o[0] / o[1]) * 100);
+  return `TRUE GARMENT PROPORTIONS (very important): the body width measured flat from armpit to armpit and the body length measured from the top of the shoulder to the bottom hem are in the exact ratio ${o[0]}:${o[1]}, so the body is about ${pct}% as wide as it is long. This is a real, roomy regular fit, NOT slim, narrow, tapered or elongated; the body below the armpits stays this wide all the way down. Draw the garment perfectly flat-on (no perspective, no turning) so this ratio is visible in the photo.`;
+}
 const URUN_STYLE = 'Professional premium e-commerce product photo in ghost-mannequin (invisible mannequin) style: the garment looks worn, with natural 3D volume and soft realistic folds, the inside of the back neck visible through the collar opening; no person, no mannequin, no hanger visible. Perfectly straight-on and symmetrical, centered, sleeves relaxed, the whole garment visible with a generous empty margin on all sides. Seamless plain light-grey (#d6d6d6) background, soft even studio lighting, very soft shadow, sharp fabric texture, true-to-life color. Completely blank garment: no print, no logo, no label, no tag, no text, no watermark. Vertical 2:3 composition.';
 
 // Hediye & Dekor ortam fotoğrafı: stüdyoda tasarlanan kupa / canvas, baskısı aynen korunarak gerçekçi bir mekâna yerleştirilir
@@ -210,9 +222,9 @@ Deno.serve(async (req) => {
       }
       const g = `${gar}, ${fit}`;
       if (!refBlob) {
-        prompt = `${URUN_STYLE} The product: ${g}, color ${col}. ${back ? 'Back view of the garment.' : 'Front view of the garment.'}`;
+        prompt = `${URUN_STYLE} The product: ${g}, color ${col}. ${oranText(String(b.tur), String(b.kesim))} ${back ? 'Back view of the garment.' : 'Front view of the garment.'}`;
       } else if (b.ref_yuz === 'front' && back) {
-        prompt = `The reference image is the FRONT of a garment (${g}). Create the BACK view of exactly the same garment: same fabric, same color and exact same tone (${col}), same fit and proportions, same size and position in the frame, same lighting, same shadow and the same plain light-grey background. Straight-on back view: ${ARKA[String(b.tur)] ? 'seen from directly behind' + ARKA[String(b.tur)] : 'the back neckline sits higher than the front, the whole back is smooth and fully visible' + (String(b.tur) === 'polo' ? ', the collar seen from behind, no placket or buttons on the back' : '')}. ${URUN_STYLE}`;
+        prompt = `The reference image is the FRONT of a garment (${g}). Create the BACK view of exactly the same garment: same fabric, same color and exact same tone (${col}), same fit and proportions, same size and position in the frame (${oranText(String(b.tur), String(b.kesim))}), same lighting, same shadow and the same plain light-grey background. Straight-on back view: ${ARKA[String(b.tur)] ? 'seen from directly behind' + ARKA[String(b.tur)] : 'the back neckline sits higher than the front, the whole back is smooth and fully visible' + (String(b.tur) === 'polo' ? ', the collar seen from behind, no placket or buttons on the back' : '')}. ${URUN_STYLE}`;
       } else {
         prompt = `Edit this product photo: change ONLY the garment's fabric color to ${col}, with natural realistic shading for that color. Keep everything else exactly identical: garment shape, folds, collar, seams, stitching, sleeves, size and position in the frame, lighting, shadow and the plain light-grey background. Do not move, crop, zoom or redraw anything. No print, no logo, no label, no text.`;
       }
