@@ -18,7 +18,7 @@ concurrency:
 jobs:
   hazirla:
     runs-on: ubuntu-latest
-    timeout-minutes: 120
+    timeout-minutes: 340
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -27,14 +27,14 @@ jobs:
       - name: Model önbelleği
         uses: actions/cache@v4
         with:
-          path: RealESRGAN_x4plus.pth
-          key: realesrgan-x4plus-v1
+          path: realesr-general-x4v3.pth
+          key: realesr-general-x4v3-v1
       - name: Araçları kur
         run: |
           pip install -q torch torchvision --index-url https://download.pytorch.org/whl/cpu
           pip install -q spandrel pillow numpy
           python3 -c "import torch, torchvision, spandrel; print('torch', torch.__version__, 'spandrel ok')"
-          [ -f RealESRGAN_x4plus.pth ] || curl -fsSL -o RealESRGAN_x4plus.pth https://github.com/xinntao/Real-ESRGAN/releases/download/v0.1.0/RealESRGAN_x4plus.pth
+          [ -f realesr-general-x4v3.pth ] || curl -fsSL -o realesr-general-x4v3.pth https://github.com/xinntao/Real-ESRGAN/releases/download/v0.2.5.0/realesr-general-x4v3.pth
       - name: Hazırla
         run: python3 .github/sablon.py 2>&1 | tee sablon/son-calisma.txt
       - name: Kaydet

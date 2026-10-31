@@ -1,6 +1,6 @@
 # Canva'da üretilen şehir/şablon görsellerini baskıya hazırlar (GitHub Actions'ta çalışır).
 # sablon/is.json içindeki her iş için: Canva dışa aktarma bağlantısından indir, kenardaki boş beyazı kırp,
-# Real-ESRGAN (x4, ücretsiz) ile büyütüp keskinleştir, beyaz zemini saydam yap, A3 300 dpi tuvale ortala.
+# Real-ESRGAN general-x4v3 (x4, hızlı, ücretsiz) ile büyütüp keskinleştir, beyaz zemini saydam yap, A3 300 dpi tuvale ortala.
 #   baski/<ad>.png  -> tam boy (dikey 3508 x 4961, yatay 4961 x 3508), "baski" dalına yazılır (siteye gitmez)
 #   sablon/web/<ad>.webp -> stüdyoda kullanılan saydam önizleme (uzun kenar 1600 px)
 #   sablon/rapor.json -> her işin kaynak ölçüsü ve sonucu
@@ -20,7 +20,8 @@ model = None
 def up4(im):
     global model
     if model is None:
-        model = ModelLoader().load_from_file('RealESRGAN_x4plus.pth').eval()
+        model = ModelLoader().load_from_file('realesr-general-x4v3.pth').eval()
+        torch.set_num_threads(os.cpu_count() or 4)
     x = torch.from_numpy(np.asarray(im, dtype=np.float32) / 255.).permute(2, 0, 1)[None]
     T, P = 384, 16
     _, _, h, w = x.shape
