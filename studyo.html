@@ -58,7 +58,7 @@ svg.i{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stro
 .gd-list li{display:grid;grid-template-columns:28px 1fr;gap:10px;align-items:start;font:500 14px/1.45 var(--ui);color:var(--muted)}
 .gd-list li b{display:block;color:var(--ink);font-weight:700}
 .gd-list .n{width:28px;height:28px;border-radius:50%;background:var(--accent-soft);color:var(--accent);display:grid;place-items:center;font:700 13px var(--ui)}
-.gd-ask{display:grid;gap:8px;border:1.5px solid var(--green,#30703f);border-radius:14px;padding:12px}.gd-ask small{font-size:12.5px;opacity:.75;margin-top:-4px}.gd-msgs{display:grid;gap:6px;max-height:42vh;overflow:auto}.gd-msgs:empty{display:none}.gd-m{margin:0;padding:8px 10px;border-radius:12px;font-size:14px;line-height:1.45;max-width:92%}.gd-m.me{justify-self:end;background:var(--green,#30703f);color:#fff}.gd-m.as{justify-self:start;background:var(--panel2,#eef1ef)}.gd-m.wait{opacity:.7;font-style:italic}.gd-in{display:flex;gap:6px}.gd-in input{flex:1;min-width:0;font:inherit;font-size:16px;padding:9px 11px;border-radius:10px;border:1px solid var(--line)}.gd-in button{padding:0 14px}.gd-faq details{border-top:1px solid var(--line);padding:10px 0}
+.gd-ah{display:flex;gap:10px;align-items:center}.gd-ah img{border-radius:50%;flex:0 0 44px;object-fit:cover;box-shadow:0 0 0 2px var(--green,#30703f)}.gd-ah span{display:grid;gap:2px}.gd-row{display:flex;gap:6px;align-items:flex-end}.gd-row img{border-radius:50%;flex:0 0 26px;object-fit:cover}.gd-ask{display:grid;gap:8px;border:1.5px solid var(--green,#30703f);border-radius:14px;padding:12px}.gd-ask small{font-size:12.5px;opacity:.75}.gd-msgs{display:grid;gap:6px;max-height:42vh;overflow:auto}.gd-msgs:empty{display:none}.gd-m{margin:0;padding:8px 10px;border-radius:12px;font-size:14px;line-height:1.45;max-width:92%}.gd-m.me{justify-self:end;background:var(--green,#30703f);color:#fff}.gd-m.as{justify-self:start;background:var(--panel2,#eef1ef)}.gd-m.wait{opacity:.7;font-style:italic}.gd-in{display:flex;gap:6px}.gd-in input{flex:1;min-width:0;font:inherit;font-size:16px;padding:9px 11px;border-radius:10px;border:1px solid var(--line)}.gd-in button{padding:0 14px}.gd-faq details{border-top:1px solid var(--line);padding:10px 0}
 .gd-faq summary{cursor:pointer;font:700 14px var(--ui);color:var(--ink)}
 .gd-faq p{margin-top:6px;font-size:14px}
 .gd-top{display:flex;justify-content:space-between;align-items:center}
@@ -5470,7 +5470,7 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
   function help(){
     mode='help';
     el.innerHTML='<div class="gd-card gd-help"><div class="gd-top"><h2 id="gdTitle">Nasıl kullanılır?</h2><button type="button" class="ib" data-gd="skip" aria-label="Kapat"><svg class="i" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>'+
-      '<div class="gd-ask"><b>Asistana sor</b><small>Takıldığın yeri yaz; nasıl yapacağını adım adım anlatayım.</small><div class="gd-msgs" id="gdMsgs">'+askHtml()+'</div>'+
+      '<div class="gd-ask"><div class="gd-ah"><img src="'+AYB+'" alt="" width="44" height="44"><span><b>Aybüke\'ye sor</b><small>Ben Aybüke, tasarım asistanın. Takıldığın yeri yaz; nasıl yapacağını adım adım anlatayım.</small></span></div><div class="gd-msgs" id="gdMsgs">'+askHtml()+'</div>'+
       '<form class="gd-in" id="gdAskF"><input id="gdAsk" maxlength="400" placeholder="Örn. Logoyu sağ göğse nasıl koyarım?" autocomplete="off" enterkeyhint="send"><button type="submit" class="primary" aria-label="Gönder">Sor</button></form></div>'+
       '<ol class="gd-list">'+GD.map(function(d,k){return '<li><span class="n">'+(k+1)+'</span><span><b>'+d.t+'</b>'+d.p+'</span></li>';}).join('')+'</ol>'+
       '<h3>Sık sorulanlar</h3><div class="gd-faq">'+FAQ.map(function(q){return '<details><summary>'+q[0]+'</summary><p>'+q[1]+'</p></details>';}).join('')+'</div>'+
@@ -5478,9 +5478,11 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
     el.hidden=false;
   }
   /* Asistan: sorular stüdyonun kurallarını bilen yardım asistanına (sunucu: yardim) gider; konuşma yalnız bu cihazda tutulur */
+  /* Asistanın görseli: assets/aybuke içinde aybuke.webp/png/jpg varsa o, yoksa çizim (aybuke.svg) */
+  var AYB='assets/aybuke/aybuke.svg';['webp','png','jpg'].some(function(x){var im=new Image();im.onload=function(){AYB=im.src;};im.src='assets/aybuke/aybuke.'+x;return false;});
   var ASK=[],askBusy=false;try{ASK=JSON.parse(sessionStorage.getItem('wf_ask')||'[]')||[];}catch(_){ASK=[];}
   function askEsc(t){return String(t).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}).replace(/\n/g,'<br>');}
-  function askHtml(){return ASK.map(function(m){return '<p class="gd-m '+(m.role==='user'?'me':'as')+'">'+askEsc(m.text)+'</p>';}).join('')+(askBusy?'<p class="gd-m as wait">Yazıyor…</p>':'');}
+  function askHtml(){return ASK.map(function(m){return m.role==='user'?'<p class="gd-m me">'+askEsc(m.text)+'</p>':'<div class="gd-row"><img src="'+AYB+'" alt="Aybüke" width="26" height="26"><p class="gd-m as">'+askEsc(m.text)+'</p></div>';}).join('')+(askBusy?'<p class="gd-m as wait">Aybüke yazıyor…</p>':'');}
   function askPaint(){var b=document.getElementById('gdMsgs');if(b){b.innerHTML=askHtml();b.scrollTop=b.scrollHeight;}}
   function askCtx(){var c=[];try{c.push('Ürün: '+productLabel());c.push('Açık yüz: '+(SIDE_NAME[view.side]||view.side)+', alan: '+AREAS[cur().area].name);
     var fe=function(k){try{return Math.round(areaFee(k));}catch(_){return null;}};c.push('Ürünün baskısız fiyatı: '+Math.round(basePrice())+' TL');
