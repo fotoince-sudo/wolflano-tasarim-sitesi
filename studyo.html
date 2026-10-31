@@ -6,7 +6,7 @@
 .ib.ayb-btn img{width:34px;height:34px;border-radius:50%;object-fit:cover;display:block;border:2px solid #7fd6b4;box-shadow:0 0 0 2px #fff,0 2px 6px rgba(0,0,0,.18)}
 </style></head><body>
 <title>Wolflano Stüdyo</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:wght@700&family=Marcellus&family=DM+Serif+Display&family=Big+Shoulders+Display:wght@800&family=Unbounded:wght@700&family=Saira+Stencil+One&family=Great+Vibes&family=Allura&family=Mrs+Saint+Delafield&family=Rubik+Spray+Paint&family=Shrikhand&family=Anton&family=Oswald:wght@700&family=Bebas+Neue&family=Staatliches&family=Montserrat:wght@800;900&family=Poppins:wght@800&family=Archivo+Black&family=Alfa+Slab+One&family=Playfair+Display:wght@800&family=Abril+Fatface&family=Righteous&family=Bangers&family=Fredoka:wght@600&family=Black+Ops+One&family=Press+Start+2P&family=Lobster&family=Pacifico&family=Dancing+Script:wght@700&family=Caveat:wght@700&family=Barlow:wght@500;600;700&family=Barlow+Condensed:wght@600;700&family=Rubik:wght@800;900&family=Teko:wght@600&family=Russo+One&family=Saira+Condensed:wght@800&family=Exo+2:wght@800&family=Kanit:wght@800&family=Rajdhani:wght@700&family=Bungee&family=Chakra+Petch:wght@700&family=Lilita+One&family=Kaushan+Script&family=Sacramento&family=Cinzel:wght@700&family=Merriweather:wght@900&family=Titan+One&family=Passion+One:wght@900&family=Rubik+Mono+One&family=Cormorant+Garamond:wght@500;700&family=Manrope:wght@500;800&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:wght@700&family=Marcellus&family=DM+Serif+Display&family=Big+Shoulders+Display:wght@800;900&family=Unbounded:wght@700&family=Saira+Stencil+One&family=Great+Vibes&family=Allura&family=Mrs+Saint+Delafield&family=Rubik+Spray+Paint&family=Shrikhand&family=Anton&family=Oswald:wght@700&family=Bebas+Neue&family=Staatliches&family=Montserrat:wght@800;900&family=Poppins:wght@800&family=Archivo+Black&family=Alfa+Slab+One&family=Playfair+Display:wght@800&family=Abril+Fatface&family=Righteous&family=Bangers&family=Fredoka:wght@600&family=Black+Ops+One&family=Press+Start+2P&family=Lobster&family=Pacifico&family=Dancing+Script:wght@700&family=Caveat:wght@700&family=Barlow:wght@500;600;700&family=Barlow+Condensed:wght@600;700&family=Rubik:wght@800;900&family=Teko:wght@600&family=Russo+One&family=Saira+Condensed:wght@800&family=Exo+2:wght@800&family=Kanit:wght@800&family=Rajdhani:wght@700&family=Bungee&family=Chakra+Petch:wght@700&family=Lilita+One&family=Kaushan+Script&family=Sacramento&family=Cinzel:wght@700&family=Merriweather:wght@900&family=Titan+One&family=Bungee+Inline&family=Bungee+Shade&family=Pinyon+Script&family=Alex+Brush&family=Metal+Mania&family=Passion+One:wght@900&family=Rubik+Mono+One&family=Cormorant+Garamond:wght@500;700&family=Manrope:wght@500;800&display=swap">
 <style>
 /* Layout: tek ekranlık stüdyo. Üstte ürün ve baskı alanı seçimi, ortada sahne, altta bağlamsal araçlar, sayfa ve sekme çubuğu. */
 :root{
@@ -238,6 +238,9 @@ svg.i{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stro
 .crp-f{display:flex;gap:8px;justify-content:center;padding:10px 14px calc(12px + env(safe-area-inset-bottom))}
 .crp-f button.on{background:#fff;color:#101412}
 .crp-f1{padding-bottom:4px}
+.tsty{display:grid;grid-auto-flow:column;grid-auto-columns:96px;gap:8px;overflow-x:auto;padding:2px 0 10px;scrollbar-width:none}.tsty::-webkit-scrollbar{display:none}
+.tsb{width:96px;height:70px;border:1px solid var(--line);border-radius:12px;background:#eef2ef;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;cursor:pointer;padding:4px}
+.tsb span{font-size:22px;line-height:1.05}.tsb small{font:600 11px var(--ui);color:var(--muted);-webkit-text-stroke:0;text-shadow:none}
 .crp-sh{align-items:center;overflow-x:auto;justify-content:flex-start;scrollbar-width:none}.crp-sh::-webkit-scrollbar{display:none}
 .crp-sh>span{font:600 12px var(--ui);opacity:.7;flex:none}
 .crp-sh button{flex:none;display:inline-flex;align-items:center;gap:6px;padding:0 11px}
@@ -697,14 +700,17 @@ img{-webkit-touch-callout:none;-webkit-user-drag:none}
     <button class="sheet-x" id="sheetX" aria-label="Paneli kapat"><svg class="i" viewBox="0 0 24 24" style="width:18px;height:18px"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
     <div class="panel" data-p="text" hidden>
       <button class="primary wide" id="addText">+ Yazı ekle</button>
+      <div class="mini-title">Hazır yazı stilleri</div>
+      <div class="tsty" id="styRow"></div>
       <label class="fld"><span>Yazıyı düzenle</span><input id="textIn" type="text" maxlength="40" disabled placeholder="Önce bir yazı ekle veya seç" autocomplete="off"></label>
       <div class="mini-title">Şekil</div>
       <div class="fxrow" id="warpRow"></div>
+      <label class="fld rng" id="syWrap" hidden><span>Yazı yüksekliği <b id="syOut"></b></span><input type="range" id="syAmt" min="40" max="250" step="5" value="100"></label>
       <label class="fld rng" id="lsWrap" hidden><span>Harf aralığı <b id="lsOut"></b></span><input type="range" id="lsAmt" min="0" max="100" step="1" value="0"></label>
       <label class="fld rng" id="warpAmtWrap" hidden><span>Eğim <b id="warpAmtOut"></b></span><input type="range" id="warpAmt" min="10" max="100" step="1" value="50"></label>
       <div class="mini-title">Görünüm</div>
       <div class="fxrow" id="lookRow"></div>
-      <p class="note" id="lookNote" hidden style="margin:2px 0 12px">Gölge rengini Kontur düğmesinden değiştirebilirsin.</p>
+      <p class="note" id="lookNote" hidden style="margin:2px 0 12px">Gölge ve 3D derinlik rengini Kontur düğmesinden değiştirebilirsin.</p>
       <div class="mini-title">Yazı tipi</div>
       <div class="fonts" id="fontGrid"></div>
     </div>
@@ -992,7 +998,7 @@ function colInk(c){var h=String(c||'').replace('#','');if(h.length!==6)return '#
 function colParse(v){v=String(v||'').trim().toUpperCase().replace(/\s/g,'');var hx=v.match(/#[0-9A-F]{6}\b|#[0-9A-F]{3}\b/),wk=v.match(/^W0*\d{1,2}/);if(v.length>7&&(hx||wk))v=hx?hx[0]:wk[0];var m=v.match(/^W?0*(\d{1,2})$/);if(m){var n=+m[1];return n>=1&&n<=PALETTE.length?PALETTE[n-1]:null;}
   m=v.replace(/^#/,'');if(/^[0-9A-F]{6}$/.test(m))return '#'+m.toLowerCase();if(/^[0-9A-F]{3}$/.test(m))return '#'+m.split('').map(function(x){return x+x;}).join('').toLowerCase();return null;}
 function usedColors(){var seen={},out=[];['front','logo','logo2','back'].forEach(function(sd){(state[sd]&&state[sd].objs||[]).forEach(function(o){if(o.type==='image'||(o.type==='clip'&&clipFixed(o.key)))return;[o.color,o.stroke].forEach(function(c){if(!c)return;var k=String(c).toLowerCase();if(!seen[k]){seen[k]=1;out.push(k);}});});});return out;}
-var FONTS=[['Cormorant Garamond İnce',500,'Cormorant Garamond'],['Cormorant Garamond',700],['Manrope İnce',500,'Manrope'],['Manrope',800],['Bodoni Moda',700],['Marcellus',400],['DM Serif Display',400],['Big Shoulders Display',800],['Unbounded',700],['Saira Stencil One',400],['Great Vibes',400],['Allura',400],['Mrs Saint Delafield',400],['Rubik Spray Paint',400],['Shrikhand',400],['Anton',400],['Oswald',700],['Bebas Neue',400],['Staatliches',400],['Montserrat',800],['Poppins',800],['Archivo Black',400],['Alfa Slab One',400],['Playfair Display',800],['Abril Fatface',400],['Righteous',400],['Bangers',400],['Fredoka',600],['Black Ops One',400],['Press Start 2P',400],['Lobster',400],['Pacifico',400],['Dancing Script',700],['Caveat',700],['Barlow Condensed',700],['Rubik',800],['Teko',600],['Russo One',400],['Saira Condensed',800],['Exo 2',800],['Kanit',800],['Rajdhani',700],['Bungee',400],['Chakra Petch',700],['Lilita One',400],['Kaushan Script',400],['Sacramento',400],['Cinzel',700],['Merriweather',900],['Titan One',400],['Passion One',900],['Rubik Mono One',400],['Montserrat Black',900,'Montserrat'],['Rubik Black',900,'Rubik']];
+var FONTS=[['Cormorant Garamond İnce',500,'Cormorant Garamond'],['Cormorant Garamond',700],['Manrope İnce',500,'Manrope'],['Manrope',800],['Bodoni Moda',700],['Marcellus',400],['DM Serif Display',400],['Big Shoulders Display',800],['Unbounded',700],['Saira Stencil One',400],['Great Vibes',400],['Allura',400],['Mrs Saint Delafield',400],['Rubik Spray Paint',400],['Shrikhand',400],['Anton',400],['Oswald',700],['Bebas Neue',400],['Staatliches',400],['Montserrat',800],['Poppins',800],['Archivo Black',400],['Alfa Slab One',400],['Playfair Display',800],['Abril Fatface',400],['Righteous',400],['Bangers',400],['Fredoka',600],['Black Ops One',400],['Press Start 2P',400],['Lobster',400],['Pacifico',400],['Dancing Script',700],['Caveat',700],['Barlow Condensed',700],['Rubik',800],['Teko',600],['Russo One',400],['Saira Condensed',800],['Exo 2',800],['Kanit',800],['Rajdhani',700],['Bungee',400],['Chakra Petch',700],['Lilita One',400],['Kaushan Script',400],['Sacramento',400],['Cinzel',700],['Merriweather',900],['Titan One',400],['Passion One',900],['Rubik Mono One',400],['Montserrat Black',900,'Montserrat'],['Rubik Black',900,'Rubik'],['Big Shoulders Black',900,'Big Shoulders Display'],['Bungee Inline',400],['Bungee Shade',400],['Metal Mania',400],['Pinyon Script',400],['Alex Brush',400]];
 function fw(f){for(var i=0;i<FONTS.length;i++){if(FONTS[i][0]===f)return FONTS[i][1];}return 700;}
 /* "İnce" gibi seçenekler aynı yazı ailesinin ince ağırlığıdır */
 function fam(f){for(var i=0;i<FONTS.length;i++){if(FONTS[i][0]===f)return FONTS[i][2]||f;}return f;}
@@ -1084,6 +1090,8 @@ var CLIPS=[
 ['pati','Pati','Doğa','<ellipse cx="22" cy="42" rx="9" ry="12"/><ellipse cx="42" cy="26" rx="9" ry="13"/><ellipse cx="62" cy="26" rx="9" ry="13"/><ellipse cx="80" cy="42" rx="9" ry="12"/><path d="M50 48C66 48 80 66 80 78C80 88 70 90 62 87C55 85 45 85 38 87C30 90 20 88 20 78C20 66 34 48 50 48Z"/>'],
 ['kalp','Kalp','Semboller','<path d="M50 90C20 66 6 48 6 32C6 18 17 8 30 8C39 8 46 13 50 20C54 13 61 8 70 8C83 8 94 18 94 32C94 48 80 66 50 90Z"/>'],
 ['tac','Taç','Semboller','<path '+ST+' stroke-width="6" d="M10 78L6 30L30 52L50 18L70 52L94 30L90 78Z"/>'],
+['k_pence3','Pençe izi (3)','Kurtlar','<path d="M46.0 3C36.0 26 20.0 55 -4.0 97L6.0 88L7.0 77L16.0 70C32.0 48 46.0 26 60.0 5L55.0 12Z"/><path d="M70.0 3C60.0 26 44.0 55 20.0 97L30.0 88L31.0 77L40.0 70C56.0 48 70.0 26 84.0 5L79.0 12Z"/><path d="M94.0 3C84.0 26 68.0 55 44.0 97L54.0 88L55.0 77L64.0 70C80.0 48 94.0 26 108.0 5L103.0 12Z"/>','-12 0 124 100'],
+['k_pence4','Pençe izi (4)','Kurtlar','<path d="M37.0 3C27.0 26 11.0 55 -13.0 97L-3.0 88L-2.0 77L7.0 70C23.0 48 37.0 26 51.0 5L46.0 12Z"/><path d="M59.0 3C49.0 26 33.0 55 9.0 97L19.0 88L20.0 77L29.0 70C45.0 48 59.0 26 73.0 5L68.0 12Z"/><path d="M81.0 3C71.0 26 55.0 55 31.0 97L41.0 88L42.0 77L51.0 70C67.0 48 81.0 26 95.0 5L90.0 12Z"/><path d="M103.0 3C93.0 26 77.0 55 53.0 97L63.0 88L64.0 77L73.0 70C89.0 48 103.0 26 117.0 5L112.0 12Z"/>','-22 0 144 100'],
 ['k_uluyan','Uluyan kurt','Kurtlar','<path d="M76.0 2.0C76.2 2.5 77.2 4.7 77.5 5.2C76.4 5.8 72.1 8.2 71.0 8.8C71.8 9.1 75.0 10.1 75.8 10.4C74.7 11.3 70.9 14.1 69.0 16.0C67.1 17.9 65.0 19.8 64.5 22.0C64.0 24.2 65.3 26.5 66.0 29.0C66.7 31.5 67.9 34.0 68.5 37.0C69.1 40.0 69.6 43.8 69.5 47.0C69.4 50.2 68.5 53.2 68.0 56.0C67.5 58.8 66.5 59.7 66.2 64.0C65.9 68.3 65.8 77.3 66.4 82.0C67.0 86.7 69.2 90.3 69.8 92.0C68.2 92.0 61.6 92.0 60.0 92.0C60.0 89.0 60.4 78.1 60.2 74.0C60.0 69.9 59.3 67.3 58.8 67.5C58.3 67.7 57.5 70.9 57.3 75.0C57.1 79.1 57.5 89.2 57.6 92.0C56.4 92.0 51.8 92.0 50.6 92.0C50.7 90.2 51.4 83.6 51.2 81.0C51.0 78.4 50.3 76.8 49.5 76.5C48.7 76.2 47.0 77.8 46.4 79.5C45.8 81.2 45.0 84.3 45.6 86.5C46.2 88.7 49.3 91.4 50.0 92.4C46.3 92.4 33.7 92.4 28.0 92.6C22.3 92.8 19.2 93.6 16.0 93.4C12.8 93.2 10.1 92.6 8.6 91.6C7.1 90.6 6.3 88.6 7.0 87.4C7.7 86.2 10.2 85.1 12.5 84.6C14.8 84.1 18.0 85.1 20.5 84.6C23.0 84.1 25.8 83.4 27.5 81.5C29.2 79.6 29.6 76.0 30.6 73.0C31.6 70.0 32.1 66.6 33.5 63.5C34.9 60.4 36.9 57.3 38.8 54.5C40.7 51.7 43.3 49.2 45.0 46.5C46.7 43.8 48.1 40.8 49.0 38.0C49.9 35.2 50.4 32.5 50.6 30.0C50.8 27.5 50.4 25.3 50.0 23.0C49.6 20.7 48.5 18.8 48.2 16.0C47.9 13.2 48.0 8.1 48.0 6.5C49.0 7.7 53.2 12.6 54.2 13.8C54.9 13.3 57.0 11.8 58.5 10.8C60.0 9.8 61.7 8.6 63.5 7.6C65.3 6.6 67.4 5.5 69.5 4.6C71.6 3.7 74.9 2.4 76.0 2.0Z"/>'],
 ['k_profil','Yandan kurt başı','Kurtlar','<path fill-rule="evenodd" d="M94.5 50.0C94.4 50.7 93.9 53.5 93.8 54.2C92.2 54.5 86.7 55.4 84.0 56.2C81.3 57.0 79.8 58.2 77.5 59.2C75.2 60.2 72.4 61.3 70.5 62.5C68.6 63.7 66.8 65.6 66.0 66.2C66.1 67.0 66.7 70.2 66.8 71.0C66.0 70.8 62.8 70.2 62.0 70.0C62.1 70.9 62.5 74.7 62.6 75.6C61.9 75.5 58.9 75.1 58.2 75.0C57.9 76.5 56.9 81.0 56.4 84.0C55.9 87.0 55.6 91.5 55.5 93.0C49.6 93.0 25.9 93.0 20.0 93.0C20.2 91.2 21.4 84.8 21.0 82.0C20.6 79.2 18.3 77.3 17.8 76.4C18.8 75.7 22.6 73.1 23.6 72.4C23.1 71.1 21.1 65.7 20.6 64.4C21.6 63.7 25.8 60.9 26.8 60.2C26.5 58.9 25.1 53.5 24.8 52.2C25.8 51.3 29.6 49.0 31.0 47.0C32.4 45.0 32.8 43.2 33.0 40.0C33.2 36.8 32.0 32.7 32.0 28.0C32.0 23.3 32.8 14.7 33.0 12.0C34.2 13.9 38.6 20.5 40.5 23.5C42.4 26.5 43.8 28.9 44.5 30.0C45.0 27.3 47.0 16.7 47.5 14.0C48.3 16.2 50.8 24.7 52.5 27.5C54.2 30.3 56.1 29.9 58.0 31.0C59.9 32.1 61.3 32.5 64.0 34.0C66.7 35.5 70.5 38.2 74.0 40.0C77.5 41.8 82.2 43.8 85.0 45.0C87.8 46.2 89.4 46.4 91.0 47.2C92.6 48.0 93.9 49.5 94.5 50.0ZM54 40.4C57 38.4 61 38.6 64 40.8C61 42.2 57 42.2 54 40.4Z"/>'],
 ['k_kosan','Koşan kurt','Kurtlar','<path d="M97.5 36.0C97.3 36.6 96.8 39.0 96.6 39.6C95.2 39.8 90.9 40.3 88.5 41.0C86.1 41.7 83.9 42.5 82.0 44.0C80.1 45.5 77.0 47.8 77.0 50.0C77.0 52.2 79.8 55.2 82.0 57.5C84.2 59.8 89.1 62.5 90.5 63.5C90.2 64.0 88.9 66.2 88.6 66.8C87.2 66.2 82.7 64.4 80.0 63.0C77.3 61.6 75.2 59.6 72.5 58.5C69.8 57.4 67.1 56.8 64.0 56.5C60.9 56.2 57.0 56.2 54.0 56.5C51.0 56.8 49.0 57.2 46.0 58.5C43.0 59.8 39.7 62.2 36.0 64.5C32.3 66.8 26.0 71.2 24.0 72.5C23.5 72.1 21.5 70.6 21.0 70.2C22.4 68.8 27.4 64.5 29.5 62.0C31.6 59.5 33.5 57.6 33.5 55.5C33.5 53.4 31.8 50.9 29.5 49.5C27.2 48.1 23.2 47.2 20.0 47.0C16.8 46.8 12.9 48.4 10.0 48.4C7.1 48.4 3.8 47.2 2.5 47.0C3.6 46.2 6.2 43.3 9.0 42.0C11.8 40.7 15.8 39.5 19.0 39.0C22.2 38.5 25.0 39.1 28.0 38.8C31.0 38.5 33.7 37.5 37.0 37.0C40.3 36.5 44.2 36.2 48.0 36.0C51.8 35.8 56.7 36.3 60.0 36.0C63.3 35.7 65.7 35.0 68.0 34.0C70.3 33.0 72.4 31.3 74.0 30.0C75.6 28.7 76.8 28.2 77.5 26.0C78.2 23.8 77.9 18.1 78.0 16.5C78.8 17.7 82.0 22.3 82.8 23.5C83.2 22.5 84.8 18.5 85.2 17.5C85.5 18.9 86.2 23.9 87.3 26.0C88.3 28.1 90.0 28.8 91.5 30.0C93.0 31.2 95.5 32.2 96.5 33.2C97.5 34.2 97.3 35.5 97.5 36.0Z"/>'],
@@ -1807,12 +1815,12 @@ function renderShirt(){try{renderRuler();}catch(_){}$('#shirtHost').innerHTML=pr
 /* ---------- Nesneler ---------- */
 function place(el,o){
   if(o.type!=='text'){el.style.width=o.w+'px';el.style.height=o.h+'px';}
-  el.style.transform='translate('+o.x+'px,'+o.y+'px) translate(-50%,-50%) rotate('+o.rot+'deg)';
+  el.style.transform='translate('+o.x+'px,'+o.y+'px) translate(-50%,-50%) rotate('+o.rot+'deg)'+(o.type==='text'&&o.sy&&o.sy!==1?' scale(1,'+o.sy+')':'');
 }
 /* ---------- Yazı efektleri: şekil (eğme) ve görünüm (dolu, içi boş, gölgeli) ----------
    Ekrandaki SVG ve baskı dosyasındaki tuval aynı yerleşim hesabını (warpLayout) kullanır; böylece ikisi birebir aynı çıkar. */
 var WARPS=[['none','Düz'],['arc','Kemer'],['smile','Gülümse'],['wave','Dalga'],['bulge','Balon'],['rise','Perspektif'],['dikey','Dikey']];
-var LOOKS=[['fill','Dolu'],['hollow','İçi boş'],['shadow','Gölgeli']];
+var LOOKS=[['fill','Dolu'],['hollow','İçi boş'],['shadow','Gölgeli'],['extrude','3D']];
 var mctx=document.createElement('canvas').getContext('2d');
 function isWarped(o){return (!!o.warp&&o.warp!=='none')||!!o.ls;} /* harf aralığı açık yazı da harf harf dizilir */
 function lookOf(o){return o.look||'fill';}
@@ -1857,8 +1865,12 @@ function warpSVG(o){
   else if(o.stroke&&look==='fill')main='fill="'+o.color+'" stroke="'+o.stroke+'" stroke-width="'+(sz*0.1)+'" stroke-linejoin="round" paint-order="stroke fill"';
   else main='fill="'+o.color+'"';
   if(look==='shadow'){var d=(sz*0.07).toFixed(2);sh='<g fill="'+shadowCol(o)+'" transform="translate('+d+' '+d+')">'+t+'</g>';}
+  if(look==='extrude'){var ec=o.stroke||'#111111',dd=sz*0.09,n=10,k;for(k=n;k>=1;k--){sh+='<g fill="'+ec+'" stroke="'+ec+'" stroke-width="'+(sz*0.08)+'" stroke-linejoin="round" transform="translate('+(dd*k/n).toFixed(2)+' '+(dd*k/n).toFixed(2)+')">'+t+'</g>';}
+    main='fill="'+o.color+'" stroke="'+ec+'" stroke-width="'+(sz*0.08)+'" stroke-linejoin="round" paint-order="stroke fill"';}
   return '<svg xmlns="http://www.w3.org/2000/svg" width="'+W.toFixed(1)+'" height="'+H.toFixed(1)+'" viewBox="'+(-W/2).toFixed(2)+' '+(-H/2).toFixed(2)+' '+W.toFixed(2)+' '+H.toFixed(2)+'"><g font-family="'+escX(fontStack(o.font))+'" font-weight="'+fw(o.font)+'" font-size="'+sz+'" text-anchor="middle">'+sh+'<g '+main+'>'+t+'</g></g></svg>';
 }
+/* 3D (kabartma): yazının arkasında sağ-alta doğru katman katman derinlik; kenar ve derinlik rengi = kontur rengi (varsayılan siyah) */
+function extrudeShadow(o){var ec=o.stroke||'#111111',d=o.size*0.09,n=10,a=[];for(var k=1;k<=n;k++){var v=(d*k/n).toFixed(2);a.push(v+'px '+v+'px 0 '+ec);}a.push((d+o.size*0.03).toFixed(2)+'px '+(d+o.size*0.03).toFixed(2)+'px 0 '+ec);return a.join(',');}
 function styleText(el,o){
   var look=lookOf(o);
   if(isWarped(o)){
@@ -1868,8 +1880,9 @@ function styleText(el,o){
   if(el.classList.contains('warp')){el.classList.remove('warp');el.textContent=o.value;}
   el.style.fontFamily=fontStack(o.font);el.style.fontWeight=fw(o.font);el.style.fontSize=o.size+'px';
   el.style.color=look==='hollow'?'transparent':o.color;
-  el.style.textShadow=look==='shadow'?(o.size*0.07)+'px '+(o.size*0.07)+'px 0 '+shadowCol(o):'none';
-  if(look==='hollow'){el.style.webkitTextStroke=(o.size*0.05)+'px '+o.color;el.style.paintOrder='normal';}
+  el.style.textShadow=look==='shadow'?(o.size*0.07)+'px '+(o.size*0.07)+'px 0 '+shadowCol(o):look==='extrude'?extrudeShadow(o):'none';
+  if(look==='extrude'){el.style.webkitTextStroke=(o.size*0.08)+'px '+(o.stroke||'#111111');el.style.paintOrder='stroke fill';}
+  else if(look==='hollow'){el.style.webkitTextStroke=(o.size*0.05)+'px '+o.color;el.style.paintOrder='normal';}
   else if(o.stroke&&look==='fill'){el.style.webkitTextStroke=(o.size*0.1)+'px '+o.stroke;el.style.paintOrder='stroke fill';}
   else{el.style.webkitTextStroke='0';el.style.paintOrder='normal';}
 }
@@ -1900,7 +1913,7 @@ var slotBakeN={};
 async function slotBake(o){var n=(slotBakeN[o.id]||0)+1;slotBakeN[o.id]=n;
   try{var id=await fxProcess(o.base,o.phs||'none',o.phe||'none',o.phf==null?0.5:o.phf,o.crop,o.wout,o.woc);if(slotBakeN[o.id]!==n)return;o.assetId=id;renderObjects();updateSel();draftSoon();}catch(_){}}
 function makeEl(o){var el=document.createElement('div');el.className='obj'+(o.type==='text'?' text':'');el.dataset.id=o.id;updateEl(el,o);return el;}
-function measureText(o){var el=els[o.id];if(o.type!=='text'||!el)return;o.w=el.offsetWidth;o.h=el.offsetHeight;}
+function measureText(o){var el=els[o.id];if(o.type!=='text'||!el)return;o.w=el.offsetWidth;o.h=el.offsetHeight*(o.sy||1);}
 function renderObjects(){
   var keep={},a=cur().objs,i,id;
   for(i=0;i<a.length;i++){
@@ -3465,7 +3478,29 @@ function closeTab(){
   $$('#tabs button').forEach(function(b){b.classList.remove('on');});
   view.fit='shirt';resetZoom();syncFitBtn();layout();
 }
+/* Hazır yazı stilleri: tek dokunuşla yazı tipi, renk, kontur, görünüm ve kavis. Yazı seçiliyse ona uygulanır, değilse stilli yeni yazı eklenir.
+   Koyu renkli üründe siyah yazı beyaza, beyaz yazı siyaha döner ki görünsün. up: büyük harfe çevir */
+var TSTY=[
+ {k:'arma',n:'Arma',f:'Big Shoulders Black',c:'#111111',up:1,w:'arc',a:22},
+ {k:'3d',n:'3D kabartma',f:'Titan One',c:'#ffffff',s:'#111111',l:'extrude',up:1},
+ {k:'cizgili',n:'Çizgili kalın',f:'Bungee Inline',c:'#0b4a8f',up:1},
+ {k:'sivri',n:'Sivri',f:'Metal Mania',c:'#1b2a6b',s:'#ffffff',up:1},
+ {k:'zarif',n:'Zarif imza',f:'Pinyon Script',c:'#111111'},
+ {k:'firca',n:'Fırça yazı',f:'Alex Brush',c:'#111111'},
+ {k:'spor',n:'Spor gölge',f:'Anton',c:'#30a46c',s:'#111111',l:'shadow',up:1,ls:0.04},
+ {k:'retro',n:'Retro',f:'Bungee Shade',c:'#c0392b',up:1},
+ {k:'kolej',n:'Kolej kemer',f:'Alfa Slab One',c:'#1b2a6b',up:1,w:'arc',a:45},
+ {k:'foto',n:'Fotoğraf için',f:'Rubik Mono One',c:'#111111',up:1}];
+function tstyApply(st){var o=selObj();if(!o||o.type!=='text'||o.lock){addText(st.up?'WOLFLANO':'Wolflano');o=selObj();if(!o)return;}
+  var dark=lum(state.tee)<=0.55,col=st.c,sk=st.s||null;
+  if(dark&&col==='#111111')col='#ffffff';else if(!dark&&col==='#ffffff'&&!st.l)col='#111111';
+  if(dark&&sk==='#ffffff'&&st.l!=='extrude')sk='#111111';
+  o.font=st.f;o.color=col;o.stroke=sk;o.look=st.l||'fill';if(st.up)o.value=String(o.value||'').toLocaleUpperCase('tr');
+  if(st.w){o.warp=st.w;o.wamt=st.a||50;}else delete o.warp;if(st.ls)o.ls=st.ls;else delete o.ls;view.font=st.f;
+  try{textIn.value=o.value;}catch(_){}refreshText(o);syncCtx();pushHist();
+  if(st.k==='foto')toast('Şimdi üstüne bir fotoğraf koy ve "Yazının içine"ye bas.');}
 function buildPanels(){
+  $('#styRow').innerHTML=TSTY.map(function(t){var dark=lum(state.tee)<=0.55;return '<button type="button" class="tsb" data-sty="'+t.k+'" style="font-family:'+fontStack(t.f).replace(/"/g,"'")+';font-weight:'+fw(t.f)+';color:'+t.c+';'+(t.s?'-webkit-text-stroke:1px '+t.s+';paint-order:stroke fill;':'')+(t.l==='extrude'?'text-shadow:2px 2px 0 #111,3px 3px 0 #111;':t.l==='shadow'?'text-shadow:2px 2px 0 '+(t.s||'#111')+';':'')+'"><span>'+(t.up?'WOLF':'Wolf')+'</span><small>'+t.n+'</small></button>';}).join('');
   var fg='';
   FONTS.forEach(function(f){fg+='<button class="font" data-f="'+f[0]+'" style="font-family:'+fontStack(f[0]).replace(/"/g,"'")+';font-weight:'+f[1]+'">Wolflano<small>'+f[0]+'</small></button>';});
   $('#fontGrid').innerHTML=fg;
@@ -3482,9 +3517,10 @@ function renderFxRows(){
   $('#lookRow').innerHTML=h;
   $('#warpRow').classList.toggle('off',!isT);$('#lookRow').classList.toggle('off',!isT);
   $('#warpAmtWrap').hidden=!(isT&&o.warp&&o.warp!=='none');
+  $('#syWrap').hidden=!isT;if(isT){var sv=Math.round((o.sy||1)*100);$('#syAmt').value=sv;$('#syOut').textContent=sv===100?'normal':'%'+sv;}
   $('#lsWrap').hidden=!isT||o.warp==='dikey';if(isT){var lv2=Math.round((+o.ls||0)*100);$('#lsAmt').value=lv2;$('#lsOut').textContent=lv2?'%'+lv2:'normal';}
   if(isT){var v=o.wamt==null?50:o.wamt;$('#warpAmt').value=v;$('#warpAmtOut').textContent='%'+v;}
-  $('#lookNote').hidden=!(isT&&lv==='shadow');
+  $('#lookNote').hidden=!(isT&&(lv==='shadow'||lv==='extrude'));
 }
 function fxTarget(){var o=selObj();if(!o||o.type!=='text'){toast('Önce bir yazı ekle veya seç');return null;}return o;}
 function refreshText(o){updateEl(els[o.id],o);measureText(o);fitText(o);updateSel();renderFxRows();}
@@ -3664,6 +3700,7 @@ $('#pgFilter').addEventListener('click',function(e){var t=e.target.closest('[dat
   if(e.target.closest('[data-pgdd]')){PG.open=!PG.open;renderProdPage();return;}
   var y=e.target.closest('[data-pgty]');if(y){PG.type=y.dataset.pgty;PG.open=false;renderProdPage();}});
 $('#addText').addEventListener('click',function(){addText();});
+$('#styRow').addEventListener('click',function(e){var b=e.target.closest('[data-sty]');if(!b)return;var st=TSTY.filter(function(t){return t.k===b.dataset.sty;})[0];if(st)tstyApply(st);});
 $('#fontGrid').addEventListener('click',function(e){
   var b=e.target.closest('[data-f]');if(!b)return;
   view.font=b.dataset.f;var o=selObj();
@@ -3687,6 +3724,10 @@ $('#warpAmt').addEventListener('input',function(){
   var o=selObj();if(!o||o.type!=='text')return;
   o.wamt=+this.value;$('#warpAmtOut').textContent='%'+o.wamt;updateEl(els[o.id],o);measureText(o);updateSel();
 });
+/* Yazı yüksekliği: harfleri yukarıdan aşağı uzatır ya da basıklaştırır (genişlik aynı kalır); ekranda ve baskıda aynı */
+$('#syAmt').addEventListener('input',function(){var o=selObj();if(!o||o.type!=='text'||o.lock)return;var v=+this.value;if(Math.abs(v-100)<3)v=100;
+  if(v===100)delete o.sy;else o.sy=v/100;$('#syOut').textContent=v===100?'normal':'%'+v;place(els[o.id],o);measureText(o);updateSel();});
+$('#syAmt').addEventListener('change',function(){var o=selObj();if(o&&o.type==='text'){updateSel();pushHist();}});
 $('#lsAmt').addEventListener('input',function(){
   var o=selObj();if(!o||o.type!=='text')return;var v=+this.value;
   if(v)o.ls=v/100;else delete o.ls;$('#lsOut').textContent=v?'%'+v:'normal';updateEl(els[o.id],o);measureText(o);updateSel();
@@ -3780,6 +3821,7 @@ function svgUrl(s){return 'data:image/svg+xml;charset=utf-8,'+encodeURIComponent
 async function drawObj(c,o,S,ox,oy){
   c.save();
   c.translate((o.x-ox)*S,(o.y-oy)*S);c.rotate(o.rot*PI/180);
+  if(o.type==='text'&&o.sy&&o.sy!==1)c.scale(1,o.sy);
   if(o.type==='text'){
     var sz=o.size*S,font=fontStr(o.font,sz),look=lookOf(o);
     try{await document.fonts.load(font,o.value);}catch(_){}
@@ -3789,7 +3831,10 @@ async function drawObj(c,o,S,ox,oy){
     else{items=[{ch:o.value,x:0,y:0,r:0,sy:1}];c.textBaseline='middle';}
     var each=function(fn){items.forEach(function(gl){c.save();c.translate(gl.x,gl.y);c.rotate(gl.r*PI/180);c.scale(1,gl.sy);fn(gl.ch);c.restore();});};
     if(look==='shadow'){var d=sz*0.07;c.save();c.translate(d,d);c.fillStyle=shadowCol(o);each(function(ch){c.fillText(ch,0,by);});c.restore();}
-    if(look==='hollow'){c.lineWidth=sz*0.05;c.strokeStyle=o.color;each(function(ch){c.strokeText(ch,0,by);});}
+    if(look==='extrude'){var ec=o.stroke||'#111111',dd=sz*0.09,nn=12;c.lineWidth=sz*0.08;c.strokeStyle=ec;c.fillStyle=ec;
+      for(var kk=nn;kk>=1;kk--){c.save();c.translate(dd*kk/nn,dd*kk/nn);each(function(ch){c.strokeText(ch,0,by);c.fillText(ch,0,by);});c.restore();}
+      each(function(ch){c.strokeText(ch,0,by);});c.fillStyle=o.color;each(function(ch){c.fillText(ch,0,by);});}
+    else if(look==='hollow'){c.lineWidth=sz*0.05;c.strokeStyle=o.color;each(function(ch){c.strokeText(ch,0,by);});}
     else{
       if(o.stroke&&look==='fill'){c.lineWidth=sz*0.1;c.strokeStyle=o.stroke;each(function(ch){c.strokeText(ch,0,by);});}
       c.fillStyle=o.color;each(function(ch){c.fillText(ch,0,by);});
