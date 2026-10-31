@@ -319,7 +319,7 @@ svg.i{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stro
 .tabs button.wolfai .i{stroke:currentColor}
 .wolfp{display:grid;gap:10px;padding:4px 2px}
 .kolaj{display:grid;gap:10px;padding:4px 2px 14px;margin-bottom:12px;border-bottom:1px solid var(--line)}
-.kjin{display:grid;gap:10px}.kjin[hidden]{display:none}
+.kjin{display:grid;gap:10px}.kjmode{display:grid;grid-template-columns:1fr 1fr;gap:8px}.kjmode button{display:grid;gap:2px;text-align:left;padding:10px 12px;border-radius:12px;border:1.5px solid var(--green,#30703f);background:transparent;color:inherit;font:600 14px var(--ui,inherit)}.kjmode button small{font-weight:500;font-size:11.5px;opacity:.75}.kjmode button.on{background:var(--green,#30703f);color:#fff;border-color:#111}.kjin[hidden]{display:none}
 .kjg{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}.kjg:empty{display:none}
 .kjg div{position:relative;aspect-ratio:1;border-radius:8px;overflow:hidden;background:#f3ece0;border:1px solid #1b1b1b}
 .kjg img{width:100%;height:100%;object-fit:cover;display:block}
@@ -700,9 +700,11 @@ img{-webkit-touch-callout:none;-webkit-user-drag:none}
           <div class="kjg" id="kolajGrid"></div>
           <label class="ghost wide kjadd" for="kolajFile"><svg class="i" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Fotoğraf ekle</label>
           <input id="kolajFile" type="file" accept="image/*" multiple hidden>
-          <div class="wstep"><i>2</i>Wolf yerleştirsin</div>
+          <div class="wstep"><i>2</i>Düzeni seç</div>
+          <div class="kjmode" id="kolajMode" role="radiogroup" aria-label="Kolaj düzeni"><button type="button" data-kjm="serbest" class="on" role="radio" aria-checked="true"><b>Serbest</b><small>karışık, hafif eğik, albüm gibi</small></button><button type="button" data-kjm="duzenli" role="radio" aria-checked="false"><b>Düzenli</b><small>eşit kutular, düz, simetrik</small></button></div>
+          <div class="wstep"><i>3</i>Wolf yerleştirsin</div>
           <button class="primary wide" id="kolajGo" type="button" disabled>Fotoğrafları tasarla</button>
-          <p class="note" id="kolajNote">Tabloya en fazla 15 (35 × 50) ya da 30 (50 × 70), süblimasyon kupaya 7, tişört ve sweatshirt'e 12 fotoğraf. Wolf fotoğraflardaki yüzleri bulur: fotoğrafı yüzlere göre kırpar ve hiçbir yüzün üstünü başka fotoğrafla kapatmaz. Fotoğrafların dikey ya da yatay oluşuna göre karışık bir kolaj kurar: kimi hafif sola, kimi hafif sağa eğik, kimi düz. Zemin hafif dokulu açık krem, fotoğraflar köşeleri hafif yuvarlak beyaz çerçeveli. Beğenmezsen yeniden dokun, Wolf başka bir yerleşim dener.</p>
+          <p class="note" id="kolajNote">Tabloya en fazla 15 (35 × 50) ya da 30 (50 × 70; düzenli kolajda 35), süblimasyon kupaya 7, tişört ve sweatshirt'e 12 fotoğraf. Düzenli seçersen fotoğraflar eşit kutulara düz ve simetrik dizilir (ör. 50 × 70'te 35 fotoğraf: 5 × 7). Wolf fotoğraflardaki yüzleri bulur: fotoğrafı yüzlere göre kırpar ve hiçbir yüzün üstünü başka fotoğrafla kapatmaz. Fotoğrafların dikey ya da yatay oluşuna göre karışık bir kolaj kurar: kimi hafif sola, kimi hafif sağa eğik, kimi düz. Zemin hafif dokulu açık krem, fotoğraflar köşeleri hafif yuvarlak beyaz çerçeveli. Beğenmezsen yeniden dokun, Wolf başka bir yerleşim dener.</p>
         </div>
       </div>
       <div class="kolaj" id="kosBox" hidden>
@@ -2121,7 +2123,7 @@ function loadFile(file){
    Fotoğraflar tablonun ön yüzünde kalır, yanlara sarılan kısma taşmaz. */
 var KOLAJ=[],KJ_CREAM='#f3ece0';
 /* Süblimasyon kupada da aynı kolaj: en fazla 7 fotoğraf, kupanın çevresini saran 20 × 9 cm alana */
-function kolajMax(){if(state.product==='mug')return 7;if(state.product!=='canvas')return 12;return state.cut==='c5070'||cur().area==='cv5070'?30:15;}
+function kolajMax(){if(state.product==='mug')return 7;if(state.product!=='canvas')return 12;var big=state.cut==='c5070'||cur().area==='cv5070';return KJ_MODE==='duzenli'?(big?35:15):(big?30:15);}
 /* Kolaj: canvas, süblimasyon kupa ve giyim (tişört, sweatshirt, polo, kapüşonlu; ön yüzün A4/A3 alanına) */
 function kolajOn(){return state.product==='canvas'||mugWrap()||/^(tee|sweat|polo|hood|zip)$/.test(state.product);}
 function kolajSync(){var b=$('#kolajBox');if(!b)return;b.hidden=!kolajOn();if(!kolajOn())return;
@@ -2178,6 +2180,32 @@ function kjProtect(objs){for(var pass=0;pass<6;pass++){var moved=false;
       var mine=kjFaceBoxes(objs[j]);if(pass<3&&!mine.some(function(f){return kjCovers(objs[i],f);})){var o=objs.splice(i,1)[0];objs.splice(j,0,o);moved=true;i--;break;}
       var tj=objs[j];tj.w*=0.92;tj.h*=0.92;tj.bw=Math.max(1.6,Math.min(tj.w,tj.h)*0.03);tj.br=Math.min(tj.w,tj.h)*0.035;moved=true;}}}
   if(!moved)break;}return objs;}
+/* ---------- Düzenli (simetrik) kolaj ----------
+   Fotoğraflar eşit kutulara, düz ve eşit aralıklı dizilir (ör. 50 × 70'te 5 × 7). Her fotoğraf kendi kutusunun oranına,
+   yüzleri ortada kalacak şekilde kırpılır (yüz yoksa üst-orta esas alınır: insan fotoğraflarında baş genelde üsttedir).
+   Son satır eksikse ortalanır; boş kutu bırakılmaz. Beyaz çerçeve ve gölge serbest kolajla aynı. */
+var KJ_MODE='serbest',KJ_FIT={};
+function kjGridDims(n,W,H){var best=null;for(var c=1;c<=n;c++){var r=Math.ceil(n/c),empty=c*r-n;if(empty>=c)continue;
+    var cw=W/c,ch=H/r,asp=cw/ch,sc=Math.abs(Math.log(asp/1.0))*1.2+empty*0.35+(r>1&&empty?0.1:0);if(!best||sc<best.sc)best={c:c,r:r,sc:sc};}
+  return best||{c:n,r:1};}
+/* fotoğrafı istenen orana yüze göre kırp (asıl fotoğraf base olarak kalır, "Kırp" ile düzeltilir) */
+async function kjFitTo(id,asp){var key=id+'@'+asp.toFixed(3);if(KJ_FIT[key])return KJ_FIT[key];var a=assets[id],F=await kjFaces(id);
+  var iasp=a.w/a.h,w=1,h=1;if(iasp>asp)w=asp/iasp;else h=iasp/asp;
+  var cx=0.5,cy=0.4;if(F.length){var l=1,t=1,r=0,b=0;F.forEach(function(f){l=Math.min(l,f.x);t=Math.min(t,f.y);r=Math.max(r,f.x+f.w);b=Math.max(b,f.y+f.h);});cx=(l+r)/2;cy=(t+b)/2+(b-t)*0.25;}
+  var x0=Math.min(Math.max(cx-w/2,0),1-w),y0=Math.min(Math.max(cy-h/2,0),1-h),rect={x:x0,y:y0,w:w,h:h};
+  try{var im=await loadImg(a.url),sw=Math.round(a.w*w),sh=Math.round(a.h*h),k=Math.min(1,1400/Math.max(sw,sh)),c=document.createElement('canvas');c.width=Math.max(1,Math.round(sw*k));c.height=Math.max(1,Math.round(sh*k));
+    c.getContext('2d').drawImage(im,Math.round(a.w*x0),Math.round(a.h*y0),sw,sh,0,0,c.width,c.height);
+    var bl=await new Promise(function(res){c.toBlob(res,'image/jpeg',0.92);}),nid='a'+(++assetN);assets[nid]={url:URL.createObjectURL(bl),w:c.width,h:c.height,up:true,kjOf:id,kjRect:rect};assetList.push(nid);
+    KJ_FIT[key]=nid;return nid;}catch(e){KJ_FIT[key]=id;return id;}}
+async function kolajGrid(){
+  var A=areaBox('front',cur().area),d=dimsOf(cur().area,landFor('front',cur().area)),cm=A.w/d[0],wrap=state.product==='canvas'?4*cm:0;
+  var F={l:A.l+wrap,t:A.t+wrap,w:A.w-2*wrap,h:A.h-2*wrap},pad=Math.min(F.w,F.h)*(state.product==='mug'?0.045:0.04),W=F.w-2*pad,H=F.h-2*pad,n=KOLAJ.length;
+  var g=kjGridDims(n,W,H),gap=Math.min(W/g.c,H/g.r)*0.07,cw=(W-gap*(g.c-1))/g.c,ch=(H-gap*(g.r-1))/g.r,objs=[];
+  for(var i=0;i<n;i++){var row=Math.floor(i/g.c),inRow=Math.min(g.c,n-row*g.c),col=i-row*g.c,
+      rowW=inRow*cw+(inRow-1)*gap,x=F.l+pad+(W-rowW)/2+col*(cw+gap)+cw/2,y=F.t+pad+row*(ch+gap)+ch/2;
+    var id=await kjFitTo(KOLAJ[i],cw/ch),o=newBase('image'),ka=assets[id];o.assetId=id;if(ka&&ka.kjOf&&assets[ka.kjOf]){o.base=ka.kjOf;o.crop=Object.assign({},ka.kjRect);}
+    o.w=cw;o.h=ch;o.x=x;o.y=y;o.rot=0;o.bw=Math.max(1.6,Math.min(o.w,o.h)*0.035);o.bc='#ffffff';o.br=Math.min(o.w,o.h)*0.04;o.kj=1;objs.push(o);}
+  return objs;}
 function kolajLayout(){
   var A=areaBox('front',cur().area),d=dimsOf(cur().area,landFor('front',cur().area)),cm=A.w/d[0],wrap=4*cm;
   if(state.product!=='canvas')wrap=0;var F={l:A.l+wrap,t:A.t+wrap,w:A.w-2*wrap,h:A.h-2*wrap},pad=state.product==='mug'?Math.min(F.w,F.h)*0.045:F.w*0.035,W=F.w-2*pad,H=F.h-2*pad,gap=Math.min(W,H)*0.03;
@@ -2231,13 +2259,15 @@ async function kolajMake(){if(KOLAJ.length<2){toast('Kolaj için en az 2 fotoğr
   if(view.side!=='front'){view.side='front';}
   var keep=cur().objs.filter(function(o){return !o.kj&&!(o.type==='image'&&KOLAJ.indexOf(o.assetId)>=0);});
   var txt=keep.filter(function(o){return o.type==='text'||o.type==='clip';});
-  cur().objs=(state.product==='canvas'||state.product==='mug'?[kolajBg()]:[]).concat(keep.filter(function(o){return txt.indexOf(o)<0;}),kolajLayout(),txt);
+  var lay=KJ_MODE==='duzenli'?await kolajGrid():kolajLayout();
+  cur().objs=(state.product==='canvas'||state.product==='mug'?[kolajBg()]:[]).concat(keep.filter(function(o){return txt.indexOf(o)<0;}),lay,txt);
   select(null);renderAll();layout();pushHist();kolajSync();
   var nf=KOLAJ.filter(function(id){var c=KJ_CROP[id]||id;return (KJ_FACE[c]||[]).length;}).length;
   toast('Wolf kolajı hazırladı'+(nf?' ('+nf+' fotoğrafta yüzler korundu)':'')+'. Beğenmezsen "Yeniden yerleştir"e dokun; her fotoğrafı tek tek de taşıyıp döndürebilirsin.');}
 $('#kolajBtn').addEventListener('click',function(){var w=$('#kolajIn');w.hidden=!w.hidden;this.classList.toggle('on',!w.hidden);if(!w.hidden){kolajSync();if(!KOLAJ.length)$('#kolajFile').click();}});
 $('#kolajFile').addEventListener('change',function(){var f=this.files;kolajAdd(f).then(function(){});this.value='';});
 $('#kolajGo').addEventListener('click',kolajMake);
+document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('[data-kjm]');if(!b)return;KJ_MODE=b.dataset.kjm;$$('#kolajMode [data-kjm]').forEach(function(x){var on=x===b;x.classList.toggle('on',on);x.setAttribute('aria-checked',on?'true':'false');});kolajSync();});
 document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('[data-kjx]');if(!b)return;KOLAJ.splice(+b.dataset.kjx,1);kolajSync();});
 /* ---------- Kupada gerçek görünüm (süblimasyon) ----------
    Gerçek ölçü: kupa 8 cm çapında (çevresi ~25 cm), baskı 20 × 9 cm; baskının iki ucu kulpta buluşur, arada ~5 cm beyaz kalır.
