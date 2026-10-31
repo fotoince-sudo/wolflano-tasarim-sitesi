@@ -429,11 +429,20 @@ svg.i{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stro
 @media (max-width:360px){.brand span{display:none}.brand b{font-size:14px;letter-spacing:.06em}.top-actions{gap:3px}.top-actions .ib{width:32px;height:32px}}
 /* Telefonda baskı ölçüleri (A4, A3, logo…) ayrı satırda, hepsi görünür */
 @media (max-width:520px){
-  .sub{flex-wrap:wrap;row-gap:6px}
-  .sub .sub-r{margin-left:auto}
-  .sub .chips{order:9;flex:1 0 100%;flex-wrap:wrap;overflow:visible;-webkit-mask-image:none;mask-image:none;padding-right:0;gap:5px}
-  .sub .chips button{padding:6px 9px}
+  /* İki sıra: 1) renk/beden + yüzler  2) baskı ölçüleri + cetvel/yakınlaştır/tam ekran (tasarım alanına yer kalsın) */
+  .sub{flex-wrap:wrap;row-gap:6px;padding:6px 10px}
+  .sub:after{content:"";order:8;flex-basis:100%;height:0}
+  .sub .chips{order:9;flex:1 1 0;min-width:0;flex-wrap:nowrap;overflow-x:auto;-webkit-mask-image:none;mask-image:none;padding-right:0;gap:5px;scrollbar-width:none}
+  .sub .chips::-webkit-scrollbar{display:none}
+  .sub .chips button{padding:6px 9px;flex:none}
+  .sub .sub-r{order:10;margin-left:0}
 }
+/* Tam ekran tasarım: üst seçenekler, alt sekmeler ve paneller gizlenir; yalnız tasarım ve seçim çubuğu kalır */
+body.odak .sub,body.odak #tabs,body.odak #sheet,body.odak .hint{display:none!important}
+.odakx{position:absolute;right:10px;top:10px;z-index:25;display:none;align-items:center;gap:6px;height:38px;padding:0 12px;border-radius:999px;border:1px solid var(--line);background:var(--panel);color:var(--ink);font:700 13px var(--ui);box-shadow:0 4px 14px rgba(0,0,0,.14);cursor:pointer}
+body.odak .odakx{display:inline-flex}.odakx svg{width:16px;height:16px}
+/* Büyüt / küçült düğmeleri (seçim çubuğu) */
+.ctxbar button.zbtn{min-width:44px;font-size:22px;font-weight:700;line-height:1}
 
 /* Şablonlar tek sıra halinde sağa-sola kayar; tasarım alanı üstte görünür kalır */
 #tplGrid.tpl-grid{grid-auto-flow:column;grid-auto-columns:104px;grid-template-columns:none;overflow-x:auto;overflow-y:hidden;gap:8px;scroll-snap-type:x proximity;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch;padding-bottom:4px;scrollbar-width:none}
@@ -611,6 +620,7 @@ img{-webkit-touch-callout:none;-webkit-user-drag:none}
     </div>
     <div class="sub-r">
       <button class="ib on" id="rulerBtn" aria-label="Cetveli gizle" aria-pressed="true"><svg class="i" viewBox="0 0 24 24"><rect x="2.5" y="8" width="19" height="8" rx="1.5"/><path d="M6 8v3M9.5 8v4.5M13 8v3M16.5 8v4.5"/></svg></button>
+      <button class="ib" id="odakBtn" aria-label="Tam ekran tasarla"><svg class="i" viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>
       <button class="ib" id="fitBtn" aria-label="Baskı alanına yakınlaş"><svg class="i" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6"/><path d="M20 20l-4.2-4.2"/><path d="M11 8.5v5M8.5 11h5"/></svg></button>
     </div>
   </div>
@@ -634,6 +644,7 @@ img{-webkit-touch-callout:none;-webkit-user-drag:none}
       <button data-c="bwd" data-t="text clip image"><svg class="i" viewBox="0 0 24 24"><path d="M12 5v14M5 12l7 7 7-7"/></svg>Arkaya</button>
     </div>
     <div class="mlive" id="mugLive" hidden aria-label="Kupada gerçek görünüm"><b>Kupada gerçek görünüm</b><div><figure><canvas id="mlR" width="300" height="300"></canvas><figcaption>Sağ elde</figcaption></figure><figure><canvas id="mlL" width="300" height="300"></canvas><figcaption>Sol elde</figcaption></figure></div></div>
+    <button type="button" class="odakx" id="odakX" aria-label="Tam ekrandan çık"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5"/></svg>Küçült</button>
     <div class="hint" id="hint">Sürükle: taşı · Beyaz kare: büyüt/küçült · Siyah nokta: döndür · İki parmak: yakınlaştır</div>
     <div class="lprice" id="livePrice" aria-live="polite" hidden></div>
     <div class="toast" id="toast" role="status" hidden></div>
@@ -645,6 +656,8 @@ img{-webkit-touch-callout:none;-webkit-user-drag:none}
     <div class="ctxbar" id="ctxBar">
       <button data-c="fx" data-t="image" class="aibtn" id="fxBtn"><svg class="i" viewBox="0 0 24 24"><path d="M12 3l1.8 4.2L18 9l-4.2 1.8L12 15l-1.8-4.2L6 9l4.2-1.8z"/><path d="M19 15l.8 1.7 1.7.8-1.7.8-.8 1.7-.8-1.7-1.7-.8 1.7-.8z"/></svg>Wolf çizsin · Tarz</button>
       <button data-c="color" data-t="text clip"><i class="dot" id="ctxDot"></i>Renk</button>
+      <button data-c="zout" data-t="text clip image" class="zbtn" aria-label="Küçült (%5)">−</button>
+      <button data-c="zin" data-t="text clip image" class="zbtn" aria-label="Büyüt (%5)">+</button>
       <button data-c="del" data-t="text clip image" class="danger"><svg class="i" viewBox="0 0 24 24"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg>Sil</button>
       <button data-c="swap" data-t="clip image"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="10" r="1.6"/><path d="M21 16l-5-5-8 8"/></svg>Değiştir</button>
       <button data-c="all" data-t="text clip image"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" stroke-dasharray="3 2.4"/><rect x="8" y="8" width="8" height="8" rx="1"/></svg>Tümünü seç</button>
@@ -660,6 +673,8 @@ img{-webkit-touch-callout:none;-webkit-user-drag:none}
       <span class="pill" id="qPill" data-t="image"></span>
       <span class="pill mid" id="ovPill" data-t="text clip image" hidden>Taşan kısım basılmaz</span>
     
+      <button data-c="gzout" data-g="1" class="zbtn" aria-label="Hepsini küçült (%5)">−</button>
+      <button data-c="gzin" data-g="1" class="zbtn" aria-label="Hepsini büyüt (%5)">+</button>
       <button data-c="gcolor" data-g="1"><i class="dot" id="gDot"></i>Renk</button>
       <button data-c="gdel" data-g="1" class="danger" id="gDel"><svg class="i" viewBox="0 0 24 24"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg><span>Sil</span></button>
       <span class="pill gsel" data-g="1">Tüm tasarım seçili</span>
@@ -3173,6 +3188,11 @@ function limitScale(o0w,o0h,k){
   var A=areaBox(view.side,cur().area),kmax=Math.max(A.w,A.h)*1.6/Math.max(o0w,o0h),kmin=MIN_PX/Math.min(o0w,o0h);
   return clamp(k,kmin,Math.max(kmin,kmax));
 }
+/* Tüm tasarımı (grup) ortasından %5 büyütür/küçültür; aşırı küçülme ve taşma sınırlı */
+function grpScale(f){var X=grpBox(),A=areaBox(view.side,cur().area);if(!X)return;var bw=X.r-X.l,bh=X.b-X.t;
+  if(f<1&&Math.min(bw,bh)*f<MIN_PX)return;if(f>1&&Math.max(bw,bh)*f>Math.max(A.w,A.h)*1.6)return;
+  grpObjs().forEach(function(q){q.x=X.cx+(q.x-X.cx)*f;q.y=X.cy+(q.y-X.cy)*f;q.w*=f;q.h*=f;if(q.type==='text'){q.size=(q.size||0)*f;styleText(els[q.id],q);}place(els[q.id],q);});
+  updateSel();syncCtx();pushHist();}
 function applySize(o,k,base){
   o.w=base.w*k;o.h=base.h*k;
   if(o.type==='text'){o.size=base.s*k;styleText(els[o.id],o);}
@@ -3226,7 +3246,7 @@ function onDown(e){
   activeId=e.pointerId;
   try{wrap.setPointerCapture(e.pointerId);}catch(_){}
   var h=e.target.closest('[data-h]'),oEl=e.target.closest('.obj'),sb=e.target.closest('.selbox'),p=toL(e.clientX,e.clientY),o=selObj();
-  view.tapClose=!h&&!!(oEl||sb)&&innerWidth<700&&['tpl','clip','image'].indexOf(view.tab)>=0;
+  view.tapClose=!h&&innerWidth<700&&['tpl','clip','image','opt','text'].indexOf(view.tab)>=0;
   if(view.grp){
     var X=grpBox(),snap=grpObjs().map(function(q){return {id:q.id,x:q.x,y:q.y,w:q.w,h:q.h,s:q.size||0,r:q.rot};});
     if(X&&h){g={kind:'gturn',mode:h.dataset.h,cx:X.cx,cy:X.cy,a0:ang(X.cx,X.cy,p.x,p.y),d0:Math.max(8,dist(X.cx,X.cy,p.x,p.y)),snap:snap,bw:X.r-X.l,bh:X.b-X.t,moved:false};return;}
@@ -3346,7 +3366,7 @@ function onUp(e){
   if(!g)return;
   var k=g.kind,gg=g;g=null;
   /* Şablon/şekil/görsel paneli açıkken tasarımdaki bir parçaya dokunulursa panel kapanır; tasarım küçülüp kaybolmaz */
-  if(tc&&!gg.moved&&view.tab)setTimeout(closeTab,0);
+  if(tc&&view.tab)setTimeout(closeTab,0);
   if(e.type!=='pointerup'){if(gg.moved){syncCtx();pushHist();}return;}   /* iptal edilen dokunuş */
   if(k==='pan'||k==='zoom'){var so2=objById(gg.id);if(gg.moved&&so2){pushHist();slotBake(so2);}return;}
   if(k==='gmove'||k==='gturn'){if(gg.moved)pushHist();else if(k==='gmove'&&gg.tid)select(gg.tid);return;}
@@ -3374,6 +3394,7 @@ wrap.addEventListener('contextmenu',function(e){e.preventDefault();});
 
 /* ---------- Sekmeler ve paneller ---------- */
 function openTab(name,focusInput){
+  if(document.body.classList.contains('odak'))odakSet(false);
   if(name==='tee'){openProdPage();return;}
   if(view.tab===name&&!focusInput){closeTab();return;}
   view.tab=name;sheet.hidden=false;
@@ -3557,6 +3578,13 @@ $('#wolfGo').addEventListener('click',async function(){var t=($('#wolfIn').value
 document.addEventListener('click',function(e){var w=e.target.closest&&e.target.closest('#wolfWa');if(!w)return;e.preventDefault();var t=($('#wolfIn').value||'').trim();if(t.length<4){toast('Önce ne istediğini kısaca yaz');$('#wolfIn').focus();return;}
   var m='Merhaba Wolflano, Wolf tasarlasın ile tasarım istiyorum.\nÜrün: '+productLabel()+'\nBaskı: '+areaTitle(view.side)+' ('+SIDE_NAME[view.side]+')\nFikrim: '+t;
   window.open('https://wa.me/905307641717?text='+encodeURIComponent(m),'_blank');});
+/* Tam ekran tasarım: açık panel kapanır, tasarım alanı ekranı kaplar; "Küçült" ile ya da Esc ile çıkılır */
+function odakSet(on){document.body.classList.toggle('odak',!!on);if(on&&view.tab)closeTab();var b=$('#odakBtn');if(b)b.setAttribute('aria-pressed',on?'true':'false');setTimeout(function(){try{layout();}catch(_){}},30);if(on)toast('Tam ekran. Çıkmak için sağ üstteki "Küçült"e dokun.');}
+$('#odakBtn').addEventListener('click',function(){odakSet(!document.body.classList.contains('odak'));});
+$('#odakX').addEventListener('pointerdown',function(e){e.stopPropagation();});$('#odakX').addEventListener('click',function(){odakSet(false);});
+document.addEventListener('keydown',function(e){if(e.key==='Escape'&&document.body.classList.contains('odak'))odakSet(false);});
+/* Tasarım alanındaki ipucu yazısı yalnız ilk 3 açılışta görünür */
+(function(){try{var n=+(localStorage.getItem('wf_hint_n')||0);localStorage.setItem('wf_hint_n',String(n+1));if(n>=3){var h=$('#hint');if(h)h.hidden=true;}}catch(_){}})();
 $('#rulerBtn').addEventListener('click',function(){RULER=!RULER;try{localStorage.setItem('wf_ruler',RULER?'1':'0');}catch(_){}renderRuler();toast(RULER?'Cetvel açık: yeşil bant baskı alanı, ölçüler cm':'Cetvel gizlendi');});
 $('#fitBtn').addEventListener('click',function(){view.fit=view.fit==='area'?'shirt':'area';resetZoom();syncFitBtn();layout();});
 $('#sideF').addEventListener('click',function(){switchSide('front');});
@@ -3647,6 +3675,7 @@ function ctxClick(e){
   var c=b.dataset.c;
   if(c==='all'){if(enterGroup())toast('Tüm tasarım seçildi. Sol üstteki beyaz kareyle hepsini birlikte büyüt, küçült.');return;}
   if(c==='gdone'){select(null);return;}
+  if(c==='gzin'||c==='gzout'){grpScale(c==='gzin'?1.05:1/1.05);return;}
   if(c==='gcolor'){view.gdel=false;showPop('fill');syncCtx();return;}
   if(c==='gdel'){if(!view.gdel){view.gdel=true;syncCtx();return;}var keep=cur().objs.filter(function(q){return q.lock;});cur().objs=keep;select(null);renderAll();pushHist();toast('Tasarım silindi. Geri almak için ↶');return;}
   if(c!=='gdel')view.gdel=false;
@@ -3662,6 +3691,7 @@ function ctxClick(e){
   else if(c==='fwd')moveZ(1);
   else if(c==='bwd')moveZ(-1);
   else if(c==='dup')dupSel();
+  else if(c==='zin'||c==='zout'){var zo=selObj();if(zo&&!zo.lock){if(zo.slot&&slotPan(zo)){toast('Fotoğrafı köşedeki beyaz kareyle büyüt, küçült.');return;}applySize(zo,limitScale(zo.w,zo.h,c==='zin'?1.05:1/1.05),{w:zo.w,h:zo.h,s:zo.size||0});syncCtx();pushHist();}}
   else if(c==='center'){var co=selObj();if(co){var CA=areaBox(view.side,cur().area),ci=inkCenter(co);co.x+=CA.cx-ci.x;co.y+=CA.cy-ci.y;place(els[co.id],co);updateSel();var ab=$('#areaBox');ab.classList.add('onV','onH');setTimeout(centerOff,900);pushHist();toast('Baskı alanına ortalandı');}}
   else if(c==='nobg')removeBg();
   else if(c==='holes')openHoles();
