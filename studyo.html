@@ -2166,7 +2166,7 @@ async function kjCrop(id){if(KJ_CROP[id])return KJ_CROP[id];var F=await kjFaces(
   var cx=(l+r)/2,cy=(t+b)/2,x0=Math.min(Math.max(cx-s/2,0),1-s),y0=Math.min(Math.max(cy-s/2,0),1-s);
   try{var im=await loadImg(a.url),W=im.naturalWidth,H=im.naturalHeight,sw=Math.round(W*s),sh=Math.round(H*s),k=Math.min(1,1800/Math.max(sw,sh)),c=document.createElement('canvas');c.width=Math.round(sw*k);c.height=Math.round(sh*k);
     c.getContext('2d').drawImage(im,Math.round(W*x0),Math.round(H*y0),sw,sh,0,0,c.width,c.height);
-    var bl=await new Promise(function(res){c.toBlob(res,'image/jpeg',0.92);}),nid='a'+(++assetN);assets[nid]={url:URL.createObjectURL(bl),w:c.width,h:c.height,up:true,kjOf:id};assetList.push(nid);
+    var bl=await new Promise(function(res){c.toBlob(res,'image/jpeg',0.92);}),nid='a'+(++assetN);assets[nid]={url:URL.createObjectURL(bl),w:c.width,h:c.height,up:true,kjOf:id,kjRect:{x:x0,y:y0,w:s,h:s}};assetList.push(nid);
     KJ_FACE[nid]=F.map(function(f){return {x:(f.x-x0)/s,y:(f.y-y0)/s,w:f.w/s,h:f.h/s};});KJ_CROP[id]=nid;return nid;}catch(e){KJ_CROP[id]=id;return id;}}
 /* tasarımdaki yüz kutuları (eğim küçük: dikdörtgen yaklaşımı) */
 function kjFaceBoxes(o){var F=KJ_FACE[o.assetId]||[];return F.map(function(f){return {l:o.x-o.w/2+f.x*o.w,t:o.y-o.h/2+f.y*o.h,r:o.x-o.w/2+(f.x+f.w)*o.w,b:o.y-o.h/2+(f.y+f.h)*o.h};});}
@@ -2197,7 +2197,8 @@ function kolajLayout(){
   best.rows.forEach(function(rw,ri){var h=best.hs[ri]*k,rowW=rw.reduce(function(a,i){return a+asp[i]*h;},0)+gap*k*(rw.length-1),x=F.l+pad+(W-rowW)/2;
     rw.forEach(function(i){var w=asp[i]*h,u=R(),rot=u<0.3?0:(u<0.65?-1:1)*(1.8+R()*4.2),s=1.06+R()*0.08,
         jx=(R()-0.5)*w*0.09,jy=(R()-0.5)*h*0.09,o=newBase('image');
-      o.assetId=ids[i];o.w=w*s;o.h=h*s;o.rot=+rot.toFixed(1);o.x=x+w/2+jx;o.y=y+h/2+jy;o.bw=Math.max(1.6,Math.min(o.w,o.h)*0.03);o.bc='#ffffff';o.br=Math.min(o.w,o.h)*0.035;o.kj=1;
+      o.assetId=ids[i];var ka=assets[ids[i]];if(ka&&ka.kjOf&&assets[ka.kjOf]){o.base=ka.kjOf;o.crop=Object.assign({},ka.kjRect);} /* Kırp: asıl fotoğraf ve Wolf'un kırpması açılır, elle düzeltilir ya da Sıfırla ile tamamı geri gelir */
+      o.w=w*s;o.h=h*s;o.rot=+rot.toFixed(1);o.x=x+w/2+jx;o.y=y+h/2+jy;o.bw=Math.max(1.6,Math.min(o.w,o.h)*0.03);o.bc='#ffffff';o.br=Math.min(o.w,o.h)*0.035;o.kj=1;
       /* Eğik fotoğrafın köşesi ön yüzden taşmasın */
       var rr=Math.abs(o.rot)*Math.PI/180,bw2=(o.w*Math.cos(rr)+o.h*Math.sin(rr))/2,bh2=(o.w*Math.sin(rr)+o.h*Math.cos(rr))/2,fz=Math.min(1,(F.w-2)/(2*bw2),(F.h-2)/(2*bh2));
       if(fz<1){o.w*=fz;o.h*=fz;bw2*=fz;bh2*=fz;o.bw=Math.max(1.6,Math.min(o.w,o.h)*0.03);o.br=Math.min(o.w,o.h)*0.035;}
