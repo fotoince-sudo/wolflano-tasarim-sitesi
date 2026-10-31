@@ -1609,7 +1609,7 @@ function phDims(product,cut){var m=(SZM[product]||{})[cut];if(!m)return null;var
 /* Yatay ölçek: fotoğraftaki gövde eni beden tablosundaki göğüs enine (SZM [en, boy]) oturur. Boy dikey ölçeği, en yatay ölçeği belirler;
    böylece fotoğraf dar ya da geniş çekilmiş olsa bile baskı alanı tişörte göre gerçek oranında görünür.
    Uzun kollu ürünlerde (sweatshirt, kapüşonlu) kollar gövdenin yanından sarktığı için gövde eni ölçülemez; orada dikey ölçek kullanılır. */
-var PH_BW={tee:1,polo:1};
+var PH_BW={}; /* geçici olarak kapalı: enine germe fotoğrafı bozuyordu, ölçek yeniden yalnız boya göre */
 function phSX(cal,d,sc,product){if(!cal||!cal.bw||!d||!PH_BW[product||state.product])return sc;var sx=d[0]*PPC/cal.bw;return Math.max(sc*.75,Math.min(sc*1.6,sx));}
 function phCalib(u){
   if(PH.cal[u])return PH.cal[u];
