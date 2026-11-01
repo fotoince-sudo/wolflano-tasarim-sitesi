@@ -917,7 +917,7 @@ var AREAS={
 var LOGO_AT={erkek:[15,12],kadin:[14,11],cocuk:[10,8.5]};
 /* Ürüne özel: kadın tişört ve sweatshirt'te logo yakadan 12 cm (kadın polo genel ölçüde kalır) */
 var LOGO_AT_P={tee:{kadin:[12,11]},sweat:{kadin:[12,11]},hood:{kadin:[12,11]},zip:{kadin:[12,11]}};
-var NECK_Y={front:101,back:76}, DROP_CM=8, DROP_CM_COCUK=6; /* çocuk bedenlerinde A4/A3 boğazdan 6 cm aşağıda başlar */
+var NECK_Y={front:101,back:76}, DROP_CM=8, DROP_CM_COCUK=8; /* çocukta da 8 cm (2026-11-02: 6 cm çok yukarıda kaldı) */
 /* PRODUCTS: sides=yüzey → izinli alanlar, land={alan:true} o alan o üründe hep yatay,
              cuts=kesimler, price=kesim başına örnek fiyat, vb=sabit görünüm kutusu (giysi dışı ürünler), draw=çizim fonksiyonu */
 var PRODUCTS={
@@ -1701,6 +1701,9 @@ function phDims(product,cut){var m=(SZM[product]||{})[cut];if(!m)return null;var
    böylece fotoğraf dar ya da geniş çekilmiş olsa bile baskı alanı tişörte göre gerçek oranında görünür.
    Uzun kollu ürünlerde (sweatshirt, kapüşonlu) kollar gövdenin yanından sarktığı için gövde eni ölçülemez; orada dikey ölçek kullanılır. */
 var PH_BW={}; /* geçici olarak kapalı: enine germe fotoğrafı bozuyordu, ölçek yeniden yalnız boya göre */
+/* Ürün fotoğrafı ölçeği: tek oranlı (fotoğraf bozulmaz), gövde eni bedenin "en" ölçüsüne oturur.
+   Baskı alanının ürüne oranı ende okunduğu için en esas; boya göre en çok %15 küçülür, %20 büyür. */
+function phSc(cal,d){var sh=d[1]*PPC/Math.max(1,cal.bot-cal.top+1);if(!cal||cal.raw||!cal.bw||!d[0]||!/^(tee|polo)$/.test(state.product))return sh;/* uzun kollularda kollar gövde enine karışır: yalnız boya göre */var sw=d[0]*PPC/cal.bw;return Math.max(sh*.85,Math.min(sh*1.2,sw));}
 function phSX(cal,d,sc,product){if(!cal||!cal.bw||!d||!PH_BW[product||state.product])return sc;var sx=d[0]*PPC/cal.bw;return Math.max(sc*.75,Math.min(sc*1.6,sx));}
 function phCalib(u){
   if(PH.cal[u])return PH.cal[u];
@@ -1779,7 +1782,7 @@ function phSVG(side,tee,product,cut){
   var u=phSrc(side==='back'?(co.back||co.front||''):(co.front||co.back||''));if(!u)return null;
   var cal=phCalib(u);if(!cal.ready)return null;
   var d=phDims(product,cut);if(!d)return null;
-  var sc=d[1]*PPC/Math.max(1,cal.bot-cal.top+1),sx=phSX(cal,d,sc,product),w=cal.W*sx,h=cal.H*sc,topY=NECK_Y[side]-NECK_DROP[side],cx=(cal.l+cal.r)/2*sx;
+  var sc=phSc(cal,d),sx=phSX(cal,d,sc,product),w=cal.W*sx,h=cal.H*sc,topY=NECK_Y[side]-NECK_DROP[side],cx=(cal.l+cal.r)/2*sx;
   var X=300-cx,Y=topY-cal.top*sc;
   /* Açık renkli ürün (beyaz, krem) açık zeminde kaybolmasın: ürünün kenarına ince kontur ve altına yumuşak gölge */
   var lt=!cal.raw&&lum(co.hex)>.72,sf=lt?'<defs><filter id="phL" x="-8%" y="-6%" width="116%" height="116%" color-interpolation-filters="sRGB"><feDropShadow dx="0" dy="0" stdDeviation="1.1" flood-color="#1c2420" flood-opacity=".42" result="e"/><feDropShadow in="e" dx="0" dy="9" stdDeviation="10" flood-color="#1c2420" flood-opacity=".22"/></filter></defs>':'';
@@ -1790,7 +1793,7 @@ function fitBox(side){side=face(side);
   var gt=NECK_Y[side]-NECK_DROP[side];
   try{if(phOn()){var b=phBlank(state.product,state.cut),cs=phColors(b),co=cs.filter(function(c){return String(c.hex).toLowerCase()===String(state.tee).toLowerCase();})[0]||cs[0];
     var u=phSrc(side==='back'?(co.back||co.front):(co.front||co.back)),cal=u&&PH.cal[u],m=(SZM[state.product]||{})[state.cut];
-    if(cal&&cal.ready&&m){var mx=null;Object.keys(m).forEach(function(z){if(!mx||m[z][1]>mx[1])mx=m[z];});var hp=mx[1]*PPC,sc=hp/Math.max(1,cal.bot-cal.top+1);return {w:(cal.r-cal.l+1)*phSX(cal,mx,sc),top:gt,bot:gt+hp};}}}catch(_){}
+    if(cal&&cal.ready&&m){var mx=null;Object.keys(m).forEach(function(z){if(!mx||m[z][1]>mx[1])mx=m[z];});var sc=phSc(cal,mx),hp=Math.max(mx[1]*PPC,(cal.bot-cal.top+1)*sc);return {w:(cal.r-cal.l+1)*phSX(cal,mx,sc),top:gt,bot:gt+hp};}}}catch(_){}
   var k=CUT_K[state.cut]||CUT_K.erkek,ay=NECK_Y[side];return {w:556*k[0],top:ay+(62-ay)*k[1],bot:ay+(618-ay)*k[1]};
 }
 function phOn(){return !!(PH.site&&!P().draw&&phColors(phBlank(state.product,state.cut)).length);}
@@ -1927,7 +1930,7 @@ function brandPos(side){side=face(side);
   if(PH.site&&cs.length){
     var co=cs.filter(function(c){return String(c.hex).toLowerCase()===String(state.tee).toLowerCase();})[0]||cs[0],u=phSrc(co.front||'');
     var cal=u&&PH.cal[u],d=phDims(state.product,state.cut);
-    if(cal&&cal.ready&&d&&!cal.raw){var sc=d[1]*PPC/Math.max(1,cal.bot-cal.top+1),sx=phSX(cal,d,sc),X=300-(cal.l+cal.r)/2*sx,Y=NECK_Y[side]-NECK_DROP[side]-cal.top*sc,half=(cal.r-cal.l)/2*sx;
+    if(cal&&cal.ready&&d&&!cal.raw){var sc=phSc(cal,d),sx=phSX(cal,d,sc),X=300-(cal.l+cal.r)/2*sx,Y=NECK_Y[side]-NECK_DROP[side]-cal.top*sc,half=(cal.r-cal.l)/2*sx;
       return {x:300+half*.6,y:Y+cal.bot*sc-4.2*PPC};}
   }
   var k=CUT_K[state.cut]||CUT_K.erkek,ay=NECK_Y[side];
