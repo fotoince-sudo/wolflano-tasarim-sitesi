@@ -28,7 +28,6 @@ jobs:
           import json, urllib.request, shutil
           for ad, u in json.load(open('video/is.json')).items():
               with urllib.request.urlopen(u, timeout=120) as r, open('video/' + ad, 'wb') as f: shutil.copyfileobj(r, f)
-          shutil.copy('video/studyo.jpg', 'video/studyo.jpg')
           P
           mkdir -p /tmp/kaynak && cp video/*.jpg /tmp/kaynak/
       - name: Video
