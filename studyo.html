@@ -991,7 +991,11 @@ function areaFee(k){var b=siteBlank(state.product,state.cut),f=AREAS[k]?AREAS[k]
   return v!=null?Math.round(v*vatK('print')*100)/100:f;}
 function siteTiers(){var t=(PH.site&&PH.site.tiers)||null;if(!Array.isArray(t))return;var l=t.filter(function(x){return x&&+x[0]>0&&+x[1]>0;}).map(function(x){return [+x[0],+x[1]/100];}).sort(function(a,b){return b[0]-a[0];});PRICE.tiers=l;}
 function forcedLand(key){var l=P().land;return !!(l&&l[key]);}
-function dimsOf(key,land){var d=AREAS[key].cm;return (land&&AREAS[key].rot)?[d[1],d[0]]:d;}
+function dimsOf(key,land){var d=AREAS[key].cm;d=(land&&AREAS[key].rot)?[d[1],d[0]]:d;var k=kidK(key,d);return k<1?[Math.round(d[0]*k*2)/2,Math.round(d[1]*k*2)/2]:d;}
+function dimsNom(key,land){var d=AREAS[key].cm;return (land&&AREAS[key].rot)?[d[1],d[0]]:d;}
+/* Küçük çocuk bedenleri: A4 tişörte sığmıyorsa oranı korunarak santimetre olarak küçültülür (yaka + 8 cm + boy + 3 cm etek payı; yanlarda 2'şer cm) */
+function kidK(key,d){if(state.cut!=='cocuk'||!AREAS[key]||AREAS[key].at||key==='logo'||key==='logo2'||!/^(a4|a3)$/.test(key))return 1;var z=kidDims();if(!z)return 1;
+  var ah=z[1]-ndrop('front',z)/PPC-DROP_CM_COCUK-3,aw=z[0]-4;return Math.max(.5,Math.min(1,ah/d[1],aw/d[0]));}
 function landFor(side,key){if(!AREAS[key].rot)return false;return forcedLand(key)?true:!!state[side].land;}
 function isLand(side){return landFor(side,state[side].area);}
 function areaTitle(side){return AREAS[state[side].area].name+(isLand(side)?' yatay':'');}
@@ -999,7 +1003,7 @@ function areaBox(side,key,land){
   if(land===undefined)land=landFor(side,key);
   var d=dimsOf(key,land),w=d[0]*PPC,h=d[1]*PPC,cx,top,at=AREAS[key].at;
   if(at){cx=at[0];top=at[1]-h/2;}
-  else if(key==='logo'||key==='logo2'){var LA=((LOGO_AT_P[state.product]||{})[state.cut])||LOGO_AT[state.cut]||LOGO_AT.erkek;cx=300+(key==='logo2'?-1:1)*LA[1]*PPC;top=((P().neck||NECK_Y).front-NECK_DROP.front)+LA[0]*PPC;at=true;}
+  else if(key==='logo'||key==='logo2'){var LA=((LOGO_AT_P[state.product]||{})[state.cut])||LOGO_AT[state.cut]||LOGO_AT.erkek;cx=300+(key==='logo2'?-1:1)*LA[1]*PPC;top=((P().neck||NECK_Y).front-ndrop('front'))+LA[0]*PPC;at=true;}
   else{cx=300;top=((P().neck||NECK_Y)[face(side)])+(state.cut==='cocuk'?DROP_CM_COCUK:DROP_CM)*PPC;}
   return {l:cx-w/2,t:top,r:cx+w/2,b:top+h,w:w,h:h,cx:cx,cy:top+h/2,at:!!at};
 }
@@ -1666,6 +1670,12 @@ var SZM={
  sweat:{erkek:{XS:[50,66],S:[53,68],M:[56,70],L:[59,72],XL:[62,74],XXL:[65,76],'2XL':[65,76],'3XL':[68,78]},kadin:{XS:[45,60],S:[48,62],M:[51,64],L:[54,66],XL:[57,68],XXL:[60,70],'2XL':[60,70]},cocuk:{'3-4':[34,44],'5-6':[37,48],'7-8':[40,52],'9-10':[43,56],'11-12':[46,60],'13-14':[49,63]}}
 };SZM.polo=SZM.tee;SZM.hood=SZM.sweat;SZM.zip=SZM.sweat;
 var NECK_DROP={front:39,back:14};
+/* Omuz ile yaka arası: çocuk bedenlerinde boya göre küçülür (3-4 yaşta yaka çizgisi omuza daha yakın) */
+function ndrop(side,d){if(state.cut!=='cocuk')return NECK_DROP[side];if(d===undefined){try{d=phDims(state.product,state.cut);}catch(_){d=null;}}var k=d&&d[1]?Math.max(.55,Math.min(1,d[1]/72)):1;return NECK_DROP[side]*k;}
+/* Baskı alanı seçilen bedene sığıyor mu (çocuk): yaka + 8 cm + alan boyu + 2 cm etek payı ≤ beden boyu; alan eni ≤ beden eni − 1 cm.
+   Siparişte birden çok beden varsa en küçüğüne bakılır. */
+function kidDims(){var m=(SZM[state.product]||{})[state.cut];if(!m)return null;var ks=Object.keys(state.sizes||{}).filter(function(z){return (state.sizes[z]||0)>0&&m[z];});var p=phSize();if(p&&m[p])ks.push(p);var best=null;ks.forEach(function(z){if(!best||m[z][1]<best[1])best=m[z];});return best;}
+function areaFits(key,land){if(key!=='a3')return true;return kidK(key,dimsNom(key,land))>=1;} /* A3 küçültülmez: sığmayan bedende gösterilmez (küçülmüş A3 = A4) */
 var PH={site:null,media:'',cal:{},want:'',teesBase:null};
 function phSrc(t){if(!t)return '';if(/^(https?:|data:|blob:)/.test(t))return t;if(PH.media==='sb'&&/^(img|vid)\//.test(t))return 'https://wgovwmeirlzwalelazfj.supabase.co/storage/v1/object/public/site/'+t;return t;}
 /* Ürün deposu (yalnız yönetici): depodan seçilen hayalet ürün fotoğrafı, o ürün ve kesim için tek renkli boş ürün olarak kullanılır */
@@ -1782,7 +1792,7 @@ function phSVG(side,tee,product,cut){
   var u=phSrc(side==='back'?(co.back||co.front||''):(co.front||co.back||''));if(!u)return null;
   var cal=phCalib(u);if(!cal.ready)return null;
   var d=phDims(product,cut);if(!d)return null;
-  var sc=phSc(cal,d),sx=phSX(cal,d,sc,product),w=cal.W*sx,h=cal.H*sc,topY=NECK_Y[side]-NECK_DROP[side],cx=(cal.l+cal.r)/2*sx;
+  var sc=phSc(cal,d),sx=phSX(cal,d,sc,product),w=cal.W*sx,h=cal.H*sc,topY=NECK_Y[side]-ndrop(side,d),cx=(cal.l+cal.r)/2*sx;
   var X=300-cx,Y=topY-cal.top*sc;
   /* Açık renkli ürün (beyaz, krem) açık zeminde kaybolmasın: ürünün kenarına ince kontur ve altına yumuşak gölge */
   var lt=!cal.raw&&lum(co.hex)>.72,sf=lt?'<defs><filter id="phL" x="-8%" y="-6%" width="116%" height="116%" color-interpolation-filters="sRGB"><feDropShadow dx="0" dy="0" stdDeviation="1.1" flood-color="#1c2420" flood-opacity=".42" result="e"/><feDropShadow in="e" dx="0" dy="9" stdDeviation="10" flood-color="#1c2420" flood-opacity=".22"/></filter></defs>':'';
@@ -1790,7 +1800,7 @@ function phSVG(side,tee,product,cut){
 }
 /* Ekran ölçeği: ürünün EN BÜYÜK bedeni ekranı doldurur, ölçek bütün bedenlerde aynı kalır (bedenler arası gerçek fark görünür) */
 function fitBox(side){side=face(side);
-  var gt=NECK_Y[side]-NECK_DROP[side];
+  var gt=NECK_Y[side]-ndrop(side);
   try{if(phOn()){var b=phBlank(state.product,state.cut),cs=phColors(b),co=cs.filter(function(c){return String(c.hex).toLowerCase()===String(state.tee).toLowerCase();})[0]||cs[0];
     var u=phSrc(side==='back'?(co.back||co.front):(co.front||co.back)),cal=u&&PH.cal[u],m=(SZM[state.product]||{})[state.cut];
     if(cal&&cal.ready&&m){var mx=null;Object.keys(m).forEach(function(z){if(!mx||m[z][1]>mx[1])mx=m[z];});var sc=phSc(cal,mx),hp=Math.max(mx[1]*PPC,(cal.bot-cal.top+1)*sc);return {w:(cal.r-cal.l+1)*phSX(cal,mx,sc),top:gt,bot:gt+hp};}}}catch(_){}
@@ -1930,7 +1940,7 @@ function brandPos(side){side=face(side);
   if(PH.site&&cs.length){
     var co=cs.filter(function(c){return String(c.hex).toLowerCase()===String(state.tee).toLowerCase();})[0]||cs[0],u=phSrc(co.front||'');
     var cal=u&&PH.cal[u],d=phDims(state.product,state.cut);
-    if(cal&&cal.ready&&d&&!cal.raw){var sc=phSc(cal,d),sx=phSX(cal,d,sc),X=300-(cal.l+cal.r)/2*sx,Y=NECK_Y[side]-NECK_DROP[side]-cal.top*sc,half=(cal.r-cal.l)/2*sx;
+    if(cal&&cal.ready&&d&&!cal.raw){var sc=phSc(cal,d),sx=phSX(cal,d,sc),X=300-(cal.l+cal.r)/2*sx,Y=NECK_Y[side]-ndrop(side,d)-cal.top*sc,half=(cal.r-cal.l)/2*sx;
       return {x:300+half*.6,y:Y+cal.bot*sc-4.2*PPC};}
   }
   var k=CUT_K[state.cut]||CUT_K.erkek,ay=NECK_Y[side];
@@ -2061,9 +2071,9 @@ var RULER=true;try{RULER=localStorage.getItem('wf_ruler')!=='0';}catch(_){}
    Yeşil bant baskı alanının cetveldeki yeri; kırmızı çizgi seçilen bedenin boyu (ürünün etek ucu). */
 function renderRuler(){
   var h=$('#rulerHost');if(!h)return;var bt=$('#rulerBtn');if(bt){bt.classList.toggle('on',RULER);bt.setAttribute('aria-pressed',RULER?'true':'false');bt.setAttribute('aria-label',RULER?'Cetveli gizle':'Cetveli göster');}
-  var gh=$('#gridHost');if(gh){if(!RULER||P().draw){gh.innerHTML='';}else{var gy=NECK_Y[face(view.side)]-NECK_DROP[face(view.side)],g='',i;for(i=-30;i<=30;i++){var gx=300+i*5*PPC;g+='<line'+(i%2?' class="g5"':'')+' x1="'+gx+'" x2="'+gx+'" y1="-2000" y2="2600"/>';}for(i=-30;i<=40;i++){var yy=gy+i*5*PPC;g+='<line'+(i%2?' class="g5"':'')+' x1="-2000" x2="2600" y1="'+yy+'" y2="'+yy+'"/>';}gh.innerHTML='<svg width="'+STAGE_W+'" height="'+STAGE_H+'" viewBox="0 0 '+STAGE_W+' '+STAGE_H+'">'+g+'</svg>';}}
+  var gh=$('#gridHost');if(gh){if(!RULER||P().draw){gh.innerHTML='';}else{var gy=NECK_Y[face(view.side)]-ndrop(face(view.side)),g='',i;for(i=-30;i<=30;i++){var gx=300+i*5*PPC;g+='<line'+(i%2?' class="g5"':'')+' x1="'+gx+'" x2="'+gx+'" y1="-2000" y2="2600"/>';}for(i=-30;i<=40;i++){var yy=gy+i*5*PPC;g+='<line'+(i%2?' class="g5"':'')+' x1="-2000" x2="2600" y1="'+yy+'" y2="'+yy+'"/>';}gh.innerHTML='<svg width="'+STAGE_W+'" height="'+STAGE_H+'" viewBox="0 0 '+STAGE_W+' '+STAGE_H+'">'+g+'</svg>';}}
   if(!RULER||P().draw){h.innerHTML='';return;}
-  var A=areaBox(view.side,cur().area),ny=NECK_Y[face(view.side)],gt=ny-NECK_DROP[face(view.side)],o='',k,y,x,len,ty=Math.max(0,gt-30);
+  var A=areaBox(view.side,cur().area),ny=NECK_Y[face(view.side)],gt=ny-ndrop(face(view.side)),o='',k,y,x,len,ty=Math.max(0,gt-30);
   var sc=view.s||1,vl=0,vt=0,vb2=STAGE_H,vr=STAGE_W;if(view.W){vl=-(view.W/2-view.cx*sc+(view.px||0))/sc;vt=-(view.H/2+(view.oy||0)-view.cy*sc+(view.py||0))/sc;vb2=vt+view.H/sc;vr=vl+view.W/sc;}
   var RW=28/sc,RH=24/sc;ty=Math.max(gt-RH-18/sc,vt);
   /* Sol cetvel: 0 = omuz dikişi (beden tablosundaki boy buradan ölçülür); ekranın görünen sol kenarına yapışır */
@@ -3767,19 +3777,28 @@ function syncChips(){
     var lab=AREAS[k].chip+(l===null?'':(l?' yatay':' dikey'));
     h+='<button data-a="'+k+'"'+(l===null?'':' data-l="'+(l?1:0)+'"')+(on?' class="on"':'')+' aria-label="'+lab+'" aria-pressed="'+on+'">'+AREAS[k].chip+ic+'</button>';
   }
+  var hid=[];
   al.forEach(function(k){
-    if(AREAS[k].rot&&!forcedLand(k)){chip(k,false);chip(k,true);}   /* A4 dikey + A4 yatay */
+    if(AREAS[k].rot&&!forcedLand(k)){if(areaFits(k,false))chip(k,false);else hid.push(AREAS[k].chip+' dikey');if(areaFits(k,true))chip(k,true);else hid.push(AREAS[k].chip+' yatay');}   /* A4 dikey + A4 yatay */
     else if(AREAS[k].rot&&forcedLand(k))chip(k,true);                 /* bu üründe hep yatay */
-    else if(k==='a3')chip(k,false);                                   /* A3 hep dikey */
+    else if(k==='a3'){if(areaFits(k,false))chip(k,false);else hid.push('A3');}  /* A3 hep dikey; küçük çocuk bedenine sığmaz */
     else chip(k,null);                                                /* logo, şapka */
   });
   if(isLogoSide(view.side)&&SS(view.side).objs.length)h+='<button type="button" class="rmlogo" data-rmlogo="1">Logoyu kaldır</button>';
   if(isWfAdm()&&cur().area==='a4'&&(view.side==='front'||view.side==='back'))h+='<button type="button" class="extb'+(cur().ext!=null?' on':'')+'" data-ext="1" aria-pressed="'+(cur().ext!=null)+'">'+(cur().ext!=null?'Ek alan ✓':'+ Ek alan')+'</button>';
   $('#areaChips').innerHTML=h;
+  /* Seçili alan bu bedene sığmıyorsa sığan en büyük alana geçilir */
+  if(!syncChips.busy&&(view.side==='front'||view.side==='back')&&!areaFits(cur().area,isLand(view.side))){var opts=[['a4',false],['a4',true]].filter(function(o){return al.indexOf(o[0])>=0&&areaFits(o[0],o[1]);});
+    if(opts.length){var was=cur().area==='a3'?'A3':'Bu baskı alanı';syncChips.busy=1;setTimeout(function(){try{selectArea(opts[0][0],opts[0][1]);longToast(was+' bu bedene sığmıyor; '+(opts[0][1]?'A4 yatay':'A4 dikey')+' seçildi.');}finally{syncChips.busy=0;}},0);}}
   $('#sideF').classList.toggle('on',view.side==='front');$('#sideB').classList.toggle('on',view.side==='back');var sl=$('#sideL');sl.hidden=!hasLogoSide();sl.classList.toggle('on',view.side==='logo');var sl2=$('#sideL2');if(sl2){sl2.hidden=!hasLogo2();sl2.classList.toggle('on',view.side==='logo2');}
   $('#sideSeg').hidden=Object.keys(q.sides).length<2||mugWrap();
 }
+/* Beden değişince (çocukta) baskı alanı küçülüp büyüyebilir: tasarım alanla birlikte oranlanır */
+var KAB={};
+function kidRescale(){['front','back'].forEach(function(sd){var c=state[sd];if(!c||!c.area||!AREAS[c.area])return;var nb;try{nb=areaBox(sd,c.area);}catch(_){return;}var key=c.area+'|'+(!!c.land),ob=KAB[sd];KAB[sd]={k:key,b:nb};
+  if(!ob||ob.k!==key||Math.abs(ob.b.w-nb.w)<0.5)return;var k=nb.w/ob.b.w;(c.objs||[]).forEach(function(o){o.x=nb.cx+(o.x-ob.b.cx)*k;o.y=nb.t+(o.y-ob.b.t)*k;o.w*=k;o.h*=k;if(o.size)o.size*=k;});});}
 function renderAll(){
+  try{kidRescale();}catch(_){}
   renderShirt();updateArea();renderObjects();renderPassive();buildSel();syncCtx();syncTextInput();syncChips();syncTeeUI();syncProduct();layout();try{livePrice();}catch(_){}
   if(tplLastGroup&&tplLastGroup!==tplGroup()){$('#tplQ').value='';renderTpl();}
   if(view.tab==='tpl')renderTplPreviews();
@@ -4291,12 +4310,14 @@ function teeSwap(hex){var o0=autoInk();state.tee=hex;var o1=autoInk();if(o0!==o1
 $('#optColors').addEventListener('click',function(e){var b=e.target.closest('[data-tee]');if(!b)return;teeSwap(b.dataset.tee);renderShirt();renderObjects();syncOpt();renderOpt();pushHist();});
 $('#optSizes').addEventListener('click',function(e){var b=e.target.closest('[data-oz]');if(!b)return;var z=b.dataset.oz,ks=Object.keys(state.sizes).filter(function(k){return state.sizes[k]>0;});
   if(ks.length<=1){var q=ks.length?state.sizes[ks[0]]:1;state.sizes={};state.sizes[z]=q;}
-  PH.want=z;renderSizes();renderPrice();renderShirt();layout();syncOpt();renderOpt();pushHist();
-  var dz=null;try{dz=phDims(state.product,state.cut);}catch(_){}if(dz)toast('Beden '+z+': en '+dz[0]+' cm, boy '+dz[1]+' cm');});
+  PH.want=z;renderSizes();renderPrice();renderShirt();layout();if(state.cut==='cocuk')renderAll();syncOpt();renderOpt();pushHist();
+  var dz=null;try{dz=phDims(state.product,state.cut);}catch(_){}if(dz)toast('Beden '+z+': en '+dz[0]+' cm, boy '+dz[1]+' cm'+kidNote());});
+/* Küçültülmüş baskı alanı bilgisi */
+function kidNote(){try{var c=cur(),a=c.area,l=isLand(view.side);if(!/^(a4|a3)$/.test(a))return '';var d=dimsOf(a,l),n=dimsNom(a,l);return (d[0]<n[0]||d[1]<n[1])?' · baskı '+cmText(a,l)+' (bedene göre küçültüldü)':'';}catch(_){return '';}}
 $('#sizeGrid').addEventListener('click',function(e){
   var b=e.target.closest('[data-s]');if(!b)return;
   var s=b.dataset.s,v=(state.sizes[s]||0)+(+b.dataset.d);state.sizes[s]=clamp(v,0,999);
-  renderSizes();renderPrice();pushHist();if(phOn()){renderShirt();var dz=phDims(state.product,state.cut);if(dz)toast('Önizleme bedeni '+phSize()+': en '+dz[0]+' cm, boy '+dz[1]+' cm');}
+  renderSizes();renderPrice();if(state.cut==='cocuk')renderAll();pushHist();if(phOn()){renderShirt();var dz=phDims(state.product,state.cut);if(dz)toast('Önizleme bedeni '+phSize()+': en '+dz[0]+' cm, boy '+dz[1]+' cm'+kidNote());}
 });
 $('#files').addEventListener('click',async function(e){
   var b=e.target.closest('[data-f]');if(!b||b.disabled)return;
