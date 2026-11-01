@@ -522,6 +522,7 @@ body.odak .odakx{display:inline-flex}.odakx svg{width:16px;height:16px}
 .am-f{display:grid;gap:4px;font:600 12px var(--ui);color:var(--muted)}
 .am-f textarea{min-height:70px;border-radius:10px;border:1px solid var(--line2);background:var(--panel2);color:var(--ink);padding:8px 12px;font:500 15px var(--ui);resize:vertical}
 .am-two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px}.am-two .am-f{min-width:0}.am-two select{width:100%;min-width:0;text-overflow:ellipsis}
+.am-all{display:flex;gap:10px;align-items:flex-start;margin:10px 0 4px;padding:10px 12px;border:1.5px solid #2f7d6b;border-radius:12px;background:#eef7f3;cursor:pointer}.am-all input{width:20px;height:20px;margin-top:2px;accent-color:#2f7d6b;flex:none}.am-all span{display:flex;flex-direction:column;gap:2px}.am-all small{opacity:.75;font-size:12px}
 .am-sum{display:grid;gap:3px;border:1.5px solid var(--green,#30703f);border-radius:12px;padding:10px 12px;font-size:14px}.am-sum em{font-style:normal;color:#c0392b}.am-more{border:1px solid var(--line2);border-radius:12px;padding:8px 10px}.am-more>summary{cursor:pointer;font-weight:600;font-size:13px}.am-more[open]{display:grid;gap:10px}.am-info{display:flex;gap:10px;align-items:center;border:1px solid var(--line2);border-radius:12px;padding:8px;background:var(--panel2)}.am-info img{width:56px;height:56px;object-fit:contain;border-radius:8px;background:#eef1ef;flex:0 0 56px}.am-info div{display:grid;gap:2px;font:600 13px var(--ui);color:var(--ink)}.am-info small{font:600 12px var(--ui);color:var(--muted)}
 .am-f input,.am-f select{height:40px;border-radius:10px;border:1px solid var(--line2);background:var(--panel2);color:var(--ink);padding:0 12px;font:600 16px var(--ui)}
 .mn-ph{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;-webkit-overflow-scrolling:touch}
@@ -5101,6 +5102,18 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
     if(rec)await rq('/rest/v1/admin_designs?id=eq.'+rec.id,{method:'PATCH',body:{note:'Ürün: '+id}});
     var cn=catLabel(catId);return 'Ürün sitede yayında: "'+title+'" · Kod: '+code+(cn?' → '+cn:'')+'. Fiyatını ve açıklamasını yönetim panelindeki Koleksiyon sekmesinden değiştirebilirsin.';
   }
+  /* Tüm renklere uygula: aynı tasarım ürünün bütün renklerinde ayrı ayrı yayınlanır (hepsi aynı W kodunu alır, Koleksiyon'da tek tasarımın renkleri olarak görünür) */
+  function allCols(){if(/^(mug|canvas)$/.test(state.product))return [];return TEES.map(function(t){return t[1];}).filter(function(h,i,a){return a.indexOf(h)===i;});}
+  function allColBox(){var n=allCols().length;if(n<2)return '';
+    return '<label class="am-all"><input type="checkbox" id="amAll" checked><span><b>Tüm renklere uygula ('+n+' renk)</b><small>Aynı tasarım bu ürünün bütün renklerinde ayrı ayrı yayınlanır. Yalnız seçili renk için işareti kaldır.</small></span></label>';}
+  async function doProdAll(title,cat,pr,info,btn){var cols=allCols(),t0=state.tee,ok=[],bad=[];
+    var cur=cols.filter(function(h){return String(h).toLowerCase()===String(t0).toLowerCase();});cols=cur.concat(cols.filter(function(h){return cur.indexOf(h)<0;}));
+    try{for(var i=0;i<cols.length;i++){teeSwap(cols[i]);renderShirt();renderObjects();await new Promise(function(r){setTimeout(r,120);});
+        var cn=colorName()||cols[i];if(btn)btn.textContent='Yayınlanıyor: '+cn+' ('+(i+1)+'/'+cols.length+')…';
+        try{await doProd(title,cat,pr,false,Object.assign({},info,{color:null}));ok.push(cn);}catch(e){if(e&&e.code==='auth')throw e;bad.push(cn);try{console.error('Renk',cn,e);}catch(_){}}}}
+    finally{teeSwap(t0);renderShirt();renderObjects();try{renderOpt();}catch(_){}}
+    if(!ok.length)throw {msg:'Hiçbir renk yayınlanamadı. Tekrar dene.'};
+    return ok.length+' renkte yayınlandı: '+ok.join(', ')+'.'+(bad.length?' Yayınlanamayan: '+bad.join(', ')+' (o rengi tek başına tekrar dene).':'')+' Hepsi aynı tasarım kodunu aldı.';}
   async function doPrint(title,sizes,byWolf){
     var ss=sidesWith();if(!ss.length)throw {msg:'Önce bir tasarım yap.'};
     var q=0;Object.keys(sizes).forEach(function(k){q+=+sizes[k]||0;});if(!q)throw {msg:'Baskı için beden ve adet seç.'};
@@ -5414,7 +5427,7 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
     if(mode==='sablon')body='<div class="am-two"><label class="am-f">Kimler görsün<select id="amVis"><option value="herkes"'+(tplVis==='herkes'?' selected':'')+'>Herkes (müşteriler de)</option><option value="ozel"'+(tplVis==='ozel'?' selected':'')+'>Sadece Wolflano</option></select></label>'+
       '<label class="am-f">Kategori<select id="amTCat"><option value="">'+ea(TPL_CAT_ADM)+'</option>'+TPL_CATS.filter(function(c){return c!=='Tümü'&&c!==TPL_CAT_ADM&&c!==TPL_CAT_PRIV;}).map(function(c){return '<option'+(c===tplCat?' selected':'')+'>'+ea(c)+'</option>';}).join('')+'</select></label></div>'+
       '<p class="note">'+(tplVis==='ozel'?'Yalnız sen ve yetkililer Şablon panelinde "'+TPL_CAT_PRIV+'" altında görürsünüz; müşterinin sayfasına hiç yüklenmez.':'Müşteriler Şablon panelinde seçtiğin kategoride görür; seçince kendi ürününe uyarlanır.')+'</p>';
-    if(mode==='urun')body='<div class="am-sum" id="amSum"></div>'+
+    if(mode==='urun')body='<div class="am-sum" id="amSum"></div>'+allColBox()+
       '<details class="am-more"><summary>Ayrıntıları değiştir (tür, renk, kategori, fiyat, etiket, açıklama)</summary>'+prodInfo()+
       '<div class="am-two"><label class="am-f">Ürün türü<select id="amType">'+typeOpts()+'</select></label><label class="am-f">Renk<input id="amColor" maxlength="30" value="'+ea(colorName())+'"></label></div>'+
       '<label class="am-f">Kategori<select id="amCat">'+catOpts()+'</select></label>'+
@@ -5494,7 +5507,8 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
       else if(mode==='urun'){var cat=$('#amCat').value,pr=+$('#amPrice').value;if(!cat){toast('Kategori seç');return;}if(!(pr>0)){toast('Fiyat yaz');return;}
         var info={type:$('#amType').value,color:($('#amColor').value||'').trim(),old:+$('#amOld').value||0,tag:($('#amTag').value||'').trim(),desc:($('#amDesc').value||'').trim()};
         if(info.old&&info.old<=pr){toast('Eski fiyat satış fiyatından büyük olmalı');return;}
-        run(function(){return doProd(title,cat,pr,false,info);},g);}
+        var all=$('#amAll');if(all&&all.checked){info.color=null;run(function(){return doProdAll(title,cat,pr,info,g);},g);}
+        else run(function(){return doProd(title,cat,pr,false,info);},g);}
       else if(mode==='baski')run(function(){return doPrint(title,JSON.parse(JSON.stringify(psz)));},g);
     });
   }
