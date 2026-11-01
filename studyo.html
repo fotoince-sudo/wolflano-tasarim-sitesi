@@ -3381,8 +3381,12 @@ function applyTemplate(t,silent){
 function toL(cx,cy){var r=stage.getBoundingClientRect(),s=r.width/STAGE_W;return {x:(cx-r.left)/s,y:(cy-r.top)/s};}
 /* En küçük boy: nesnenin dar kenarı 0,5 cm'ye kadar küçülebilir (eskiden ~2 cm'de duruyordu; kupa gibi dar alanlarda yetmiyordu) */
 var MIN_PX=PPC*0.5;
-function limitScale(o0w,o0h,k){
+/* Yazıda sınır dar kenar değil harf boyudur: dikey yazının dar kenarı tek harf genişliği olduğundan 0,5 cm'de takılıp yazıyı uzun bırakıyordu.
+   Yazı, yazı boyu 0,3 cm (büyük harf yaklaşık 2 mm, baskıda okunur) olana kadar küçülebilir. */
+var MIN_TXT=PPC*0.3;
+function limitScale(o0w,o0h,k,o,s0){
   var A=areaBox(view.side,cur().area),kmax=Math.max(A.w,A.h)*1.6/Math.max(o0w,o0h),kmin=MIN_PX/Math.min(o0w,o0h);
+  if(o&&o.type==='text'&&s0>0)kmin=MIN_TXT/s0;
   return clamp(k,kmin,Math.max(kmin,kmax));
 }
 /* Tüm tasarımı (grup) ortasından %5 büyütür/küçültür; aşırı küçülme ve taşma sınırlı */
@@ -3540,7 +3544,7 @@ function onMove(e){
       if(Math.abs(r-sn)<4)r=sn;                  /* düz ve 45° açılara hafifçe oturur */
       o.rot=r;place(els[o.id],o);updateSel();
     }else{                                        /* beyaz kare: yalnız büyütür/küçültür, açı değişmez */
-      applySize(o,limitScale(g.base.w,g.base.h,dist(g.cx,g.cy,p.x,p.y)/g.d0),g.base);
+      applySize(o,limitScale(g.base.w,g.base.h,dist(g.cx,g.cy,p.x,p.y)/g.d0,o,g.base.s),g.base);
     }
   }
 }
@@ -3920,7 +3924,7 @@ function ctxClick(e){
   else if(c==='fwd')moveZ(1);
   else if(c==='bwd')moveZ(-1);
   else if(c==='dup')dupSel();
-  else if(c==='zin'||c==='zout'){var zo=selObj();if(zo&&!zo.lock){if(zo.slot&&slotPan(zo)){toast('Fotoğrafı köşedeki beyaz kareyle büyüt, küçült.');return;}applySize(zo,limitScale(zo.w,zo.h,c==='zin'?1.05:1/1.05),{w:zo.w,h:zo.h,s:zo.size||0});syncCtx();pushHist();}}
+  else if(c==='zin'||c==='zout'){var zo=selObj();if(zo&&!zo.lock){if(zo.slot&&slotPan(zo)){toast('Fotoğrafı köşedeki beyaz kareyle büyüt, küçült.');return;}applySize(zo,limitScale(zo.w,zo.h,c==='zin'?1.05:1/1.05,zo,zo.size||0),{w:zo.w,h:zo.h,s:zo.size||0});syncCtx();pushHist();}}
   else if(c==='center'){var co=selObj();if(co){var CA=areaBox(view.side,cur().area),ci=inkCenter(co);co.x+=CA.cx-ci.x;co.y+=CA.cy-ci.y;place(els[co.id],co);updateSel();var ab=$('#areaBox');ab.classList.add('onV','onH');setTimeout(centerOff,900);pushHist();toast('Baskı alanına ortalandı');}}
   else if(c==='nobg')removeBg();
   else if(c==='holes')openHoles();
