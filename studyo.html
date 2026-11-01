@@ -1964,7 +1964,7 @@ function isWarped(o){return (!!o.warp&&o.warp!=='none')||!!o.ls;} /* harf aralı
 function lookOf(o){return o.look||'fill';}
 function fontStr(f,sz){return fw(f)+' '+sz+'px '+fontStack(f);}
 /* Yazı gölgesi (kontura ek, düz görünümde): 1 = hafif (yumuşak), 2 = belirgin (keskin) */
-function tShd(o,sz){if(!o.shd||lookOf(o)!=='fill')return null;return o.shd===2?{d:sz*0.07,b:0,c:'rgba(0,0,0,.6)'}:{d:sz*0.05,b:sz*0.09,c:'rgba(0,0,0,.45)'};}
+function tShd(o,sz){if(!o.shd||lookOf(o)!=='fill')return null;var m=o.shs||1;/* boyut: 0.5 küçük, 1 orta, 1.7 büyük, 2.6 çok büyük */return o.shd===2?{d:sz*0.07*m,b:0,c:'rgba(0,0,0,.6)'}:{d:sz*0.05*m,b:sz*0.09*m,c:'rgba(0,0,0,.45)'};}
 function shadowCol(o){return o.stroke||(String(o.color).toLowerCase()==='#159b91'?'#111111':'#159b91');}
 function escX(t){return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 function w0dikey(o){return o.warp==='dikey';}
@@ -2313,7 +2313,7 @@ function showPop(mode){
   var pop=$('#colorPop'),cur_=mode==='stroke'?o.stroke:o.color,h='';
   /* Yazı konturu: kalınlık seçimi (renkten önce); kalınlığa dokunmak paneli kapatmaz */
   if(mode==='stroke'&&o.type==='text'){var sw0=o.sw||0.1;h+='<div class="cp-row cp-sw"><span class="cp-t">Kalınlık</span>'+SW_OPTS.map(function(q){return '<button type="button" data-sw="'+q[0]+'"'+(o.stroke&&Math.abs(q[0]-sw0)<0.001?' class="on"':'')+'>'+q[1]+'</button>';}).join('')+'</div>';}
-  if(mode==='stroke'&&o.type==='text'){var sd0=o.shd||0;h+='<div class="cp-row cp-sw"><span class="cp-t">Gölge</span>'+[[0,'Yok'],[1,'Hafif'],[2,'Belirgin']].map(function(q){return '<button type="button" data-shd="'+q[0]+'"'+(q[0]===sd0?' class="on"':'')+'>'+q[1]+'</button>';}).join('')+'</div><div class="cp-row"><span class="cp-t">Kontur rengi</span></div>';}
+  if(mode==='stroke'&&o.type==='text'){var sd0=o.shd||0;h+='<div class="cp-row cp-sw"><span class="cp-t">Gölge</span>'+[[0,'Yok'],[1,'Hafif'],[2,'Belirgin']].map(function(q){return '<button type="button" data-shd="'+q[0]+'"'+(q[0]===sd0?' class="on"':'')+'>'+q[1]+'</button>';}).join('')+'</div>'+(sd0?'<div class="cp-row cp-sw"><span class="cp-t">Boyut</span>'+[[0.5,'Küçük'],[1,'Orta'],[1.7,'Büyük'],[2.6,'Çok büyük']].map(function(q){return '<button type="button" data-shs="'+q[0]+'"'+(Math.abs(q[0]-(o.shs||1))<0.001?' class="on"':'')+'>'+q[1]+'</button>';}).join('')+'</div>':'')+'<div class="cp-row"><span class="cp-t">Kontur rengi</span></div>';}
   if(mode==='stroke')h+='<button class="sw none'+(o.stroke?'':' on')+'" data-col="" aria-label="Kontur yok">×</button>';
   PALETTE.forEach(function(c,i){h+='<button class="sw'+(cur_&&cur_.toLowerCase()===c?' on':'')+'" data-col="'+c+'" style="background:'+c+';color:'+colInk(c)+'" aria-label="'+colLabel(c)+'"><i class="swn">'+(i+1)+'</i></button>';});
   h+='<label class="sw custom" aria-label="Özel renk"><input type="color" id="colorCustom" value="'+(cur_||'#159b91')+'"></label>';
@@ -3526,7 +3526,7 @@ function onDown(e){
    Yazının harf boşlukları ve görselin saydam kenarları hesaba katılmaz: seçim çerçevesi içeriği dört yandan eşit boşlukla sarar,
    ortalama da içeriğin gerçek ortasına göre yapılır. */
 var INK={},INKQ={};
-function inkSig(o){return JSON.stringify([o.type,o.value,o.font,o.size,o.look,o.stroke,o.sw,o.shd,o.warp,o.wamt,o.key,o.assetId,o.type==='text'?0:Math.round(o.w),o.type==='text'?0:Math.round(o.h)]);}
+function inkSig(o){return JSON.stringify([o.type,o.value,o.font,o.size,o.look,o.stroke,o.sw,o.shd,o.shs,o.warp,o.wamt,o.key,o.assetId,o.type==='text'?0:Math.round(o.w),o.type==='text'?0:Math.round(o.h)]);}
 function inkOf(o){var r=INK[o.id];return r&&r.sig===inkSig(o)?r:null;}
 async function inkCompute(o){
   var sig=inkSig(o),k=2,pad=40,W=Math.ceil((o.w*1.6+pad)*k),H=Math.ceil((o.h*1.6+pad)*k);if(W*H>16e6)return;
@@ -4002,6 +4002,7 @@ function ctxClick(e){
 $('#ctxBar').addEventListener('click',ctxClick);
 (function(){var sb=$('#stageBar');sb.addEventListener('click',ctxClick);['pointerdown','pointerup'].forEach(function(t){sb.addEventListener(t,function(e){e.stopPropagation();},{passive:true});});})();
 $('#colorPop').addEventListener('click',function(e){var cp=e.target.closest('[data-copy]');if(cp){var tx=cp.dataset.copy;(navigator.clipboard&&navigator.clipboard.writeText?navigator.clipboard.writeText(tx):Promise.reject()).then(function(){toast('Kopyalandı: '+tx);},function(){var ta=document.createElement('textarea');ta.value=tx;ta.setAttribute('readonly','');ta.style.position='fixed';ta.style.opacity='0';document.body.appendChild(ta);ta.select();try{document.execCommand('copy');toast('Kopyalandı: '+tx);}catch(_){toast(tx);}ta.remove();});return;}
+  var ssb=e.target.closest('[data-shs]');if(ssb){(view.grp?grpObjs():[selObj()]).filter(function(q){return q&&q.type==='text';}).forEach(function(q){var v=+ssb.dataset.shs;if(v===1)delete q.shs;else q.shs=v;updateEl(els[q.id],q);});pushHist();syncCtx();showPopRefresh();return;}
   var sdb=e.target.closest('[data-shd]');if(sdb){var tg2=view.grp?grpObjs().filter(function(q){return q.type==='text';}):[selObj()].filter(function(q){return q&&q.type==='text';});
     tg2.forEach(function(q){var v=+sdb.dataset.shd;if(v)q.shd=v;else delete q.shd;if(v&&lookOf(q)!=='fill')q.look='fill';updateEl(els[q.id],q);});pushHist();syncCtx();showPopRefresh();return;}
   var w=e.target.closest('[data-sw]');if(w){var tg=view.grp?grpObjs().filter(function(q){return q.type==='text';}):[selObj()].filter(function(q){return q&&q.type==='text';});
