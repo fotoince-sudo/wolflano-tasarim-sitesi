@@ -1,0 +1,49 @@
+# Baskı Atölyesi tanıtım videosunu oluşturur: video/is.json'daki sahne görsellerini indirir,
+# .github/video.py ile yazılı anlatımlı videoyu üretir ve assets/video/ içine kaydeder.
+name: Tanıtım videosu
+on:
+  push:
+    branches: [main]
+    paths: ['video/is.json', 'video/studyo.jpg', '.github/video.py', '.github/workflows/video.yml']
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: video
+jobs:
+  video:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - name: Araçlar
+        run: |
+          sudo apt-get -qq update && sudo apt-get -qq install -y ffmpeg >/dev/null
+          pip install -q Pillow
+          mkdir -p fonts
+          curl -fsSL -o fonts/Manrope.ttf "https://raw.githubusercontent.com/google/fonts/main/ofl/manrope/Manrope%5Bwght%5D.ttf"
+      - name: Görseller
+        run: |
+          python3 - <<'P'
+          import json, urllib.request, shutil
+          for ad, u in json.load(open('video/is.json')).items():
+              with urllib.request.urlopen(u, timeout=120) as r, open('video/' + ad, 'wb') as f: shutil.copyfileobj(r, f)
+          shutil.copy('video/studyo.jpg', 'video/studyo.jpg')
+          P
+          mkdir -p /tmp/kaynak && cp video/*.jpg /tmp/kaynak/
+      - name: Video
+        run: |
+          mkdir -p assets/video
+          python3 .github/video.py /tmp/kaynak assets/video/atolye.mp4
+          python3 .github/video.py /tmp/kaynak x --kare 12.5 assets/video/atolye-kapak.jpg
+          ls -la assets/video
+      - name: Kaydet
+        run: |
+          git config user.name "fotoince-sudo"; git config user.email "fotoince@gmail.com"
+          cp assets/video/* /tmp/
+          for i in 1 2 3 4 5; do
+            git fetch -q origin main && git reset -q --hard origin/main
+            mkdir -p assets/video && cp /tmp/atolye.mp4 /tmp/atolye-kapak.jpg assets/video/
+            git add assets/video && (git commit -q -m "Tanıtım videosu: Baskı Atölyesi" || break)
+            git push -q origin HEAD:main && break; sleep 5
+          done
