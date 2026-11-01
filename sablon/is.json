@@ -530,5 +530,17 @@
   "baslik": "Kayseri",
   "kat": "Kurt geziyor · Şehir hastaneleri",
   "url": "https://export-download.canva.com/DWuLI/DAHZnQDWuLI/-1/0/0076-2661022322095600520.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAQYCGKMUH4R7NKVBA%2F20261031%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20261031T202313Z&X-Amz-Expires=93536&X-Amz-Signature=f62f51215ff572459d4dff93af9150c96ac80255276e1700b8a346d5d4e46d41&X-Amz-SignedHeaders=host%3Bx-amz-expected-bucket-owner&response-expires=Sun%2C%2001%20Nov%202026%2022%3A22%3A09%20GMT"
+ },
+ {
+  "ad": "erkek-yemek-trabzon-dikey",
+  "baslik": "Trabzon · Hamsi",
+  "kat": "Kurt geziyor · Yöresel lezzetler",
+  "url": "https://export-download.canva.com/DWuLI/DAHZnQDWuLI/-1/0/0077-6095017041923063554.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAQYCGKMUH4R7NKVBA%2F20261101%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20261101T110632Z&X-Amz-Expires=38180&X-Amz-Signature=2b5af40b78c727173c0c9627997f067e7a5368401ca065997ef17e88235f9f04&X-Amz-SignedHeaders=host%3Bx-amz-expected-bucket-owner&response-expires=Sun%2C%2001%20Nov%202026%2021%3A42%3A52%20GMT"
+ },
+ {
+  "ad": "erkek-yemek-trabzon-yatay",
+  "baslik": "Trabzon · Hamsi",
+  "kat": "Kurt geziyor · Yöresel lezzetler",
+  "url": "https://export-download.canva.com/DWuLI/DAHZnQDWuLI/-1/0/0078-6095017041923063554.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAQYCGKMUH4R7NKVBA%2F20261101%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20261101T195805Z&X-Amz-Expires=8150&X-Amz-Signature=cc7a384a187118018e33f9f26d6d949e5d701d0a77e4b8528fc67df07245aa06&X-Amz-SignedHeaders=host%3Bx-amz-expected-bucket-owner&response-expires=Sun%2C%2001%20Nov%202026%2022%3A13%3A55%20GMT"
  }
 ]
