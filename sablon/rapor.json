@@ -1,4 +1,96 @@
 {
+ "10kasim-dikey": {
+  "ad": "10 Kasım",
+  "baski": [
+   3508,
+   4961
+  ],
+  "buyutulmus": [
+   4244,
+   5772
+  ],
+  "dpi": 300,
+  "kat": "Kurt geziyor · Özel günler",
+  "kaynak": [
+   1088,
+   1456
+  ],
+  "kirpilmis": [
+   1061,
+   1443
+  ],
+  "tamam": true,
+  "yon": "dikey"
+ },
+ "10kasim-yatay": {
+  "ad": "10 Kasım",
+  "baski": [
+   4961,
+   3508
+  ],
+  "buyutulmus": [
+   5928,
+   4032
+  ],
+  "dpi": 300,
+  "kat": "Kurt geziyor · Özel günler",
+  "kaynak": [
+   1536,
+   1024
+  ],
+  "kirpilmis": [
+   1482,
+   1008
+  ],
+  "tamam": true,
+  "yon": "yatay"
+ },
+ "23nisan-dikey": {
+  "ad": "23 Nisan",
+  "baski": [
+   3508,
+   4961
+  ],
+  "buyutulmus": [
+   4268,
+   5672
+  ],
+  "dpi": 300,
+  "kat": "Kurt geziyor · Özel günler",
+  "kaynak": [
+   1088,
+   1456
+  ],
+  "kirpilmis": [
+   1067,
+   1418
+  ],
+  "tamam": true,
+  "yon": "dikey"
+ },
+ "23nisan-yatay": {
+  "ad": "23 Nisan",
+  "baski": [
+   4961,
+   3508
+  ],
+  "buyutulmus": [
+   5984,
+   3856
+  ],
+  "dpi": 300,
+  "kat": "Kurt geziyor · Özel günler",
+  "kaynak": [
+   1536,
+   1024
+  ],
+  "kirpilmis": [
+   1496,
+   964
+  ],
+  "tamam": true,
+  "yon": "yatay"
+ },
  "antalya-dikey": {
   "ad": "Antalya",
   "baski": [
@@ -40,6 +132,52 @@
   ],
   "kirpilmis": [
    1536,
+   1024
+  ],
+  "tamam": true,
+  "yon": "yatay"
+ },
+ "aydin-dikey": {
+  "ad": "Aydın",
+  "baski": [
+   3508,
+   4961
+  ],
+  "buyutulmus": [
+   4252,
+   5680
+  ],
+  "dpi": 300,
+  "kat": "Şehirler",
+  "kaynak": [
+   1088,
+   1456
+  ],
+  "kirpilmis": [
+   1063,
+   1420
+  ],
+  "tamam": true,
+  "yon": "dikey"
+ },
+ "aydin-yatay": {
+  "ad": "Aydın",
+  "baski": [
+   4961,
+   3508
+  ],
+  "buyutulmus": [
+   6024,
+   4096
+  ],
+  "dpi": 300,
+  "kat": "Şehirler",
+  "kaynak": [
+   1536,
+   1024
+  ],
+  "kirpilmis": [
+   1506,
    1024
   ],
   "tamam": true,
@@ -87,6 +225,98 @@
   "kirpilmis": [
    1525,
    994
+  ],
+  "tamam": true,
+  "yon": "yatay"
+ },
+ "cesme-dikey": {
+  "ad": "Çeşme",
+  "baski": [
+   3508,
+   4961
+  ],
+  "buyutulmus": [
+   4052,
+   5576
+  ],
+  "dpi": 300,
+  "kat": "Şehirler",
+  "kaynak": [
+   1088,
+   1456
+  ],
+  "kirpilmis": [
+   1013,
+   1394
+  ],
+  "tamam": true,
+  "yon": "dikey"
+ },
+ "cesme-yatay": {
+  "ad": "Çeşme",
+  "baski": [
+   4961,
+   3508
+  ],
+  "buyutulmus": [
+   5984,
+   3880
+  ],
+  "dpi": 300,
+  "kat": "Şehirler",
+  "kaynak": [
+   1536,
+   1024
+  ],
+  "kirpilmis": [
+   1496,
+   970
+  ],
+  "tamam": true,
+  "yon": "yatay"
+ },
+ "gobeklitepe-dikey": {
+  "ad": "Göbeklitepe",
+  "baski": [
+   3508,
+   4961
+  ],
+  "buyutulmus": [
+   4156,
+   5676
+  ],
+  "dpi": 300,
+  "kat": "Şehirler",
+  "kaynak": [
+   1088,
+   1456
+  ],
+  "kirpilmis": [
+   1039,
+   1419
+  ],
+  "tamam": true,
+  "yon": "dikey"
+ },
+ "gobeklitepe-yatay": {
+  "ad": "Göbeklitepe",
+  "baski": [
+   4961,
+   3508
+  ],
+  "buyutulmus": [
+   6104,
+   4096
+  ],
+  "dpi": 300,
+  "kat": "Şehirler",
+  "kaynak": [
+   1536,
+   1024
+  ],
+  "kirpilmis": [
+   1526,
+   1024
   ],
   "tamam": true,
   "yon": "yatay"
@@ -321,6 +551,98 @@
   "tamam": true,
   "yon": "yatay"
  },
+ "kirsehir-dikey": {
+  "ad": "Kırşehir",
+  "baski": [
+   3508,
+   4961
+  ],
+  "buyutulmus": [
+   4264,
+   5732
+  ],
+  "dpi": 300,
+  "kat": "Şehirler",
+  "kaynak": [
+   1088,
+   1456
+  ],
+  "kirpilmis": [
+   1066,
+   1433
+  ],
+  "tamam": true,
+  "yon": "dikey"
+ },
+ "kirsehir-yatay": {
+  "ad": "Kırşehir",
+  "baski": [
+   4961,
+   3508
+  ],
+  "buyutulmus": [
+   5996,
+   4096
+  ],
+  "dpi": 300,
+  "kat": "Şehirler",
+  "kaynak": [
+   1536,
+   1024
+  ],
+  "kirpilmis": [
+   1499,
+   1024
+  ],
+  "tamam": true,
+  "yon": "yatay"
+ },
+ "kupa-10kasim": {
+  "ad": "10 Kasım",
+  "baski": [
+   2362,
+   1063
+  ],
+  "buyutulmus": [
+   7104,
+   3360
+  ],
+  "dpi": 300,
+  "kat": "Kurt geziyor · Özel günler",
+  "kaynak": [
+   1776,
+   896
+  ],
+  "kirpilmis": [
+   1776,
+   840
+  ],
+  "tamam": true,
+  "yon": "yatay"
+ },
+ "kupa-23nisan": {
+  "ad": "23 Nisan",
+  "baski": [
+   2362,
+   1063
+  ],
+  "buyutulmus": [
+   7104,
+   3252
+  ],
+  "dpi": 300,
+  "kat": "Kurt geziyor · Özel günler",
+  "kaynak": [
+   1776,
+   896
+  ],
+  "kirpilmis": [
+   1776,
+   813
+  ],
+  "tamam": true,
+  "yon": "yatay"
+ },
  "kupa-antalya": {
   "ad": "Antalya",
   "baski": [
@@ -344,6 +666,29 @@
   "tamam": true,
   "yon": "yatay"
  },
+ "kupa-aydin": {
+  "ad": "Aydın",
+  "baski": [
+   2362,
+   1063
+  ],
+  "buyutulmus": [
+   7104,
+   3444
+  ],
+  "dpi": 300,
+  "kat": "Şehirler",
+  "kaynak": [
+   1776,
+   896
+  ],
+  "kirpilmis": [
+   1776,
+   861
+  ],
+  "tamam": true,
+  "yon": "yatay"
+ },
  "kupa-bodrum": {
   "ad": "Bodrum",
   "baski": [
@@ -363,6 +708,52 @@
   "kirpilmis": [
    1757,
    813
+  ],
+  "tamam": true,
+  "yon": "yatay"
+ },
+ "kupa-cesme": {
+  "ad": "Çeşme",
+  "baski": [
+   2362,
+   1063
+  ],
+  "buyutulmus": [
+   6992,
+   3448
+  ],
+  "dpi": 300,
+  "kat": "Şehirler",
+  "kaynak": [
+   1776,
+   896
+  ],
+  "kirpilmis": [
+   1748,
+   862
+  ],
+  "tamam": true,
+  "yon": "yatay"
+ },
+ "kupa-gobeklitepe": {
+  "ad": "Göbeklitepe",
+  "baski": [
+   2362,
+   1063
+  ],
+  "buyutulmus": [
+   7104,
+   3568
+  ],
+  "dpi": 300,
+  "kat": "Şehirler",
+  "kaynak": [
+   1776,
+   896
+  ],
+  "kirpilmis": [
+   1776,
+   892
   ],
   "tamam": true,
   "yon": "yatay"
@@ -478,6 +869,29 @@
   "kirpilmis": [
    1770,
    834
+  ],
+  "tamam": true,
+  "yon": "yatay"
+ },
+ "kupa-kirsehir": {
+  "ad": "Kırşehir",
+  "baski": [
+   2362,
+   1063
+  ],
+  "buyutulmus": [
+   6956,
+   3512
+  ],
+  "dpi": 300,
+  "kat": "Şehirler",
+  "kaynak": [
+   1776,
+   896
+  ],
+  "kirpilmis": [
+   1739,
+   878
   ],
   "tamam": true,
   "yon": "yatay"
