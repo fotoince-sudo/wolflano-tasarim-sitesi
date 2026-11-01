@@ -40,7 +40,8 @@ def up4(im):
 
 for j in jobs:
     ad = j['ad']
-    if rap.get(ad, {}).get('tamam') and not j.get('yeniden'):
+    # kupa (tuval) işleri v2: baskı alanını sağdan soldan boşluk kalmadan doldurur; eski (boşluklu) kupa çıktıları bir kez yeniden üretilir
+    if rap.get(ad, {}).get('tamam') and not j.get('yeniden') and (not j.get('tuval') or rap[ad].get('dolgu')):
         continue
     try:
         kp = f'sablon/kaynak/{ad}.png'
@@ -59,8 +60,17 @@ for j in jobs:
         big = up4(im)
         land = big.width > big.height
         W, H = tuple(j['tuval']) if j.get('tuval') else ((A3[1], A3[0]) if land else A3)
-        s = min(W * .96 / big.width, H * .96 / big.height)
-        big = big.resize((round(big.width * s), round(big.height * s)), Image.LANCZOS)
+        if j.get('tuval'):
+            # Kupa: kenarda boşluk kalmasın. En fazla %5 yatay esnetme (göze batmaz), kalan fark üstten/alttan eşit kırpılır.
+            st = min(max((W / H) / (big.width / big.height), 1.0), 1.05)
+            bw = big.width * st
+            s = max(W / bw, H / big.height)
+            big = big.resize((max(W, round(bw * s)), max(H, round(big.height * s))), Image.LANCZOS)
+            l, t = (big.width - W) // 2, (big.height - H) // 2
+            big = big.crop((l, t, l + W, t + H))
+        else:
+            s = min(W * .96 / big.width, H * .96 / big.height)
+            big = big.resize((round(big.width * s), round(big.height * s)), Image.LANCZOS)
         f = np.asarray(big).astype(np.float32)
         dist = 255 - f.min(axis=2)
         # Yalnız dış kenara bağlı saf beyaz zemin saydam olur; resmin içindeki beyazlar (bulut, kurdun göğsü, beyaz evler, kedi) dolu kalır
@@ -82,7 +92,7 @@ for j in jobs:
         k = 1600 / max(W, H)
         can.resize((round(W * k), round(H * k)), Image.LANCZOS).save(f'sablon/web/{ad}.webp', 'WEBP', quality=88, method=6, alpha_quality=95)
         rap[ad] = {'tamam': True, 'kaynak': src, 'kirpilmis': crop, 'buyutulmus': [crop[0] * 4, crop[1] * 4],
-                   'baski': [W, H], 'dpi': 300, 'yon': 'yatay' if land else 'dikey', 'ad': j.get('baslik', ad), 'kat': j.get('kat', '')}
+                   'baski': [W, H], 'dpi': 300, 'yon': 'yatay' if land else 'dikey', 'ad': j.get('baslik', ad), 'kat': j.get('kat', ''), 'dolgu': bool(j.get('tuval'))}
         print(ad, 'kaynak', src, '->', W, 'x', H)
     except Exception as e:
         rap[ad] = {'tamam': False, 'hata': traceback.format_exc()[-1500:]}
