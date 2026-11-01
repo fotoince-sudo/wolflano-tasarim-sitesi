@@ -1,1 +1,12 @@
-kupa-yemek-kayseri kaynak (1776, 896) -> 2362 x 1063
+erkek-cesme-dikey kaynak (1088, 1456) -> 3508 x 4961
+erkek-hastane-izmir-dikey kaynak (1088, 1456) -> 3508 x 4961
+erkek-yemek-izmir-dikey kaynak (1088, 1456) -> 3508 x 4961
+erkek-cesme-yatay kaynak (1536, 1024) -> 4961 x 3508
+erkek-hastane-izmir-yatay kaynak (1536, 1024) -> 4961 x 3508
+erkek-yemek-izmir-yatay kaynak (1536, 1024) -> 4961 x 3508
+erkek-hastane-ankara-dikey kaynak (1088, 1456) -> 3508 x 4961
+erkek-hastane-ankara-yatay kaynak (1536, 1024) -> 4961 x 3508
+erkek-hastane-istanbul-dikey kaynak (1088, 1456) -> 3508 x 4961
+erkek-hastane-istanbul-yatay kaynak (1536, 1024) -> 4961 x 3508
+erkek-hastane-kayseri-dikey kaynak (1088, 1456) -> 3508 x 4961
+erkek-hastane-kayseri-yatay kaynak (1536, 1024) -> 4961 x 3508

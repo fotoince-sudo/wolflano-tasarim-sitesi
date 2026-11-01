@@ -275,6 +275,294 @@
   "tamam": true,
   "yon": "yatay"
  },
+ "erkek-cesme-dikey": {
+  "ad": "Çeşme",
+  "baski": [
+   3508,
+   4961
+  ],
+  "buyutulmus": [
+   4028,
+   5576
+  ],
+  "dolgu": false,
+  "dpi": 300,
+  "kat": "Şehirler",
+  "kaynak": [
+   1088,
+   1456
+  ],
+  "kirpilmis": [
+   1007,
+   1394
+  ],
+  "tamam": true,
+  "yon": "dikey"
+ },
+ "erkek-cesme-yatay": {
+  "ad": "Çeşme",
+  "baski": [
+   4961,
+   3508
+  ],
+  "buyutulmus": [
+   5984,
+   3864
+  ],
+  "dolgu": false,
+  "dpi": 300,
+  "kat": "Şehirler",
+  "kaynak": [
+   1536,
+   1024
+  ],
+  "kirpilmis": [
+   1496,
+   966
+  ],
+  "tamam": true,
+  "yon": "yatay"
+ },
+ "erkek-hastane-ankara-dikey": {
+  "ad": "Ankara",
+  "baski": [
+   3508,
+   4961
+  ],
+  "buyutulmus": [
+   4080,
+   5764
+  ],
+  "dolgu": false,
+  "dpi": 300,
+  "kat": "Kurt geziyor · Şehir hastaneleri",
+  "kaynak": [
+   1088,
+   1456
+  ],
+  "kirpilmis": [
+   1020,
+   1441
+  ],
+  "tamam": true,
+  "yon": "dikey"
+ },
+ "erkek-hastane-ankara-yatay": {
+  "ad": "Ankara",
+  "baski": [
+   4961,
+   3508
+  ],
+  "buyutulmus": [
+   6016,
+   4096
+  ],
+  "dolgu": false,
+  "dpi": 300,
+  "kat": "Kurt geziyor · Şehir hastaneleri",
+  "kaynak": [
+   1536,
+   1024
+  ],
+  "kirpilmis": [
+   1504,
+   1024
+  ],
+  "tamam": true,
+  "yon": "yatay"
+ },
+ "erkek-hastane-istanbul-dikey": {
+  "ad": "İstanbul",
+  "baski": [
+   3508,
+   4961
+  ],
+  "buyutulmus": [
+   4160,
+   5756
+  ],
+  "dolgu": false,
+  "dpi": 300,
+  "kat": "Kurt geziyor · Şehir hastaneleri",
+  "kaynak": [
+   1088,
+   1456
+  ],
+  "kirpilmis": [
+   1040,
+   1439
+  ],
+  "tamam": true,
+  "yon": "dikey"
+ },
+ "erkek-hastane-istanbul-yatay": {
+  "ad": "İstanbul",
+  "baski": [
+   4961,
+   3508
+  ],
+  "buyutulmus": [
+   5820,
+   4068
+  ],
+  "dolgu": false,
+  "dpi": 300,
+  "kat": "Kurt geziyor · Şehir hastaneleri",
+  "kaynak": [
+   1536,
+   1024
+  ],
+  "kirpilmis": [
+   1455,
+   1017
+  ],
+  "tamam": true,
+  "yon": "yatay"
+ },
+ "erkek-hastane-izmir-dikey": {
+  "ad": "İzmir",
+  "baski": [
+   3508,
+   4961
+  ],
+  "buyutulmus": [
+   4152,
+   5528
+  ],
+  "dolgu": false,
+  "dpi": 300,
+  "kat": "Kurt geziyor · Şehir hastaneleri",
+  "kaynak": [
+   1088,
+   1456
+  ],
+  "kirpilmis": [
+   1038,
+   1382
+  ],
+  "tamam": true,
+  "yon": "dikey"
+ },
+ "erkek-hastane-izmir-yatay": {
+  "ad": "İzmir",
+  "baski": [
+   4961,
+   3508
+  ],
+  "buyutulmus": [
+   5944,
+   4056
+  ],
+  "dolgu": false,
+  "dpi": 300,
+  "kat": "Kurt geziyor · Şehir hastaneleri",
+  "kaynak": [
+   1536,
+   1024
+  ],
+  "kirpilmis": [
+   1486,
+   1014
+  ],
+  "tamam": true,
+  "yon": "yatay"
+ },
+ "erkek-hastane-kayseri-dikey": {
+  "ad": "Kayseri",
+  "baski": [
+   3508,
+   4961
+  ],
+  "buyutulmus": [
+   4260,
+   5700
+  ],
+  "dolgu": false,
+  "dpi": 300,
+  "kat": "Kurt geziyor · Şehir hastaneleri",
+  "kaynak": [
+   1088,
+   1456
+  ],
+  "kirpilmis": [
+   1065,
+   1425
+  ],
+  "tamam": true,
+  "yon": "dikey"
+ },
+ "erkek-hastane-kayseri-yatay": {
+  "ad": "Kayseri",
+  "baski": [
+   4961,
+   3508
+  ],
+  "buyutulmus": [
+   6016,
+   4032
+  ],
+  "dolgu": false,
+  "dpi": 300,
+  "kat": "Kurt geziyor · Şehir hastaneleri",
+  "kaynak": [
+   1536,
+   1024
+  ],
+  "kirpilmis": [
+   1504,
+   1008
+  ],
+  "tamam": true,
+  "yon": "yatay"
+ },
+ "erkek-yemek-izmir-dikey": {
+  "ad": "İzmir · Boyoz",
+  "baski": [
+   3508,
+   4961
+  ],
+  "buyutulmus": [
+   3960,
+   5564
+  ],
+  "dolgu": false,
+  "dpi": 300,
+  "kat": "Kurt geziyor · Yöresel lezzetler",
+  "kaynak": [
+   1088,
+   1456
+  ],
+  "kirpilmis": [
+   990,
+   1391
+  ],
+  "tamam": true,
+  "yon": "dikey"
+ },
+ "erkek-yemek-izmir-yatay": {
+  "ad": "İzmir · Boyoz",
+  "baski": [
+   4961,
+   3508
+  ],
+  "buyutulmus": [
+   5764,
+   3988
+  ],
+  "dolgu": false,
+  "dpi": 300,
+  "kat": "Kurt geziyor · Yöresel lezzetler",
+  "kaynak": [
+   1536,
+   1024
+  ],
+  "kirpilmis": [
+   1441,
+   997
+  ],
+  "tamam": true,
+  "yon": "yatay"
+ },
  "gobeklitepe-dikey": {
   "ad": "Göbeklitepe",
   "baski": [
