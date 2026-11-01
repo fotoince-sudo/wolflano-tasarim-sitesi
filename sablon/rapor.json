@@ -933,6 +933,130 @@
   "tamam": true,
   "yon": "yatay"
  },
+ "kupa-yemek-adana": {
+  "ad": "Adana · Adana kebap",
+  "baski": [
+   2362,
+   1063
+  ],
+  "buyutulmus": [
+   7064,
+   3560
+  ],
+  "dolgu": true,
+  "dpi": 300,
+  "kat": "Kurt geziyor · Yöresel lezzetler",
+  "kaynak": [
+   1776,
+   896
+  ],
+  "kirpilmis": [
+   1766,
+   890
+  ],
+  "tamam": true,
+  "yon": "yatay"
+ },
+ "kupa-yemek-bursa": {
+  "ad": "Bursa · İskender",
+  "baski": [
+   2362,
+   1063
+  ],
+  "buyutulmus": [
+   7104,
+   3284
+  ],
+  "dolgu": true,
+  "dpi": 300,
+  "kat": "Kurt geziyor · Yöresel lezzetler",
+  "kaynak": [
+   1776,
+   896
+  ],
+  "kirpilmis": [
+   1776,
+   821
+  ],
+  "tamam": true,
+  "yon": "yatay"
+ },
+ "kupa-yemek-gaziantep": {
+  "ad": "Gaziantep · Fıstıklı baklava",
+  "baski": [
+   2362,
+   1063
+  ],
+  "buyutulmus": [
+   7104,
+   3508
+  ],
+  "dolgu": true,
+  "dpi": 300,
+  "kat": "Kurt geziyor · Yöresel lezzetler",
+  "kaynak": [
+   1776,
+   896
+  ],
+  "kirpilmis": [
+   1776,
+   877
+  ],
+  "tamam": true,
+  "yon": "yatay"
+ },
+ "kupa-yemek-izmir": {
+  "ad": "İzmir · Boyoz",
+  "baski": [
+   2362,
+   1063
+  ],
+  "buyutulmus": [
+   7012,
+   3100
+  ],
+  "dolgu": true,
+  "dpi": 300,
+  "kat": "Kurt geziyor · Yöresel lezzetler",
+  "kaynak": [
+   1776,
+   896
+  ],
+  "kirpilmis": [
+   1753,
+   775
+  ],
+  "tamam": true,
+  "yon": "yatay"
+ },
+ "kupa-yemek-kayseri": {
+  "hata": "Traceback (most recent call last):\n  File \"/home/runner/work/wolflano-tasarim-sitesi/wolflano-tasarim-sitesi/.github/sablon.py\", line 51, in <module>\n    data = urllib.request.urlopen(j['url'], timeout=120).read()\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/hostedtoolcache/Python/3.12.15/x64/lib/python3.12/urllib/request.py\", line 215, in urlopen\n    return opener.open(url, data, timeout)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/hostedtoolcache/Python/3.12.15/x64/lib/python3.12/urllib/request.py\", line 521, in open\n    response = meth(req, response)\n               ^^^^^^^^^^^^^^^^^^^\n  File \"/opt/hostedtoolcache/Python/3.12.15/x64/lib/python3.12/urllib/request.py\", line 630, in http_response\n    response = self.parent.error(\n               ^^^^^^^^^^^^^^^^^^\n  File \"/opt/hostedtoolcache/Python/3.12.15/x64/lib/python3.12/urllib/request.py\", line 559, in error\n    return self._call_chain(*args)\n           ^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/hostedtoolcache/Python/3.12.15/x64/lib/python3.12/urllib/request.py\", line 492, in _call_chain\n    result = func(*args)\n             ^^^^^^^^^^^\n  File \"/opt/hostedtoolcache/Python/3.12.15/x64/lib/python3.12/urllib/request.py\", line 639, in http_error_default\n    raise HTTPError(req.full_url, code, msg, hdrs, fp)\nurllib.error.HTTPError: HTTP Error 403: Forbidden\n",
+  "tamam": false
+ },
+ "kupa-yemek-trabzon": {
+  "ad": "Trabzon · Hamsi",
+  "baski": [
+   2362,
+   1063
+  ],
+  "buyutulmus": [
+   7104,
+   3584
+  ],
+  "dolgu": true,
+  "dpi": 300,
+  "kat": "Kurt geziyor · Yöresel lezzetler",
+  "kaynak": [
+   1776,
+   896
+  ],
+  "kirpilmis": [
+   1776,
+   896
+  ],
+  "tamam": true,
+  "yon": "yatay"
+ },
  "van-dikey": {
   "ad": "Van",
   "baski": [
@@ -975,6 +1099,294 @@
   "kirpilmis": [
    1508,
    995
+  ],
+  "tamam": true,
+  "yon": "yatay"
+ },
+ "yemek-adana-dikey": {
+  "ad": "Adana · Adana kebap",
+  "baski": [
+   3508,
+   4961
+  ],
+  "buyutulmus": [
+   3880,
+   5720
+  ],
+  "dolgu": false,
+  "dpi": 300,
+  "kat": "Kurt geziyor · Yöresel lezzetler",
+  "kaynak": [
+   1088,
+   1456
+  ],
+  "kirpilmis": [
+   970,
+   1430
+  ],
+  "tamam": true,
+  "yon": "dikey"
+ },
+ "yemek-adana-yatay": {
+  "ad": "Adana · Adana kebap",
+  "baski": [
+   4961,
+   3508
+  ],
+  "buyutulmus": [
+   5988,
+   3972
+  ],
+  "dolgu": false,
+  "dpi": 300,
+  "kat": "Kurt geziyor · Yöresel lezzetler",
+  "kaynak": [
+   1536,
+   1024
+  ],
+  "kirpilmis": [
+   1497,
+   993
+  ],
+  "tamam": true,
+  "yon": "yatay"
+ },
+ "yemek-bursa-dikey": {
+  "ad": "Bursa · İskender",
+  "baski": [
+   3508,
+   4961
+  ],
+  "buyutulmus": [
+   4092,
+   5728
+  ],
+  "dolgu": false,
+  "dpi": 300,
+  "kat": "Kurt geziyor · Yöresel lezzetler",
+  "kaynak": [
+   1088,
+   1456
+  ],
+  "kirpilmis": [
+   1023,
+   1432
+  ],
+  "tamam": true,
+  "yon": "dikey"
+ },
+ "yemek-bursa-yatay": {
+  "ad": "Bursa · İskender",
+  "baski": [
+   4961,
+   3508
+  ],
+  "buyutulmus": [
+   6096,
+   4036
+  ],
+  "dolgu": false,
+  "dpi": 300,
+  "kat": "Kurt geziyor · Yöresel lezzetler",
+  "kaynak": [
+   1536,
+   1024
+  ],
+  "kirpilmis": [
+   1524,
+   1009
+  ],
+  "tamam": true,
+  "yon": "yatay"
+ },
+ "yemek-gaziantep-dikey": {
+  "ad": "Gaziantep · Fıstıklı baklava",
+  "baski": [
+   3508,
+   4961
+  ],
+  "buyutulmus": [
+   4100,
+   5816
+  ],
+  "dolgu": false,
+  "dpi": 300,
+  "kat": "Kurt geziyor · Yöresel lezzetler",
+  "kaynak": [
+   1088,
+   1456
+  ],
+  "kirpilmis": [
+   1025,
+   1454
+  ],
+  "tamam": true,
+  "yon": "dikey"
+ },
+ "yemek-gaziantep-yatay": {
+  "ad": "Gaziantep · Fıstıklı baklava",
+  "baski": [
+   4961,
+   3508
+  ],
+  "buyutulmus": [
+   6064,
+   4056
+  ],
+  "dolgu": false,
+  "dpi": 300,
+  "kat": "Kurt geziyor · Yöresel lezzetler",
+  "kaynak": [
+   1536,
+   1024
+  ],
+  "kirpilmis": [
+   1516,
+   1014
+  ],
+  "tamam": true,
+  "yon": "yatay"
+ },
+ "yemek-izmir-dikey": {
+  "ad": "İzmir · Boyoz",
+  "baski": [
+   3508,
+   4961
+  ],
+  "buyutulmus": [
+   4024,
+   5552
+  ],
+  "dolgu": false,
+  "dpi": 300,
+  "kat": "Kurt geziyor · Yöresel lezzetler",
+  "kaynak": [
+   1088,
+   1456
+  ],
+  "kirpilmis": [
+   1006,
+   1388
+  ],
+  "tamam": true,
+  "yon": "dikey"
+ },
+ "yemek-izmir-yatay": {
+  "ad": "İzmir · Boyoz",
+  "baski": [
+   4961,
+   3508
+  ],
+  "buyutulmus": [
+   5756,
+   3992
+  ],
+  "dolgu": false,
+  "dpi": 300,
+  "kat": "Kurt geziyor · Yöresel lezzetler",
+  "kaynak": [
+   1536,
+   1024
+  ],
+  "kirpilmis": [
+   1439,
+   998
+  ],
+  "tamam": true,
+  "yon": "yatay"
+ },
+ "yemek-kayseri-dikey": {
+  "ad": "Kayseri · Mantı",
+  "baski": [
+   3508,
+   4961
+  ],
+  "buyutulmus": [
+   4080,
+   5752
+  ],
+  "dolgu": false,
+  "dpi": 300,
+  "kat": "Kurt geziyor · Yöresel lezzetler",
+  "kaynak": [
+   1088,
+   1456
+  ],
+  "kirpilmis": [
+   1020,
+   1438
+  ],
+  "tamam": true,
+  "yon": "dikey"
+ },
+ "yemek-kayseri-yatay": {
+  "ad": "Kayseri · Mantı",
+  "baski": [
+   4961,
+   3508
+  ],
+  "buyutulmus": [
+   5964,
+   3944
+  ],
+  "dolgu": false,
+  "dpi": 300,
+  "kat": "Kurt geziyor · Yöresel lezzetler",
+  "kaynak": [
+   1536,
+   1024
+  ],
+  "kirpilmis": [
+   1491,
+   986
+  ],
+  "tamam": true,
+  "yon": "yatay"
+ },
+ "yemek-trabzon-dikey": {
+  "ad": "Trabzon · Hamsi",
+  "baski": [
+   3508,
+   4961
+  ],
+  "buyutulmus": [
+   4096,
+   5668
+  ],
+  "dolgu": false,
+  "dpi": 300,
+  "kat": "Kurt geziyor · Yöresel lezzetler",
+  "kaynak": [
+   1088,
+   1456
+  ],
+  "kirpilmis": [
+   1024,
+   1417
+  ],
+  "tamam": true,
+  "yon": "dikey"
+ },
+ "yemek-trabzon-yatay": {
+  "ad": "Trabzon · Hamsi",
+  "baski": [
+   4961,
+   3508
+  ],
+  "buyutulmus": [
+   6076,
+   4012
+  ],
+  "dolgu": false,
+  "dpi": 300,
+  "kat": "Kurt geziyor · Yöresel lezzetler",
+  "kaynak": [
+   1536,
+   1024
+  ],
+  "kirpilmis": [
+   1519,
+   1003
   ],
   "tamam": true,
   "yon": "yatay"
