@@ -563,6 +563,54 @@
   "tamam": true,
   "yon": "yatay"
  },
+ "erkek-yemek-trabzon-dikey": {
+  "ad": "Trabzon · Hamsi",
+  "baski": [
+   3508,
+   4961
+  ],
+  "buyutulmus": [
+   4072,
+   5676
+  ],
+  "dolgu": false,
+  "dpi": 300,
+  "kat": "Kurt geziyor · Yöresel lezzetler",
+  "kaynak": [
+   1088,
+   1456
+  ],
+  "kirpilmis": [
+   1018,
+   1419
+  ],
+  "tamam": true,
+  "yon": "dikey"
+ },
+ "erkek-yemek-trabzon-yatay": {
+  "ad": "Trabzon · Hamsi",
+  "baski": [
+   4961,
+   3508
+  ],
+  "buyutulmus": [
+   6076,
+   4012
+  ],
+  "dolgu": false,
+  "dpi": 300,
+  "kat": "Kurt geziyor · Yöresel lezzetler",
+  "kaynak": [
+   1536,
+   1024
+  ],
+  "kirpilmis": [
+   1519,
+   1003
+  ],
+  "tamam": true,
+  "yon": "yatay"
+ },
  "gobeklitepe-dikey": {
   "ad": "Göbeklitepe",
   "baski": [

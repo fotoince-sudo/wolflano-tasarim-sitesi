@@ -10,3 +10,5 @@ erkek-hastane-istanbul-dikey kaynak (1088, 1456) -> 3508 x 4961
 erkek-hastane-istanbul-yatay kaynak (1536, 1024) -> 4961 x 3508
 erkek-hastane-kayseri-dikey kaynak (1088, 1456) -> 3508 x 4961
 erkek-hastane-kayseri-yatay kaynak (1536, 1024) -> 4961 x 3508
+erkek-yemek-trabzon-dikey kaynak (1088, 1456) -> 3508 x 4961
+erkek-yemek-trabzon-yatay kaynak (1536, 1024) -> 4961 x 3508
