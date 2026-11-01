@@ -323,6 +323,11 @@ svg.i{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stro
 .tpl .prev .in{position:absolute;left:50%;top:0;width:139px;height:196px;transform:translateX(-50%) scale(.66);transform-origin:50% 0}
 .tpl .prev .obj{cursor:pointer}
 .tpl span{font:600 13px var(--ui);text-align:center}
+.tpl,.atpl{position:relative}
+.tplx{position:absolute;top:4px;right:4px;min-width:26px;height:26px;padding:0 6px;border-radius:13px;background:rgba(0,0,0,.72);color:#fff;font:700 15px/26px var(--ui);text-align:center;z-index:3}
+.tplx.back{background:#3f8f55;font-size:11px}
+.tpl-hid .prev{opacity:.35}
+.tplhb{display:flex;border:1px dashed var(--line);background:var(--panel2);border-radius:14px;min-height:60px;padding:6px;justify-content:center;align-items:center;text-align:center;font:600 12px var(--ui);color:var(--ink,#111)}
 
 .wf-intro{margin:0;color:var(--muted);font:500 14px/1.45 var(--ui)}
 .wgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
@@ -3706,7 +3711,11 @@ function tplGroup(p){p=p===undefined?state.product:p;return p==='mug'?'kupa':p==
 function tplBox(t){return t.box||[REF_W,REF_H];}
 /* Erkek ürünlerde çiçek süslü şablonların yerine çiçeksiz erkek sürümü çıkar; diğer ürünlerde erkek sürümü görünmez */
 function tplMen(){return state.cut==='erkek'&&tplGroup()==='giyim';}
-function tplFits(t,g){g=g||tplGroup();if(t.c==='__gizli__')return false;if(t.g==='erkek'&&!tplMen())return false;if(t.cic&&tplMen())return false;return [].concat(t.p||'giyim').indexOf(g)>=0;}
+/* Yöneticinin gizlediği şablonlar (site_content.studio.hideTpl): müşterilere hiç görünmez; yönetici "Gizlenenler" ile görüp geri getirebilir */
+var TPL_HIDE=[];
+function tplKey(t){return t.n+(t.g?'|'+t.g:'')+'|'+[].concat(t.p||'giyim').join(',');}
+function tplHid(t){return TPL_HIDE.indexOf(tplKey(t))>=0;}
+function tplFits(t,g){g=g||tplGroup();if(t.c==='__gizli__')return false;if(tplHid(t)&&!view.tplHid)return false;if(t.g==='erkek'&&!tplMen())return false;if(t.cic&&tplMen())return false;return [].concat(t.p||'giyim').indexOf(g)>=0;}
 var tplLastGroup='';
 function renderTpl(){
   var h='',cc='',q=normTR(($('#tplQ')&&$('#tplQ').value||'').trim()),n=0,g=tplGroup(),has={};
@@ -4634,6 +4643,7 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
   }
   document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('[data-sitem]');if(!b)return;e.preventDefault();e.stopPropagation();var fw=!$('#wolfPage').hidden;addFromUrl(b.dataset.sitem,fw);if(view.tab)closeTab();if(fw)closeWolf();},true);
   function apply(st){
+    TPL_HIDE=(st.hideTpl||[]).slice();
     var cols=vis(st.colors).filter(function(c){return /^#[0-9a-f]{6}$/i.test(c.hex||'');});
     if(cols.length){TEES.length=0;cols.forEach(function(c){TEES.push([c.name||c.hex,c.hex]);});if(!TEES.some(function(t){return t[1]===state.tee;}))state.tee=TEES[0][1];}
     if(st.clipCats&&st.clipCats.length){
@@ -5712,12 +5722,33 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
     [TPL_CAT_ADM,TPL_CAT_PRIV].forEach(function(c){var i=TPL_CATS.indexOf(c);if(cs[c]&&i<0)TPL_CATS.splice(1,0,c);else if(!cs[c]&&i>=0)TPL_CATS.splice(i,1);});
     if(TPL_CATS.indexOf(view.tplCat)<0)view.tplCat='Tümü';
     baseTplA();
-    var g=$('#tplGrid'),q=(($('#tplQ')&&$('#tplQ').value)||'').trim().toLocaleLowerCase('tr-TR');if(!g||!ADM.tpls.length)return;
+    var g=$('#tplGrid'),q=(($('#tplQ')&&$('#tplQ').value)||'').trim().toLocaleLowerCase('tr-TR');if(!g)return;if(!ADM.tpls.length){tplAdmMarks();$('#tplEmpty').hidden=g.children.length>0;return;}
     if((view.tplCat===TPL_CAT_ADM||view.tplCat===TPL_CAT_PRIV)&&!q)g.innerHTML='';
     var l=ADM.tpls.filter(function(t){if(!admFit(t))return false;return q?String(t.title||'').toLocaleLowerCase('tr-TR').indexOf(q)>=0:(view.tplCat==='Tümü'||view.tplCat===tplCatOf(t));});
     if(l.length)g.insertAdjacentHTML('afterbegin',l.map(function(t){return '<button class="atpl" data-adtpl="'+ea(t.id)+'"><div class="prev" style="background:#eef1ef"><img alt="" src="'+ea(t.thumb||'')+'" loading="lazy" style="width:100%;height:100%;object-fit:cover"></div><span>'+ea(t.title)+'</span></button>';}).join(''));
+    tplAdmMarks();
     $('#tplEmpty').hidden=g.children.length>0;
   };
+  /* Yönetici: her şablonun köşesinde gizle (×) ya da geri getir; altta gizlenenleri göster düğmesi */
+  function tplAdmMarks(){var g=$('#tplGrid');if(!g||!ADM.on)return;
+    $$('#tplGrid .tpl').forEach(function(b){var t=TPLS[+b.dataset.tpl];if(!t)return;var h=tplHid(t);b.classList.toggle('tpl-hid',h);
+      b.insertAdjacentHTML('beforeend','<span class="tplx'+(h?' back':'')+'" role="button" data-tplx="'+b.dataset.tpl+'" aria-label="'+(h?'Geri getir':'Şablonu gizle')+'">'+(h?'Geri getir':'×')+'</span>');});
+    $$('#tplGrid .atpl').forEach(function(b){b.insertAdjacentHTML('beforeend','<span class="tplx" role="button" data-tpldel="'+ea(b.dataset.adtpl)+'" aria-label="Şablonu sil">×</span>');});
+    var n=TPL_HIDE.length;if(n||view.tplHid)g.insertAdjacentHTML('beforeend','<button type="button" class="tplhb" data-tplhb>'+(view.tplHid?'Gizlenenleri sakla':'Gizlenenler ('+n+')')+'</button>');}
+  async function saveHide(l){var rows=await rq('/rest/v1/site_content?select=data&id=eq.main');var d=rows&&rows[0]&&rows[0].data;if(!d)throw {msg:'Site verisi okunamadı.'};
+    d.studio=d.studio||{};d.studio.hideTpl=l;
+    await rq('/rest/v1/site_content?on_conflict=id',{method:'POST',body:{id:'main',data:d,updated_at:new Date().toISOString()},prefer:'resolution=merge-duplicates,return=minimal'});}
+  document.addEventListener('click',async function(e){if(!e.target.closest)return;
+    var hb=e.target.closest('[data-tplhb]');if(hb){e.preventDefault();e.stopPropagation();view.tplHid=!view.tplHid;renderTpl();renderTplPreviews();return;}
+    var x=e.target.closest('[data-tplx]'),dl=e.target.closest('[data-tpldel]');if(!x&&!dl)return;e.preventDefault();e.stopPropagation();if(!ADM.on||ADM.busy)return;
+    try{if(dl){var at=ADM.tpls.filter(function(z){return z.id===dl.dataset.tpldel;})[0];if(!at||!confirm('"'+(at.title||'Şablon')+'" silinsin mi? Bu şablon tamamen silinir.'))return;
+        ADM.busy=true;await rq('/rest/v1/admin_designs?id=eq.'+encodeURIComponent(at.id),{method:'DELETE',prefer:'return=minimal'});ADM.tpls=ADM.tpls.filter(function(z){return z!==at;});toast('Şablon silindi');}
+      else{var t=TPLS[+x.dataset.tplx];if(!t)return;var k=tplKey(t),h=TPL_HIDE.indexOf(k)>=0;
+        if(!h&&!confirm('"'+t.n+'" gizlensin mi? Müşteriler artık görmez. İstersen "Gizlenenler"den geri getirebilirsin.'))return;
+        ADM.busy=true;var l=TPL_HIDE.filter(function(z){return z!==k;});if(!h)l.push(k);await saveHide(l);TPL_HIDE=l;toast(h?'Şablon geri geldi':'Şablon gizlendi');}
+      renderTpl();renderTplPreviews();}
+    catch(err){toast(err&&err.msg?err.msg:(err&&(err.status===401||err.status===403||err.code==='auth')?'Oturum süresi doldu, yeniden giriş yap.':'Kaydedilemedi, tekrar dene.'));}
+    ADM.busy=false;},true);
   document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('[data-adtpl]');if(!b)return;e.preventDefault();e.stopPropagation();
     var t=ADM.tpls.filter(function(x){return x.id===b.dataset.adtpl;})[0];if(!t)return;applyDesign(t.data,false);closeTab();toast('Şablon uygulandı. Geri almak için ↶');},true);
 
