@@ -5051,15 +5051,24 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
     var t=await tok();if(!t)throw {code:'auth'};
     var rows=await rq('/rest/v1/site_content?select=data&id=eq.main');var d=rows&&rows[0]&&rows[0].data;if(!d)throw {msg:'Site verisi okunamadı.'};
     var p=(d.products||[]).filter(function(x){return x.id===E.pid;})[0];if(!p)throw {msg:'Ürün sitede bulunamadı (silinmiş olabilir).'};
-    var imgs=await withOrtam(await prodImgs(ss),$('#amGo')),rest=(p.imgs||[]).filter(function(k){return !/^img\/(tas|ortam)-/.test(String(k));});
-    p.imgs=imgs.concat(rest);
-    var data=await collect();
-    p.dsg=data;
-    if(p.adesign)await rq('/rest/v1/admin_designs?id=eq.'+p.adesign,{method:'PATCH',body:{data:data,thumb:pubUrl(imgs[0]),product:state.product,cut:state.cut,color:state.tee}});
+    /* Tüm renklerde güncelle: aynı tasarım kodlu (W…) ve aynı türdeki kardeş ürünler kendi renkleriyle yeniden çizilir */
+    var all=$('#amUAll'),sibs=[p];
+    if(all&&all.checked&&+p.wc){var ck=function(x){return [x.type||'',(x.cat||[]).join(','),(x.sub||[]).join(','),x.dsg&&x.dsg.product||'',x.dsg&&x.dsg.cut||''].join('|');},k=ck(p);
+      sibs=sibs.concat((d.products||[]).filter(function(x){return x!==p&&+x.wc===+p.wc&&x.dsg&&x.dsg.tee&&ck(x)===k;}));}
+    var t0=state.tee,btn=$('#amGo'),bad=[];
+    try{for(var si=0;si<sibs.length;si++){var q=sibs[si],qt=si?q.dsg.tee:t0;
+      if(sibs.length>1){teeSwap(qt);renderShirt();renderObjects();await new Promise(function(r){setTimeout(r,120);});if(btn)btn.textContent='Güncelleniyor: '+(q.color||colorName()||qt)+' ('+(si+1)+'/'+sibs.length+')…';}
+      try{var imgs=await withOrtam(await prodImgs(ss),btn),rest=(q.imgs||[]).filter(function(k){return !/^img\/(tas|ortam)-/.test(String(k));});
+        q.imgs=imgs.concat(rest);
+        var data=await collect();if(q.dsg&&q.dsg.code)data.code=q.dsg.code;
+        q.dsg=data;
+        if(q.adesign)await rq('/rest/v1/admin_designs?id=eq.'+q.adesign,{method:'PATCH',body:{data:data,thumb:pubUrl(imgs[0]),product:state.product,cut:state.cut,color:state.tee}});
+      }catch(e){if(e&&e.code==='auth'||!si)throw e;bad.push(q.color||q.name);try{console.error('Renk güncelleme',e);}catch(_){}}}}
+    finally{if(sibs.length>1){teeSwap(t0);renderShirt();renderObjects();try{renderOpt();}catch(_){}}}
     await rq('/rest/v1/site_content?on_conflict=id',{method:'POST',body:{id:'main',data:d,updated_at:new Date().toISOString()},prefer:'resolution=merge-duplicates,return=minimal'});
     var nm=p.name||E.title;ADM.edit=null;mode='urun';
     setTimeout(function(){location.href='index.html#urun-'+encodeURIComponent(p.id);},1800);
-    return '"'+nm+'" güncellendi. Ürün sayfasına dönülüyor…';
+    return '"'+nm+'" güncellendi'+(sibs.length>1?' ('+(sibs.length-bad.length)+' renk'+(bad.length?'; güncellenemeyen: '+bad.join(', '):'')+')':'')+'. Ürün sayfasına dönülüyor…';
   }
   /* Tasarım kodu: sitedeki (index.html) dKey / wHead / wFree ile aynı */
   function dKey(p){if(p.grp)return 'g:'+p.grp;var d=p.dsg;if(!d||typeof d!=='object')return 'p:'+p.id;
@@ -5421,7 +5430,7 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
     var w=$('#admSheet');
     var tabs=[['sablon','Şablon'],['urun','Ürün yap'],['baski','Baskıya gönder'],['taslak','Taslak']];if(!/^(mug|canvas)$/.test(state.product))tabs.push(['manken','Mankende gör']);else if(mode==='manken')mode='sablon';if(ADM.edit)tabs.unshift(['guncelle','Güncelle']);else if(mode==='guncelle')mode='sablon';
     var body='';
-    if(mode==='guncelle')body='<p class="note">Düzenlenen ürün: <b>'+ea(ADM.edit.title||'')+'</b>. "Ürünü güncelle" yalnız ön ve arka görsellerini yeniler; ürün kodu, fiyat, kategori, açıklama ve stok aynı kalır.</p>'+ortBox();
+    if(mode==='guncelle')body='<p class="note">Düzenlenen ürün: <b>'+ea(ADM.edit.title||'')+'</b>. "Ürünü güncelle" yalnız ön ve arka görsellerini yeniler; ürün kodu, fiyat, kategori, açıklama ve stok aynı kalır.</p>'+(allCols().length>1?'<label class="am-all"><input type="checkbox" id="amUAll" checked><span><b>Tüm renklerde güncelle</b><small>Bu tasarımın sitedeki bütün renkleri birlikte yenilenir. Yalnız bu renk için işareti kaldır.</small></span></label>':'')+ortBox();
     if(mode==='sablon')body='<div class="am-two"><label class="am-f">Kimler görsün<select id="amVis"><option value="herkes"'+(tplVis==='herkes'?' selected':'')+'>Herkes (müşteriler de)</option><option value="ozel"'+(tplVis==='ozel'?' selected':'')+'>Sadece Wolflano</option></select></label>'+
       '<label class="am-f">Kategori<select id="amTCat"><option value="">'+ea(TPL_CAT_ADM)+'</option>'+TPL_CATS.filter(function(c){return c!=='Tümü'&&c!==TPL_CAT_ADM&&c!==TPL_CAT_PRIV;}).map(function(c){return '<option'+(c===tplCat?' selected':'')+'>'+ea(c)+'</option>';}).join('')+'</select></label></div>'+
       '<p class="note">'+(tplVis==='ozel'?'Yalnız sen ve yetkililer Şablon panelinde "'+TPL_CAT_PRIV+'" altında görürsünüz; müşterinin sayfasına hiç yüklenmez.':'Müşteriler Şablon panelinde seçtiğin kategoride görür; seçince kendi ürününe uyarlanır.')+'</p>';
