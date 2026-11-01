@@ -27,7 +27,7 @@ Baskı alanları (giyim):
 - Arka: A4 ya da A3.
 - Kapüşonlu: önde yalnız A4 (kanguru cep yüzünden A3 yok) ve logolar. Fermuarlı kapüşonlu ve polo: önde yalnız logolar (sol ve sağ), arkada A4 ya da A3 (poloda A4 yatay).
 - Şapka: önde 20 × 10 cm. Kupa: 8 × 8 cm (kulpun iki yanı) ya da 20 × 9 cm süblimasyon (çevresini sarar). Canvas: baskı her yanda 4 cm tuvalin yanlarına sarılır; önemli yerleri kenara koyma.
-- Üstteki düğmelerle yüz seçilir: "Ön", "Sol logo", "Sağ logo", "Arka". Baskı alanı (A4 dikey, A4 yatay, A3) üstteki çiplerden seçilir. Kesik çizgili kutu baskı alanıdır; dışına taşan kısım basılmaz ("Taşan kısım basılmaz" uyarısı çıkar).
+- Yüz, alttaki menünün hemen üstündeki ince şeritten seçilir: "Ön", "Sol logo", "Sağ logo", "Arka". Baskı alanı (A4 dikey, A4 yatay, A3) üstteki çiplerden seçilir. Kesik çizgili kutu baskı alanıdır; dışına taşan kısım basılmaz ("Taşan kısım basılmaz" uyarısı çıkar).
 Tasarım araçları (alttaki sekmeler):
 - "Şablon": hazır tasarımlar; her ürün yalnız kendi ölçüsüne uygun şablonları görür. Türkiye kategorisinde Türk bayrağı şablonları var. Şablondaki yazıya dokunup değiştirilebilir.
 - "Yazı": yazı ekle; yazı tipi, renk, kontur, harf aralığı, eğik ve dikey yazı seçenekleri.

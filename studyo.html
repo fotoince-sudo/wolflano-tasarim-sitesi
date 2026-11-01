@@ -338,6 +338,12 @@ svg.i{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stro
 .wcard b{font:700 14px var(--ui)}
 .wcard small{font:500 12px var(--ui);color:var(--muted);margin-top:-6px}
 .wcard:active{transform:scale(.98)}
+/* Ön / logo / arka seçimi: altta, menünün hemen üstünde ince şerit */
+.sidebar{flex:none;padding:5px 10px;background:var(--panel);border-top:1px solid var(--line)}
+.sidebar .seg{display:flex;padding:2px;border-radius:9px;max-width:520px;margin:0 auto}
+.sidebar .seg button{flex:1 1 0;padding:4px 6px!important;font-size:12.5px;border-radius:7px;line-height:1.2;white-space:nowrap}
+.sidebar:has(#sideSeg[hidden]){display:none}
+body.odak .sidebar{display:none!important}
 .tabs{display:grid;grid-template-columns:repeat(6,1fr);background:var(--panel);border-top:1px solid var(--line)}
 .tabs button.wolfai{color:var(--accent,#159b91)}
 .tabs button.wolfai .i{stroke:currentColor}
@@ -451,8 +457,8 @@ svg.i{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stro
 /* Telefonda baskı ölçüleri (A4, A3, logo…) ayrı satırda, hepsi görünür */
 @media (max-width:520px){
   /* İki sıra: 1) renk/beden + yüzler  2) baskı ölçüleri + cetvel/yakınlaştır/tam ekran (tasarım alanına yer kalsın) */
-  .sub{flex-wrap:wrap;row-gap:6px;padding:6px 10px}
-  .sub:after{content:"";order:8;flex-basis:100%;height:0}
+  /* yüz seçimi alta taşındı: renk/beden, baskı ölçüleri ve araçlar tek satırda */
+  .sub{flex-wrap:nowrap;gap:6px;padding:6px 10px}
   .sub .chips{order:9;flex:1 1 0;min-width:0;flex-wrap:nowrap;overflow-x:auto;-webkit-mask-image:none;mask-image:none;padding-right:0;gap:5px;scrollbar-width:none}
   .sub .chips::-webkit-scrollbar{display:none}
   .sub .chips button{padding:6px 9px;flex:none}
@@ -637,7 +643,6 @@ img{-webkit-touch-callout:none;-webkit-user-drag:none}
 
   <div class="sub">
     <button class="optb" id="optBtn" aria-label="Ürün rengi ve beden"><i class="dot" id="optDot"></i><span id="optSz"></span></button>
-    <div class="seg" id="sideSeg"><button id="sideF" class="on">Ön</button><button id="sideL" hidden>Sol logo</button><button id="sideL2" hidden>Sağ logo</button><button id="sideB">Arka</button></div>
     <div class="chips" id="areaChips">
     </div>
     <div class="sub-r">
@@ -787,6 +792,7 @@ img{-webkit-touch-callout:none;-webkit-user-drag:none}
     </div>
   </section>
 
+  <div class="sidebar" id="sideBar"><div class="seg" id="sideSeg"><button id="sideF" class="on">Ön</button><button id="sideL" hidden>Sol logo</button><button id="sideL2" hidden>Sağ logo</button><button id="sideB">Arka</button></div></div>
   <nav class="tabs" id="tabs">
     <button data-tab="tee"><svg class="i" viewBox="0 0 24 24" stroke-linejoin="round" stroke-linecap="round"><path d="M9 3.6c.7 1.3 1.7 1.9 3 1.9s2.3-.6 3-1.9l4.6 2 1.7 4.3-3 1.3-1.1-1.8V20.5H6.8V9.4l-1.1 1.8-3-1.3 1.7-4.3z"/><path d="M9 3.6c.4 2.2 1.4 3.2 3 3.2s2.6-1 3-3.2"/></svg>Ürün</button>
     <button data-tab="text"><svg class="i" viewBox="0 0 24 24"><path d="M5 6V4h14v2M12 4v16M9 20h6"/></svg>Yazı</button>
@@ -5805,7 +5811,7 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
     ['Baskı alanı nedir?','Ürünün üzerindeki kesik çizgili kutu baskı yapılacak alandır. Tasarımın dışına taşan kısmı basılmaz; seçim çubuğunda "Taşan kısım basılmaz" uyarısı çıkar.'],
     ['Fotoğrafım baskıya uygun mu?','Çoğu fotoğraf uygundur: baskıdan önce fotoğrafını ücretsiz olarak netleştiriyoruz. Fotoğraf çok küçükse (ör. ekran görüntüsü) seni nazikçe uyarırız; daha büyük bir sürümün varsa onu yüklemen yeterli.'],
     ['Fotoğrafın arka planını nasıl silerim?','Görsele dokun, alttaki çubukta "Arka planı sil" düğmesine bas.'],
-    ['Hem öne hem arkaya baskı yaptırabilir miyim?','Evet. Üstteki Ön, Sol logo, Sağ logo ve Arka düğmeleriyle önde büyük baskı, iki göğüste ayrı logo (ör. firma logosu ve Türk bayrağı) ve arkada ayrı tasarım yapabilirsin. Logo ön baskıyla çakışırsa logo önde kalır.'],
+    ['Hem öne hem arkaya baskı yaptırabilir miyim?','Evet. Alttaki menünün hemen üstündeki Ön, Sol logo, Sağ logo ve Arka düğmeleriyle önde büyük baskı, iki göğüste ayrı logo (ör. firma logosu ve Türk bayrağı) ve arkada ayrı tasarım yapabilirsin. Logo ön baskıyla çakışırsa logo önde kalır.'],
     ['Bütün tasarımı birlikte nasıl büyütürüm?','Bir öğeye dokun, "Tümünü seç" düğmesine bas ve sol üstteki beyaz kareyi çek. Şablon seçtiğinde tasarım zaten bütün halde seçili gelir.'],
     ['Yanlışlıkla bir şeyi sildim.','Üstteki ↶ düğmesiyle geri alabilirsin.']
   ];
