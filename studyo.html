@@ -1709,6 +1709,18 @@ function cutMerge(d,man){man=man||{};stdcSync(d);((d&&d.blanks)||[]).forEach(fun
 /* Renkler her üründe aynı sırada ve aynı tonda: standart sıra (Beyaz, Lacivert, Siyah, Mavi, Yeşil), sonra diğerleri */
 function phColors(b){var L=((b&&b.colors)||[]).filter(function(c){return c&&(c.front||c.back)&&/^#[0-9a-f]{6}$/i.test(c.hex||'');}),ix=function(c){for(var i=0;i<STDC.length;i++)if(STDC[i].name===c.name)return i;return STDC.length;};
   return L.map(function(c,k){var i=ix(c);return {c:i<STDC.length?Object.assign({},c,{hex:STDC[i].hex}):c,i:i,k:k};}).sort(function(a,z){return a.i-z.i||a.k-z.k;}).map(function(x){return x.c;});}
+/* Seçilen rengin fotoğrafı: önce birebir ton, sonra aynı ad, sonra en yakın ton. Eski kayıtlarda renk tonu biraz farklı (ör. eski siyah #17181a);
+   eskiden ilk renge (beyaz) düşüyordu, siyah tasarım beyaz tişörtte görünüyordu. */
+function hexRGB(h){h=String(h||'').replace('#','');return /^[0-9a-f]{6}$/i.test(h)?[parseInt(h.slice(0,2),16),parseInt(h.slice(2,4),16),parseInt(h.slice(4,6),16)]:null;}
+/* Eski renk tonları (ilk ürün fotoğraflarıyla kaydedilmiş tasarımlar): ton yakın olmasa da adıyla eşleşir (eski lacivert siyaha çok yakın) */
+var OLD_TONE={'#f6f6f4':'Beyaz','#17181a':'Siyah','#1c2a4b':'Lacivert','#2f6fb5':'Mavi','#1f6b4a':'Yeşil','#8f9598':'Gri','#5b3a29':'Kahve','#b2502d':'Kiremit','#111111':'Siyah','#000000':'Siyah','#ffffff':'Beyaz'};
+function phPick(cs,hex,name){if(!cs||!cs.length)return null;var h=String(hex||'').toLowerCase(),c=cs.filter(function(x){return String(x.hex).toLowerCase()===h;})[0];if(c)return c;name=name||OLD_TONE[h];
+  var nm=String(name||'').trim().toLocaleLowerCase('tr');if(nm){c=cs.filter(function(x){return String(x.name||'').trim().toLocaleLowerCase('tr')===nm;})[0];if(c)return c;}
+  var a=hexRGB(hex),best=cs[0],bd=1e9;if(!a)return best;cs.forEach(function(x){var b=hexRGB(x.hex);if(!b)return;var d=Math.pow(a[0]-b[0],2)+Math.pow(a[1]-b[1],2)+Math.pow(a[2]-b[2],2);if(d<bd){bd=d;best=x;}});return best;}
+/* Renk değişince fotoğrafın yüklenip ölçülmesini bekler (beklemeden çizilince fotoğraf yerine vektör çizim kaydediliyordu) */
+function phWait(hex,ms){return new Promise(function(res){try{if(!phOn()){res();return;}var co=phPick(phColors(phBlank(state.product,state.cut)),hex);if(!co){res();return;}
+  var us=[co.front,co.back].filter(Boolean).map(phSrc),rs=us.map(function(u){return phCalib(u);}),t0=Date.now();
+  (function chk(){if(rs.every(function(r){return r.ready||r.fail;})||Date.now()-t0>(ms||15000)){setTimeout(res,60);return;}setTimeout(chk,100);})();}catch(_){res();}});}
 function phSize(){var l=sizeList(),best=null,mx=0;if(PH.want&&l.indexOf(PH.want)>=0&&(state.sizes[PH.want]||0)>0)return PH.want;l.forEach(function(z){if((state.sizes[z]||0)>mx){mx=state.sizes[z];best=z;}});return best||(l.indexOf(PH.want)>=0?PH.want:'')||l[1]||l[0];}
 function phDims(product,cut){var m=(SZM[product]||{})[cut];if(!m)return null;var z=phSize();return m[z]||m.M||m['7-8']||null;}
 /* Yatay ölçek: fotoğraftaki gövde eni beden tablosundaki göğüs enine (SZM [en, boy]) oturur. Boy dikey ölçeği, en yatay ölçeği belirler;
@@ -1801,7 +1813,7 @@ function phSVG(side,tee,product,cut){
     var s0=(F.r-F.l)/Math.max(1,k0.r-k0.l+1),X0=(F.l+F.r)/2-(k0.l+k0.r)/2*s0,Y0=F.top-k0.top*s0;
     return '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 600 640" width="600" height="640">'+fl+'<image href="'+k0.url+'" xlink:href="'+k0.url+'" x="'+X0.toFixed(1)+'" y="'+Y0.toFixed(1)+'" width="'+(k0.W*s0).toFixed(1)+'" height="'+(k0.H*s0).toFixed(1)+'" preserveAspectRatio="none"'+(tint?' filter="url(#phT)"':'')+'/></svg>';}
   var b=phBlank(product,cut),cs=phColors(b);if(!cs.length)return null;
-  var co=cs.filter(function(c){return String(c.hex).toLowerCase()===String(tee).toLowerCase();})[0]||cs[0];
+  var co=phPick(cs,tee);
   var u=phSrc(side==='back'?(co.back||co.front||''):(co.front||co.back||''));if(!u)return null;
   var cal=phCalib(u);if(!cal.ready)return null;
   var d=phDims(product,cut);if(!d)return null;
@@ -1814,7 +1826,7 @@ function phSVG(side,tee,product,cut){
 /* Ekran ölçeği: ürünün EN BÜYÜK bedeni ekranı doldurur, ölçek bütün bedenlerde aynı kalır (bedenler arası gerçek fark görünür) */
 function fitBox(side){side=face(side);
   var gt=NECK_Y[side]-ndrop(side);
-  try{if(phOn()){var b=phBlank(state.product,state.cut),cs=phColors(b),co=cs.filter(function(c){return String(c.hex).toLowerCase()===String(state.tee).toLowerCase();})[0]||cs[0];
+  try{if(phOn()){var b=phBlank(state.product,state.cut),cs=phColors(b),co=phPick(cs,state.tee);
     var u=phSrc(side==='back'?(co.back||co.front):(co.front||co.back)),cal=u&&PH.cal[u],m=(SZM[state.product]||{})[state.cut];
     if(cal&&cal.ready&&m){var mx=null;Object.keys(m).forEach(function(z){if(!mx||m[z][1]>mx[1])mx=m[z];});var sc=phSc(cal,mx),hp=Math.max(mx[1]*PPC,(cal.bot-cal.top+1)*sc);return {w:(cal.r-cal.l+1)*phSX(cal,mx,sc),top:gt-(cal.hood||0)*sc,bot:gt+hp};}}}catch(_){}
   var k=CUT_K[state.cut]||CUT_K.erkek,ay=NECK_Y[side];return {w:556*k[0],top:ay+(62-ay)*k[1],bot:ay+(618-ay)*k[1]};
@@ -1828,10 +1840,10 @@ function phApplyColors(){
   if(!TEES.some(function(t){return String(t[1]).toLowerCase()===String(state.tee).toLowerCase();}))state.tee=teeNear(state.tee);
 }
 /* Kayıtlı renk listede birebir yoksa (eski yeşil tonu gibi) en yakın standart renge oturur; çok uzaksa ilk renge düşer */
-function teeNear(hex){var rgb=function(h){h=String(h||'').replace('#','');if(!/^[0-9a-f]{6}$/i.test(h))return null;return [parseInt(h.slice(0,2),16),parseInt(h.slice(2,4),16),parseInt(h.slice(4,6),16)];};
+function teeNear(hex){var on=OLD_TONE[String(hex||'').toLowerCase()];if(on){var tn=TEES.filter(function(t){return String(t[0]).trim().toLocaleLowerCase('tr')===on.toLocaleLowerCase('tr');})[0];if(tn)return tn[1];}var rgb=function(h){h=String(h||'').replace('#','');if(!/^[0-9a-f]{6}$/i.test(h))return null;return [parseInt(h.slice(0,2),16),parseInt(h.slice(2,4),16),parseInt(h.slice(4,6),16)];};
   var a=rgb(hex),best=TEES[0][1],bd=1e9;if(!a)return best;
   TEES.forEach(function(t){var b=rgb(t[1]);if(!b)return;var d=Math.sqrt(Math.pow(a[0]-b[0],2)+Math.pow(a[1]-b[1],2)+Math.pow(a[2]-b[2],2));if(d<bd){bd=d;best=t[1];}});
-  return bd<=60?best:TEES[0][1];}
+  return best;} /* eskiden 60'tan uzak tonlar (ör. eski lacivert #1c2a4b) ilk renge, beyaza düşüyordu */
 window.phSite=function(d){PH.site=d;PH.media=d.media||'';PH.teesBase=TEES.slice();try{siteTiers();}catch(_){}
   try{var q=new URLSearchParams(location.search),rn=q.get('renk'),bd=q.get('beden');if(bd)PH.want=bd;
     phApplyColors();if(rn!=null){var cs=phColors(phBlank(state.product,state.cut)),c=(/^\d+$/.test(rn)?cs[+rn]:null)||cs.filter(function(x){return x.name===rn||String(x.hex).toLowerCase()===String(rn).toLowerCase();})[0];if(c)state.tee=c.hex;}}catch(_){}
@@ -5127,7 +5139,9 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
       var seenT={};sibs=sibs.filter(function(x){var t=String(x.dsg&&x.dsg.tee||'').toLowerCase()||x.id;if(seenT[t])return false;seenT[t]=1;return true;});}
     var t0=state.tee,btn=$('#amGo'),bad=[];
     try{for(var si=0;si<sibs.length;si++){var q=sibs[si],qt=si?q.dsg.tee:t0;
-      if(sibs.length>1){teeSwap(qt);renderShirt();renderObjects();await new Promise(function(r){setTimeout(r,120);});if(btn)btn.textContent='Güncelleniyor: '+(q.color||colorName()||qt)+' ('+(si+1)+'/'+sibs.length+')…';}
+      /* Eski üründe kayıtlı ton bugünkü renk listesinde birebir yoksa aynı adlı / en yakın renge oturur */
+      if(si){var qc=phPick(TEES.map(function(x){return {name:x[0],hex:x[1]};}),qt,q.color);if(qc)qt=qc.hex;}
+      if(sibs.length>1){teeSwap(qt);renderShirt();renderObjects();await phWait(qt);renderShirt();renderObjects();await new Promise(function(r){setTimeout(r,120);});if(btn)btn.textContent='Güncelleniyor: '+(q.color||colorName()||qt)+' ('+(si+1)+'/'+sibs.length+')…';}
       try{var imgs=await withOrtam(await prodImgs(ss),btn),rest=(q.imgs||[]).filter(function(k){return !/^img\/(tas|ortam)-/.test(String(k));});
         q.imgs=imgs.concat(rest);
         var data=await collect();if(q.dsg&&q.dsg.code)data.code=q.dsg.code;
@@ -5185,7 +5199,7 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
     return '<label class="am-all"><input type="checkbox" id="amAll" checked><span><b>Tüm renklere uygula ('+n+' renk)</b><small>Aynı tasarım bu ürünün bütün renklerinde ayrı ayrı yayınlanır. Yalnız seçili renk için işareti kaldır.</small></span></label>';}
   async function doProdAll(title,cat,pr,info,btn){var cols=allCols(),t0=state.tee,ok=[],bad=[];
     var cur=cols.filter(function(h){return String(h).toLowerCase()===String(t0).toLowerCase();});cols=cur.concat(cols.filter(function(h){return cur.indexOf(h)<0;}));
-    try{for(var i=0;i<cols.length;i++){teeSwap(cols[i]);renderShirt();renderObjects();await new Promise(function(r){setTimeout(r,120);});
+    try{for(var i=0;i<cols.length;i++){teeSwap(cols[i]);renderShirt();renderObjects();await phWait(cols[i]);renderShirt();renderObjects();await new Promise(function(r){setTimeout(r,120);});
         var cn=colorName()||cols[i];if(btn)btn.textContent='Yayınlanıyor: '+cn+' ('+(i+1)+'/'+cols.length+')…';
         try{await doProd(title,cat,pr,false,Object.assign({},info,{color:null}));ok.push(cn);}catch(e){if(e&&e.code==='auth')throw e;bad.push(cn);try{console.error('Renk',cn,e);}catch(_){}}}}
     finally{teeSwap(t0);renderShirt();renderObjects();try{renderOpt();}catch(_){}}
