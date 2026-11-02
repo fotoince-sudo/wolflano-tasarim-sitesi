@@ -3327,7 +3327,8 @@ yorumlar:function(){return rvPage();},
   var all=BLANKS.filter(function(b){return bVisible(b);}),inTab=all.filter(function(b){return !tsSel||bGen(b).indexOf(tsSel)>=0;}),types=[];
   inTab.forEach(function(b){var t=bTypeOf(b)||'diger';if(types.indexOf(t)<0)types.push(t);});
   types.sort(function(a,b){return TS_ORD.indexOf(a)-TS_ORD.indexOf(b);});if(tsType&&types.indexOf(tsType)<0)tsType='';
-  var list=inTab.filter(function(b){return !tsType||(bTypeOf(b)||'diger')===tsType;}),
+  /* Giyim her zaman üstte; şapka, sonra kupa, en altta canvas (kendi içlerinde yüklenme sırası korunur) */
+  var lowR={hat:1,mug:2,canvas:3},list=inTab.filter(function(b){return !tsType||(bTypeOf(b)||'diger')===tsType;}).sort(function(a,b){return (lowR[bTypeOf(a)]||0)-(lowR[bTypeOf(b)]||0);}),
     CV='<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>',
     OK='<svg class="ok" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-10"/></svg>',
     it=function(v,name){var on=tsType===v;return '<button type="button" data-tst="'+v+'"'+(on?' class="on" aria-checked="true"':' aria-checked="false"')+' role="menuitemradio"><span>'+esc(name)+'</span>'+(on?OK:'')+'</button>';};

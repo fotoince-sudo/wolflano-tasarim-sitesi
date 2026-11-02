@@ -3394,7 +3394,8 @@ function renderProdPage(){
     var inTab=bl.filter(function(b){return !PG.tab||pgGen(b).indexOf(PG.tab)>=0;}),types=[];
     inTab.forEach(function(b){var t=b.p||b.id;if(types.indexOf(t)<0)types.push(t);});types.sort(function(a,b){return PG_ORD.indexOf(a)-PG_ORD.indexOf(b);});
     if(PG.type&&types.indexOf(PG.type)<0)PG.type='';
-    var list=inTab.filter(function(b){return !PG.type||(b.p||b.id)===PG.type;}),CV='<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>';
+    /* Giyim her zaman üstte; şapka, sonra kupa, en altta canvas */
+    var lowR={hat:1,mug:2,canvas:3},list=inTab.filter(function(b){return !PG.type||(b.p||b.id)===PG.type;}).sort(function(a,b){return (lowR[a.p||a.id]||0)-(lowR[b.p||b.id]||0);}),CV='<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>';
     $('#pgFilter').innerHTML='<div class="pgtabs" role="tablist">'+PG_TABS.map(function(t){var on=PG.tab===t[0];return '<button type="button" role="tab" data-pgt="'+t[0]+'"'+(on?' class="on" aria-selected="true"':'')+'>'+t[1]+'</button>';}).join('')+'</div>'+
       (types.length>1?'<div class="pgdd'+(PG.open?' open':'')+'"><button type="button" class="pgddb" data-pgdd aria-expanded="'+PG.open+'"><span>'+(PG.type?escX(PRODUCTS[PG.type].name):'Tümü')+'</span>'+CV+'</button>'+
         (PG.open?'<div class="pgddl" role="menu">'+[''].concat(types).map(function(t){var on=PG.type===t;return '<button type="button" role="menuitemradio" aria-checked="'+on+'" data-pgty="'+t+'"'+(on?' class="on"':'')+'>'+(t?escX(PRODUCTS[t].name):'Tümü')+'</button>';}).join('')+'</div>':'')+'</div>':'');
