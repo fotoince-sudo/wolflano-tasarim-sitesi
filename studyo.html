@@ -3384,6 +3384,19 @@ function pgGen(b){var t=b.p||b.id,n=String(b.name||'').toLocaleLowerCase('tr');i
   if(b.gen&&b.gen!=='kupa'&&b.gen!=='canvas')return b.gen==='hepsi'?PG_G.slice():[b.gen];if(PG_G.indexOf(b.cut)>=0)return [b.cut];
   var c=String(b.cuts||'').toLocaleLowerCase('tr'),r=[];if(/erkek/.test(c))r.push('erkek');if(/kadın|kadin/.test(c))r.push('kadin');if(/çocuk|cocuk/.test(c))r.push('cocuk');if(r.length)return r;
   if(/kadın|kadin/.test(n))return ['kadin'];if(/çocuk|cocuk/.test(n))return ['cocuk'];return ['erkek'];}
+/* İlk renk karışık (beyaz hep önde olmasın): koyu/renkli tonlar daha sık */
+function pgRand(cs){if(!cs||cs.length<2)return 0;var w=cs.map(function(c){return lum(c.hex)>.8?.35:1;}),t=w.reduce(function(a,b){return a+b;},0),r=Math.random()*t;for(var i=0;i<w.length;i++){r-=w[i];if(r<=0)return i;}return 0;}
+/* Kartın rengini değiştirir: fotoğraf, renk noktası ve karta dokununca açılacak renk */
+function pgShow(card,n,fade){var bid=card.dataset.b,b=((PH.site&&PH.site.blanks)||[]).filter(function(x){return x.id===bid;})[0];if(!b)return;var cs=phColors(b),co=cs[n];if(!co)return;
+  var dt=card.querySelector('[data-pgk]');if(dt)PG.col[dt.dataset.pgk]=n;card.dataset.hex=co.hex;
+  card.querySelectorAll('[data-pgc]').forEach(function(y){y.classList.toggle('on',+y.dataset.pgc===n);});
+  var im=card.querySelector('.pth img'),u=phSrc(co.front||co.back||'');if(im&&u&&im.getAttribute('src')!==u){if(fade){var pre=new Image();pre.onload=function(){im.style.transition='opacity .26s';im.style.opacity=0;setTimeout(function(){im.src=u;requestAnimationFrame(function(){im.style.opacity=1;});},260);};pre.src=u;}else im.src=u;}}
+/* Ürün seç canlı görünsün (Koleksiyon gibi): her kart 4–8 sn'de bir renklerini karışık gösterir; renk noktasına dokunulan kart durur */
+(function(){var rm=false;try{rm=matchMedia('(prefers-reduced-motion: reduce)').matches;}catch(_){}if(rm)return;
+  setInterval(function(){var pp=document.getElementById('prodPage');if(document.hidden||!pp||pp.hidden)return;var now=Date.now(),vh=innerHeight;
+    pp.querySelectorAll('.pcard[data-b]').forEach(function(c){var ds=c.querySelectorAll('[data-pgc]');if(ds.length<2||c.dataset.pgman)return;
+      if(!c.dataset.pgt){c.dataset.pgt=now+2500+Math.random()*4000;return;}if(now<+c.dataset.pgt)return;c.dataset.pgt=now+4000+Math.random()*4000;
+      var r=c.getBoundingClientRect();if(r.bottom<-50||r.top>vh+50)return;var cur=c.querySelector('.pgdot.on'),k=cur?+cur.dataset.pgc:0,nk=k;while(nk===k)nk=Math.floor(Math.random()*ds.length);pgShow(c,nk,true);});},700);})();
 function pgKey(b){return b.id||((b.p||'')+'-'+(b.cut||''));}
 function renderProdPage(){
   var nm='',sw='',h='';
@@ -3400,7 +3413,7 @@ function renderProdPage(){
       (types.length>1?'<div class="pgdd'+(PG.open?' open':'')+'"><button type="button" class="pgddb" data-pgdd aria-expanded="'+PG.open+'"><span>'+(PG.type?escX(PRODUCTS[PG.type].name):'Tümü')+'</span>'+CV+'</button>'+
         (PG.open?'<div class="pgddl" role="menu">'+[''].concat(types).map(function(t){var on=PG.type===t;return '<button type="button" role="menuitemradio" aria-checked="'+on+'" data-pgty="'+t+'"'+(on?' class="on"':'')+'>'+(t?escX(PRODUCTS[t].name):'Tümü')+'</button>';}).join('')+'</div>':'')+'</div>':'');
     h=list.length?'<div class="pgrid pgr">'+list.map(function(b){var p=b.p||b.id,q=PRODUCTS[p],c=(b.cut&&q.cuts.indexOf(b.cut)>=0)?b.cut:q.cuts[0],cs=phColors(b),k=pgKey(b),
-      j=PG.col[k]!=null?PG.col[k]:Math.max(0,cs.findIndex(function(x){return String(x.hex).toLowerCase()===String(state.tee).toLowerCase();})),co=cs[Math.min(j,cs.length-1)],
+      j=PG.col[k]!=null?PG.col[k]:(PG.col[k]=pgRand(cs)),co=cs[Math.min(j,cs.length-1)],
       u=co?(co.front||co.back||''):((b.imgs||[])[0]||''),on=state.product===p&&state.cut===c&&siteBlank(p,c)===b;
       return '<div class="pcard'+(on?' on':'')+'" role="button" tabindex="0" data-p="'+p+'" data-c="'+c+'" data-b="'+escX(b.id||'')+'" data-hex="'+(co?escX(co.hex):'')+'" aria-label="'+escX(b.name||q.name)+'"><span class="pth">'+(u?'<img src="'+escX(phSrc(u))+'" alt="'+escX((b.name||q.name)+(co&&co.name?' – '+co.name:''))+'" loading="lazy">':productSVG('front',state.tee,p,c,true))+'</span><b>'+escX(b.name||q.name)+'</b><small>'+fmt(blankPrice(b,p,c))+'</small>'+
         (cs.length>1?'<span class="pgdots">'+cs.map(function(x,n){return '<button type="button" class="pgdot'+(x===co?' on':'')+'" data-pgk="'+escX(k)+'" data-pgc="'+n+'" style="background:'+x.hex+'" aria-label="'+escX(x.name||x.hex)+'"></button>';}).join('')+'</span>':'')+'</div>';}).join('')+'</div>':'<p class="note">Bu grupta henüz ürün yok.</p>';
@@ -3924,7 +3937,7 @@ $('#wfGrid').addEventListener('click',function(e){
 });
 $('#pgColors').addEventListener('click',function(e){var b=e.target.closest('[data-tee]');if(!b)return;teeSwap(b.dataset.tee);renderObjects();renderShirt();renderProdPage();pushHist();});
 $('#pgList').addEventListener('click',function(e){
-  var d=e.target.closest('[data-pgc]');if(d){e.stopPropagation();PG.col[d.dataset.pgk]=+d.dataset.pgc;renderProdPage();return;}
+  var d=e.target.closest('[data-pgc]');if(d){e.stopPropagation();var cd=d.closest('.pcard');if(cd){cd.dataset.pgman=1;pgShow(cd,+d.dataset.pgc,false);}else{PG.col[d.dataset.pgk]=+d.dataset.pgc;renderProdPage();}return;}
   var b=e.target.closest('[data-p]');if(!b)return;var hx=b.dataset.hex,nb=b.dataset.b||'',bch=nb!==(state.bid||'');state.bid=nb;chooseProduct(b.dataset.p,b.dataset.c);if(bch){try{phApplyColors();}catch(_){}renderAll();layout();pushHist();}
   /* Seçilen kartın rengiyle açılır; ardından renk ve beden paneli açılır ki müşteri bedenini seçsin */
   if(hx&&TEES.some(function(t){return String(t[1]).toLowerCase()===hx.toLowerCase();})&&String(state.tee).toLowerCase()!==hx.toLowerCase()){teeSwap(hx);renderAll();pushHist();}
