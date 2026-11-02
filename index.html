@@ -2957,17 +2957,24 @@ function wbPics(page){var out=[];
   /* Kendin tasarla: Koleksiyondaki baskılı (tasarlanmış) giyim ürünleri döner; renkliler önce, aynı renk art arda gelmez, her açılışta karışık, en fazla 8.
      Yeterli baskılı ürün yoksa baskısız ürünlerin renkli fotoğrafları eklenir (beyaz en sona). */
   if(page==='tasarla'){
+    /* Seçili sekmeye göre: Kupa → baskılı kupalar, Canvas → baskılı tablolar (sahne fotoğrafı varsa o), Kadın/Erkek/Çocuk → o grubun baskılı giyimi */
+    if(tsSel==='kupa'||tsSel==='canvas'){var HL=PRODUCTS.filter(function(p){return p.show!==false&&(p.imgs||[]).length&&ptOf(p)===tsSel&&!soldOut(p);});
+      for(var h1=HL.length-1;h1>0;h1--){var h2=Math.floor(Math.random()*(h1+1)),h3=HL[h1];HL[h1]=HL[h2];HL[h2]=h3;}
+      var hs={};HL.forEach(function(p){var o=(p.imgs||[]).filter(function(k){return /^img\/ortam-/.test(k);})[0],u=o?src(o):IMG(p);if(u&&!hs[u]){hs[u]=1;out.push(u);}});
+      if(out.length<2)BLANKS.forEach(function(b){if((b.p||b.id)!==(tsSel==='kupa'?'mug':'canvas'))return;(b.imgs||[]).forEach(function(k){var u=src(k);if(/^img\/ortam-/.test(k)&&!hs[u]){hs[u]=1;out.push(u);}});});
+      return out.slice(0,8);}
+    var gsel=/^(kadin|erkek|cocuk)$/.test(tsSel)?tsSel:'',gOf=function(p){var c=(p.cat||[]).concat(p.sub||[]).join(' ')+' '+((p.dsg&&p.dsg.cut)||'')+' '+(p.name||'');c=c.toLocaleLowerCase('tr');return /çocuk|cocuk|kız|kiz/.test(c)?'cocuk':/kad[iı]n/.test(c)?'kadin':/erkek/.test(c)?'erkek':'';};
     var gw=function(p){var t=String(p.type||'').toLocaleLowerCase('tr');return /ti[sş][oö]rt|polo|sweat|kap[uü][sş]/.test(t)&&!/kupa|canvas|tablo/.test(t);};
     var printed=function(p){var d=p.dsg;if(d){return ['front','logo','logo2','back'].some(function(k){return d[k]&&(d[k].objs||[]).length;});}return true;};
     var white=function(c){return /beyaz|white|krem|ekru/i.test(String(c||''));};
-    var L=PRODUCTS.filter(function(p){return p.show!==false&&p.imgs&&p.imgs[0]&&gw(p)&&!soldOut(p)&&printed(p);});
+    var L=PRODUCTS.filter(function(p){return p.show!==false&&p.imgs&&p.imgs[0]&&gw(p)&&!soldOut(p)&&printed(p)&&(!gsel||gOf(p)===gsel);});
     for(var q2=L.length-1;q2>0;q2--){var r2=Math.floor(Math.random()*(q2+1)),t2=L[q2];L[q2]=L[r2];L[r2]=t2;}
     L.sort(function(a,b){return (white(a.color)?1:0)-(white(b.color)?1:0);});
     /* Aynı renk art arda gelmesin */
     var ord=[],rest=L.slice();while(rest.length&&ord.length<8){var last=ord.length?String(ord[ord.length-1].color||'').toLocaleLowerCase('tr'):null,k2=0;
       for(var z=0;z<rest.length;z++){if(String(rest[z].color||'').toLocaleLowerCase('tr')!==last){k2=z;break;}}ord.push(rest.splice(k2,1)[0]);}
     var seen2={};ord.forEach(function(p){var u=IMG(p);if(u&&!seen2[u]){seen2[u]=1;out.push(u);}});
-    if(out.length<3){var wb=[];BLANKS.forEach(function(b){var t=b.p||b.id;if(t==='mug'||t==='canvas'||!bVisible(b))return;bColors(b).forEach(function(c){var u=c&&(c.front||c.back);if(!u)return;u=src(u);if(seen2[u])return;seen2[u]=1;(white(c.name||c.ad||c.label||c.id)?wb:out).push(u);});});
+    if(out.length<3){var wb=[];BLANKS.forEach(function(b){var t=b.p||b.id;if(t==='mug'||t==='canvas'||!bVisible(b))return;if(gsel&&bGen(b).indexOf(gsel)<0)return;bColors(b).forEach(function(c){var u=c&&(c.front||c.back);if(!u)return;u=src(u);if(seen2[u])return;seen2[u]=1;(white(c.name||c.ad||c.label||c.id)?wb:out).push(u);});});
       out=out.concat(wb).slice(0,Math.max(3,out.length));}
     return out.slice(0,8);}
   return kolPicks().map(function(p){return IMG(p);});}
