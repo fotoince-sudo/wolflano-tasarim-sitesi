@@ -1714,7 +1714,7 @@ function phDims(product,cut){var m=(SZM[product]||{})[cut];if(!m)return null;var
 var PH_BW={}; /* geçici olarak kapalı: enine germe fotoğrafı bozuyordu, ölçek yeniden yalnız boya göre */
 /* Ürün fotoğrafı ölçeği: tek oranlı (fotoğraf bozulmaz), gövde eni bedenin "en" ölçüsüne oturur.
    Baskı alanının ürüne oranı ende okunduğu için en esas; boya göre en çok %15 küçülür, %20 büyür. */
-function phSc(cal,d){var sh=d[1]*PPC/Math.max(1,cal.bot-cal.top+1);if(!cal||cal.raw||!cal.bw||!d[0]||!/^(tee|polo)$/.test(state.product))return sh;/* uzun kollularda kollar gövde enine karışır: yalnız boya göre */var sw=d[0]*PPC/cal.bw;return Math.max(sh*.85,Math.min(sh*1.2,sw));}
+function phSc(cal,d){var sh=d[1]*PPC/Math.max(1,cal.bot-cal.top+1),bw=cal&&(cal.cw||(/^(tee|polo)$/.test(state.product)?cal.bw:0));if(!cal||cal.raw||!bw||!d[0])return sh;var sw=d[0]*PPC/bw;return Math.max(sh*.85,Math.min(sh*1.2,sw));}
 function phSX(cal,d,sc,product){if(!cal||!cal.bw||!d||!PH_BW[product||state.product])return sc;var sx=d[0]*PPC/cal.bw;return Math.max(sc*.75,Math.min(sc*1.6,sx));}
 function phCalib(u){
   if(PH.cal[u])return PH.cal[u];
@@ -1762,7 +1762,12 @@ function phCalib(u){
     else{rec.url=c.toDataURL('image/png');rec.W=W;rec.H=H;rec.top=top;rec.bot=bot;rec.l=l;rec.r=r2;
       /* Gövde eni: kolların altında kalan satırlarda (boyun %58, %66, %74'ü) ürünün soldan sağa genişliği; ortanca alınır */
       var bws=[.58,.66,.74].map(function(f){var yy=Math.round(top+(bot-top)*f),a=-1,z=-1;for(var q2=0;q2<W;q2++){if(p[(yy*W+q2)*4+3]>110){if(a<0)a=q2;z=q2;}}return z>a?z-a+1:0;}).filter(function(v){return v>0;}).sort(function(a,z){return a-z;});
-      rec.bw=bws.length?bws[(bws.length/2)|0]:0;}
+      rec.bw=bws.length?bws[(bws.length/2)|0]:0;
+      /* Gövde eni (kollar dahil değil): ortadan sağa-sola kesintisiz ürün satırı. Uzun kollularda kollar gövdeye değdiği için
+         aşağıdan yukarı, kolların ayrıldığı (satır kutunun %80'inden dar) satırlardan en genişi alınır. */
+      var bx=r2-l+1,cxm=Math.round((l+r2)/2),runAt=function(yy){if(p[(yy*W+cxm)*4+3]<=110)return 0;var a=cxm,z=cxm;while(a>0&&p[(yy*W+a-1)*4+3]>110)a--;while(z<W-1&&p[(yy*W+z+1)*4+3]>110)z++;return z-a+1;},cwm=0;
+      for(var ff=.55;ff<=.9;ff+=.025){var rw=runAt(Math.round(top+(bot-top)*ff));if(rw>0&&rw<bx*.8&&rw>cwm)cwm=rw;}
+      rec.cw=cwm;}
     rec.ready=true;try{renderShirt();layout();}catch(_){}
   }catch(er){rec.fail=true;}};
   im.onerror=function(){rec.fail=true;};
@@ -5109,8 +5114,10 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
     var p=(d.products||[]).filter(function(x){return x.id===E.pid;})[0];if(!p)throw {msg:'Ürün sitede bulunamadı (silinmiş olabilir).'};
     /* Tüm renklerde güncelle: aynı tasarım kodlu (W…) ve aynı türdeki kardeş ürünler kendi renkleriyle yeniden çizilir */
     var all=$('#amUAll'),sibs=[p];
-    if(all&&all.checked&&+p.wc){var ck=function(x){return [x.type||'',(x.cat||[]).join(','),(x.sub||[]).join(','),x.dsg&&x.dsg.product||'',x.dsg&&x.dsg.cut||''].join('|');},k=ck(p);
-      sibs=sibs.concat((d.products||[]).filter(function(x){return x!==p&&+x.wc===+p.wc&&x.dsg&&x.dsg.tee&&ck(x)===k;}));}
+    if(all&&all.checked){var ck=function(x){return [x.type||'',(x.cat||[]).join(','),(x.sub||[]).join(','),x.dsg&&x.dsg.product||'',x.dsg&&x.dsg.cut||''].join('|');},k=ck(p),dk=dKey(p);
+      /* Tasarım kodu (W…) varsa onunla; eski ürünlerde kod yok: sitedeki Koleksiyon'un renkleri gruplarken kullandığı tasarım imzasıyla (dKey) */
+      sibs=sibs.concat((d.products||[]).filter(function(x){return x!==p&&x.dsg&&x.dsg.tee&&ck(x)===k&&String(x.dsg.tee).toLowerCase()!==String(p.dsg&&p.dsg.tee).toLowerCase()&&(+p.wc?+x.wc===+p.wc:dKey(x)===dk);}));
+      var seenT={};sibs=sibs.filter(function(x){var t=String(x.dsg&&x.dsg.tee||'').toLowerCase()||x.id;if(seenT[t])return false;seenT[t]=1;return true;});}
     var t0=state.tee,btn=$('#amGo'),bad=[];
     try{for(var si=0;si<sibs.length;si++){var q=sibs[si],qt=si?q.dsg.tee:t0;
       if(sibs.length>1){teeSwap(qt);renderShirt();renderObjects();await new Promise(function(r){setTimeout(r,120);});if(btn)btn.textContent='Güncelleniyor: '+(q.color||colorName()||qt)+' ('+(si+1)+'/'+sibs.length+')…';}
