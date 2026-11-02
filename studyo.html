@@ -4117,7 +4117,7 @@ if(document.fonts){
 /* Uzak (https) görseller CORS ile yüklenir; yoksa tuval "kirlenir" ve ürün/şablon kaydı sessizce başarısız olur */
 function loadImg(src){return new Promise(function(res,rej){var im=new Image();if(/^https?:/i.test(String(src)))im.crossOrigin='anonymous';im.onload=function(){res(im);};im.onerror=function(){rej(new Error('img'));};im.src=src;});}
 function svgUrl(s){return 'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(s);}
-async function drawObj(c,o,S,ox,oy){
+async function drawObj(c,o,S,ox,oy,hi){
   c.save();
   c.translate((o.x-ox)*S,(o.y-oy)*S);c.rotate(o.rot*PI/180);
   if(o.type==='text'&&o.sy&&o.sy!==1)c.scale(1,o.sy);
@@ -4145,7 +4145,8 @@ async function drawObj(c,o,S,ox,oy){
     var svg='<svg xmlns="http://www.w3.org/2000/svg" viewBox="'+clipVB(o.key)+'" width="'+W+'" height="'+H+'" fill="'+o.color+'" color="'+o.color+'">'+clipInner(o.key).replace(/currentColor/g,o.color)+'</svg>';
     var im=await loadImg(svgUrl(svg));c.drawImage(im,-o.w*S/2,-o.h*S/2,o.w*S,o.h*S);
   }else if(o.type==='image'&&assets[o.assetId]){
-    var im2=await loadImg(assets[o.assetId].url);
+    /* Baskı dosyasında hazır şablonun tam boy (A3 300 dpi) dosyası kullanılır; ekrandaki önizleme (1600 px) baskıda, özellikle büyük canvasta pikselleşiyordu */
+    var AS=assets[o.assetId],im2=null;if(hi&&AS.hi){try{im2=await loadImg(AS.hi);}catch(_){im2=null;}}if(!im2)im2=await loadImg(AS.url);
     var rx=-o.w*S/2,ry=-o.h*S/2,rw=o.w*S,rh=o.h*S,rr=(o.br||0)*S;
     function rp(ix){var r=Math.max(0,rr-ix);c.beginPath();if(c.roundRect)c.roundRect(rx+ix,ry+ix,rw-2*ix,rh-2*ix,r);else c.rect(rx+ix,ry+ix,rw-2*ix,rh-2*ix);}
     if(o.bw){c.save();c.shadowColor='rgba(40,30,20,.28)';c.shadowBlur=o.bw*2.6*S;c.shadowOffsetY=o.bw*0.9*S;c.fillStyle=o.bc||'#161616';rp(0);c.fill();c.restore();}
@@ -4256,17 +4257,20 @@ function mnCompose(img,maskImg,area,hex,layers,tol){
   var cov=0;for(i=0;i<N;i+=11)cov+=M[i];
   return {canvas:c,cover:cov*11/N};
 }
+/* Baskı çözünürlüğü: 300 dpi; telefon tarayıcısının tuval sınırı (~16 milyon piksel) aşılmasın diye büyük alanda düşer.
+   Eskiden uzun kenar 3508 px ile sınırlıydı: A3 212 dpi, canvas 50 × 70 yalnız ~115 dpi çıkıyordu. Şimdi A3 ~290, canvas 35 × 50 ~200, 50 × 70 ~150 dpi. */
+function printDpi(cm){return Math.max(72,Math.min(300,Math.sqrt(15.5e6/Math.max(1,cm[0]*cm[1]))*2.54));}
 async function renderPrint(side){
   var E0=extBox(side);if(E0){var A0=areaBox(side,state[side].area),U={l:Math.min(A0.l,E0.l),t:Math.min(A0.t,E0.t),r:Math.max(A0.r,E0.r),b:Math.max(A0.b,E0.b)};
-    var ucm=[(U.r-U.l)/PPC,(U.b-U.t)/PPC],dp=Math.min(300,3508/Math.max(ucm[0],ucm[1])*2.54),SU=(dp/2.54)/PPC;
+    var ucm=[(U.r-U.l)/PPC,(U.b-U.t)/PPC],dp=printDpi(ucm),SU=(dp/2.54)/PPC;
     var cu=document.createElement('canvas');cu.width=Math.round(ucm[0]*dp/2.54);cu.height=Math.round(ucm[1]*dp/2.54);var xu=cu.getContext('2d');
-    xu.save();xu.clip(new Path2D(areaPathD(side,SU,U.l,U.t)));var ob=state[side].objs;for(var j=0;j<ob.length;j++){await drawObj(xu,ob[j],SU,U.l,U.t);}xu.restore();
+    xu.save();xu.clip(new Path2D(areaPathD(side,SU,U.l,U.t)));var ob=state[side].objs;for(var j=0;j<ob.length;j++){await drawObj(xu,ob[j],SU,U.l,U.t,true);}xu.restore();
     return {canvas:cu,dpi:Math.round(dp)};}
   var key=state[side].area,A=areaBox(side,key),cm=dimsOf(key,isLand(side));
-  var dpi=Math.min(300,3508/Math.max(cm[0],cm[1])*2.54),S=(dpi/2.54)/PPC;
+  var dpi=printDpi(cm),S=(dpi/2.54)/PPC;
   var c=document.createElement('canvas');c.width=Math.round(cm[0]*dpi/2.54);c.height=Math.round(cm[1]*dpi/2.54);
   var x=c.getContext('2d'),objs=state[side].objs;
-  for(var i=0;i<objs.length;i++){await drawObj(x,objs[i],S,A.l,A.t);}
+  for(var i=0;i<objs.length;i++){await drawObj(x,objs[i],S,A.l,A.t,true);}
   /* Logo öncelikli: ön baskı dosyasında logonun kapladığı kare boş bırakılır */
   if(side==='front')logoHoles(A).forEach(function(L){x.clearRect((L.l-A.l)*S,(L.t-A.t)*S,L.w*S,L.h*S);});
   return {canvas:c,dpi:Math.round(dpi)};
@@ -4525,7 +4529,7 @@ async function saveSoldDesign(pb){
   var b=$('#addCart');if(b)b.disabled=true;
   try{
     var used={},out={};['front','logo','logo2','back'].forEach(function(sd){(SS(sd).objs||[]).forEach(function(o){if(o.type==='image'&&o.assetId)used[o.assetId]=1;});});
-    for(var id in used){var a=assets[id];if(!a)continue;var u=a.url;if(!/^(https?:|data:)/.test(u)){try{u=await blobToData(await (await fetch(u)).blob());}catch(_){u='';}}if(u)out[id]={url:u,w:a.w,h:a.h};}
+    for(var id in used){var a=assets[id];if(!a)continue;var u=a.url;if(!/^(https?:|data:)/.test(u)){try{u=await blobToData(await (await fetch(u)).blob());}catch(_){u='';}}if(u){out[id]={url:u,w:a.w,h:a.h};if(a.hi)out[id].hi=a.hi;}}
     var c=await renderPreview(sidesOf()[0],0.35),bg=document.createElement('canvas');bg.width=c.width;bg.height=c.height;var bx=bg.getContext('2d');bx.fillStyle='#eef1ef';bx.fillRect(0,0,bg.width,bg.height);bx.drawImage(c,0,0);
     var sig=designSig(),l=sfavGet().filter(function(x){return x.sig!==sig;});
     var it={id:Date.now().toString(36),sig:sig,bid:pb.id,label:productLabel(),thumb:bg.toDataURL('image/jpeg',0.75),ts:Date.now(),
@@ -5068,7 +5072,7 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
     for(var id in used){
       var a=assets[id];if(!a)continue;var u=a.url;
       if(!/^https?:/.test(u)){var b=await (await fetch(u)).blob();var ext=/png/.test(b.type)?'png':(/webp/.test(b.type)?'webp':'jpg');var p='tas/g-'+rnd()+'.'+ext;await upload('site',p,b);u=pubUrl(p);a.url=u;}
-      out[id]={url:u,w:a.w,h:a.h};
+      out[id]={url:u,w:a.w,h:a.h};if(a.hi)out[id].hi=a.hi;
     }
     return {v:1,product:state.product,cut:state.cut,bid:state.bid||undefined,tee:state.tee,kulp:kulpHex()||undefined,brand:state.brand!==false,front:JSON.parse(JSON.stringify(state.front)),logo:JSON.parse(JSON.stringify(SS('logo'))),logo2:JSON.parse(JSON.stringify(SS('logo2'))),back:JSON.parse(JSON.stringify(state.back)),assets:out};
   }
@@ -5091,7 +5095,7 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
   function applyDesign(d,full){
     if(!d||!d.front)return;
     var map={};
-    Object.keys(d.assets||{}).forEach(function(k){var a=d.assets[k],nid='a'+(++assetN);assets[nid]={url:a.url,w:a.w||1,h:a.h||1};map[k]=nid;});
+    Object.keys(d.assets||{}).forEach(function(k){var a=d.assets[k],nid='a'+(++assetN);assets[nid]={url:a.url,w:a.w||1,h:a.h||1};if(a.hi)assets[nid].hi=a.hi;map[k]=nid;});
     /* Şablon: yalnız şu an açık yüze (Ön, Logo ya da Arka) yerleşir; diğer yüzlerdeki tasarımlar olduğu gibi kalır.
        Kaynak alan yeni alandan büyükse (ör. A4 şablon logoya) tasarım alana sığacak kadar küçültülür. */
     if(!full){

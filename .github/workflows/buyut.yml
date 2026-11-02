@@ -1,0 +1,52 @@
+# Canvas gibi büyük baskılarda pikselleşmeyi önlemek için tasarım görsellerini 4 kat büyütür (sablon/buyut.json değişince).
+name: Baskı görseli büyütme
+on:
+  push:
+    branches: [main]
+    paths: ['sablon/buyut.json', '.github/buyut.py', '.github/workflows/buyut.yml']
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: sablon
+  cancel-in-progress: false
+jobs:
+  buyut:
+    runs-on: ubuntu-latest
+    timeout-minutes: 340
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Model önbelleği
+        uses: actions/cache@v4
+        with:
+          path: realesr-general-x4v3.pth
+          key: realesr-general-x4v3-v1
+      - name: Araçları kur
+        run: |
+          pip install -q torch torchvision --index-url https://download.pytorch.org/whl/cpu
+          pip install -q spandrel pillow numpy
+          [ -f realesr-general-x4v3.pth ] || curl -fsSL -o realesr-general-x4v3.pth https://github.com/xinntao/Real-ESRGAN/releases/download/v0.2.5.0/realesr-general-x4v3.pth
+      - name: Büyüt
+        run: python3 .github/buyut.py
+      - name: Kaydet
+        if: always()
+        run: |
+          git config user.name "fotoince-sudo"
+          git config user.email "fotoince@gmail.com"
+          mkdir -p /tmp/bk && cp baski/buyuk/* /tmp/bk/ 2>/dev/null || true
+          cp sablon/buyut-rapor.json /tmp/ 2>/dev/null || true
+          for i in 1 2 3 4 5; do
+            git fetch -q origin main && git reset -q --hard origin/main
+            cp /tmp/buyut-rapor.json sablon/ 2>/dev/null || true
+            git add sablon/buyut-rapor.json && git commit -q -m "Baskı görselleri büyütüldü (rapor)" || break
+            git push -q origin HEAD:main && break; sleep 5
+          done
+          if ls /tmp/bk/* >/dev/null 2>&1; then
+            git fetch -q origin baski
+            git checkout -q -f -B baski origin/baski
+            mkdir -p baski/buyuk && cp /tmp/bk/* baski/buyuk/
+            git add baski/buyuk && git commit -q -m "Büyütülmüş baskı görselleri" && git push -q origin baski
+          fi
