@@ -911,6 +911,30 @@
   "tamam": true,
   "yon": "dikey"
  },
+ "kiraz-tekirdag-yatay": {
+  "ad": "Tekirdağ · Kiraz Festivali",
+  "baski": [
+   4961,
+   3508
+  ],
+  "buyutulmus": [
+   8440,
+   5560
+  ],
+  "dolgu": false,
+  "dpi": 300,
+  "kat": "Kurt geziyor · Festivaller",
+  "kaynak": [
+   2110,
+   1390
+  ],
+  "kirpilmis": [
+   2110,
+   1390
+  ],
+  "tamam": true,
+  "yon": "yatay"
+ },
  "kirsehir-dikey": {
   "ad": "Kırşehir",
   "baski": [
@@ -1241,6 +1265,30 @@
   "kirpilmis": [
    1770,
    834
+  ],
+  "tamam": true,
+  "yon": "yatay"
+ },
+ "kupa-kiraz-tekirdag": {
+  "ad": "Tekirdağ · Kiraz Festivali",
+  "baski": [
+   2362,
+   1063
+  ],
+  "buyutulmus": [
+   10136,
+   4560
+  ],
+  "dolgu": true,
+  "dpi": 300,
+  "kat": "Kurt geziyor · Festivaller",
+  "kaynak": [
+   2534,
+   1140
+  ],
+  "kirpilmis": [
+   2534,
+   1140
   ],
   "tamam": true,
   "yon": "yatay"
