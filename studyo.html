@@ -3462,6 +3462,8 @@ function pgShow(card,n,fade){var bid=card.dataset.b,b=((PH.site&&PH.site.blanks)
     pp.querySelectorAll('.pcard[data-b]').forEach(function(c){var ds=c.querySelectorAll('[data-pgc]');if(ds.length<2||c.dataset.pgman)return;
       if(!c.dataset.pgt){c.dataset.pgt=now+2500+Math.random()*4000;return;}if(now<+c.dataset.pgt)return;c.dataset.pgt=now+4000+Math.random()*4000;
       var r=c.getBoundingClientRect();if(r.bottom<-50||r.top>vh+50)return;var cur=c.querySelector('.pgdot.on'),k=cur?+cur.dataset.pgc:0,nk=k;while(nk===k)nk=Math.floor(Math.random()*ds.length);pgShow(c,nk,true);});},700);})();
+/* Süblimasyon kupa Ürün seç'te üç ayrı kart: beyaz, kırmızı ve siyah kulp (sayfa renklensin) */
+function pgExpand(l){var o=[];l.forEach(function(b){if((b.p||b.id)==='mug'&&b.cut==='sub')KULP.forEach(function(k,i){o.push({b:b,kh:i?k[1]:''});});else o.push({b:b,kh:''});});return o;}
 function pgKey(b){return b.id||((b.p||'')+'-'+(b.cut||''));}
 function renderProdPage(){
   var nm='',sw='',h='';
@@ -3477,12 +3479,12 @@ function renderProdPage(){
     $('#pgFilter').innerHTML='<div class="pgtabs" role="tablist">'+PG_TABS.map(function(t){var on=PG.tab===t[0];return '<button type="button" role="tab" data-pgt="'+t[0]+'"'+(on?' class="on" aria-selected="true"':'')+'>'+t[1]+'</button>';}).join('')+'</div>'+
       (types.length>1?'<div class="pgdd'+(PG.open?' open':'')+'"><button type="button" class="pgddb" data-pgdd aria-expanded="'+PG.open+'"><span>'+(PG.type?escX(PRODUCTS[PG.type].name):'Tümü')+'</span>'+CV+'</button>'+
         (PG.open?'<div class="pgddl" role="menu">'+[''].concat(types).map(function(t){var on=PG.type===t;return '<button type="button" role="menuitemradio" aria-checked="'+on+'" data-pgty="'+t+'"'+(on?' class="on"':'')+'>'+(t?escX(PRODUCTS[t].name):'Tümü')+'</button>';}).join('')+'</div>':'')+'</div>':'');
-    h=list.length?'<div class="pgrid pgr">'+list.map(function(b){var p=b.p||b.id,q=PRODUCTS[p],c=(b.cut&&q.cuts.indexOf(b.cut)>=0)?b.cut:q.cuts[0],cs=phColors(b),k=pgKey(b),
+    h=list.length?'<div class="pgrid pgr">'+pgExpand(list).map(function(E){var b=E.b,p=b.p||b.id,q=PRODUCTS[p],c=(b.cut&&q.cuts.indexOf(b.cut)>=0)?b.cut:q.cuts[0],cs=phColors(b),k=pgKey(b),
       j=PG.col[k]!=null?PG.col[k]:(PG.col[k]=pgRand(cs)),co=cs[Math.min(j,cs.length-1)],
       u=co?(co.front||co.back||''):((b.imgs||[])[0]||''),on=state.product===p&&state.cut===c&&siteBlank(p,c)===b;
-      var kc=p==='mug'&&c==='sub',kh=kc?(PG.kulp[k]||''):'';if(kc&&u&&kh){var tu=kulpPhoto(phSrc(u),kh);u=tu||u;}
-      return '<div class="pcard'+(on?' on':'')+'" role="button" tabindex="0" data-p="'+p+'" data-c="'+c+'" data-b="'+escX(b.id||'')+'"'+(kc?' data-kulp="'+escX(kh)+'"':'')+' data-hex="'+(co?escX(co.hex):'')+'" aria-label="'+escX(b.name||q.name)+'"><span class="pth">'+(u?'<img src="'+escX(phSrc(u))+'" alt="'+escX((b.name||q.name)+(co&&co.name?' – '+co.name:''))+'" loading="lazy">':productSVG('front',state.tee,p,c,true))+'</span><b>'+escX(b.name||q.name)+'</b><small>'+fmt(blankPrice(b,p,c))+'</small>'+
-        (kc?'<span class="pgdots" title="Kulp rengi">'+KULP.map(function(x){var hx=x[1]===KULP[0][1]?'':x[1];return '<button type="button" class="pgdot'+(hx===kh?' on':'')+'" data-pgkulp="'+escX(k)+'" data-kh="'+hx+'" style="background:'+x[1]+'" aria-label="Kulp '+x[0]+'"></button>';}).join('')+'</span>':'')+(cs.length>1?'<span class="pgdots">'+cs.map(function(x,n){return '<button type="button" class="pgdot'+(x===co?' on':'')+'" data-pgk="'+escX(k)+'" data-pgc="'+n+'" style="background:'+x.hex+'" aria-label="'+escX(x.name||x.hex)+'"></button>';}).join('')+'</span>':'')+'</div>';}).join('')+'</div>':'<p class="note">Bu grupta henüz ürün yok.</p>';
+      var kc=p==='mug'&&c==='sub',kh=kc?E.kh:'',knm=kc?(KULP.filter(function(x){return x[1]===(kh||KULP[0][1]);})[0]||KULP[0])[0]+' kulp':'';if(kc)on=on&&(kulpHex()||'')===kh;if(kc&&u&&kh){var tu=kulpPhoto(phSrc(u),kh);u=tu||u;}
+      return '<div class="pcard'+(on?' on':'')+'" role="button" tabindex="0" data-p="'+p+'" data-c="'+c+'" data-b="'+escX(b.id||'')+'"'+(kc?' data-kulp="'+escX(kh)+'"':'')+' data-hex="'+(co?escX(co.hex):'')+'" aria-label="'+escX(b.name||q.name)+'"><span class="pth">'+(u?'<img src="'+escX(phSrc(u))+'" alt="'+escX((b.name||q.name)+(co&&co.name?' – '+co.name:''))+'" loading="lazy">':productSVG('front',state.tee,p,c,true))+'</span><b>'+escX(b.name||q.name)+(knm?'<br><span style="font-weight:600;font-size:.86em;color:var(--muted)">'+knm+'</span>':'')+'</b><small>'+fmt(blankPrice(b,p,c))+'</small>'+
+        (cs.length>1?'<span class="pgdots">'+cs.map(function(x,n){return '<button type="button" class="pgdot'+(x===co?' on':'')+'" data-pgk="'+escX(k)+'" data-pgc="'+n+'" style="background:'+x.hex+'" aria-label="'+escX(x.name||x.hex)+'"></button>';}).join('')+'</span>':'')+'</div>';}).join('')+'</div>':'<p class="note">Bu grupta henüz ürün yok.</p>';
     $('#pgList').innerHTML=h;return;}
   $('#pgFilter').innerHTML='';
   PRODUCT_ORDER.forEach(function(p){
