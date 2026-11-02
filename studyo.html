@@ -2768,7 +2768,8 @@ function kulpPhoto(u,hex){var k=u+'|'+hex,r=KULP_C[k];if(r)return r.ready?r.url:
     var D=x.getImageData(0,0,W,H),a=D.data,col=new Int32Array(W),mxh=0,cx,y,i;
     for(cx=0;cx<W;cx++){var n=0;for(y=0;y<H;y++)if(a[(y*W+cx)*4+3]>110)n++;col[cx]=n;if(n>mxh)mxh=n;}
     var bl=-1,br=-1,best=0,s0=-1;for(cx=0;cx<=W;cx++){var on=cx<W&&col[cx]>=mxh*0.82;if(on&&s0<0)s0=cx;if(!on&&s0>=0){if(cx-s0>best){best=cx-s0;bl=s0;br=cx-1;}s0=-1;}}
-    var cc=hex3(hex);for(y=0;y<H;y++)for(cx=0;cx<W;cx++){if(cx>=bl-1&&cx<=br+1)continue;i=(y*W+cx)*4;if(a[i+3]<8)continue;var mxc=Math.max(a[i],a[i+1],a[i+2]),mnc=Math.min(a[i],a[i+1],a[i+2]);if(mxc<60||(mxc-mnc)/Math.max(1,mxc)>0.35)continue;kulpPaint(a,i,1,cc);}
+    var cc=hex3(hex);var nl=0,nr=0;for(y=0;y<H;y+=2)for(cx=0;cx<W;cx+=2){if(a[(y*W+cx)*4+3]<110)continue;if(cx<bl)nl++;else if(cx>br)nr++;}var hs=nr>=nl?1:-1,pad=Math.max(3,Math.round(W*0.006));
+    for(y=0;y<H;y++)for(cx=0;cx<W;cx++){if(hs>0?cx<=br+pad:cx>=bl-pad)continue;i=(y*W+cx)*4;if(a[i+3]<8)continue;var mxc=Math.max(a[i],a[i+1],a[i+2]),mnc=Math.min(a[i],a[i+1],a[i+2]);if(mxc<60||(mxc-mnc)/Math.max(1,mxc)>0.35)continue;kulpPaint(a,i,1,cc);}
     x.putImageData(D,0,0);r.url=c.toDataURL('image/png');r.ready=true;try{renderShirt();}catch(_){}try{if(!$('#prodPage').hidden)renderProdPage();}catch(_){}}catch(_){r.fail=true;}};im.onerror=function(){r.fail=true;};im.src=u;return null;}
 var MUG_PH={src:'img/kupa-sahne.jpg',W:1122,H:1402,cx:803,R:164,yT:588,ry:26,yB:949,ryB:34,hs:1},
     MUG_HAND={src:'img/kupa-elde.jpg',W:1122,H:1402,cx:588,R:214,yT:381,ry:26,yB:850,ryB:37,hs:-1},
