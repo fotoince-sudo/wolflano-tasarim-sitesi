@@ -978,7 +978,10 @@ function isStd(){return state.cut==='std'||state.cut==='sub'||state.product==='c
 function areasFor(side){var l=P().sides[side]||[];if(state.product==='mug')l=l.filter(function(k){return state.cut==='sub'?k==='mugw':k!=='mugw';});if(state.product==='canvas')l=l.filter(function(k){return k==='cv'+state.cut.slice(1);});return l;}
 /* Fiyatlar yönetim panelinden gelir (Baskı Atölyesi → ürün fiyatı, A4/logo/şapka baskı ücreti, A3 katsayısı, KDV, adet indirimi).
    Panelde fiyat yoksa aşağıdaki örnek fiyatlar kullanılır. */
-function siteBlank(product,cut){var l=(PH.site&&PH.site.blanks)||[];var m=l.filter(function(b){return b&&b.show!==false&&(b.p||b.id)===product&&(!b.cut||b.cut===cut);});return m.filter(function(b){return b.cut===cut;})[0]||m[0]||null;}
+/* Aynı ürün ve kesimde birden fazla model olabilir (ör. Erkek polo, Erkek polo slim, Polo border): seçilen model (state.bid) önce gelir */
+function blankPick(m,cut){var sel=state&&state.bid&&m.filter(function(b){return b.id===state.bid;})[0];return sel||m.filter(function(b){return b.cut===cut;})[0]||m[0]||null;}
+function siteBlank(product,cut){var l=(PH.site&&PH.site.blanks)||[];var m=l.filter(function(b){return b&&b.show!==false&&(b.p||b.id)===product&&(!b.cut||b.cut===cut);});return blankPick(m,cut);}
+function blankPrice(b,product,cut){var v=b&&sNum(b.price);return v!=null?Math.round(v*vatK('blank')*100)/100:PRODUCTS[product].price[cut];}
 function vatK(g){var v=(PH.site&&PH.site.vat)||{};if(v.mode==='incl')return 1;var r=parseFloat(v[g]);if(isNaN(r))r=20;return 1+r/100;}
 function sNum(x){return x===null||x===undefined||x===''||isNaN(+x)?null:+x;}
 function priceOf(product,cut){var b=siteBlank(product,cut),v=b&&sNum(b.price);return v!=null?Math.round(v*vatK('blank')*100)/100:PRODUCTS[product].price[cut];}
@@ -1686,7 +1689,7 @@ function phSrc(t){if(!t)return '';if(/^(https?:|data:|blob:)/.test(t))return t;i
 var DEPO={items:[],cur:null};
 function depoCols(d){var l=(d.colors&&d.colors.length)?d.colors:[{name:d.color,hex:d.hex,front:d.front,back:d.back}];return l.filter(function(c){return c&&c.front;}).map(function(c){return {name:c.name||'Depo',hex:/^#[0-9a-f]{6}$/i.test(c.hex||'')?c.hex:'#f6f6f4',front:c.front,back:c.back||''};});}
 function depoBlank(product,cut){var d=DEPO.cur;if(!d||d.product!==product||(d.cut||'')!==(cut||''))return null;return {id:'depo',p:product,cut:cut,colors:depoCols(d)};}
-function phBlank(product,cut){var db=depoBlank(product,cut);if(db)return db;var l=(PH.site&&PH.site.blanks)||[];var m=l.filter(function(b){return b.show!==false&&(b.p||b.id)===product&&(!b.cut||b.cut===cut);});return m.filter(function(b){return b.cut===cut;})[0]||m[0]||null;}
+function phBlank(product,cut){var db=depoBlank(product,cut);if(db)return db;var l=(PH.site&&PH.site.blanks)||[];var m=l.filter(function(b){return b.show!==false&&(b.p||b.id)===product&&(!b.cut||b.cut===cut);});return blankPick(m,cut);}
 /* Yönetimdeki "Ürün fotoğrafları (otomatik)": zemini temizlenmiş fotoğraflar standart renk sırasıyla (sitedeki kodun aynısı) */
 var STDC=[{name:'Beyaz',hex:'#f4f4f2'},{name:'Lacivert',hex:'#2b3d82'},{name:'Siyah',hex:'#1b1b1d'},{name:'Mavi',hex:'#2a64c4'},{name:'Yeşil',hex:'#2d5a43'}];
 /* Ürün (kumaş) renk kodları: standart renk sırasıyla K01…K05. Üretimde ve teknik şartnamede bu numaralar kullanılır. */
@@ -3397,8 +3400,8 @@ function renderProdPage(){
         (PG.open?'<div class="pgddl" role="menu">'+[''].concat(types).map(function(t){var on=PG.type===t;return '<button type="button" role="menuitemradio" aria-checked="'+on+'" data-pgty="'+t+'"'+(on?' class="on"':'')+'>'+(t?escX(PRODUCTS[t].name):'Tümü')+'</button>';}).join('')+'</div>':'')+'</div>':'');
     h=list.length?'<div class="pgrid pgr">'+list.map(function(b){var p=b.p||b.id,q=PRODUCTS[p],c=(b.cut&&q.cuts.indexOf(b.cut)>=0)?b.cut:q.cuts[0],cs=phColors(b),k=pgKey(b),
       j=PG.col[k]!=null?PG.col[k]:Math.max(0,cs.findIndex(function(x){return String(x.hex).toLowerCase()===String(state.tee).toLowerCase();})),co=cs[Math.min(j,cs.length-1)],
-      u=co?(co.front||co.back||''):((b.imgs||[])[0]||''),on=state.product===p&&state.cut===c;
-      return '<div class="pcard'+(on?' on':'')+'" role="button" tabindex="0" data-p="'+p+'" data-c="'+c+'" data-hex="'+(co?escX(co.hex):'')+'" aria-label="'+escX(b.name||q.name)+'"><span class="pth">'+(u?'<img src="'+escX(phSrc(u))+'" alt="'+escX((b.name||q.name)+(co&&co.name?' – '+co.name:''))+'" loading="lazy">':productSVG('front',state.tee,p,c,true))+'</span><b>'+escX(b.name||q.name)+'</b><small>'+fmt(priceOf(p,c))+'</small>'+
+      u=co?(co.front||co.back||''):((b.imgs||[])[0]||''),on=state.product===p&&state.cut===c&&siteBlank(p,c)===b;
+      return '<div class="pcard'+(on?' on':'')+'" role="button" tabindex="0" data-p="'+p+'" data-c="'+c+'" data-b="'+escX(b.id||'')+'" data-hex="'+(co?escX(co.hex):'')+'" aria-label="'+escX(b.name||q.name)+'"><span class="pth">'+(u?'<img src="'+escX(phSrc(u))+'" alt="'+escX((b.name||q.name)+(co&&co.name?' – '+co.name:''))+'" loading="lazy">':productSVG('front',state.tee,p,c,true))+'</span><b>'+escX(b.name||q.name)+'</b><small>'+fmt(blankPrice(b,p,c))+'</small>'+
         (cs.length>1?'<span class="pgdots">'+cs.map(function(x,n){return '<button type="button" class="pgdot'+(x===co?' on':'')+'" data-pgk="'+escX(k)+'" data-pgc="'+n+'" style="background:'+x.hex+'" aria-label="'+escX(x.name||x.hex)+'"></button>';}).join('')+'</span>':'')+'</div>';}).join('')+'</div>':'<p class="note">Bu grupta henüz ürün yok.</p>';
     $('#pgList').innerHTML=h;return;}
   $('#pgFilter').innerHTML='';
@@ -3921,7 +3924,7 @@ $('#wfGrid').addEventListener('click',function(e){
 $('#pgColors').addEventListener('click',function(e){var b=e.target.closest('[data-tee]');if(!b)return;teeSwap(b.dataset.tee);renderObjects();renderShirt();renderProdPage();pushHist();});
 $('#pgList').addEventListener('click',function(e){
   var d=e.target.closest('[data-pgc]');if(d){e.stopPropagation();PG.col[d.dataset.pgk]=+d.dataset.pgc;renderProdPage();return;}
-  var b=e.target.closest('[data-p]');if(!b)return;var hx=b.dataset.hex;chooseProduct(b.dataset.p,b.dataset.c);
+  var b=e.target.closest('[data-p]');if(!b)return;var hx=b.dataset.hex,nb=b.dataset.b||'',bch=nb!==(state.bid||'');state.bid=nb;chooseProduct(b.dataset.p,b.dataset.c);if(bch){try{phApplyColors();}catch(_){}renderAll();layout();pushHist();}
   /* Seçilen kartın rengiyle açılır; ardından renk ve beden paneli açılır ki müşteri bedenini seçsin */
   if(hx&&TEES.some(function(t){return String(t[1]).toLowerCase()===hx.toLowerCase();})&&String(state.tee).toLowerCase()!==hx.toLowerCase()){teeSwap(hx);renderAll();pushHist();}
   if(!isStd()&&(sizeList()||[]).length){setTimeout(function(){openTab('opt');toast('Bedenini seç. Rengi de buradan değiştirebilirsin.');},60);}});
@@ -4465,7 +4468,7 @@ async function saveSoldDesign(pb){
     var c=await renderPreview(sidesOf()[0],0.35),bg=document.createElement('canvas');bg.width=c.width;bg.height=c.height;var bx=bg.getContext('2d');bx.fillStyle='#eef1ef';bx.fillRect(0,0,bg.width,bg.height);bx.drawImage(c,0,0);
     var sig=designSig(),l=sfavGet().filter(function(x){return x.sig!==sig;});
     var it={id:Date.now().toString(36),sig:sig,bid:pb.id,label:productLabel(),thumb:bg.toDataURL('image/jpeg',0.75),ts:Date.now(),
-      data:{v:1,product:state.product,cut:state.cut,tee:state.tee,brand:state.brand!==false,front:JSON.parse(JSON.stringify(state.front)),logo:JSON.parse(JSON.stringify(SS('logo'))),logo2:JSON.parse(JSON.stringify(SS('logo2'))),back:JSON.parse(JSON.stringify(state.back)),assets:out}};
+      data:{v:1,product:state.product,cut:state.cut,bid:state.bid||undefined,tee:state.tee,brand:state.brand!==false,front:JSON.parse(JSON.stringify(state.front)),logo:JSON.parse(JSON.stringify(SS('logo'))),logo2:JSON.parse(JSON.stringify(SS('logo2'))),back:JSON.parse(JSON.stringify(state.back)),assets:out}};
     l.push(it);
     for(;;){try{localStorage.setItem('wf_sfav',JSON.stringify(l));break;}catch(_){if(l.length>1)l.shift();else{toast('Tasarım çok büyük, kaydedilemedi.');break;}}}
     var p;try{p=JSON.parse(localStorage.getItem('wf_waitp')||'[]')||[];}catch(_){p=[];}
@@ -4643,7 +4646,7 @@ libLoad();
 try{if(new URLSearchParams(location.search).get('wolf')){setTimeout(function(){if(!$('#prodPage').hidden)closeProdPage();openTab('wolf');setTimeout(function(){var w=$('#wolfIn');if(w)w.focus();},250);},400);}}catch(_){}
 /* Açılışta örnek: Wolflano reklamı niteliğindeki Güneş kurdu */
 applyTemplate(TPLS.filter(function(t){return t.n==='Güneş kurdu';})[0]||TPLS[0],true);
-(function(){try{var q=new URLSearchParams(location.search),u=q.get('urun'),k=q.get('kesim'),bd=q.get('beden');if(u&&PRODUCTS[u]){var cs=PRODUCTS[u].cuts;chooseProduct(u,cs.indexOf(k)>=0?k:cs[0]);if(bd&&sizeList().indexOf(bd)>=0){state.sizes={};state.sizes[bd]=1;renderAll();}else if(!isStd()&&(sizeList()||[]).length){setTimeout(function(){try{openTab('opt');toast('Bedenini seç. Rengi de buradan değiştirebilirsin.');}catch(_){}},700);}if(PRODUCTS[u].vb){['front','logo','logo2','back'].forEach(function(sd){if(state[sd]&&state[sd].objs)state[sd].objs=[];});view.sel=null;renderAll();}}
+(function(){try{var q=new URLSearchParams(location.search),u=q.get('urun'),k=q.get('kesim'),bd=q.get('beden');if(u&&PRODUCTS[u]){var cs=PRODUCTS[u].cuts;if(q.get('model'))state.bid=q.get('model');chooseProduct(u,cs.indexOf(k)>=0?k:cs[0]);if(bd&&sizeList().indexOf(bd)>=0){state.sizes={};state.sizes[bd]=1;renderAll();}else if(!isStd()&&(sizeList()||[]).length){setTimeout(function(){try{openTab('opt');toast('Bedenini seç. Rengi de buradan değiştirebilirsin.');}catch(_){}},700);}if(PRODUCTS[u].vb){['front','logo','logo2','back'].forEach(function(sd){if(state[sd]&&state[sd].objs)state[sd].objs=[];});view.sel=null;renderAll();}}
   if(q.get('vitrin')==='wolf'){if(!u&&PRODUCTS.tee)chooseProduct('tee',PRODUCTS.tee.cuts[0]);openWolf();}
   /* Şablon kategorisiyle açılış: studyo.html?sablon=Wolf%20tasarımları (Kurdun İzinde sayfasından) */
   var sbq=q.get('sablon');if(sbq){if(!u&&PRODUCTS.tee)chooseProduct('tee',PRODUCTS.tee.cuts[0]);setTimeout(function(){try{view.tplCat=TPL_CATS.indexOf(sbq)>=0?sbq:'Tümü';openTab('tpl');renderTpl();renderTplPreviews();}catch(_){}},400);}}catch(_){}})();
@@ -5006,7 +5009,7 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
       if(!/^https?:/.test(u)){var b=await (await fetch(u)).blob();var ext=/png/.test(b.type)?'png':(/webp/.test(b.type)?'webp':'jpg');var p='tas/g-'+rnd()+'.'+ext;await upload('site',p,b);u=pubUrl(p);a.url=u;}
       out[id]={url:u,w:a.w,h:a.h};
     }
-    return {v:1,product:state.product,cut:state.cut,tee:state.tee,brand:state.brand!==false,front:JSON.parse(JSON.stringify(state.front)),logo:JSON.parse(JSON.stringify(SS('logo'))),logo2:JSON.parse(JSON.stringify(SS('logo2'))),back:JSON.parse(JSON.stringify(state.back)),assets:out};
+    return {v:1,product:state.product,cut:state.cut,bid:state.bid||undefined,tee:state.tee,brand:state.brand!==false,front:JSON.parse(JSON.stringify(state.front)),logo:JSON.parse(JSON.stringify(SS('logo'))),logo2:JSON.parse(JSON.stringify(SS('logo2'))),back:JSON.parse(JSON.stringify(state.back)),assets:out};
   }
   async function thumb(){
     var s=sidesWith()[0]||'front',c=await renderComposite(s,0.5),bg=document.createElement('canvas');bg.width=c.width;bg.height=c.height;
@@ -5041,7 +5044,7 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
       C.objs=C.objs.filter(function(o){return o.lock;}).concat(objs);
       view.sel=null;view.grp=false;renderAll();layout();pushHist();return;
     }
-    if(full&&PRODUCTS[d.product]){var cs=PRODUCTS[d.product].cuts;chooseProduct(d.product,cs.indexOf(d.cut)>=0?d.cut:cs[0]);if(d.tee){state.tee=d.tee;try{if(PH.site)phApplyColors();}catch(_){}}state.brand=d.brand!==false;}
+    if(full&&PRODUCTS[d.product]){var cs=PRODUCTS[d.product].cuts;state.bid=d.bid||'';chooseProduct(d.product,cs.indexOf(d.cut)>=0?d.cut:cs[0]);if(d.tee){state.tee=d.tee;try{if(PH.site)phApplyColors();}catch(_){}}state.brand=d.brand!==false;}
     SS('logo').objs=[];SS('logo2').objs=[];
     /* Eski kayıtlar: önde logo alanı seçilmişse, logo katmanı olan üründe logoya taşınır */
     if(d.front&&d.front.area==='logo'&&!d.logo&&hasLogoSide()){d=Object.assign({},d,{logo:d.front,front:{area:P().sides.front[0],land:false,objs:[]}});}
