@@ -617,7 +617,8 @@ footer a{text-decoration:none}footer a:hover{color:var(--green)}
 
 /* Ürün kartı ritmi */
 .grid{row-gap:26px}.card .meta{padding-top:8px}.card .meta .row{gap:12px}.card .add{margin-top:8px;align-self:stretch;justify-content:center;padding:9px 12px;font:600 14px var(--ui);background:var(--green);color:#fff;border:1px solid #000;border-radius:999px}.card .add:disabled{background:var(--muted);color:#fff}.feat{padding-block:12px 8px}.page{padding-bottom:28px}
-@media (max-width:639px){.grid{column-gap:3px;margin-inline:-10px}.card .ph{border-radius:6px}.card .meta{padding-inline:6px}
+@media (max-width:639px){.grid{column-gap:3px;margin-inline:-10px}.card .ph{border-radius:6px}
+.card .ph{background:linear-gradient(#dee0dd,#c4c7c3)}.card .meta{padding-inline:6px}
 .card .cedit{display:flex;align-items:center;justify-content:center;gap:6px;margin-top:8px;padding:7px 10px;border:1px solid var(--green);border-radius:999px;color:var(--green);font:600 13px var(--ui);text-decoration:none;white-space:nowrap}.card .cedit svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:0 0 auto}.card .add{margin-inline:6px}}
 .catmenu .cgrid{display:grid;grid-template-columns:1fr 1fr;gap:4px 8px}.catmenu .its1{display:grid}.catmenu button.grp{font:700 12px var(--ui);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding:10px 12px 4px}.catmenu button.grp.on{color:var(--green);background:none}.catmenu .its button,.catmenu .its1 button{padding:7px 12px}
 .catmenu .cgrid{gap:8px;padding:4px;align-items:start}.catmenu button.gt{display:flex;justify-content:space-between;align-items:center;width:100%;border:1px solid var(--green);border-radius:999px;padding:9px 14px;font:600 13px var(--ui);letter-spacing:.04em;color:var(--ink);background:none;text-transform:uppercase}.catmenu button.gt .cv{font-size:11px;color:var(--green);transition:transform .15s}.catmenu button.gt.open .cv{transform:rotate(180deg)}.catmenu button.gt.on{color:var(--green)}.catmenu .its1{padding-top:4px}
@@ -1021,7 +1022,9 @@ var PRODUCTS,BLANKS,A3_KAT,TIERS,PRICE_NOTE,CONTACT;
 var EDIT=false,ART=null,ready=false,pend={},SAVEDTOK={},A=null;
 var PH='data:image/svg+xml;utf8,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 100"><rect width="80" height="100" fill="#dfeee6"/><rect x="26" y="38" width="28" height="24" rx="3" fill="none" stroke="#7aa88a" stroke-width="2"/></svg>');
 function clone(o){return JSON.parse(JSON.stringify(o));}
-function src(s){if(!s)return PH;if(pend[s])return pend[s].url;if(D&&D.media==='sb'&&(s.indexOf('img/')===0||s.indexOf('vid/')===0))return SB.url+'/storage/v1/object/public/site/'+s;if(s.indexOf('builtin:')===0)return BUILTIN[s.slice(8)]||PH;return s;}
+/* Koleksiyon görselleri taş grisi zemine taşındı: zemin/index.json eski görselin yerine yenisini söyler */
+var ZEM={};
+function src(s){if(!s)return PH;if(pend[s])return pend[s].url;if(ZEM[s])return ZEM[s];if(D&&D.media==='sb'&&(s.indexOf('img/')===0||s.indexOf('vid/')===0))return SB.url+'/storage/v1/object/public/site/'+s;if(s.indexOf('builtin:')===0)return BUILTIN[s.slice(8)]||PH;return s;}
 function IMG(p){return src(p.imgs&&p.imgs[0]);}
 var ALLP=[];
 
@@ -5005,6 +5008,7 @@ var DATA_P=(async function(){
   var j=null;
   try{var r=await fetch(SB.url+'/rest/v1/site_content?select=data&id=eq.main',{headers:{apikey:SB.key},cache:'no-store'});if(r.ok){var a=await r.json();if(a&&a[0]&&a[0].data)j=a[0].data;}}catch(_){}
   if(!j){try{var r2=await fetch('data.json',{cache:'no-store'});if(r2.ok)j=await r2.json();}catch(_){}}
+  try{var rz=await fetch('zemin/index.json?v='+Math.floor(Date.now()/600000));if(rz.ok){var zm=await rz.json();for(var zk in zm)if(zm[zk])ZEM[zk]=zm[zk];}}catch(_){}
   if(j&&j.v===1){try{cutMerge(j,await loadMan());}catch(_){}D=Object.assign(clone(DEF),j);applyData();SAVEDTOK=usedTokens(D);DLOADED=true;if(cur!=='yonetim')route();}
 /* AYBÜKE (sitenin her sayfasında): sağ alttaki yuvarlak resim; müşteriye ürün bulmada yardım edip satışa yönlendirir.
    Cevabı sunucudaki yardım asistanı (yardim, mode: site) verir; ürün listesi ve fiyatlar buradan gider, önerilen ürünler kart olarak gösterilir.

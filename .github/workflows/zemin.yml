@@ -1,0 +1,43 @@
+# Koleksiyon görsellerini taş grisi stüdyo zeminine taşır (bir kerelik; zemin.py değişince ya da elle çalışır).
+name: Koleksiyon zemini
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ['.github/zemin.py', '.github/workflows/zemin.yml']
+
+permissions:
+  contents: write
+  actions: write
+
+concurrency:
+  group: zemin
+  cancel-in-progress: false
+
+jobs:
+  zemin:
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Model önbelleği
+        uses: actions/cache@v4
+        with:
+          path: isnet.onnx
+          key: isnet-general-use-v1
+      - name: Araçları kur
+        run: |
+          pip install -q onnxruntime opencv-python-headless pillow numpy
+          [ -f isnet.onnx ] || curl -fsSL -o isnet.onnx https://github.com/danielgatis/rembg/releases/download/v0.0.0/isnet-general-use.onnx
+      - name: Zemini değiştir
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          git config user.name "fotoince-sudo"
+          git config user.email "fotoince@gmail.com"
+          python3 .github/zemin.py
+          gh workflow run derle.yml --ref main || true
