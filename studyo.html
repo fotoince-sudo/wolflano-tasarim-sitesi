@@ -2756,7 +2756,8 @@ function mscBox(x){
 var KULP=[['Beyaz','#f4f4f2'],['Kırmızı','#c8161d'],['Siyah','#1b1b1d']];
 /* Kupa çeşitleri (baskıya uygun üründe v): renkli (içi ve kulpu renkli), kalp (kalp kulplu), panel (siyah panelli), sihirli (ısıyla açılan siyah) */
 function mugVar(){if(state.product!=='mug'||state.cut!=='sub')return '';var b=siteBlank('mug','sub');return (b&&b.v)||'';}
-function kulpOn(){return state.product==='mug'&&state.cut==='sub'&&!mugVar();}
+/* Düz süblimasyon kupada kulp rengi seçimi kapalı (renkli kulp için Renkli kupa var) */
+function kulpOn(){return false;}
 /* Sahnelerde (kutulu, masada, elde) kulp ve iç rengi: düz kupada seçilen kulp, renkli kupada ürün rengi, sihirli kupada siyah kulp */
 function sceneKulp(){var v=mugVar();if(!v)return kulpHex();if(v==='renkli')return String(state.tee||'').toLowerCase();if(v==='sihirli')return '#1b1b1d';return '';}
 function sceneIc(){return mugVar()==='renkli'?String(state.tee||'').toLowerCase():'';}
@@ -3450,7 +3451,7 @@ function chooseProduct(p,c){
   view.sel=null;closeProdPage();
   view.fit='shirt';resetZoom();syncFitBtn();
   renderAll();layout();if(ch)pushHist();
-  toast((state.product==='canvas'?CUT_NAME[state.cut]:productLabel())+': '+(state.product==='mug'?(state.cut==='sub'?'kupanın çevresini saran 20 × 9 cm süblimasyon baskı. Kulp rengini (beyaz, kırmızı, siyah) sol üstteki renk dairesinden seç.':'kulpun iki yanına (ön ve arka) 8 × 8 cm baskı.'):P().rule));
+  toast((state.product==='canvas'?CUT_NAME[state.cut]:productLabel())+': '+(state.product==='mug'?(state.cut==='sub'?'kupanın çevresini saran 20 × 9 cm süblimasyon baskı.':'kulpun iki yanına (ön ve arka) 8 × 8 cm baskı.'):P().rule));
 }
 function syncProduct(){}
 function openProdPage(){closeTab();select(null);renderProdPage();$('#prodPage').hidden=false;$('#pgBody').scrollTop=0;}
@@ -3477,7 +3478,7 @@ function pgShow(card,n,fade){var bid=card.dataset.b,b=((PH.site&&PH.site.blanks)
       var r=c.getBoundingClientRect();if(r.bottom<-50||r.top>vh+50)return;var cur=c.querySelector('.pgdot.on'),k=cur?+cur.dataset.pgc:0,nk=k;while(nk===k)nk=Math.floor(Math.random()*ds.length);pgShow(c,nk,true);});},700);})();
 /* Süblimasyon kupa Ürün seç'te üç ayrı kart: beyaz, kırmızı ve siyah kulp (sayfa renklensin) */
 /* Renkli kupa: her renk ayrı kart */
-function pgExpand(l){var o=[];l.forEach(function(b){if((b.p||b.id)==='mug'&&b.cut==='sub'&&!b.v)KULP.forEach(function(k,i){o.push({b:b,kh:i?k[1]:''});});else if((b.p||b.id)==='mug'&&b.v==='renkli'&&phColors(b).length>1)phColors(b).forEach(function(c,i){o.push({b:b,kh:'',cj:i});});else o.push({b:b,kh:''});});return o;}
+function pgExpand(l){var o=[];l.forEach(function(b){if((b.p||b.id)==='mug'&&b.v==='renkli'&&phColors(b).length>1)phColors(b).forEach(function(c,i){o.push({b:b,kh:'',cj:i});});else o.push({b:b,kh:''});});return o;}
 function pgKey(b){return b.id||((b.p||'')+'-'+(b.cut||''));}
 function renderProdPage(){
   var nm='',sw='',h='';
