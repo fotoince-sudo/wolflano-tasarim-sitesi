@@ -82,6 +82,9 @@ def classify(rgb, a):
     L = lab(med.astype(np.uint8))
     d = [float(np.linalg.norm(L - lab(c))) for _, c in STD]
     color = STD[int(np.argmin(d))][0]
+    # Koyu lacivert ile siyah karışmasın: maviliğe bak (mavi - kırmızı). Siyahta ~0-5, lacivertte 15+
+    if color in ('Lacivert', 'Siyah'):
+        color = 'Lacivert' if float(med[2]) - float(med[0]) >= 10 else 'Siyah'
     # Ön/arka puanı: önde yaka daha derin oyulur ve yakanın içinden ürünün iç yüzü/gölgesi görünür (daha koyu).
     top = np.full(ww + 1, np.nan)
     for i, x in enumerate(range(x0, x1 + 1)):
