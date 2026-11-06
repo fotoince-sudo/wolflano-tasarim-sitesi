@@ -2858,6 +2858,14 @@ function cpBody(t){var h='',ul=false,para=[];function flush(){if(para.length){h+
     if(/^-\s+/.test(l)){flush();if(!ul){h+='<ul class="cpl">';ul=true;}h+='<li>'+esc(l.replace(/^-\s+/,''))+'</li>';return;}
     if(ul){h+='</ul>';ul=false;}
     if(!l){flush();return;}
+    /* Düğmeler: [[whatsapp: mesaj]] · [[eposta: konu]] · [[iletisim]] — art arda yazılanlar yan yana durur */
+    var bm=/^\[\[(whatsapp|eposta|iletisim)(?::\s*(.*?))?\]\]$/i.exec(l);
+    if(bm){flush();var C=CONTACT||{},kd=bm[1].toLowerCase(),tx=bm[2]||'',bt='';
+      if(kd==='whatsapp'&&(C.whatsapp||C.tel))bt='<a class="btn" target="_blank" rel="noopener" href="https://wa.me/'+telNo(C.whatsapp||C.tel,1)+(tx?'?text='+encodeURIComponent(tx):'')+'">WhatsApp\'tan yaz '+IC.arrow+'</a>';
+      else if(kd==='eposta'&&C.mail)bt='<a class="btn soft" href="mailto:'+esc(C.mail)+(tx?'?subject='+encodeURIComponent(tx):'')+'">E-posta gönder</a>';
+      else if(kd==='iletisim')bt='<a class="btn soft" href="#iletisim">İletişim</a>';
+      if(bt){if(/<\/div>$/.test(h)&&h.slice(-300).indexOf('class="cta-row cpb"')>=0)h=h.slice(0,-6)+bt+'</div>';else h+='<div class="cta-row cpb" style="margin:18px 0 6px">'+bt+'</div>';}
+      return;}
     if(/^##\s+/.test(l)){flush();h+='<h2 class="h2">'+esc(l.replace(/^##\s+/,''))+'</h2>';return;}
     para.push(l);});
   flush();if(ul)h+='</ul>';return h;}
