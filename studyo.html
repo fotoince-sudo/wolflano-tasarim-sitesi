@@ -4749,8 +4749,7 @@ document.addEventListener('contextmenu',function(e){var t=e.target;if(t&&(t.tagN
 buildPanels();
 libLoad();
 try{if(new URLSearchParams(location.search).get('wolf')){setTimeout(function(){if(!$('#prodPage').hidden)closeProdPage();openTab('wolf');setTimeout(function(){var w=$('#wolfIn');if(w)w.focus();},250);},400);}}catch(_){}
-/* Açılışta örnek: Wolflano reklamı niteliğindeki Güneş kurdu */
-applyTemplate(TPLS.filter(function(t){return t.n==='Güneş kurdu';})[0]||TPLS[0],true);
+/* Açılışta baskı duvarı boş gelir (örnek tasarım basılmaz) */
 (function(){try{var q=new URLSearchParams(location.search),u=q.get('urun'),k=q.get('kesim'),bd=q.get('beden');if(u&&PRODUCTS[u]){var cs=PRODUCTS[u].cuts;if(q.get('model'))state.bid=q.get('model');if(q.get('kulp'))state.kulp='#'+String(q.get('kulp')).replace('#','');chooseProduct(u,cs.indexOf(k)>=0?k:cs[0]);if(bd&&sizeList().indexOf(bd)>=0){state.sizes={};state.sizes[bd]=1;renderAll();}else if(!isStd()&&(sizeList()||[]).length){setTimeout(function(){try{openTab('opt');toast('Bedenini seç. Rengi de buradan değiştirebilirsin.');}catch(_){}},700);}if(PRODUCTS[u].vb){['front','logo','logo2','back'].forEach(function(sd){if(state[sd]&&state[sd].objs)state[sd].objs=[];});view.sel=null;renderAll();}}
   if(q.get('vitrin')==='wolf'){if(!u&&PRODUCTS.tee)chooseProduct('tee',PRODUCTS.tee.cuts[0]);openWolf();}
   /* Şablon kategorisiyle açılış: studyo.html?sablon=Wolf%20tasarımları (Kurdun İzinde sayfasından) */
@@ -4782,6 +4781,9 @@ function draftSoon(){if(!DRAFT||!DRAFT.ready)return;clearTimeout(DRAFT.t);DRAFT.
 document.addEventListener('visibilitychange',function(){if(document.hidden){clearTimeout(DRAFT.t);draftSave();}});
 (async function(){try{
   var q=new URLSearchParams(location.search),block=['duzenle','ad','fav','depo','sablon','vitrin','wolf','tasarim','hazir'].some(function(k){return q.get(k);});
+  /* Ürün seçip gelen (urun=) boş başlar; taslak yalnız sayfa yenilenince ya da ürünsüz açılışta geri gelir */
+  var nav='';try{nav=(performance.getEntriesByType('navigation')[0]||{}).type||'';}catch(_){}
+  if(q.get('urun')&&nav!=='reload'&&nav!=='back_forward')block=true;
   var d=block?null:await draftIO('get');
   if(d&&d.state&&Date.now()-(d.at||0)<7*864e5){var st=JSON.parse(d.state),u=q.get('urun');
     if(st&&PRODUCTS[st.product]&&(!u||u===st.product)){
