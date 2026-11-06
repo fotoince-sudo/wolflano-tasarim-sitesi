@@ -5076,7 +5076,8 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
   var SBA={url:'https://wgovwmeirlzwalelazfj.supabase.co',key:'sb_publishable_PP5xFd7ga61xaDOCHeET_Q_zfMaE_4G'};
   var ADM={on:false,email:'',uid:'',site:null,tpls:[],busy:false};
   var TPL_CAT_ADM='Wolflano şablonları',TPL_CAT_PRIV='Sadece Wolflano',tplVis='herkes',tplCat='';
-  function tplCatOf(t){return !t.published?TPL_CAT_PRIV:(t.note&&TPL_CATS.indexOf(t.note)>0?t.note:TPL_CAT_ADM);}
+  /* Şablon kaydederken seçilen kategoride görünür; "Sadece Wolflano" olanlar (yalnız yöneticiye yüklenir) hem kendi kategorisinde hem "Sadece Wolflano" başlığında çıkar */
+  function tplCatOf(t){return t.note&&TPL_CATS.indexOf(t.note)>0&&t.note!==TPL_CAT_PRIV?t.note:(t.published?TPL_CAT_ADM:TPL_CAT_PRIV);}
   function ea(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
   function rnd(){return Date.now().toString(36)+Math.random().toString(36).slice(2,7);}
   function sess(){try{return JSON.parse(localStorage.getItem('wf_sb')||'null');}catch(_){return null;}}
@@ -5682,7 +5683,7 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
   function amKey(){return state.product+'|'+(state.cut||'');}
   function amTitleVal(){var el=$('#amTitle');if(el&&el.value&&ADM.tTyped===amKey())return el.value;return autoName();}
   document.addEventListener('input',function(e){if(e.target&&e.target.id==='amTitle')ADM.tTyped=e.target.value.trim()?amKey():null;});
-  function openAdm(){if(!ADM.edit)mode='sablon';closeTab();select(null);var w=$('#admSheet');if(!w){w=document.createElement('div');w.id='admSheet';document.body.appendChild(w);bindAdm(w);}
+  function openAdm(){if(!ADM.edit)mode='sablon';tplVis='herkes';closeTab();select(null);var w=$('#admSheet');if(!w){w=document.createElement('div');w.id='admSheet';document.body.appendChild(w);bindAdm(w);}
     var t=$('#amTitle');renderAdm();w.hidden=false;}
   function closeAdm(){var w=$('#admSheet');if(w)w.hidden=true;}
   function bindAdm(w){
@@ -5898,17 +5899,17 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
   }
   /* yönetici şablonları da ürüne göre: kupada kaydedilen kupada, giyimde kaydedilen giyimde çıkar (eski kayıtlar giyim sayılır) */
   function admFit(t){return tplGroup(t.product||(t.data&&t.data.product)||'tee')===tplGroup();}
-  window.TPL_EXTRA_CATS=function(){var o=[];ADM.tpls.forEach(function(t){if(admFit(t))o.push(tplCatOf(t));});return o;};
+  window.TPL_EXTRA_CATS=function(){var o=[];ADM.tpls.forEach(function(t){if(admFit(t)){o.push(tplCatOf(t));if(!t.published)o.push(TPL_CAT_PRIV);}});return o;};
   var baseTplA=renderTpl;
   renderTpl=function(){
-    var cs={};ADM.tpls.forEach(function(t){if(admFit(t))cs[tplCatOf(t)]=1;});
+    var cs={};ADM.tpls.forEach(function(t){if(admFit(t)){cs[tplCatOf(t)]=1;if(!t.published)cs[TPL_CAT_PRIV]=1;}});
     [TPL_CAT_ADM,TPL_CAT_PRIV].forEach(function(c){var i=TPL_CATS.indexOf(c);if(cs[c]&&i<0)TPL_CATS.splice(1,0,c);else if(!cs[c]&&i>=0)TPL_CATS.splice(i,1);});
     if(TPL_CATS.indexOf(view.tplCat)<0)view.tplCat='Tümü';
     baseTplA();
     var g=$('#tplGrid'),q=(($('#tplQ')&&$('#tplQ').value)||'').trim().toLocaleLowerCase('tr-TR');if(!g)return;if(!ADM.tpls.length){tplAdmMarks();$('#tplEmpty').hidden=g.children.length>0;return;}
     if((view.tplCat===TPL_CAT_ADM||view.tplCat===TPL_CAT_PRIV)&&!q)g.innerHTML='';
-    var l=ADM.tpls.filter(function(t){if(!admFit(t))return false;return q?String(t.title||'').toLocaleLowerCase('tr-TR').indexOf(q)>=0:(view.tplCat==='Tümü'||view.tplCat===tplCatOf(t));});
-    if(l.length)g.insertAdjacentHTML('afterbegin',l.map(function(t){return '<button class="atpl" data-adtpl="'+ea(t.id)+'"><div class="prev" style="background:#eef1ef"><img alt="" src="'+ea(t.thumb||'')+'" loading="lazy" style="width:100%;height:100%;object-fit:cover"></div><span>'+ea(t.title)+'</span></button>';}).join(''));
+    var l=ADM.tpls.filter(function(t){if(!admFit(t))return false;return q?String(t.title||'').toLocaleLowerCase('tr-TR').indexOf(q)>=0:(view.tplCat==='Tümü'||view.tplCat===tplCatOf(t)||(view.tplCat===TPL_CAT_PRIV&&!t.published));});
+    if(l.length)g.insertAdjacentHTML('afterbegin',l.map(function(t){return '<button class="atpl" data-adtpl="'+ea(t.id)+'"><div class="prev" style="background:#eef1ef"><img alt="" src="'+ea(t.thumb||'')+'" loading="lazy" style="width:100%;height:100%;object-fit:cover"></div><span>'+(t.published?'':'🔒 ')+ea(t.title)+'</span></button>';}).join(''));
     tplAdmMarks();
     $('#tplEmpty').hidden=g.children.length>0;
   };
