@@ -5647,9 +5647,9 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
     dsvFill();
   }
   /* Ürün yap: seçili ürünün bilgisi (fotoğraf, tür, kesim, renk) ve tür/kategori seçenekleri */
-  var TYPE_LIST=[['TİŞÖRT','Tişört'],['SWEATSHIRT','Sweatshirt'],['KAPÜŞONLU','Kapüşonlu sweatshirt'],['FERMUARLI KAPÜŞONLU','Fermuarlı kapüşonlu'],['POLO','Polo tişört'],['EŞOFMAN','Eşofman'],['ŞAPKA','Şapka'],['KUPA','Kupa'],['CANVAS','Canvas tablo']];
+  var TYPE_LIST=[['TİŞÖRT','Tişört'],['SWEATSHIRT','Sweatshirt'],['KAPÜŞONLU','Kapüşonlu sweatshirt'],['FERMUARLI KAPÜŞONLU','Fermuarlı kapüşonlu'],['POLO','Polo tişört'],['EŞOFMAN','Eşofman'],['ŞAPKA','Şapka'],['KUPA','Kupa'],['CANVAS TABLO','Canvas tablo']];
   var CUT_TR={erkek:'Erkek',kadin:'Kadın',cocuk:'Çocuk'};
-  function curType(){return TYPE_OF[state.product]||(state.product==='canvas'?'CANVAS':'TİŞÖRT');}
+  function curType(){return TYPE_OF[state.product]||(state.product==='canvas'?'CANVAS TABLO':'TİŞÖRT');}
   function typeOpts(){var c=curType();return TYPE_LIST.map(function(t){return '<option value="'+t[0]+'"'+(t[0]===c?' selected':'')+'>'+t[1]+'</option>';}).join('');}
   function typeName(v){var f=TYPE_LIST.filter(function(t){return t[0]===v;})[0];return f?f[1]:v;}
   function prodInfo(){
