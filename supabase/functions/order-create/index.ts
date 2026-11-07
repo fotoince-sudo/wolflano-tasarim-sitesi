@@ -180,6 +180,8 @@ Deno.serve(async (req) => {
         // E-postalar arka planda gider; müşteri sipariş onayını beklemez
         const p = orderMails(row).catch((e) => console.error('order mails', String(e)));
         try { (globalThis as any).EdgeRuntime?.waitUntil(p); } catch { /* yoksa sorun değil */ }
+        // bekleyen sepet: sipariş verdi
+        try { await fetch(`${SB_URL}/rest/v1/carts?mail=eq.${encodeURIComponent(mail)}`, { method: 'PATCH', headers: { apikey: SRK, Authorization: `Bearer ${SRK}`, 'Content-Type': 'application/json', Prefer: 'return=minimal' }, body: JSON.stringify({ status: 'sipariş verdi', updated_at: new Date().toISOString() }) }); } catch { /* yoksa sorun değil */ }
         return j({ ok: true, code: row.code, total, up: await baskiSig(String(row.code)) });
       }
       const t = await r.text();

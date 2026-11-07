@@ -1271,7 +1271,7 @@ function crmOk(){return !!(ACCOUNT.user&&String(ACCOUNT.user.email||'').toLowerC
 async function crmLoad(){
   if(C.busy)return;C.busy=true;C.err='';
   try{var tk=await sbToken();if(!tk){C.err='Giriş gerekli.';C.orders=[];C.cust=[];C.notes=[];}
-   else{var rs=await Promise.all([sbReq('/rest/v1/orders?select=*&order=created_at.desc&limit=200',{token:tk}),sbReq('/rest/v1/crm_customers?select=*&order=last_order_at.desc.nullslast&limit=500',{token:tk}),sbReq('/rest/v1/crm_notes?select=*&order=created_at.desc&limit=500',{token:tk})]);
+   else{var rs=await Promise.all([sbReq('/rest/v1/orders?select=*&order=created_at.desc&limit=200',{token:tk}),sbReq('/rest/v1/crm_customers?select=*&order=last_order_at.desc.nullslast&limit=500',{token:tk}),sbReq('/rest/v1/crm_notes?select=*&order=created_at.desc&limit=500',{token:tk}),sbReq('/rest/v1/carts?select=*&order=updated_at.desc&limit=300',{token:tk})]);C.carts=rs[3]&&rs[3].ok&&Array.isArray(rs[3].j)?rs[3].j:[];
      if(!rs[0].ok||!rs[1].ok||!rs[2].ok){C.err='Veriler okunamadı.';}
      C.orders=Array.isArray(rs[0].j)?rs[0].j:[];C.cust=Array.isArray(rs[1].j)?rs[1].j:[];C.notes=Array.isArray(rs[2].j)?rs[2].j:[];}}
   catch(_){C.err='Bağlantı kurulamadı.';C.orders=C.orders||[];C.cust=C.cust||[];C.notes=C.notes||[];}
@@ -1386,7 +1386,8 @@ function crmSpecial(o){
   return h;
 }
 function crmHTML(){
-  var tabs=[['sip','Siparişler'],['mus','Müşteriler'],['tas','Tasarımlar']].map(function(x){return '<button type="button" data-crm="tab" data-v="'+x[0]+'"'+(C.tab===x[0]?' class="on"':'')+'>'+x[1]+'</button>';}).join('');
+  var bsn=(C.carts||[]).filter(function(c){return c.status==='bekliyor';}).length;
+  var tabs=[['sip','Siparişler'],['mus','Müşteriler'],['sep','Bekleyen sepetler'+(bsn?' ('+bsn+')':'')],['tas','Tasarımlar']].map(function(x){return '<button type="button" data-crm="tab" data-v="'+x[0]+'"'+(C.tab===x[0]?' class="on"':'')+'>'+x[1]+'</button>';}).join('');
   var h='<div class="wrap page crm"><p class="eyebrow">Wolflano</p><h1 class="h2">Yönetim</h1><div class="crmtabs">'+tabs+'<span class="crmsp"></span><button type="button" class="btn sm" data-crm="mail">✉ Yeni e-posta</button><button type="button" class="btn soft sm" data-crm="reload" aria-label="Yenile">↻</button></div>';
   if(C.err)h+='<p class="msg">'+esc(C.err)+'</p>';
   if(C.tab==='sip'){
@@ -1404,9 +1405,25 @@ function crmHTML(){
        '<label class="sr" for="crmQ">Ara</label><input id="crmQ" type="search" placeholder="Ad, telefon, e-posta, il" value="'+esc(C.q)+'" data-crmq>'+
        (list.length?list.map(function(c){return '<button type="button" class="panel crmc crmrow" data-crm="sel" data-v="'+esc(c.email)+'"><div class="crmh"><b>'+esc(c.ad||c.email)+'</b><span class="crmseg">'+esc(c.segment)+'</span></div><span class="note" style="margin:0">'+esc(c.email)+' · '+esc(c.tel||'')+' · '+esc(c.il||'')+'</span><span class="note" style="margin:0">'+c.order_count+' sipariş · '+tl(c.total_spent)+(c.last_order_at?' · son: '+crmDate(c.last_order_at):'')+'</span></button>';}).join(''):'<p class="note">Müşteri bulunamadı. Siparişler geldikçe burada otomatik oluşur.</p>');
     }
+  }else if(C.tab==='sep'){h+=cartsAdmin();
   }else{h+=dsAdmin();}
   return h+'</div>';
 }
+/* Bekleyen sepetler: e-postası bilinen müşterinin sepeti (üye ya da ödeme ekranında e-posta yazmış). Sipariş verince "sipariş verdi" olur.
+   Şimdilik mesaj elle (WhatsApp / e-posta); satışa açılınca izin veren müşterilere otomatik hatırlatma e-postası eklenecek. */
+function cartsAgo(t){var m=Math.round((Date.now()-new Date(t).getTime())/60000);return m<60?m+' dk önce':m<1440?Math.round(m/60)+' saat önce':Math.round(m/1440)+' gün önce';}
+function cartsAdmin(){var all=C.carts||[],f=C.cf||'bekliyor',list=all.filter(function(c){return f==='hepsi'?true:c.status===f;});
+  var tot=all.filter(function(c){return c.status==='bekliyor';}).reduce(function(a,c){return a+(+c.total||0);},0);
+  var h='<div class="crmstat"><div><small>Bekleyen sepet</small><b>'+all.filter(function(c){return c.status==='bekliyor';}).length+'</b></div><div><small>Bekleyen tutar</small><b>'+tl(tot)+'</b></div><div><small>Sipariş veren</small><b>'+all.filter(function(c){return c.status==='sipariş verdi';}).length+'</b></div></div>'+
+    '<div class="crmf">'+[['bekliyor','Bekleyen'],['sipariş verdi','Sipariş verdi'],['kapatıldı','Kapatılan'],['hepsi','Hepsi']].map(function(x){return '<button type="button" data-crm="cf" data-v="'+x[0]+'"'+(f===x[0]?' class="on" style="background:var(--green);border-color:var(--green)"':'')+'>'+x[1]+'</button>';}).join('')+'</div>';
+  if(!list.length)return h+'<p class="note">Bu listede sepet yok. Müşteri e-postasını yazdığında ya da üye olarak sepete ürün eklediğinde burada görünür.</p>';
+  return h+list.map(function(c){var first=String(c.ad||'').split(' ')[0],t=String(c.tel||'').replace(/\D/g,'');if(t.charAt(0)==='0')t='9'+t;
+    var msg='Merhaba'+(first?' '+first:'')+', Wolflano sepetinde '+(c.items||[]).map(function(x){return x.n;}).slice(0,3).join(', ')+' bekliyor. Siparişini tamamlamak istersen yardımcı olabiliriz: wolflano.com.tr/#sepet';
+    return '<div class="panel crmc"><div class="crmh"><b>'+esc(c.ad||c.mail)+'</b><span class="note" style="margin:0">'+cartsAgo(c.updated_at)+'</span></div>'+
+      '<span class="note" style="margin:0">'+esc(c.mail)+(c.tel?' · '+esc(c.tel):'')+(c.member?' · üye':'')+' · '+(c.izin?'<b style="color:var(--green)">hatırlatma izni var</b>':'hatırlatma izni yok')+'</span>'+
+      (c.items||[]).map(function(x){return '<div class="sumr"><span>'+esc(x.n)+' × '+x.q+'</span><span>'+tl(x.t)+'</span></div>';}).join('')+'<div class="sumr t"><span>Toplam</span><span>'+tl(c.total)+'</span></div>'+
+      '<div class="crmact">'+(t?'<a class="btn soft sm" target="_blank" rel="noopener" href="https://wa.me/'+t+'?text='+encodeURIComponent(msg)+'">WhatsApp</a>':'')+'<button type="button" class="btn soft sm" data-crm="mail" data-v="'+esc(c.mail)+'" data-n="'+esc(c.ad||'')+'">E-posta</button>'+
+      (c.status==='bekliyor'?'<button type="button" class="btn soft sm" data-crm="cclose" data-v="'+esc(c.mail)+'">Kapat</button>':'')+'</div></div>';}).join('');}
 function crmDetail(em){
   var c=C.cust.filter(function(x){return x.email===em;})[0];if(!c){C.sel=null;return '';}
   var nn=(C.notes||[]).filter(function(x){return x.customer_email===em;});
@@ -1432,6 +1449,8 @@ document.addEventListener('click',async function(e){
     var sr=await fetch(SB.url+'/storage/v1/object/sign/belgeler/'+encodeURIComponent(v),{method:'POST',headers:{apikey:SB.key,Authorization:'Bearer '+tkd,'Content-Type':'application/json'},body:JSON.stringify({expiresIn:600})}).then(function(x){return x.json();}).catch(function(){return {};});
     var su=sr&&(sr.signedURL||sr.signedUrl);if(su){var full=SB.url+'/storage/v1'+su;if(w)w.location.href=full;else location.href=full;}else{if(w)w.close();toast('Belge açılamadı');}}
   else if(a==='files'){crmFilesLoad(v);}
+  else if(a==='cf'){C.cf=v;crmRender();}
+  else if(a==='cclose'){var tkc=await sbToken();if(!tkc)return;var rc=await sbReq('/rest/v1/carts?mail=eq.'+encodeURIComponent(v),{method:'PATCH',token:tkc,prefer:'return=minimal',body:{status:'kapatıldı'}});if(rc.ok){(C.carts||[]).forEach(function(c){if(c.mail===v)c.status='kapatıldı';});crmRender();}else toast('Güncellenemedi');}
   else if(a==='fshare'||a==='fall'){var L=CF[v];if(!Array.isArray(L)||!L.length)return;var pick=a==='fshare'?[L[+b.dataset.i]]:L;
     if(navigator.share){try{var fs=[];for(var q=0;q<pick.length;q++){var rr=await fetch(pick[q].u);var bb=await rr.blob();var nm=decodeURIComponent((pick[q].d.split('download=')[1]||('baski-'+(q+1)+'.png')));fs.push(new File([bb],nm,{type:'image/png'}));}
       if(navigator.canShare&&!navigator.canShare({files:fs})){toast('Bu cihaz dosya göndermeyi desteklemiyor, İndir\'i kullan.');return;}await navigator.share({files:fs,title:v+' baskı dosyaları'});}catch(er){if(!er||er.name!=='AbortError')toast('Gönderilemedi');}}
@@ -3333,7 +3352,7 @@ odeme:function(){
   '<details class="osum"><summary><span>Sipariş özeti ('+n+' ürün)</span><em id="shT2">'+tl(tot+sh)+'</em></summary><div class="osb">'+rows+
   '<div class="sumr"><span>Ara toplam (KDV dahil)</span><span>'+tl(tot)+'</span></div><div class="sumr" id="scR" hidden style="color:var(--green)"><span></span><span>Ücretsiz</span></div><div class="sumr" id="spR" hidden style="color:var(--green)"><span></span><span></span></div><div class="sumr"><span>Kargo'+shn+'</span><span id="shL">'+shl+'</span></div><div class="sumr" id="shD" hidden><span>Tahmini teslimat</span><span></span></div><div class="sumr t"><span>Toplam (KDV dahil)</span><span id="shT">'+tl(tot+sh)+'</span></div></div></details>'+
   '<form class="co" id="coForm" novalidate><div class="stp" data-s="1">'+
-  '<div class="panel"><h3>İletişim</h3><p class="note" style="margin:0">Üyeysen <a href="#hesabim" class="lk">giriş yap</a>; değilsen misafir olarak devam edebilirsin.</p><label for="oMail">E-posta<input id="oMail" type="email" autocomplete="email" required></label><label for="oTel">Cep telefonu<input id="oTel" type="tel" inputmode="tel" autocomplete="tel" placeholder="05xx xxx xx xx" required></label><label class="fs" for="oH2"><input type="checkbox" name="oH" id="oH2" value="member"> Ödemeden sonra hesap oluştur</label></div>'+
+  '<div class="panel"><h3>İletişim</h3><p class="note" style="margin:0">Üyeysen <a href="#hesabim" class="lk">giriş yap</a>; değilsen misafir olarak devam edebilirsin.</p><label for="oMail">E-posta<input id="oMail" type="email" autocomplete="email" required></label><label for="oTel">Cep telefonu<input id="oTel" type="tel" inputmode="tel" autocomplete="tel" placeholder="05xx xxx xx xx" required></label><label class="fs" for="oH2"><input type="checkbox" name="oH" id="oH2" value="member"> Ödemeden sonra hesap oluştur</label><label class="fs" for="oIzin"><input type="checkbox" id="oIzin"> Kampanya, indirim ve sepet hatırlatma e-postaları almak istiyorum</label></div>'+
   '<div class="panel"><h3>Teslimat adresi</h3><label for="oAd">Ad soyad<input id="oAd" autocomplete="name" required></label><label for="oAdr">Adres<textarea id="oAdr" autocomplete="street-address" required></textarea></label><div style="display:grid;grid-template-columns:1fr 1fr;gap:12px"><label for="oIl">İl<input id="oIl" autocomplete="address-level1" required></label><label for="oIlce">İlçe<input id="oIlce" autocomplete="address-level2" required></label></div><label for="oNot">Sipariş notu (isteğe bağlı)<input id="oNot"></label></div>'+
   '<div class="panel"><h3>Fatura adresi</h3><label class="fs" for="oFs"><input type="checkbox" id="oFs" checked> Fatura adresim teslimat adresiyle aynı</label><div id="oFab" hidden style="display:none;gap:12px"><label for="oFa">Fatura adresi<textarea id="oFa"></textarea></label><div style="display:grid;grid-template-columns:1fr 1fr;gap:12px"><label for="oFaIl">İl<input id="oFaIl"></label><label for="oFaIlce">İlçe<input id="oFaIlce"></label></div></div><label class="fs" for="oFk"><input type="checkbox" id="oFk"> Kurumsal (şirket) faturası istiyorum</label><div id="oFb" hidden style="display:none;gap:12px"><label for="oFu">Firma unvanı<input id="oFu"></label><div class="two" style="display:grid;grid-template-columns:1fr 1fr;gap:12px"><label for="oFv">Vergi no<input id="oFv" inputmode="numeric"></label><label for="oFd">Vergi dairesi<input id="oFd"></label></div></div><p class="note" style="margin:0">Fatura e-Arşiv olarak e-posta adresine gönderilir.</p></div>'+
   '<div class="panel"><h3>Teslimat yöntemi</h3><div class="rad"><label for="oT1"><input type="radio" name="oT" id="oT1" value="kargo" checked><span>Kargo ile adrese teslim<small>Siparişler 2-4 iş gününde hazırlanıp kargoya verilir.</small></span></label><label for="oT2"><input type="radio" name="oT" id="oT2" value="elden"><span>İzmir’de elden teslim · Ücretsiz<small>Teslim yerini ve saatini telefonla birlikte belirleriz.</small></span></label></div></div>'+
@@ -3799,7 +3818,17 @@ function openMenu(){
   pagesNow().map(function(p){return '<a href="#'+p[0]+'"'+(p[0]===cur?' class="on"':'')+'>'+esc(p[1])+'</a>';}).join('')+'</nav>';
 }
 function cartCount(){var n=0;for(var k in cart)n+=cart[k];return n+scItems().length;}
-function syncCart(){var n=cartCount(),b=$('#cartN');b.hidden=!n;b.textContent=n;var fn=Object.keys(favs).filter(function(k){return favs[k];}).length,fb=$('#favN');fb.hidden=!fn;fb.textContent=fn;saveLS();}
+/* Bekleyen sepet kaydı: e-postası bilinen müşterinin (üye ya da ödeme ekranında e-posta yazmış) sepeti Wolflano'ya kaydedilir (sunucu: sepet) */
+var CP={t:null,last:''};
+function cpMail(){var m='';try{m=(ACCOUNT.user&&ACCOUNT.user.email)||'';}catch(_){}var e=document.getElementById('oMail');if(!m&&e&&/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(e.value.trim()))m=e.value.trim();if(!m)m=localStorage.getItem('wf_cmail')||'';return String(m).toLowerCase();}
+function cpItems(){var it=[];Object.keys(cart).forEach(function(id){if(cart[id]>0){var p=ALLP.filter(function(x){return x.id===ckId(id);})[0];if(p)it.push({id:p.id,n:p.name+szLbl(id),q:cart[id],t:p.price*cart[id],img:(p.imgs||[])[0]||''});}});
+  scLive().forEach(function(x){it.push({id:'tasarim',n:'Tasarım: '+(x.label||'')+' ('+scSizes(x)+')',q:scQty(x),t:scTot(x)});});return it;}
+function cartPush(now){clearTimeout(CP.t);CP.t=setTimeout(async function(){try{var m=cpMail();if(!m)return;var it=cpItems(),e=function(i){var x=document.getElementById(i);return x?x.value.trim():'';},iz=document.getElementById('oIzin');
+  var body={mail:m,items:it,ad:e('oAd'),tel:normPhone(e('oTel'))||''};if(iz)body.izin=!!iz.checked;var k=JSON.stringify(body);if(k===CP.last)return;
+  var h={'Content-Type':'application/json',apikey:SB.key},tk=null;try{tk=await sbToken();}catch(_){}if(tk)h.Authorization='Bearer '+tk;
+  var r=await fetch(SB.url+'/functions/v1/sepet',{method:'POST',headers:h,body:k,keepalive:true});if(r.ok)CP.last=k;}catch(_){}},now?50:1500);}
+document.addEventListener('change',function(e){var t=e.target;if(!t||!t.id)return;if(t.id==='oMail'){var v=t.value.trim();if(/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v)){try{localStorage.setItem('wf_cmail',v.toLowerCase());}catch(_){}cartPush(true);}}else if(/^(oAd|oTel|oIzin)$/.test(t.id))cartPush(true);});
+function syncCart(){cartPush();var n=cartCount(),b=$('#cartN');b.hidden=!n;b.textContent=n;var fn=Object.keys(favs).filter(function(k){return favs[k];}).length,fb=$('#favN');fb.hidden=!fn;fb.textContent=fn;saveLS();}
 function coStep(){return 1;}
 function szMissing(){for(var k in cart){if(!(cart[k]>0))continue;var p=ALLP.filter(function(x){return x.id===ckId(k);})[0];if(p&&pSizes(p).length&&!ckSz(k))return p;}return null;}
 function coMiss(){var g=function(i){var e=document.getElementById(i);return e?e.value.trim():'';};var zp=szMissing();if(zp)return ['__sz','Sepetteki “'+zp.name+'” için beden seç.'];
