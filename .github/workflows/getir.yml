@@ -1,0 +1,20 @@
+# Depodaki (Supabase) bir görseli düzenlemek için repoya getirir: getir/liste.txt'deki adresler getir/ klasörüne indirilir.
+name: Görsel getir
+on:
+  push:
+    branches: [main]
+    paths: ['getir/liste.txt', '.github/workflows/getir.yml']
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  getir:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: İndir ve kaydet
+        run: |
+          while read -r u; do [ -n "$u" ] && curl -fsSL -o "getir/$(basename "$u")" "$u"; done < getir/liste.txt
+          git config user.name "fotoince-sudo"; git config user.email "fotoince@gmail.com"
+          git add getir; git commit -q -m "Görsel getirildi" || exit 0
+          for i in 1 2 3; do git pull -q --rebase origin main && git push -q origin HEAD:main && break; sleep 5; done
