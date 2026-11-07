@@ -35,7 +35,7 @@ def convert(data):
         rgb = cv2.resize(rgb, (round(w * s), round(h * s)), interpolation=cv2.INTER_AREA)
         h, w = rgb.shape[:2]
     # Eski zemin düz tek renk (#f1f3f2): kenardan başlayıp yalnız o renge çok yakın, kenara bağlı bölge zemin sayılır.
-        sm = cv2.GaussianBlur(rgb.astype(np.float32), (5, 5), 0)
+    sm = cv2.GaussianBlur(rgb.astype(np.float32), (5, 5), 0)
     diff = np.abs(sm - BG).max(2)
     near = (diff <= 3.5).astype(np.uint8)
     n, lab = cv2.connectedComponents(near, connectivity=4)
@@ -49,10 +49,12 @@ def convert(data):
     bgm = bgm & (ai < .5)
     bgm = cv2.morphologyEx(bgm.astype(np.uint8), cv2.MORPH_OPEN, np.ones((3, 3), np.uint8)).astype(bool)
     a = (~bgm).astype(np.float32)
-    # yumuşak kenar: zemine bitişik 2 piksellik şeritte farka göre kısmi saydamlık
-    band = cv2.dilate(bgm.astype(np.uint8), np.ones((5, 5), np.uint8)).astype(bool) & ~bgm
+    # Kenar şeridi: JPEG'in ürün kenarında bozduğu eski zemin rengi (hale) temizlenir; zemine yakın renkli pikseller kısmi saydam olur
+    R = max(4, w // 200) | 1
+    band = cv2.dilate(bgm.astype(np.uint8), np.ones((R, R), np.uint8)).astype(bool) & ~bgm
     dr = np.abs(rgb.astype(np.float32) - BG).max(2)
-    a[band] = np.clip((dr[band] - 2) / 14, 0, 1)
+    a[band] = np.clip((dr[band] - 3) / 16, 0, 1)
+    a = cv2.GaussianBlur(a, (3, 3), 0)
     if (a > .5).mean() < .02:
         raise ValueError('ürün bulunamadı')
     f = rgb.astype(np.float32)
