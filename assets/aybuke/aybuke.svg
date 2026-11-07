@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120">
+  <!-- Aybüke: Selçuklu savaşçı kadın (sade, özgün çizim). Yerine gerçek görsel konursa aynı ada aybuke.png/jpg yüklenir. -->
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="40%" r="70%"><stop offset="0" stop-color="#e8f3ec"/><stop offset="1" stop-color="#77b891"/></radialGradient>
+    <linearGradient id="mig" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#d9b26a"/><stop offset="1" stop-color="#8f6a2f"/></linearGradient>
+  </defs>
+  <circle cx="60" cy="60" r="60" fill="url(#bg)"/>
+  <!-- omuzlar: zırh ve pelerin -->
+  <path d="M14 120c4-24 22-34 46-34s42 10 46 34z" fill="#30703f"/>
+  <path d="M30 120c3-16 14-24 30-24s27 8 30 24z" fill="#8a8f94"/>
+  <path d="M38 104h44M36 111h48" stroke="#5a5f66" stroke-width="2"/>
+  <!-- boyun -->
+  <rect x="52" y="74" width="16" height="14" rx="5" fill="#e2b48f"/>
+  <!-- yüz -->
+  <ellipse cx="60" cy="60" rx="17" ry="20" fill="#eec29e"/>
+  <!-- saç örgüleri -->
+  <path d="M42 58c-4 14-2 30 2 40" stroke="#3b2417" stroke-width="5" fill="none" stroke-linecap="round"/>
+  <path d="M78 58c4 14 2 30-2 40" stroke="#3b2417" stroke-width="5" fill="none" stroke-linecap="round"/>
+  <!-- miğfer (sivri Selçuklu miğferi) ve alın bandı -->
+  <path d="M40 54c0-16 9-27 20-34 11 7 20 18 20 34z" fill="url(#mig)"/>
+  <path d="M60 8l3 13h-6z" fill="#c9a227"/>
+  <rect x="39" y="50" width="42" height="7" rx="3" fill="#7a1f2b"/>
+  <!-- Selçuklu yıldızı (sekiz köşeli) alında -->
+  <g transform="translate(60 38)" fill="#f2e6d0"><rect x="-5" y="-5" width="10" height="10"/><rect x="-5" y="-5" width="10" height="10" transform="rotate(45)"/></g>
+  <circle cx="60" cy="38" r="2.2" fill="#7a1f2b"/>
+  <!-- yanak koruyucular -->
+  <path d="M40 56c-1 8 0 14 4 18l3-14z" fill="#8f6a2f"/><path d="M80 56c1 8 0 14-4 18l-3-14z" fill="#8f6a2f"/>
+  <!-- göz, kaş, ağız -->
+  <path d="M50 61q4-3 8 0M62 61q4-3 8 0" stroke="#3b2417" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+  <ellipse cx="54" cy="64" rx="2" ry="2.4" fill="#2b1a10"/><ellipse cx="66" cy="64" rx="2" ry="2.4" fill="#2b1a10"/>
+  <path d="M55 73q5 3 10 0" stroke="#a5523f" stroke-width="2" fill="none" stroke-linecap="round"/>
+</svg>

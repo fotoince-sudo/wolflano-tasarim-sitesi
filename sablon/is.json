@@ -1,0 +1,569 @@
+[
+ {
+  "ad": "istanbul-yatay",
+  "baslik": "İstanbul",
+  "kat": "Şehirler",
+  "url": "https://export-download.canva.com/DWuLI/DAHZnQDWuLI/-1/0/0002-7524909827707491478.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAQYCGKMUH4R7NKVBA%2F20261031%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20261031T065341Z&X-Amz-Expires=60826&X-Amz-Signature=6400b6299278b527b2458413b3df66df9d5b49c021cef5824c985af6c3fd3cc4&X-Amz-SignedHeaders=host%3Bx-amz-expected-bucket-owner&response-expires=Sat%2C%2031%20Oct%202026%2023%3A47%3A27%20GMT"
+ },
+ {
+  "ad": "antalya-yatay",
+  "baslik": "Antalya",
+  "kat": "Şehirler",
+  "url": "https://export-download.canva.com/DWuLI/DAHZnQDWuLI/-1/0/0003-7524909827707491478.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAQYCGKMUH4R7NKVBA%2F20261031%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20261031T032750Z&X-Amz-Expires=71789&X-Amz-Signature=71251869930f732fb1380fead271bc6eb840480859f1fa05e4e02c5a0336944f&X-Amz-SignedHeaders=host%3Bx-amz-expected-bucket-owner&response-expires=Sat%2C%2031%20Oct%202026%2023%3A24%3A19%20GMT"
+ },
+ {
+  "ad": "van-yatay",
+  "baslik": "Van",
+  "kat": "Şehirler",
+  "url": "https://export-download.canva.com/DWuLI/DAHZnQDWuLI/-1/0/0004-7524909827707491478.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAQYCGKMUH4R7NKVBA%2F20261031%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20261031T001210Z&X-Amz-Expires=83221&X-Amz-Signature=2e64c621e55b96def9e697b69ee6a93f278b8e2ad5cd0d62cf06fdbdd6096129&X-Amz-SignedHeaders=host%3Bx-amz-expected-bucket-owner&response-expires=Sat%2C%2031%20Oct%202026%2023%3A19%3A11%20GMT"
+ },
+ {
+  "ad": "bodrum-yatay",
+  "baslik": "Bodrum",
+  "kat": "Şehirler",
+  "url": "https://export-download.canva.com/DWuLI/DAHZnQDWuLI/-1/0/0005-7524909827707491478.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAQYCGKMUH4R7NKVBA%2F20261031%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20261031T182428Z&X-Amz-Expires=18836&X-Amz-Signature=0cfdefb6a1486124a67387498023ada12502f21f96603f25c243bfd7c3f1c7b7&X-Amz-SignedHeaders=host%3Bx-amz-expected-bucket-owner&response-expires=Sat%2C%2031%20Oct%202026%2023%3A38%3A24%20GMT"
+ },
+ {
+  "ad": "istanbul-dikey",
+  "baslik": "İstanbul",
+  "kat": "Şehirler",
+  "url": "https://export-download.canva.com/DWuLI/DAHZnQDWuLI/-1/0/0006-7524909827707491478.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAQYCGKMUH4R7NKVBA%2F20261031%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20261031T060508Z&X-Amz-Expires=62642&X-Amz-Signature=366406af03043b7f999afcaf9061b92ae4368e071d68e21c7e2d8a3d4343873c&X-Amz-SignedHeaders=host%3Bx-amz-expected-bucket-owner&response-expires=Sat%2C%2031%20Oct%202026%2023%3A29%3A10%20GMT"
+ },
+ {
+  "ad": "antalya-dikey",
+  "baslik": "Antalya",
+  "kat": "Şehirler",
+  "url": "https://export-download.canva.com/DWuLI/DAHZnQDWuLI/-1/0/0007-7524909827707491478.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAQYCGKMUH4R7NKVBA%2F20261031%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20261031T142035Z&X-Amz-Expires=31780&X-Amz-Signature=ce92a1f3bd1183a3f2f5b7d2c44416a8bcf615a034e2f31eb5b1c32f4b0a5a87&X-Amz-SignedHeaders=host%3Bx-amz-expected-bucket-owner&response-expires=Sat%2C%2031%20Oct%202026%2023%3A10%3A15%20GMT"
+ },
+ {
+  "ad": "van-dikey",
+  "baslik": "Van",
+  "kat": "Şehirler",
+  "url": "https://export-download.canva.com/DWuLI/DAHZnQDWuLI/-1/0/0008-7524909827707491478.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAQYCGKMUH4R7NKVBA%2F20261031%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20261031T170745Z&X-Amz-Expires=24511&X-Amz-Signature=7a1d889c02950602456f42b4ade90587c38b6e5dce38ddd2b854664c758ab498&X-Amz-SignedHeaders=host%3Bx-amz-expected-bucket-owner&response-expires=Sat%2C%2031%20Oct%202026%2023%3A56%3A16%20GMT"
+ },
+ {
+  "ad": "bodrum-dikey",
+  "baslik": "Bodrum",
+  "kat": "Şehirler",
+  "url": "https://export-download.canva.com/DWuLI/DAHZnQDWuLI/-1/0/0009-7524909827707491478.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAQYCGKMUH4R7NKVBA%2F20261031%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20261031T193201Z&X-Amz-Expires=15333&X-Amz-Signature=d275ecd9857abf81d403504e7ba0b9b703d2d44c48f146aed5af673cdea0f7da&X-Amz-SignedHeaders=host%3Bx-amz-expected-bucket-owner&response-expires=Sat%2C%2031%20Oct%202026%2023%3A47%3A34%20GMT"
+ },
+ {
+  "ad": "kupa-istanbul",
+  "baslik": "İstanbul",
+  "kat": "Şehirler",
+  "urun": "kupa",
+  "tuval": [
+   2362,
+   1063
+  ],
+  "url": "https://export-download.canva.com/DWuLI/DAHZnQDWuLI/-1/0/0010-5776387272592157644.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAQYCGKMUH4R7NKVBA%2F20261031%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20261031T124332Z&X-Amz-Expires=41524&X-Amz-Signature=406dbef9826ac957787be5c1edb41d2c30f3f843c18b9c6647f4732f8bdcfe67&X-Amz-SignedHeaders=host%3Bx-amz-expected-bucket-owner&response-expires=Sun%2C%2001%20Nov%202026%2000%3A15%3A36%20GMT"
+ },
+ {
+  "ad": "kupa-antalya",
+  "baslik": "Antalya",
+  "kat": "Şehirler",
+  "urun": "kupa",
+  "tuval": [
+   2362,
+   1063
+  ],
+  "url": "https://export-download.canva.com/DWuLI/DAHZnQDWuLI/-1/0/0011-5776387272592157644.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAQYCGKMUH4R7NKVBA%2F20261031%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20261031T153849Z&X-Amz-Expires=28425&X-Amz-Signature=19bc5c0d5ee54fdba737b5cc9bad726adbcf1594f46894c97981acbb1dfab062&X-Amz-SignedHeaders=host%3Bx-amz-expected-bucket-owner&response-expires=Sat%2C%2031%20Oct%202026%2023%3A32%3A34%20GMT"
+ },
+ {
+  "ad": "kupa-van",
+  "baslik": "Van",
+  "kat": "Şehirler",
+  "urun": "kupa",
+  "tuval": [
+   2362,
+   1063
+  ],
+  "url": "https://export-download.canva.com/DWuLI/DAHZnQDWuLI/-1/0/0012-5776387272592157644.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAQYCGKMUH4R7NKVBA%2F20261031%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20261031T011525Z&X-Amz-Expires=80330&X-Amz-Signature=ef52a7b72f7069cd92663c661741946bf6eb51e898ab2f5bfa79cc2f9eb356b6&X-Amz-SignedHeaders=host%3Bx-amz-expected-bucket-owner&response-expires=Sat%2C%2031%20Oct%202026%2023%3A34%3A15%20GMT"
+ },
+ {
+  "ad": "kupa-bodrum",
+  "baslik": "Bodrum",
+  "kat": "Şehirler",
+  "urun": "kupa",
+  "tuval": [
+   2362,
+   1063
+  ],
+  "url": "https://export-download.canva.com/DWuLI/DAHZnQDWuLI/-1/0/0013-5776387272592157644.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAQYCGKMUH4R7NKVBA%2F20261031%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20261031T000104Z&X-Amz-Expires=85789&X-Amz-Signature=28e1a81fb9b63af9025b9dbe715f9228b99a0f0b90c2eca05ef4d5bdf4863264&X-Amz-SignedHeaders=host%3Bx-amz-expected-bucket-owner&response-expires=Sat%2C%2031%20Oct%202026%2023%3A50%3A53%20GMT"
+ },
+ {
+  "ad": "hastane-izmir-yatay",
+  "baslik": "İzmir",
+  "kat": "Kurt geziyor · Şehir hastaneleri",
+  "url": "https://export-download.canva.com/DWuLI/DAHZnQDWuLI/-1/0/0014-4784469457399841426.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAQYCGKMUH4R7NKVBA%2F20261031%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20261031T192022Z&X-Amz-Expires=21116&X-Amz-Signature=47211b71f8c0dbb96eadd760c87789bfba690d866f8b5ffcd286c700e662ea90&X-Amz-SignedHeaders=host%3Bx-amz-expected-bucket-owner&response-expires=Sun%2C%2001%20Nov%202026%2001%3A12%3A18%20GMT"
+ },
+ {
+  "ad": "hastane-ankara-yatay",
+  "baslik": "Ankara",
+  "kat": "Kurt geziyor · Şehir hastaneleri",
+  "url": "https://export-download.canva.com/DWuLI/DAHZnQDWuLI/-1/0/0015-4784469457399841426.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAQYCGKMUH4R7NKVBA%2F20261031%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20261031T120749Z&X-Amz-Expires=45258&X-Amz-Signature=a4456d3208320fbb03fb4fa5f85fa3730fdc34d5bbba58148e4cb890be24419c&X-Amz-SignedHeaders=host%3Bx-amz-expected-bucket-owner&response-expires=Sun%2C%2001%20Nov%202026%2000%3A42%3A07%20GMT"
+ },
+ {
+  "ad": "hastane-istanbul-yatay",
+  "baslik": "İstanbul",
+  "kat": "Kurt geziyor · Şehir hastaneleri",
+  "url": "https://export-download.canva.com/DWuLI/DAHZnQDWuLI/-1/0/0016-4784469457399841426.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAQYCGKMUH4R7NKVBA%2F20261031%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20261031T205424Z&X-Amz-Expires=16299&X-Amz-Signature=efaae608245beb0629f9eea9e01ac43954ed582cbf72e10b837484f48d81ba3c&X-Amz-SignedHeaders=host%3Bx-amz-expected-bucket-owner&response-expires=Sun%2C%2001%20Nov%202026%2001%3A26%3A03%20GMT"
+ },
+ {
+  "ad": "hastane-kayseri-yatay",
+  "baslik": "Kayseri",
+  "kat": "Kurt geziyor · Şehir hastaneleri",
+  "url": "https://export-download.canva.com/DWuLI/DAHZnQDWuLI/-1/0/0017-4784469457399841426.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAQYCGKMUH4R7NKVBA%2F20261031%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20261031T075109Z&X-Amz-Expires=63027&X-Amz-Signature=1521035117ff3d0affd3219753bbd4192affa8762fcc4dfd21077ad004b17523&X-Amz-SignedHeaders=host%3Bx-amz-expected-bucket-owner&response-expires=Sun%2C%2001%20Nov%202026%2001%3A21%3A36%20GMT"
+ },
+ {
+  "ad": "hastane-izmir-dikey",
+  "baslik": "İzmir",
+  "kat": "Kurt geziyor · Şehir hastaneleri",
+  "url": "https://export-download.canva.com/DWuLI/DAHZnQDWuLI/-1/0/0018-4784469457399841426.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAQYCGKMUH4R7NKVBA%2F20261031%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20261031T070355Z&X-Amz-Expires=62918&X-Amz-Signature=3b1a60b2987fae0a991b29475a0dfd0d2e527d21d6f567c8aa4b8ecfd236a545&X-Amz-SignedHeaders=host%3Bx-amz-expected-bucket-owner&response-expires=Sun%2C%2001%20Nov%202026%2000%3A32%3A33%20GMT"
+ },
+ {
+  "ad": "hastane-ankara-dikey",
+  "baslik": "Ankara",
+  "kat": "Kurt geziyor · Şehir hastaneleri",
+  "url": "https://export-download.canva.com/DWuLI/DAHZnQDWuLI/-1/0/0019-4784469457399841426.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAQYCGKMUH4R7NKVBA%2F20261031%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20261031T133130Z&X-Amz-Expires=40962&X-Amz-Signature=bc830b331babab52558f99379cdd0af0012824b0ccbba79b1f9dc69265c7b96d&X-Amz-SignedHeaders=host%3Bx-amz-expected-bucket-owner&response-expires=Sun%2C%2001%20Nov%202026%2000%3A54%3A12%20GMT"
+ },
+ {
+  "ad": "hastane-istanbul-dikey",
+  "baslik": "İstanbul",
+  "kat": "Kurt geziyor · Şehir hastaneleri",
+  "url": "https://export-download.canva.com/DWuLI/DAHZnQDWuLI/-1/0/0020-4784469457399841426.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAQYCGKMUH4R7NKVBA%2F20261031%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20261031T140237Z&X-Amz-Expires=38833&X-Amz-Signature=182d8c187381aba7579eafe86d0427ce282f0f888273efd07aa850605fe68eed&X-Amz-SignedHeaders=host%3Bx-amz-expected-bucket-owner&response-expires=Sun%2C%2001%20Nov%202026%2000%3A49%3A50%20GMT"
+ },
+ {
+  "ad": "hastane-kayseri-dikey",
+  "baslik": "Kayseri",
+  "kat": "Kurt geziyor · Şehir hastaneleri",
+  "url": "https://export-download.canva.com/DWuLI/DAHZnQDWuLI/-1/0/0021-4784469457399841426.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAQYCGKMUH4R7NKVBA%2F20261031%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20261031T211426Z&X-Amz-Expires=13708&X-Amz-Signature=7d3b992b234056e4fbf1c35d523055b54cf48e6f781b318f5e8086c6520fe217&X-Amz-SignedHeaders=host%3Bx-amz-expected-bucket-owner&response-expires=Sun%2C%2001%20Nov%202026%2001%3A02%3A54%20GMT"
+ },
+ {
+  "ad": "kupa-hastane-izmir",
+  "baslik": "İzmir",
+  "kat": "Kurt geziyor · Şehir hastaneleri",
+  "url": "https://export-download.canva.com/DWuLI/DAHZnQDWuLI/-1/0/0022-4784469457399841426.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAQYCGKMUH4R7NKVBA%2F20261031%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20261031T191949Z&X-Amz-Expires=19903&X-Amz-Signature=010141effe0f273866c030877708a7269f665de2d8b62901ab7a3f5e91fe1cbc&X-Amz-SignedHeaders=host%3Bx-amz-expected-bucket-owner&response-expires=Sun%2C%2001%20Nov%202026%2000%3A51%3A32%20GMT",
+  "tuval": [
+   2362,
+   1063
+  ],
+  "urun": "kupa"
+ },
+ {
+  "ad": "kupa-hastane-ankara",
+  "baslik": "Ankara",
+  "kat": "Kurt geziyor · Şehir hastaneleri",
+  "url": "https://export-download.canva.com/DWuLI/DAHZnQDWuLI/-1/0/0023-4784469457399841426.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAQYCGKMUH4R7NKVBA%2F20261031%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20261031T033756Z&X-Amz-Expires=78024&X-Amz-Signature=0b5c5f4aabf57568b04fd5c8452ad2704236f6d072189cf61dc53662746ae14c&X-Amz-SignedHeaders=host%3Bx-amz-expected-bucket-owner&response-expires=Sun%2C%2001%20Nov%202026%2001%3A18%3A20%20GMT",
+  "tuval": [
+   2362,
+   1063
+  ],
+  "urun": "kupa"
+ },
+ {
+  "ad": "kupa-hastane-istanbul",
+  "baslik": "İstanbul",
+  "kat": "Kurt geziyor · Şehir hastaneleri",
+  "url": "https://export-download.canva.com/DWuLI/DAHZnQDWuLI/-1/0/0024-4784469457399841426.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAQYCGKMUH4R7NKVBA%2F20261031%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20261031T155229Z&X-Amz-Expires=34073&X-Amz-Signature=17b7b0f22a01d03aaa923142d4c5d67989f37ae4953028d1ea418bf69674a6bc&X-Amz-SignedHeaders=host%3Bx-amz-expected-bucket-owner&response-expires=Sun%2C%2001%20Nov%202026%2001%3A20%3A22%20GMT",
+  "tuval": [
+   2362,
+   1063
+  ],
+  "urun": "kupa"
+ },
+ {
+  "ad": "kupa-hastane-kayseri",
+  "baslik": "Kayseri",
+  "kat": "Kurt geziyor · Şehir hastaneleri",
+  "url": "https://export-download.canva.com/DWuLI/DAHZnQDWuLI/-1/0/0025-4784469457399841426.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAQYCGKMUH4R7NKVBA%2F20261031%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20261031T205105Z&X-Amz-Expires=14146&X-Amz-Signature=d0cbf41ab219de1b3f6ad3af9384b3430c1107dc58e45b843e47f1946bc6c228&X-Amz-SignedHeaders=host%3Bx-amz-expected-bucket-owner&response-expires=Sun%2C%2001%20Nov%202026%2000%3A46%3A51%20GMT",
+  "tuval": [
+   2362,
+   1063
+  ],
+  "urun": "kupa"
+ },
+ {
+  "ad": "aydin-yatay",
+  "baslik": "Aydın",
+  "kat": "Şehirler",
+  "url": "https://export-download.canva.com/DWuLI/DAHZnQDWuLI/-1/0/0026-6095017013572464079.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAQYCGKMUH4R7NKVBA%2F20261101%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20261101T060346Z&X-Amz-Expires=36130&X-Amz-Signature=cc300283ad4961411d31bf44e7c0f218205569b3bfb0a14f57b7a6d0d9dc4658&X-Amz-SignedHeaders=host%3Bx-amz-expected-bucket-owner&response-expires=Sun%2C%2001%20Nov%202026%2016%3A05%3A56%20GMT"
+ },
+ {
+  "ad": "kirsehir-yatay",
+  "baslik": "Kırşehir",
+  "kat": "Şehirler",
+  "url": "https://export-download.canva.com/DWuLI/DAHZnQDWuLI/-1/0/0027-6095017013572464079.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAQYCGKMUH4R7NKVBA%2F20261101%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20261101T133552Z&X-Amz-Expires=11025&X-Amz-Signature=53e50e291924dfb04fc5e448cf9d143869b43ac6245ffeb852fd6a0faf2dbf49&X-Amz-SignedHeaders=host%3Bx-amz-expected-bucket-owner&response-expires=Sun%2C%2001%20Nov%202026%2016%3A39%3A37%20GMT"
+ },
+ {
+  "ad": "cesme-yatay",
+  "baslik": "Çeşme",
+  "kat": "Şehirler",
+  "url": "https://export-download.canva.com/DWuLI/DAHZnQDWuLI/-1/0/0028-6095017013572464079.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAQYCGKMUH4R7NKVBA%2F20261101%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20261101T053910Z&X-Amz-Expires=38926&X-Amz-Signature=79e49acda32266449b5bb740d7fcf79ed751770fb4ebb57856ab43301afb3e91&X-Amz-SignedHeaders=host%3Bx-amz-expected-bucket-owner&response-expires=Sun%2C%2001%20Nov%202026%2016%3A27%3A56%20GMT"
+ },
+ {
+  "ad": "gobeklitepe-yatay",
+  "baslik": "Göbeklitepe",
+  "kat": "Şehirler",
+  "url": "https://export-download.canva.com/DWuLI/DAHZnQDWuLI/-1/0/0029-6095017013572464079.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAQYCGKMUH4R7NKVBA%2F20261031%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20261031T221313Z&X-Amz-Expires=65987&X-Amz-Signature=d3a0dc2d6a34ea6cb06dd6a8cf965f1c2f109f9762855921c6bbb42ef89fb367&X-Amz-SignedHeaders=host%3Bx-amz-expected-bucket-owner&response-expires=Sun%2C%2001%20Nov%202026%2016%3A33%3A00%20GMT"
+ },
+ {
+  "ad": "23nisan-yatay",
+  "baslik": "23 Nisan",
+  "kat": "Kurt geziyor · Özel günler",
+  "url": "https://export-download.canva.com/DWuLI/DAHZnQDWuLI/-1/0/0030-6095017013572464079.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAQYCGKMUH4R7NKVBA%2F20261031%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20261031T204743Z&X-Amz-Expires=70881&X-Amz-Signature=6d6150ce22c693daf8f5135cfe4a45bcc63e629fd6826c3248d8999b057c61ff&X-Amz-SignedHeaders=host%3Bx-amz-expected-bucket-owner&response-expires=Sun%2C%2001%20Nov%202026%2016%3A29%3A04%20GMT"
+ },
+ {
+  "ad": "10kasim-yatay",
+  "baslik": "10 Kasım",
+  "kat": "Kurt geziyor · Özel günler",
+  "url": "https://export-download.canva.com/DWuLI/DAHZnQDWuLI/-1/0/0031-6095017013572464079.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAQYCGKMUH4R7NKVBA%2F20261031%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20261031T180441Z&X-Amz-Expires=80309&X-Amz-Signature=b0d959bf238b6592e96c8852c3feb7bfb6f47a4d35314a03d5b7e34d1dca8d54&X-Amz-SignedHeaders=host%3Bx-amz-expected-bucket-owner&response-expires=Sun%2C%2001%20Nov%202026%2016%3A23%3A10%20GMT"
+ },
+ {
+  "ad": "aydin-dikey",
+  "baslik": "Aydın",
+  "kat": "Şehirler",
+  "url": "https://export-download.canva.com/DWuLI/DAHZnQDWuLI/-1/0/0032-6095017013572464079.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAQYCGKMUH4R7NKVBA%2F20261031%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20261031T212607Z&X-Amz-Expires=68918&X-Amz-Signature=7feaa16100fcd7492af1881bd3f627c58699c1e1553f8594e8cb67f009e1f2f5&X-Amz-SignedHeaders=host%3Bx-amz-expected-bucket-owner&response-expires=Sun%2C%2001%20Nov%202026%2016%3A34%3A45%20GMT"
+ },
+ {
+  "ad": "kirsehir-dikey",
+  "baslik": "Kırşehir",
+  "kat": "Şehirler",
+  "url": "https://export-download.canva.com/DWuLI/DAHZnQDWuLI/-1/0/0033-6095017013572464079.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAQYCGKMUH4R7NKVBA%2F20261101%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20261101T135513Z&X-Amz-Expires=9367&X-Amz-Signature=b6a725e758baa6d18bdf0a2cab1ede8a7ce2eeaab02a355da29d4c4bebc5cba9&X-Amz-SignedHeaders=host%3Bx-amz-expected-bucket-owner&response-expires=Sun%2C%2001%20Nov%202026%2016%3A31%3A20%20GMT"
+ },
+ {
+  "ad": "cesme-dikey",
+  "baslik": "Çeşme",
+  "kat": "Şehirler",
+  "url": "https://export-download.canva.com/DWuLI/DAHZnQDWuLI/-1/0/0034-6095017013572464079.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAQYCGKMUH4R7NKVBA%2F20261031%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20261031T212232Z&X-Amz-Expires=67281&X-Amz-Signature=00f9ea5ded467a7de14e36905755f207d984edb70ae59a04b3d72b384b6aed4c&X-Amz-SignedHeaders=host%3Bx-amz-expected-bucket-owner&response-expires=Sun%2C%2001%20Nov%202026%2016%3A03%3A53%20GMT"
+ },
+ {
+  "ad": "gobeklitepe-dikey",
+  "baslik": "Göbeklitepe",
+  "kat": "Şehirler",
+  "url": "https://export-download.canva.com/DWuLI/DAHZnQDWuLI/-1/0/0035-6095017013572464079.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAQYCGKMUH4R7NKVBA%2F20261031%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20261031T174622Z&X-Amz-Expires=81043&X-Amz-Signature=c106017c54db06a003b98867b2cceee744e80e1278ceed17c7b130380a0c5028&X-Amz-SignedHeaders=host%3Bx-amz-expected-bucket-owner&response-expires=Sun%2C%2001%20Nov%202026%2016%3A17%3A05%20GMT"
+ },
+ {
+  "ad": "23nisan-dikey",
+  "baslik": "23 Nisan",
+  "kat": "Kurt geziyor · Özel günler",
+  "url": "https://export-download.canva.com/DWuLI/DAHZnQDWuLI/-1/0/0036-6095017013572464079.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAQYCGKMUH4R7NKVBA%2F20261101%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20261101T114439Z&X-Amz-Expires=17676&X-Amz-Signature=5b7bab511282a0b2d7f7e258ab18120394c3d9498be67c28be655dc56adfa600&X-Amz-SignedHeaders=host%3Bx-amz-expected-bucket-owner&response-expires=Sun%2C%2001%20Nov%202026%2016%3A39%3A15%20GMT"
+ },
+ {
+  "ad": "10kasim-dikey",
+  "baslik": "10 Kasım",
+  "kat": "Kurt geziyor · Özel günler",
+  "url": "https://export-download.canva.com/DWuLI/DAHZnQDWuLI/-1/0/0037-6095017013572464079.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAQYCGKMUH4R7NKVBA%2F20261101%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20261101T111653Z&X-Amz-Expires=17957&X-Amz-Signature=72b15f1a4c0ca496f8848bae21577b29aac56f635726869d843b770ad0896fa7&X-Amz-SignedHeaders=host%3Bx-amz-expected-bucket-owner&response-expires=Sun%2C%2001%20Nov%202026%2016%3A16%3A10%20GMT"
+ },
+ {
+  "ad": "kupa-aydin",
+  "baslik": "Aydın",
+  "kat": "Şehirler",
+  "url": "https://export-download.canva.com/DWuLI/DAHZnQDWuLI/-1/0/0038-6095017013572464079.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAQYCGKMUH4R7NKVBA%2F20261031%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20261031T230254Z&X-Amz-Expires=63773&X-Amz-Signature=44d6c382d10762d87a9d7a0e4adc76fbf5a590bfa0bcb91d8be16dc7707a4389&X-Amz-SignedHeaders=host%3Bx-amz-expected-bucket-owner&response-expires=Sun%2C%2001%20Nov%202026%2016%3A45%3A47%20GMT",
+  "tuval": [
+   2362,
+   1063
+  ],
+  "urun": "kupa"
+ },
+ {
+  "ad": "kupa-kirsehir",
+  "baslik": "Kırşehir",
+  "kat": "Şehirler",
+  "url": "https://export-download.canva.com/DWuLI/DAHZnQDWuLI/-1/0/0039-6095017013572464079.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAQYCGKMUH4R7NKVBA%2F20261101%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20261101T034055Z&X-Amz-Expires=45621&X-Amz-Signature=49785085a80cbdcdd23bb5c37cd09a0ae38cace685952c0bb132f175d57fbe19&X-Amz-SignedHeaders=host%3Bx-amz-expected-bucket-owner&response-expires=Sun%2C%2001%20Nov%202026%2016%3A21%3A16%20GMT",
+  "tuval": [
+   2362,
+   1063
+  ],
+  "urun": "kupa"
+ },
+ {
+  "ad": "kupa-cesme",
+  "baslik": "Çeşme",
+  "kat": "Şehirler",
+  "url": "https://export-download.canva.com/DWuLI/DAHZnQDWuLI/-1/0/0040-6095017013572464079.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAQYCGKMUH4R7NKVBA%2F20261101%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20261101T060607Z&X-Amz-Expires=37091&X-Amz-Signature=62853312bf3cec1aa92e670d5565838ff46f69cea1d9665c8ff2c86a85a8f833&X-Amz-SignedHeaders=host%3Bx-amz-expected-bucket-owner&response-expires=Sun%2C%2001%20Nov%202026%2016%3A24%3A18%20GMT",
+  "tuval": [
+   2362,
+   1063
+  ],
+  "urun": "kupa"
+ },
+ {
+  "ad": "kupa-gobeklitepe",
+  "baslik": "Göbeklitepe",
+  "kat": "Şehirler",
+  "url": "https://export-download.canva.com/DWuLI/DAHZnQDWuLI/-1/0/0041-6095017013572464079.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAQYCGKMUH4R7NKVBA%2F20261101%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20261101T005848Z&X-Amz-Expires=53593&X-Amz-Signature=8c9510606afc02021ece4e8dcfe0320350c0ecbccf961236f3e59f35b81f0ba9&X-Amz-SignedHeaders=host%3Bx-amz-expected-bucket-owner&response-expires=Sun%2C%2001%20Nov%202026%2015%3A52%3A01%20GMT",
+  "tuval": [
+   2362,
+   1063
+  ],
+  "urun": "kupa"
+ },
+ {
+  "ad": "kupa-23nisan",
+  "baslik": "23 Nisan",
+  "kat": "Kurt geziyor · Özel günler",
+  "url": "https://export-download.canva.com/DWuLI/DAHZnQDWuLI/-1/0/0042-6095017013572464079.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAQYCGKMUH4R7NKVBA%2F20261031%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20261031T210716Z&X-Amz-Expires=69850&X-Amz-Signature=cde824489ba9ac892f2ec0a60f225d5ea2a7a3e30589ecebfd60e5c0001680b8&X-Amz-SignedHeaders=host%3Bx-amz-expected-bucket-owner&response-expires=Sun%2C%2001%20Nov%202026%2016%3A31%3A26%20GMT",
+  "tuval": [
+   2362,
+   1063
+  ],
+  "urun": "kupa"
+ },
+ {
+  "ad": "kupa-10kasim",
+  "baslik": "10 Kasım",
+  "kat": "Kurt geziyor · Özel günler",
+  "url": "https://export-download.canva.com/DWuLI/DAHZnQDWuLI/-1/0/0043-6095017013572464079.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAQYCGKMUH4R7NKVBA%2F20261031%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20261031T230057Z&X-Amz-Expires=61166&X-Amz-Signature=c2e82e88132d44f23f284582bb276c8e068be7d1c8560025aee5b00d2fec0583&X-Amz-SignedHeaders=host%3Bx-amz-expected-bucket-owner&response-expires=Sun%2C%2001%20Nov%202026%2016%3A00%3A23%20GMT",
+  "tuval": [
+   2362,
+   1063
+  ],
+  "urun": "kupa"
+ },
+ {
+  "ad": "yemek-gaziantep-yatay",
+  "baslik": "Gaziantep · Fıstıklı baklava",
+  "kat": "Kurt geziyor · Yöresel lezzetler",
+  "url": "https://export-download.canva.com/DWuLI/DAHZnQDWuLI/-1/0/0044-2424583333286861429.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAQYCGKMUH4R7NKVBA%2F20261031%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20261031T195343Z&X-Amz-Expires=87739&X-Amz-Signature=f7089431148104311b9fe965c83c737c2e9b6fd0c582b26efd6880d315fbbe05&X-Amz-SignedHeaders=host%3Bx-amz-expected-bucket-owner&response-expires=Sun%2C%2001%20Nov%202026%2020%3A16%3A02%20GMT"
+ },
+ {
+  "ad": "yemek-adana-yatay",
+  "baslik": "Adana · Adana kebap",
+  "kat": "Kurt geziyor · Yöresel lezzetler",
+  "url": "https://export-download.canva.com/DWuLI/DAHZnQDWuLI/-1/0/0045-2424583333286861429.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAQYCGKMUH4R7NKVBA%2F20261101%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20261101T015042Z&X-Amz-Expires=64165&X-Amz-Signature=d2b29e2b355f4ff390b53bd6cabf8bab7103e38d7cc32b5a303a62d2b7b8535e&X-Amz-SignedHeaders=host%3Bx-amz-expected-bucket-owner&response-expires=Sun%2C%2001%20Nov%202026%2019%3A40%3A07%20GMT"
+ },
+ {
+  "ad": "yemek-bursa-yatay",
+  "baslik": "Bursa · İskender",
+  "kat": "Kurt geziyor · Yöresel lezzetler",
+  "url": "https://export-download.canva.com/DWuLI/DAHZnQDWuLI/-1/0/0046-2424583333286861429.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAQYCGKMUH4R7NKVBA%2F20261101%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20261101T145639Z&X-Amz-Expires=18779&X-Amz-Signature=7b38a055f20a9cde15a6c269a054ecdb3eb1f2124fc5614d17e155738fffd821&X-Amz-SignedHeaders=host%3Bx-amz-expected-bucket-owner&response-expires=Sun%2C%2001%20Nov%202026%2020%3A09%3A38%20GMT"
+ },
+ {
+  "ad": "yemek-izmir-yatay",
+  "baslik": "İzmir · Boyoz",
+  "kat": "Kurt geziyor · Yöresel lezzetler",
+  "url": "https://export-download.canva.com/DWuLI/DAHZnQDWuLI/-1/0/0047-2424583333286861429.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAQYCGKMUH4R7NKVBA%2F20261101%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20261101T101550Z&X-Amz-Expires=34449&X-Amz-Signature=763e6b35e02193ddedf8843755d2d6deb87bf8e571008c6e1f96a386298e5ed6&X-Amz-SignedHeaders=host%3Bx-amz-expected-bucket-owner&response-expires=Sun%2C%2001%20Nov%202026%2019%3A49%3A59%20GMT"
+ },
+ {
+  "ad": "yemek-trabzon-yatay",
+  "baslik": "Trabzon · Hamsi",
+  "kat": "Kurt geziyor · Yöresel lezzetler",
+  "url": "https://export-download.canva.com/DWuLI/DAHZnQDWuLI/-1/0/0048-2424583333286861429.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAQYCGKMUH4R7NKVBA%2F20261031%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20261031T215152Z&X-Amz-Expires=79833&X-Amz-Signature=7e224e61ae8d0232a655f9e44cea23089e1628a989241f459a6e53b8d0ca03de&X-Amz-SignedHeaders=host%3Bx-amz-expected-bucket-owner&response-expires=Sun%2C%2001%20Nov%202026%2020%3A02%3A25%20GMT"
+ },
+ {
+  "ad": "yemek-kayseri-yatay",
+  "baslik": "Kayseri · Mantı",
+  "kat": "Kurt geziyor · Yöresel lezzetler",
+  "url": "https://export-download.canva.com/DWuLI/DAHZnQDWuLI/-1/0/0049-2424583333286861429.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAQYCGKMUH4R7NKVBA%2F20261101%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20261101T111706Z&X-Amz-Expires=32699&X-Amz-Signature=1ab436253ae713b254067fb416da017e1a8befb1716d8e5d3bf2a03ed3b9a4f1&X-Amz-SignedHeaders=host%3Bx-amz-expected-bucket-owner&response-expires=Sun%2C%2001%20Nov%202026%2020%3A22%3A05%20GMT"
+ },
+ {
+  "ad": "yemek-gaziantep-dikey",
+  "baslik": "Gaziantep · Fıstıklı baklava",
+  "kat": "Kurt geziyor · Yöresel lezzetler",
+  "url": "https://export-download.canva.com/DWuLI/DAHZnQDWuLI/-1/0/0050-2424583333286861429.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAQYCGKMUH4R7NKVBA%2F20261101%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20261101T043247Z&X-Amz-Expires=54513&X-Amz-Signature=4ef085a1b516a37e85a110c9510adeae175afb1c8d7be352a62a2b809072437e&X-Amz-SignedHeaders=host%3Bx-amz-expected-bucket-owner&response-expires=Sun%2C%2001%20Nov%202026%2019%3A41%3A20%20GMT"
+ },
+ {
+  "ad": "yemek-adana-dikey",
+  "baslik": "Adana · Adana kebap",
+  "kat": "Kurt geziyor · Yöresel lezzetler",
+  "url": "https://export-download.canva.com/DWuLI/DAHZnQDWuLI/-1/0/0051-2424583333286861429.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAQYCGKMUH4R7NKVBA%2F20261101%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20261101T171151Z&X-Amz-Expires=10059&X-Amz-Signature=600c6d06c6a4240b9abb3c65cd92d11005112173a13e3fb155fb6b09c96a0590&X-Amz-SignedHeaders=host%3Bx-amz-expected-bucket-owner&response-expires=Sun%2C%2001%20Nov%202026%2019%3A59%3A30%20GMT"
+ },
+ {
+  "ad": "yemek-bursa-dikey",
+  "baslik": "Bursa · İskender",
+  "kat": "Kurt geziyor · Yöresel lezzetler",
+  "url": "https://export-download.canva.com/DWuLI/DAHZnQDWuLI/-1/0/0052-2424583333286861429.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAQYCGKMUH4R7NKVBA%2F20261101%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20261101T023747Z&X-Amz-Expires=62928&X-Amz-Signature=203d42a49ea17e4155b3049e4ceebf69319eff24fdbcf2c3246d35b37645c93a&X-Amz-SignedHeaders=host%3Bx-amz-expected-bucket-owner&response-expires=Sun%2C%2001%20Nov%202026%2020%3A06%3A35%20GMT"
+ },
+ {
+  "ad": "yemek-izmir-dikey",
+  "baslik": "İzmir · Boyoz",
+  "kat": "Kurt geziyor · Yöresel lezzetler",
+  "url": "https://export-download.canva.com/DWuLI/DAHZnQDWuLI/-1/0/0053-2424583333286861429.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAQYCGKMUH4R7NKVBA%2F20261031%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20261031T220958Z&X-Amz-Expires=77635&X-Amz-Signature=de2344565ec2b6a11618c8cc47a7c587d7363fb1863f9160f7f00c6e028faa5b&X-Amz-SignedHeaders=host%3Bx-amz-expected-bucket-owner&response-expires=Sun%2C%2001%20Nov%202026%2019%3A43%3A53%20GMT"
+ },
+ {
+  "ad": "yemek-trabzon-dikey",
+  "baslik": "Trabzon · Hamsi",
+  "kat": "Kurt geziyor · Yöresel lezzetler",
+  "url": "https://export-download.canva.com/DWuLI/DAHZnQDWuLI/-1/0/0054-2424583333286861429.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAQYCGKMUH4R7NKVBA%2F20261101%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20261101T101957Z&X-Amz-Expires=33777&X-Amz-Signature=b1d9f8ae907231581e3d1afe8ada59f4e1aad8f60faa2844424dc6dffaf38d4d&X-Amz-SignedHeaders=host%3Bx-amz-expected-bucket-owner&response-expires=Sun%2C%2001%20Nov%202026%2019%3A42%3A54%20GMT"
+ },
+ {
+  "ad": "yemek-kayseri-dikey",
+  "baslik": "Kayseri · Mantı",
+  "kat": "Kurt geziyor · Yöresel lezzetler",
+  "url": "https://export-download.canva.com/DWuLI/DAHZnQDWuLI/-1/0/0055-2424583333286861429.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAQYCGKMUH4R7NKVBA%2F20261101%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20261101T114125Z&X-Amz-Expires=28490&X-Amz-Signature=9455379753f3de150ed7d975fb9058a818e115b62cd2559489bfdb753ad22b14&X-Amz-SignedHeaders=host%3Bx-amz-expected-bucket-owner&response-expires=Sun%2C%2001%20Nov%202026%2019%3A36%3A15%20GMT"
+ },
+ {
+  "ad": "kupa-yemek-gaziantep",
+  "baslik": "Gaziantep · Fıstıklı baklava",
+  "kat": "Kurt geziyor · Yöresel lezzetler",
+  "url": "https://export-download.canva.com/DWuLI/DAHZnQDWuLI/-1/0/0056-2424583333286861429.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAQYCGKMUH4R7NKVBA%2F20261031%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20261031T204518Z&X-Amz-Expires=85568&X-Amz-Signature=8a6b652f7c534dd0ea733875dd302d95cc054ff0658552f65f6096555f266e29&X-Amz-SignedHeaders=host%3Bx-amz-expected-bucket-owner&response-expires=Sun%2C%2001%20Nov%202026%2020%3A31%3A26%20GMT",
+  "tuval": [
+   2362,
+   1063
+  ],
+  "urun": "kupa"
+ },
+ {
+  "ad": "kupa-yemek-adana",
+  "baslik": "Adana · Adana kebap",
+  "kat": "Kurt geziyor · Yöresel lezzetler",
+  "url": "https://export-download.canva.com/DWuLI/DAHZnQDWuLI/-1/0/0057-2424583333286861429.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAQYCGKMUH4R7NKVBA%2F20261101%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20261101T130942Z&X-Amz-Expires=25233&X-Amz-Signature=8d41f3c15a8dfe9425068926a80358cb77795f71fa71d3671ea86461742b653e&X-Amz-SignedHeaders=host%3Bx-amz-expected-bucket-owner&response-expires=Sun%2C%2001%20Nov%202026%2020%3A10%3A15%20GMT",
+  "tuval": [
+   2362,
+   1063
+  ],
+  "urun": "kupa"
+ },
+ {
+  "ad": "kupa-yemek-bursa",
+  "baslik": "Bursa · İskender",
+  "kat": "Kurt geziyor · Yöresel lezzetler",
+  "url": "https://export-download.canva.com/DWuLI/DAHZnQDWuLI/-1/0/0058-2424583333286861429.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAQYCGKMUH4R7NKVBA%2F20261101%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20261101T143449Z&X-Amz-Expires=18168&X-Amz-Signature=33d4164096157f1ca9080b80532c87f308bda9a2da096fd2d9d2e354dc491f85&X-Amz-SignedHeaders=host%3Bx-amz-expected-bucket-owner&response-expires=Sun%2C%2001%20Nov%202026%2019%3A37%3A37%20GMT",
+  "tuval": [
+   2362,
+   1063
+  ],
+  "urun": "kupa"
+ },
+ {
+  "ad": "kupa-yemek-izmir",
+  "baslik": "İzmir · Boyoz",
+  "kat": "Kurt geziyor · Yöresel lezzetler",
+  "url": "https://export-download.canva.com/DWuLI/DAHZnQDWuLI/-1/0/0059-2424583333286861429.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAQYCGKMUH4R7NKVBA%2F20261101%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20261101T032242Z&X-Amz-Expires=59204&X-Amz-Signature=6ab838d0663009119c85174d31a66acf88a98813dabe4d0e1b2c22391702b144&X-Amz-SignedHeaders=host%3Bx-amz-expected-bucket-owner&response-expires=Sun%2C%2001%20Nov%202026%2019%3A49%3A26%20GMT",
+  "tuval": [
+   2362,
+   1063
+  ],
+  "urun": "kupa"
+ },
+ {
+  "ad": "kupa-yemek-trabzon",
+  "baslik": "Trabzon · Hamsi",
+  "kat": "Kurt geziyor · Yöresel lezzetler",
+  "url": "https://export-download.canva.com/DWuLI/DAHZnQDWuLI/-1/0/0060-2424583333286861429.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAQYCGKMUH4R7NKVBA%2F20261031%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20261031T191539Z&X-Amz-Expires=89670&X-Amz-Signature=a71b602f0a6c166be6bde7e9847d6427bcdd10548a2752263ba613d213f8cf9b&X-Amz-SignedHeaders=host%3Bx-amz-expected-bucket-owner&response-expires=Sun%2C%2001%20Nov%202026%2020%3A10%3A09%20GMT",
+  "tuval": [
+   2362,
+   1063
+  ],
+  "urun": "kupa"
+ },
+ {
+  "ad": "kupa-yemek-kayseri",
+  "baslik": "Kayseri · Mantı",
+  "kat": "Kurt geziyor · Yöresel lezzetler",
+  "url": "https://export-download.canva.com/DWuLI/DAHZnQDWuLI/-1/0/0061-1103902742396034237.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAQYCGKMUH4R7NKVBA%2F20261101%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20261101T021835Z&X-Amz-Expires=63570&X-Amz-Signature=87b7e5e64b8632925f9ba6d509fe6d80f8d2cf1d2c4e106592676cdb3df5eed1&X-Amz-SignedHeaders=host%3Bx-amz-expected-bucket-owner&response-expires=Sun%2C%2001%20Nov%202026%2019%3A58%3A05%20GMT",
+  "tuval": [
+   2362,
+   1063
+  ],
+  "urun": "kupa"
+ },
+ {
+  "ad": "erkek-cesme-dikey",
+  "baslik": "Çeşme",
+  "kat": "Şehirler",
+  "url": "https://export-download.canva.com/DWuLI/DAHZnQDWuLI/-1/0/0065-2661022322095600520.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAQYCGKMUH4R7NKVBA%2F20261101%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20261101T132354Z&X-Amz-Expires=31785&X-Amz-Signature=04e19476f270e7065ec3b9db3ede12394ddc0f3b4b47af8ca6536a69748264fb&X-Amz-SignedHeaders=host%3Bx-amz-expected-bucket-owner&response-expires=Sun%2C%2001%20Nov%202026%2022%3A13%3A39%20GMT"
+ },
+ {
+  "ad": "erkek-hastane-izmir-dikey",
+  "baslik": "İzmir",
+  "kat": "Kurt geziyor · Şehir hastaneleri",
+  "url": "https://export-download.canva.com/DWuLI/DAHZnQDWuLI/-1/0/0066-2661022322095600520.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAQYCGKMUH4R7NKVBA%2F20261101%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20261101T141308Z&X-Amz-Expires=26203&X-Amz-Signature=47fc5980ff86e369b7b2c7cfb4dcbb9eb2ba252099ef6bfe4bdd4500e37e421a&X-Amz-SignedHeaders=host%3Bx-amz-expected-bucket-owner&response-expires=Sun%2C%2001%20Nov%202026%2021%3A29%3A51%20GMT"
+ },
+ {
+  "ad": "erkek-yemek-izmir-dikey",
+  "baslik": "İzmir · Boyoz",
+  "kat": "Kurt geziyor · Yöresel lezzetler",
+  "url": "https://export-download.canva.com/DWuLI/DAHZnQDWuLI/-1/0/0067-2661022322095600520.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAQYCGKMUH4R7NKVBA%2F20261101%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20261101T042559Z&X-Amz-Expires=62093&X-Amz-Signature=20edad23634164ddff8ccf9e3942efccf66b8ef10224a3974828b07be2014746&X-Amz-SignedHeaders=host%3Bx-amz-expected-bucket-owner&response-expires=Sun%2C%2001%20Nov%202026%2021%3A40%3A52%20GMT"
+ },
+ {
+  "ad": "erkek-cesme-yatay",
+  "baslik": "Çeşme",
+  "kat": "Şehirler",
+  "url": "https://export-download.canva.com/DWuLI/DAHZnQDWuLI/-1/0/0068-2661022322095600520.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAQYCGKMUH4R7NKVBA%2F20261101%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20261101T173433Z&X-Amz-Expires=16774&X-Amz-Signature=2a3c5c9bde9d5494fb4fe1b2cf7353a47960168576d48f846ba7a41d2b7bc02d&X-Amz-SignedHeaders=host%3Bx-amz-expected-bucket-owner&response-expires=Sun%2C%2001%20Nov%202026%2022%3A14%3A07%20GMT"
+ },
+ {
+  "ad": "erkek-hastane-izmir-yatay",
+  "baslik": "İzmir",
+  "kat": "Kurt geziyor · Şehir hastaneleri",
+  "url": "https://export-download.canva.com/DWuLI/DAHZnQDWuLI/-1/0/0069-2661022322095600520.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAQYCGKMUH4R7NKVBA%2F20261101%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20261101T071428Z&X-Amz-Expires=53245&X-Amz-Signature=1bbbf18a4530227b445c9c5fca571067ff041f581079aa75a0ef717dbdf16528&X-Amz-SignedHeaders=host%3Bx-amz-expected-bucket-owner&response-expires=Sun%2C%2001%20Nov%202026%2022%3A01%3A53%20GMT"
+ },
+ {
+  "ad": "erkek-yemek-izmir-yatay",
+  "baslik": "İzmir · Boyoz",
+  "kat": "Kurt geziyor · Yöresel lezzetler",
+  "url": "https://export-download.canva.com/DWuLI/DAHZnQDWuLI/-1/0/0070-2661022322095600520.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAQYCGKMUH4R7NKVBA%2F20261101%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20261101T045955Z&X-Amz-Expires=61155&X-Amz-Signature=1c3896aee630ffd6a235dc8bdc8fb9e57107a036a0844567b9715746a9048922&X-Amz-SignedHeaders=host%3Bx-amz-expected-bucket-owner&response-expires=Sun%2C%2001%20Nov%202026%2021%3A59%3A10%20GMT"
+ },
+ {
+  "ad": "erkek-hastane-ankara-dikey",
+  "baslik": "Ankara",
+  "kat": "Kurt geziyor · Şehir hastaneleri",
+  "url": "https://export-download.canva.com/DWuLI/DAHZnQDWuLI/-1/0/0071-2661022322095600520.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAQYCGKMUH4R7NKVBA%2F20261101%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20261101T083726Z&X-Amz-Expires=49135&X-Amz-Signature=8ce52d8ed25198eef6082a3ca6c6c4d0640b0e8a8d04244e0ebad905e20d910d&X-Amz-SignedHeaders=host%3Bx-amz-expected-bucket-owner&response-expires=Sun%2C%2001%20Nov%202026%2022%3A16%3A21%20GMT"
+ },
+ {
+  "ad": "erkek-hastane-ankara-yatay",
+  "baslik": "Ankara",
+  "kat": "Kurt geziyor · Şehir hastaneleri",
+  "url": "https://export-download.canva.com/DWuLI/DAHZnQDWuLI/-1/0/0072-2661022322095600520.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAQYCGKMUH4R7NKVBA%2F20261101%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20261101T175446Z&X-Amz-Expires=12607&X-Amz-Signature=a3e4a195e9b2b7b35d8304d2c77cb16e7488c2ec2a7aa25f782a74ace3ea0341&X-Amz-SignedHeaders=host%3Bx-amz-expected-bucket-owner&response-expires=Sun%2C%2001%20Nov%202026%2021%3A24%3A53%20GMT"
+ },
+ {
+  "ad": "erkek-hastane-istanbul-dikey",
+  "baslik": "İstanbul",
+  "kat": "Kurt geziyor · Şehir hastaneleri",
+  "url": "https://export-download.canva.com/DWuLI/DAHZnQDWuLI/-1/0/0073-2661022322095600520.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAQYCGKMUH4R7NKVBA%2F20261101%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20261101T172747Z&X-Amz-Expires=15634&X-Amz-Signature=3b62242e1f14aea3a243c5cc5fecbd9b3f31680c5307a2be4ac60e8154118dd2&X-Amz-SignedHeaders=host%3Bx-amz-expected-bucket-owner&response-expires=Sun%2C%2001%20Nov%202026%2021%3A48%3A21%20GMT"
+ },
+ {
+  "ad": "erkek-hastane-istanbul-yatay",
+  "baslik": "İstanbul",
+  "kat": "Kurt geziyor · Şehir hastaneleri",
+  "url": "https://export-download.canva.com/DWuLI/DAHZnQDWuLI/-1/0/0074-2661022322095600520.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAQYCGKMUH4R7NKVBA%2F20261031%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20261031T211137Z&X-Amz-Expires=90280&X-Amz-Signature=780134053140a8521c3ea18d75a7e90c28dca5e2e93beead3e7e1e56b54240a7&X-Amz-SignedHeaders=host%3Bx-amz-expected-bucket-owner&response-expires=Sun%2C%2001%20Nov%202026%2022%3A16%3A17%20GMT"
+ },
+ {
+  "ad": "erkek-hastane-kayseri-dikey",
+  "baslik": "Kayseri",
+  "kat": "Kurt geziyor · Şehir hastaneleri",
+  "url": "https://export-download.canva.com/DWuLI/DAHZnQDWuLI/-1/0/0075-2661022322095600520.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAQYCGKMUH4R7NKVBA%2F20261101%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20261101T083055Z&X-Amz-Expires=46357&X-Amz-Signature=ade9873240761bddc844c734b82ae9beeb8e500ae473c162a92dd97ecf58a14e&X-Amz-SignedHeaders=host%3Bx-amz-expected-bucket-owner&response-expires=Sun%2C%2001%20Nov%202026%2021%3A23%3A32%20GMT"
+ },
+ {
+  "ad": "erkek-hastane-kayseri-yatay",
+  "baslik": "Kayseri",
+  "kat": "Kurt geziyor · Şehir hastaneleri",
+  "url": "https://export-download.canva.com/DWuLI/DAHZnQDWuLI/-1/0/0076-2661022322095600520.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAQYCGKMUH4R7NKVBA%2F20261031%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20261031T202313Z&X-Amz-Expires=93536&X-Amz-Signature=f62f51215ff572459d4dff93af9150c96ac80255276e1700b8a346d5d4e46d41&X-Amz-SignedHeaders=host%3Bx-amz-expected-bucket-owner&response-expires=Sun%2C%2001%20Nov%202026%2022%3A22%3A09%20GMT"
+ },
+ {
+  "ad": "erkek-yemek-trabzon-dikey",
+  "baslik": "Trabzon · Hamsi",
+  "kat": "Kurt geziyor · Yöresel lezzetler",
+  "url": "https://export-download.canva.com/DWuLI/DAHZnQDWuLI/-1/0/0077-6095017041923063554.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAQYCGKMUH4R7NKVBA%2F20261101%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20261101T110632Z&X-Amz-Expires=38180&X-Amz-Signature=2b5af40b78c727173c0c9627997f067e7a5368401ca065997ef17e88235f9f04&X-Amz-SignedHeaders=host%3Bx-amz-expected-bucket-owner&response-expires=Sun%2C%2001%20Nov%202026%2021%3A42%3A52%20GMT"
+ },
+ {
+  "ad": "erkek-yemek-trabzon-yatay",
+  "baslik": "Trabzon · Hamsi",
+  "kat": "Kurt geziyor · Yöresel lezzetler",
+  "url": "https://export-download.canva.com/DWuLI/DAHZnQDWuLI/-1/0/0078-6095017041923063554.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAQYCGKMUH4R7NKVBA%2F20261101%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20261101T195805Z&X-Amz-Expires=8150&X-Amz-Signature=cc7a384a187118018e33f9f26d6d949e5d701d0a77e4b8528fc67df07245aa06&X-Amz-SignedHeaders=host%3Bx-amz-expected-bucket-owner&response-expires=Sun%2C%2001%20Nov%202026%2022%3A13%3A55%20GMT"
+ },
+ {
+  "ad": "kiraz-tekirdag-dikey",
+  "baslik": "Tekirdağ · Kiraz Festivali",
+  "kat": "Kurt geziyor · Festivaller",
+  "url": "https://export-download.canva.com/DWuLI/DAHZnQDWuLI/-1/0/0079-441873623378684718.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAQYCGKMUH4R7NKVBA%2F20261101%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20261101T094443Z&X-Amz-Expires=56930&X-Amz-Signature=4b455658a7bb953564b59bb4aacfa9fe7d8ade069e90ac9074c23e5936a9fbcf&X-Amz-SignedHeaders=host%3Bx-amz-expected-bucket-owner&response-expires=Mon%2C%2002%20Nov%202026%2001%3A33%3A33%20GMT"
+ },
+ {
+  "ad": "kiraz-tekirdag-yatay",
+  "baslik": "Tekirdağ · Kiraz Festivali",
+  "kat": "Kurt geziyor · Festivaller",
+  "url": "adobe-genisletme"
+ },
+ {
+  "ad": "kupa-kiraz-tekirdag",
+  "baslik": "Tekirdağ · Kiraz Festivali",
+  "kat": "Kurt geziyor · Festivaller",
+  "url": "adobe-genisletme",
+  "tuval": [
+   2362,
+   1063
+  ],
+  "urun": "kupa"
+ }
+]
