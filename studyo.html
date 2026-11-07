@@ -5358,6 +5358,28 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
     setTimeout(function(){location.href='index.html#urun-'+encodeURIComponent(p.id);},1800);
     return '"'+nm+'" güncellendi'+(sibs.length>1?' ('+(sibs.length-bad.length)+' renk'+(bad.length?'; güncellenemeyen: '+bad.join(', '):'')+')':'')+'. Ürün sayfasına dönülüyor…';
   }
+  /* Eski koleksiyon görsellerini yenile: düz açık zeminde üretilip sonradan taş grisi zemine taşınan görsellerde (beyaz ürünlerde)
+     ürünün çevresinde açık bir hale kalıyordu. Her ürün kayıtlı tasarımından (dsg) bugünkü stüdyoyla yeniden çizilir; kod, fiyat,
+     kategori, açıklama aynı kalır. Yarıda kesilirse kaldığı yerden devam eder (yenilenen ürün p.zr ile işaretlenir). */
+  async function doRefresh(btn){
+    var t=await tok();if(!t)throw {code:'auth'};
+    var rd=async function(){var rows=await rq('/rest/v1/site_content?select=data&id=eq.main');var d=rows&&rows[0]&&rows[0].data;if(!d)throw {msg:'Site verisi okunamadı.'};return d;};
+    var d=await rd(),old=function(k){return /^img\/tas-(?!hq-)/.test(String(k||''));};
+    var list=(d.products||[]).filter(function(p){return p&&!p.zr&&p.dsg&&p.dsg.product&&!/^(mug|canvas)$/.test(p.dsg.product)&&PRODUCTS[p.dsg.product]&&(p.imgs||[]).some(old);}).map(function(p){return p.id;});
+    if(!list.length)return 'Yenilenecek eski görsel kalmadı.';
+    var keep=await collect(),done={},n=0,bad=0;
+    var save=async function(){var d2=await rd();(d2.products||[]).forEach(function(p){var r=done[p.id];if(r){p.imgs=r.concat((p.imgs||[]).filter(function(k){return !old(k)&&!/^img\/tas-(?!hq-)/.test(String(k));}));p.zr=1;}});
+      await rq('/rest/v1/site_content?on_conflict=id',{method:'POST',body:{id:'main',data:d2,updated_at:new Date().toISOString()},prefer:'resolution=merge-duplicates,return=minimal'});done={};};
+    try{for(var i=0;i<list.length;i++){var p=(d.products||[]).filter(function(x){return x.id===list[i];})[0];if(!p)continue;
+        if(btn)btn.textContent='Yenileniyor: '+(i+1)+' / '+list.length+'…';
+        try{applyDesign(p.dsg,true);renderShirt();renderObjects();await phWait(state.tee);renderShirt();renderObjects();await new Promise(function(r){setTimeout(r,150);});
+          var ss=sidesWith();if(!ss.length){done[p.id]=(p.imgs||[]).filter(old);continue;}
+          done[p.id]=await prodImgs(ss);n++;}catch(e){if(e&&e.code==='auth')throw e;bad++;try{console.error('Yenileme',p.name,e);}catch(_){}}
+        if(Object.keys(done).length>=6)await save();}
+      if(Object.keys(done).length)await save();}
+    finally{try{applyDesign(keep,true);}catch(_){}}
+    return n+' ürünün görseli yenilendi'+(bad?', '+bad+' ürün yenilenemedi (tekrar basınca yeniden dener)':'')+'. Koleksiyon\'da sayfayı yenileyince görünür.';
+  }
   /* Tasarım kodu: sitedeki (index.html) dKey / wHead / wFree ile aynı */
   function dKey(p){if(p.grp)return 'g:'+p.grp;var d=p.dsg;if(!d||typeof d!=='object')return 'p:'+p.id;
     var s=[p.type||'',(p.cat||[]).join(','),(p.sub||[]).join(','),d.cut||''];
@@ -5722,7 +5744,7 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
     if(mode==='sablon')body='<div class="am-two"><label class="am-f">Kimler görsün<select id="amVis"><option value="herkes"'+(tplVis==='herkes'?' selected':'')+'>Herkes (müşteriler de)</option><option value="ozel"'+(tplVis==='ozel'?' selected':'')+'>Sadece Wolflano</option></select></label>'+
       '<label class="am-f">Kategori<select id="amTCat"><option value="">'+ea(TPL_CAT_ADM)+'</option>'+TPL_CATS.filter(function(c){return c!=='Tümü'&&c!==TPL_CAT_ADM&&c!==TPL_CAT_PRIV;}).map(function(c){return '<option'+(c===tplCat?' selected':'')+'>'+ea(c)+'</option>';}).join('')+'</select></label></div>'+
       '<p class="note">'+(tplVis==='ozel'?'Yalnız sen ve yetkililer Şablon panelinde "'+TPL_CAT_PRIV+'" altında görürsünüz; müşterinin sayfasına hiç yüklenmez.':'Müşteriler Şablon panelinde seçtiğin kategoride görür; seçince kendi ürününe uyarlanır.')+'</p>';
-    if(mode==='urun')body='<div class="am-sum" id="amSum"></div>'+allColBox()+
+    if(mode==='urun')body='<div class="am-sum" id="amSum"></div>'+allColBox()+'<button type="button" class="btn soft" id="amRefresh" style="width:100%;margin:6px 0 10px">Eski koleksiyon görsellerini yenile (beyaz ürünlerdeki açık hale)</button>'+
       '<details class="am-more"><summary>Ayrıntıları değiştir (tür, renk, kategori, fiyat, etiket, açıklama)</summary>'+prodInfo()+
       '<div class="am-two"><label class="am-f">Ürün türü<select id="amType">'+typeOpts()+'</select></label><label class="am-f">Renk<input id="amColor" maxlength="30" value="'+ea(colorName())+'"></label></div>'+
       '<label class="am-f">Kategori<select id="amCat">'+catOpts()+'</select></label>'+
@@ -5792,6 +5814,7 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
       var dp=e.target.closest('[data-amdp]');if(dp){useDepo(dp.dataset.amdp);return;}
       if(e.target.closest('[data-amdx]')){useDepo(null);return;}
       var z=e.target.closest('[data-amz]');if(z){var k=z.dataset.amz;psz[k]=Math.max(0,Math.min(9999,(psz[k]||0)+(+z.dataset.d)));if(!psz[k])delete psz[k];z.parentNode.querySelector('output').textContent=psz[k]||0;return;}
+      var rf=e.target.closest('#amRefresh');if(rf){run(function(){return doRefresh(rf);},rf);return;}
       var g=e.target.closest('#amGo');if(!g)return;
       var title=($('#amTitle').value||'').trim()||autoName();
       if(mode==='manken'){mnGo(g);return;}
