@@ -1788,12 +1788,20 @@ function phSX(cal,d,sc,product){var m=(SZM[product||state.product]||{})[state.cu
    Böylece baskı alanı ürünün üzerinde tablodaki gerçek oranıyla durur (A3 küçük bedende gövdeden taşmaz). */
 function phOwner(u){var l=(PH.site&&PH.site.blanks)||[];for(var i=0;i<l.length;i++){var b=l[i];if(!b)continue;var cs=b.colors||[];for(var j=0;j<cs.length;j++){if(phSrc(cs[j].front)===u||phSrc(cs[j].back)===u)return {p:b.p||b.id,cut:b.cut};}}return {p:state.product,cut:state.cut};}
 function phWiden(rec,c,u){var o=phOwner(u),m=(SZM[o.p]||{})[o.cut];if(!m)return;var ref=m.M||m['7-8'];if(!ref)return;
-  var body=rec.cw||rec.bw;if(!body)return;var H0=rec.bot-rec.top+1,tgt=ref[0]/ref[1]*H0,k=tgt/body;if(!(k>1.04))return;k=Math.min(k,1.9);
-  var cx=Math.round((rec.l+rec.r)/2),hb=body/2,col=Math.round(hb*.4),d=Math.round((body*k-body)/2),W=rec.W,H=rec.H,nw=W+2*d;
+  var body=rec.cw||rec.bw;if(!body)return;var H0=rec.bot-rec.top+1,kf=ref[0]/ref[1]*H0/body;if(!(kf>1.06))return;
+  /* Tam düz ene (≈1,6 kat) açınca ürün kutu gibi duruyordu: giyilmiş ile düz serilmiş arasının ortası alınır (karekök), en çok 1,4 kat.
+     Bu kadarı küçük bedende A3/A4 yatayı gövdenin içinde tutar. Geçiş yumuşak: yaka ortası 1:1, gerilme gövde kenarına doğru artar, kollar yana kayar. */
+  var k=Math.min(1.4,Math.sqrt(kf));
+  var cx=Math.round((rec.l+rec.r)/2),hb=body/2,ext=hb*(k-1),W=rec.W,H=rec.H,d=Math.round(ext),nw=W+2*d;
+  /* yerel gerilme g(t)=1+A·smooth(t), t=|uzaklık|/hb; A, toplam uzama ext olacak şekilde */
+  var NS=48,ts=[],acc=[0],sm=function(t){var q=Math.max(0,Math.min(1,(t-.22)/.7));return q*q*(3-2*q);},I=0;
+  for(var i=1;i<=NS;i++){var t=(i-.5)/NS;I+=sm(t)/NS;}var A=ext/(hb*I);
+  for(i=1;i<=NS;i++){var t2=(i-.5)/NS;acc.push(acc[i-1]+(1+A*sm(t2))*hb/NS);}
   var n=document.createElement('canvas');n.width=nw;n.height=H;var x=n.getContext('2d');x.imageSmoothingQuality='high';
-  var seg=function(s0,s1,d0,d1){if(s1-s0<1)return;x.drawImage(c,s0,0,s1-s0,H,d0,0,d1-d0,H);};
-  var L=Math.max(0,Math.round(cx-hb)),R=Math.min(W,Math.round(cx+hb));
-  seg(0,L,0,L);seg(L,cx-col,L,cx-col+d);seg(cx-col,cx+col,cx-col+d,cx+col+d);seg(cx+col,R,cx+col+d,R+2*d);seg(R,W,R+2*d,W+2*d);
+  var ncx=cx+d,seg=function(s0,s1,d0,d1){if(s1-s0<.5||d1-d0<.5)return;x.drawImage(c,s0,0,s1-s0,H,d0,0,d1-d0,H);};
+  for(i=0;i<NS;i++){var s0=hb*i/NS,s1=hb*(i+1)/NS;
+    seg(cx+s0,cx+s1,ncx+acc[i],ncx+acc[i+1]+.6);seg(cx-s1,cx-s0,ncx-acc[i+1]-.6,ncx-acc[i]);}
+  var R=Math.round(cx+hb),L=Math.round(cx-hb);seg(R,W,ncx+acc[NS],ncx+acc[NS]+(W-R));seg(0,L,ncx-acc[NS]-L,ncx-acc[NS]);
   rec.url=n.toDataURL('image/png');rec.W=nw;rec.r=rec.r+2*d;if(rec.bw)rec.bw+=2*d;if(rec.cw)rec.cw+=2*d;rec.wide=k;}
 function phCalib(u){
   if(PH.cal[u])return PH.cal[u];
@@ -5264,7 +5272,9 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
     var v=x.createRadialGradient(W/2,H*.42,Math.min(W,H)*.25,W/2,H*.42,Math.max(W,H)*.8);v.addColorStop(0,'rgba(0,0,0,0)');v.addColorStop(1,'rgba(0,0,0,.10)');x.fillStyle=v;x.fillRect(0,0,W,H);
     try{var sw=Math.max(1,Math.round(W/8)),sh=Math.max(1,Math.round(H/8)),t=document.createElement('canvas');t.width=sw;t.height=sh;var tx=t.getContext('2d');tx.drawImage(c,0,0,sw,sh);var d=tx.getImageData(0,0,sw,sh).data,l=sw,r=-1,b=-1;
       for(var yy=0;yy<sh;yy++)for(var xx=0;xx<sw;xx++)if(d[(yy*sw+xx)*4+3]>40){if(xx<l)l=xx;if(xx>r)r=xx;if(yy>b)b=yy;}
-      if(r>=l&&b>=0){var cx=(l+r+1)/2*8,pw=(r-l+1)*8,by=(b+1)*8;x.save();x.filter='blur('+Math.round(W*.03)+'px)';x.fillStyle='rgba(0,0,0,.30)';x.beginPath();x.ellipse(cx,Math.min(H-W*.02,by+W*.025),pw*.36,W*.03,0,0,Math.PI*2);x.fill();x.restore();}}catch(_){}
+      if(r>=l&&b>=0){var cx=(l+r+1)/2*8,pw=(r-l+1)*8,by=(b+1)*8,ey=Math.min(H-W*.03,by+W*.02),rx=pw*.42,ry=W*.045;
+        /* iPhone Safari'de canvas filter (blur) yok: yumuşak gölge, yatayda ölçeklenmiş dairesel geçişle çizilir */
+        x.save();x.translate(cx,ey);x.scale(rx/ry,1);var sg=x.createRadialGradient(0,0,0,0,0,ry);sg.addColorStop(0,'rgba(0,0,0,.26)');sg.addColorStop(.55,'rgba(0,0,0,.12)');sg.addColorStop(1,'rgba(0,0,0,0)');x.fillStyle=sg;x.beginPath();x.arc(0,0,ry,0,Math.PI*2);x.fill();x.restore();}}catch(_){}
     x.drawImage(c,0,0);}
   async function prodImgs(ss){var imgs=[];
     if(state.product==='mug'){var vs=mugViews().filter(function(v){return ss.indexOf(v[0])>=0;});
