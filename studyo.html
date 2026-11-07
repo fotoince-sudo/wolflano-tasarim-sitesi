@@ -897,6 +897,7 @@ var PI=Math.PI;
 /* ---------- Ölçüler ve fiyat (gerçek cm, sahne piksel eşlemesi) ---------- */
 var PPC=6.6;                       /* sahnede 1 cm = 6,6 mantıksal piksel */
 var STAGE_W=600, STAGE_H=640;
+var WALL_CM=120;                   /* giyimde ekrana sığan baskı duvarı genişliği (cm) */
 var REF_W=21*PPC, REF_H=29.7*PPC;
 /* ===== KATALOG: yeni ürün veya baskı ölçüsü eklemek için yalnız bu iki tabloya satır eklenir =====
    AREAS: baskı alanları. cm=[genişlik,yükseklik], rot=yatay çevrilebilir mi, fee=baskı ücreti (örnek),
@@ -1879,7 +1880,7 @@ function fitBox(side){side=face(side);
   var gt=NECK_Y[side]-ndrop(side);
   try{if(phOn()){var b=phBlank(state.product,state.cut),cs=phColors(b),co=phPick(cs,state.tee);
     var u=phSrc(side==='back'?(co.back||co.front):(co.front||co.back)),cal=u&&PH.cal[u],m=(SZM[state.product]||{})[state.cut];
-    if(cal&&cal.ready&&m){/* seçilen beden ekranı doldurur (eskiden hep en büyük bedene göre sığdırılıyordu, küçük bedenler küçük kalıyordu) */var mx=phDims(state.product,state.cut);if(!mx)Object.keys(m).forEach(function(z){if(!mx||m[z][1]>mx[1])mx=m[z];});var sc=phSc(cal,mx),hp=Math.max(mx[1]*PPC,(cal.bot-cal.top+1)*sc);return {w:(cal.r-cal.l+1)*phSX(cal,mx,sc),top:gt-(cal.hood||0)*sc,bot:gt+hp};}}}catch(_){}
+    if(cal&&cal.ready&&m){var mx=null;Object.keys(m).forEach(function(z){if(!mx||m[z][1]>mx[1])mx=m[z];});var sc=phSc(cal,mx),hp=Math.max(mx[1]*PPC,(cal.bot-cal.top+1)*sc);return {w:(cal.r-cal.l+1)*phSX(cal,mx,sc),top:gt-(cal.hood||0)*sc,bot:gt+hp};}}}catch(_){}
   var k=CUT_K[state.cut]||CUT_K.erkek,ay=NECK_Y[side];return {w:556*k[0],top:ay+(62-ay)*k[1],bot:ay+(618-ay)*k[1]};
 }
 function phOn(){return !!(PH.site&&!P().draw&&phColors(phBlank(state.product,state.cut)).length);}
@@ -2240,7 +2241,9 @@ function layout(){
   var k=CUT_K[state.cut]||CUT_K.erkek,ay=NECK_Y[face(view.side)],vb=prodVB(),base,s,cx=STAGE_W/2,cy;
   if(vb&&mugWrap())vb={cx:267,cy:305,w:178,h:118};
   if(vb){base=Math.min(W/vb.w,H/vb.h)*0.97;cx=vb.cx;cy=vb.cy;}
-  else{var fb=fitBox(view.side),fh=fb.bot-fb.top;var mob=W<700,gx=mob?0.94:0.9;base=Math.min((W-(mob?28:64))*gx/fb.w,(H-(mob?26:60))*gx/fh);cy=(fb.top+fb.bot)/2-4;}
+  else{var fb=fitBox(view.side),fh=fb.bot-fb.top;/* Giyimde baskı duvarı sabit 120 cm genişliğinde: ölçek bedenden bağımsız, ürün duvarda gerçek oranında durur (S küçük, 3XL büyük görünür);
+       tasarlarken yakınlaştırıp kaydırılır */
+    var mob=W<700,gx=mob?0.94:0.9;base=Math.min((W-(mob?20:64))/(WALL_CM*PPC),(H-(mob?26:60))*gx/fh);cy=(fb.top+fb.bot)/2-4;}
   s=base;
   if(view.fit==='area'){
     var A=areaBox(view.side,cur().area);
