@@ -2274,9 +2274,9 @@ function layout(){
   if(vb){base=Math.min(W/vb.w,H/vb.h)*0.97;cx=vb.cx;cy=vb.cy;
     /* Canvas da giyimle aynı 120 cm baskı duvarında: gerçek boyutunda durur (35 × 50 küçük, 50 × 70 büyük), etrafında parmağa yer kalır */
     if(state.product==='canvas'){var mobc=W<700;base=Math.min((W-(mobc?20:64))/(WALL_CM*PPC),H*0.94/vb.h);}}
-  else{var fb=fitBox(view.side),fh=fb.bot-fb.top;/* Giyimde baskı duvarı sabit 120 cm genişliğinde: ölçek bedenden bağımsız, ürün duvarda gerçek oranında durur (S küçük, 3XL büyük görünür);
-       tasarlarken yakınlaştırıp kaydırılır */
-    var mob=W<700,gx=mob?0.94:0.9;base=Math.min((W-(mob?20:64))/(WALL_CM*PPC),(H-(mob?26:60))*gx/fh);cy=(fb.top+fb.bot)/2-4;}
+  else{var fb=fitBox(view.side),fh=fb.bot-fb.top;/* Giyim ekranı doldurur: ölçek ürünün EN BÜYÜK bedenine göre (fitBox) ayarlanır ve bütün bedenlerde aynı kalır.
+       En büyük beden ekranı doldurur, küçük bedenler gerçek oranında daha küçük görünür (S ile 3XL farkı kaybolmaz); boş duvar kalmaz */
+    var mob=W<700,gx=mob?0.94:0.9;base=Math.min((W-(mob?16:64))/(fb.w*1.03),(H-(mob?26:60))*gx/fh);cy=(fb.top+fb.bot)/2-4;}
   s=base;
   if(view.fit==='area'){
     var A=areaBox(view.side,cur().area);
