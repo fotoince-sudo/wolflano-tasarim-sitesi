@@ -1773,8 +1773,14 @@ function phDims(product,cut){var m=(SZM[product]||{})[cut];if(!m)return null;var
 var PH_BW={}; /* geçici olarak kapalı: enine germe fotoğrafı bozuyordu, ölçek yeniden yalnız boya göre */
 /* Ürün fotoğrafı ölçeği: tek oranlı (fotoğraf bozulmaz), gövde eni bedenin "en" ölçüsüne oturur.
    Baskı alanının ürüne oranı ende okunduğu için en esas; boya göre en çok %15 küçülür, %20 büyür. */
-function phSc(cal,d){var sh=d[1]*PPC/Math.max(1,cal.bot-cal.top+1),bw=cal&&(cal.cw||(/^(tee|polo)$/.test(state.product)?cal.bw:0));if(!cal||cal.raw||!bw||!d[0])return sh;var sw=d[0]*PPC/bw;return Math.max(sh*.85,Math.min(sh*1.2,sw));}
-function phSX(cal,d,sc,product){if(!cal||!cal.bw||!d||!PH_BW[product||state.product])return sc;var sx=d[0]*PPC/cal.bw;return Math.max(sc*.75,Math.min(sc*1.6,sx));}
+/* Ürün fotoğrafı ölçeği (giyilmiş görünüm): fotoğraflar mankenli, giyilmiş ürün vücudu sardığı için önden düz serilmiş eninden dar görünür
+   (düz 53 cm en, giyilince önden ~34 cm). Bu yüzden ölçek bedenin BOYUNA göre: ürün gerçek boyunda, baskı alanı giyildiğinde nasıl görünüyorsa öyle.
+   Eskiden fotoğraftaki dar gövde tablodaki düz ene yetiştiriliyordu; ürün olduğundan uzun ve orantısız görünüyordu. */
+function phSc(cal,d){return d[1]*PPC/Math.max(1,cal.bot-cal.top+1);}
+/* Enine hafif düzeltme: büyük bedenler boyuna göre daha geniş kesimli (3XL'in en/boy oranı M'den ~%10 fazla). Fotoğraf orta bedene göre çekildiği için
+   seçilen bedenin en/boy oranının orta bedene oranı kadar (en çok ±%12) enine açılır/daralır; M ile 3XL arasındaki fark görünür olur. */
+function phSX(cal,d,sc,product){var m=(SZM[product||state.product]||{})[state.cut];if(!m||!d||!d[0]||!d[1])return sc;var r=m.M||m['7-8']||null;if(!r)return sc;
+  var k=(d[0]/d[1])/(r[0]/r[1]);return sc*Math.max(.88,Math.min(1.12,k));}
 function phCalib(u){
   if(PH.cal[u])return PH.cal[u];
   var rec={ready:false};PH.cal[u]=rec;
