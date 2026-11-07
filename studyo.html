@@ -4239,9 +4239,12 @@ async function renderComposite(side,scale){
   var x=c.getContext('2d');
   x.drawImage(await loadImg(svgUrl(productSVG(side,state.tee,state.product,state.cut))),0,0,c.width,c.height);
   await drawFace(x,side,scale);
+  /* Işık/gölge katmanı ürünün dışına taşmasın (taşınca zeminde ürün çevresinde açık bir şerit kalıyordu): sonuç ürünün kendi şekliyle kırpılır */
+  var base=document.createElement('canvas');base.width=c.width;base.height=c.height;base.getContext('2d').drawImage(c,0,0);
   try{var sl=shadeLayers(side,state.tee,state.product,state.cut);
     if(sl){x.save();x.globalCompositeOperation='multiply';x.drawImage(await loadImg(svgUrl(sl.shade)),0,0,c.width,c.height);
       x.globalCompositeOperation='screen';x.drawImage(await loadImg(svgUrl(sl.light)),0,0,c.width,c.height);x.restore();}}catch(_){}
+  x.save();x.globalCompositeOperation='destination-in';x.drawImage(base,0,0);x.restore();
   return c;
 }
 /* ===== Mankende gör: beyaz tişörtlü manken fotoğrafını ürün rengine boyar, tasarımı kumaşa işler =====
