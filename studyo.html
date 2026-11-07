@@ -1940,8 +1940,16 @@ window.phSite=function(d){PH.site=d;PH.media=d.media||'';PH.teesBase=TEES.slice(
   try{renderAll();}catch(_){}
   /* Hazır baskılı ürün: müşteri aynı tasarımı açıp ismini ekleyebilir, yazıyı ya da rengi değiştirebilir */
   try{var hz=new URLSearchParams(location.search).get('hazir');if(hz&&!PH.hzDone){var hp=(d.products||[]).filter(function(x){return x.id===hz;})[0];
-    if(hp&&hp.dsg){PH.hzDone=1;var go=function(n){if(window.wfApplyDesign){try{window.wfApplyDesign(hp.dsg,true);toast('"'+(hp.name||'Tasarım')+'" açıldı. İsmini ekleyebilir, istediğini değiştirebilirsin.');}catch(_){toast('Tasarım açılamadı');}}else if(n<20)setTimeout(function(){go(n+1);},150);};go(0);}}}catch(_){}
+    if(hp&&hp.dsg){PH.hzDone=1;var go=function(n){if(window.wfApplyDesign){try{window.wfApplyDesign(hp.dsg,true);if(new URLSearchParams(location.search).get('baski'))setTimeout(baskiPanel,600,hp);else toast('"'+(hp.name||'Tasarım')+'" açıldı. İsmini ekleyebilir, istediğini değiştirebilirsin.');}catch(_){toast('Tasarım açılamadı');}}else if(n<20)setTimeout(function(){go(n+1);},150);};go(0);}}}catch(_){}
 };
+/* Yönetim → Siparişler → "Baskı dosyası": hazır baskılı ürünün tasarımı açılır, her yüz için 300 dpi baskı dosyası indirilir */
+function baskiPanel(hp){try{[].slice.call(document.querySelectorAll('button')).filter(function(b){return b.textContent.trim()==='Geç';}).forEach(function(b){b.click();});}catch(_){}var ss=sidesOf().filter(function(x){return state[x]&&state[x].objs&&state[x].objs.length;});var w=document.createElement('div');
+  w.style.cssText='position:fixed;left:12px;right:12px;bottom:90px;z-index:9999;background:#fff;border-radius:16px;box-shadow:0 10px 40px #0003;padding:14px;font:500 14px var(--ui)';
+  w.innerHTML='<b style="display:block;margin-bottom:4px">'+escX(hp.name||'Ürün')+' · baskı dosyası</b><span style="display:block;color:#5a625d;font-size:12.5px;margin-bottom:10px">Renk: '+escX(colorNameOf(state.tee)||hp.color||'')+'. Dosyalar gerçek ölçüde, şeffaf zeminli, 300 dpi PNG.</span>'+
+    ss.map(function(x){return '<button type="button" class="ghost" data-bk="'+x+'" style="margin:0 6px 6px 0">'+(SIDE_NAME[x]||x)+' · '+cmText(state[x].area,isLand(x))+'</button>';}).join('')+'<button type="button" class="ghost" data-bkx style="margin:0 0 6px">Kapat</button>';
+  document.body.appendChild(w);
+  w.addEventListener('click',async function(e){var b=e.target.closest('[data-bk]');if(e.target.closest('[data-bkx]')){w.remove();return;}if(!b)return;b.disabled=true;var o=b.textContent;b.textContent='Hazırlanıyor…';
+    try{var r=await renderPrint(b.dataset.bk);await saveCanvas(r.canvas,('wolflano-'+(hp.name||'urun')+'-'+(colorNameOf(state.tee)||'')+'-'+b.dataset.bk+'-'+r.dpi+'dpi').replace(/[^\wığüşöçİĞÜŞÖÇ-]+/g,'-')+'.png');}catch(_){toast('Dosya hazırlanamadı');}b.disabled=false;b.textContent=o;});}
 function mugSVG(side,tee,thumb){
   /* Klasik seramik kupa: 8 cm çap, 10 cm boy (1 cm = 6,6 px). Ön yüzde kulp sağda, arka yüzde solda. */
   var vb=thumb?'252 254 108 100':'0 0 600 640',mir=side==='back'?' transform="translate(592.8 0) scale(-1 1)"':'';

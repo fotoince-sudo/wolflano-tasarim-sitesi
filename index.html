@@ -1338,8 +1338,13 @@ async function shipMail(o,f){
     'Kargo firmasının sitesinden ya da uygulamasından bu numarayla gönderini takip edebilirsin. Bir sorun olursa bu e-postayı yanıtlaman ya da WhatsApp\'tan yazman yeterli.\n\nWolflano\'yu seçtiğin için teşekkürler.';
   try{await MAILER.send({to:o.mail,subject:'Siparişin kargoda · '+o.code,text:txt,brand:{title:'Siparişin kargoya verildi',btn:{href:'https://wolflano.com.tr/',label:"Wolflano'ya dön"}}});return true;}catch(_){return false;}
 }
+/* Hazır baskılı (Koleksiyon) ürün siparişte: ürünün görseli, kodu, rengi ve tasarımın baskı dosyası (stüdyoda kayıtlı tasarımdan 300 dpi üretilir) */
+function crmProd(x){var p=(D&&D.products||[]).filter(function(q){return q.id===ckId(x.id);})[0];if(!p)return '';var im=(p.imgs||[])[0];
+  return '<div style="display:flex;gap:10px;align-items:center;margin:2px 0 8px">'+(im?'<img src="'+esc(src(im))+'" alt="" style="width:56px;height:56px;object-fit:cover;border-radius:8px;border:1px solid #0001">':'')+
+    '<span style="flex:1;font-size:12.5px;line-height:1.35;color:#4a524d">Ürün kodu: <b>'+esc(pCode(p))+'</b>'+(p.color?' · Renk: '+esc(p.color):'')+'</span>'+
+    (p.dsg?'<a class="btn sm" href="studyo.html?hazir='+encodeURIComponent(p.id)+'&baski=1" target="_blank" rel="noopener">Baskı dosyası</a>':'<span class="note" style="margin:0">Tasarım kaydı yok</span>')+'</div>';}
 function crmOrderCard(o){
-  var its=(o.items||[]).map(function(x){return '<div class="sumr"><span>'+esc(x.n)+' × '+x.q+'</span><span>'+tl(x.t)+'</span></div>'+(x.r&&x.r.length?'<p class="note" style="margin:0 0 6px">İsim/numara: '+esc(x.r.map(function(r){return r.s+' '+([r.n,r.k].filter(Boolean).join(' ')||'(boş)');}).join(', '))+'</p>':'');}).join('');
+  var its=(o.items||[]).map(function(x){return '<div class="sumr"><span>'+esc(x.n)+' × '+x.q+'</span><span>'+tl(x.t)+'</span></div>'+(x.id!=='tasarim'&&!/^baski-/.test(x.id)?crmProd(x):'')+(x.r&&x.r.length?'<p class="note" style="margin:0 0 6px">İsim/numara: '+esc(x.r.map(function(r){return r.s+' '+([r.n,r.k].filter(Boolean).join(' ')||'(boş)');}).join(', '))+'</p>':'');}).join('');
   var st=ORST.map(function(v){return '<option'+(o.status===v?' selected':'')+'>'+v+'</option>';}).join('');
   return '<div class="panel crmc"><div class="crmh"><b>'+esc(o.code)+'</b><span class="note" style="margin:0">'+crmDate(o.created_at)+'</span></div><div class="sumr"><span>'+esc(o.ad)+'</span><span><b>'+tl(o.total)+'</b></span></div>'+its+'<p class="note" style="margin:0">'+esc((o.adres||'')+', '+(o.ilce||'')+'/'+(o.il||''))+(o.note?'<br>Not: '+esc(o.note):'')+'</p>'+crmSpecial(o)+crmFiles(o)+crmFf(o)+crmContact(o)+'<label class="crmsel">Durum<select data-crm="ost" data-id="'+esc(o.id)+'">'+st+'</select></label></div>';
 }
