@@ -3889,7 +3889,11 @@ function aiEd(pa,b){if(!aiTur(b)||!sbAdmin())return '';var cut=GENS.indexOf(b.cu
   for(var g=1;g<=ng;g++){var w=kgW(b,g),ol=kgOlcu(tur,cut,g);if(!w)allW=false;
     h+='<div style="margin:6px 0 10px"><b style="font-size:13px">'+(ng>1?(g===1?'Küçük bedenler':'Büyük bedenler')+' · ':'')+(KG_AD[cut]||KG_AD.cocuk)[g-1]+'</b> <span class="note">(kalıp ölçüsü '+ol[0]+' × '+ol[1]+' cm)</span>';
     if(w)h+='<div class="aiw"><figure><img src="'+aiUrl(w.front)+'" alt="Beyaz ön"><figcaption>Ön</figcaption></figure><figure><img src="'+aiUrl(w.back)+'" alt="Beyaz arka"><figcaption>Arka</figcaption></figure></div>';
-    h+='<div class="aib"><button class="btn sm" data-ad="aigen" data-p="'+pa+'" data-s="'+(g===2?'w2':'w')+'"'+(busy?' disabled':'')+'>'+(w?'Kalıbı yeniden üret':'Beyaz kalıp üret')+' (2 fotoğraf)</button></div></div>';}
+    var ui=aid(pa)+'-g'+g;
+    h+='<div class="aib"><button class="btn sm" data-ad="aigen" data-p="'+pa+'" data-s="'+(g===2?'w2':'w')+'"'+(busy?' disabled':'')+'>'+(w?'Kalıbı yeniden üret':'Beyaz kalıp üret')+' (2 fotoğraf)</button>'+
+      '<label class="btn soft sm" for="kup-'+ui+'-f" style="display:inline-flex">Kendi fotoğrafım: ön</label><input class="sr" id="kup-'+ui+'-f" type="file" accept="image/*" data-kup="'+pa+'" data-g="'+g+'" data-y="front">'+
+      '<label class="btn soft sm" for="kup-'+ui+'-b" style="display:inline-flex">Kendi fotoğrafım: arka</label><input class="sr" id="kup-'+ui+'-b" type="file" accept="image/*" data-kup="'+pa+'" data-g="'+g+'" data-y="back"></div></div>';}
+  h+='<p class="note" style="margin:0 0 6px">Kendi fotoğrafın: beyaz ürünü askıda ya da düz zeminde, tam karşıdan, düz ve açık renkli bir duvarın önünde çek (ürün kadrajın ortasında, kırpılmadan). Zemini telefonda temizlenir, oranı beden tablosuna göre ölçülür; tutmazsa kaydedilmez. Ücretsiz.</p>';
   h+='<div class="aib"><button class="btn sm" data-ad="kboya" data-p="'+pa+'"'+(busy||!allW?' disabled':'')+'>Bütün renkleri kalıptan boya (ücretsiz)</button></div>';
   if(!allW)h+='<p class="note" style="margin:4px 0 0">Renkleri boyamak için önce '+(ng>1?'iki kalıbı da':'kalıbı')+' üret.</p>';
   h+='<p class="note" style="margin:10px 0 4px;font-weight:600">Yeni renk ekle</p><div class="rnew"><input type="text" id="rna-'+aid(pa)+'" maxlength="20" placeholder="Yeni renk adı (ör. Bordo)" aria-label="Yeni renk adı"><input type="color" id="rha-'+aid(pa)+'" value="#7a1f2b" aria-label="Renk tonu"><button class="btn soft sm" data-rc="add" data-sfx="a" data-p="'+pa+'">+ Renk ekle</button></div><p class="note" style="margin:4px 0 0">Eklenen renk de "Bütün renkleri kalıptan boya" ile ücretsiz üretilir.</p>';
@@ -3951,6 +3955,22 @@ async function aiGen(pa,step){
   }catch(e){AIG.pa='';AIG.txt='';toast((e&&e.message)||'Üretilemedi');}
   adRender();
 }
+/* Kendi kalıp fotoğrafı: yüklenen beyaz ürün fotoğrafı zemini temizlenip oranı ölçülür (%6 tolerans; gerçek ürün fotoğrafı). Uyarsa o grubun beyaz kalıbı olur. */
+document.addEventListener('change',async function(e){var t=e.target;if(!t||!t.dataset||!t.dataset.kup||!t.files||!t.files.length)return;var pa=t.dataset.kup,g=+t.dataset.g===2?2:1,yk=t.dataset.y==='back'?'back':'front',file=t.files[0];t.value='';
+  var b=getp(A.draft,pa);if(!b||AIG.pa)return;var tur=aiTur(b);if(!tur)return;var cut=GENS.indexOf(b.cut)>=0?b.cut:'erkek',ol=kgOlcu(tur,cut,g),ist=ol[0]/ol[1];
+  AIG.pa=pa;aiSay('Fotoğraf hazırlanıyor, zemini temizleniyor…');
+  try{var ph=await procPhoto(file),oc=await cutRaw(ph.blob);if(!oc)throw new Error('Zemin temizlenemedi. Ürünü düz, açık renkli bir duvarın önünde yeniden çek.');
+    var orn=await oranOlc(oc.blob);if(!orn)throw new Error('Ürün ölçülemedi. Ürün kadrajın ortasında ve kırpılmadan görünmeli.');
+    if(Math.abs(orn/ist-1)>.06)throw new Error('Oran tutmadı: gövde eni boyunun %'+Math.round(orn*100)+'\'i, olması gereken %'+Math.round(ist*100)+'. Ürünü tam karşıdan, düz ve kırışıksız çek.');
+    var key='img/kalip-yuk-'+tur+'-'+cut+'-g'+g+'-'+yk+'-'+Date.now().toString(36)+Math.random().toString(36).slice(2,6)+'.'+ph.ext;pend[key]={blob:ph.blob,url:URL.createObjectURL(ph.blob)};
+    var ck=key.replace(/\.[a-z]+$/i,'')+'-k.'+oc.ext;pend[ck]={blob:oc.blob,url:URL.createObjectURL(oc.blob)};
+    var fx=b.rawfix||(b.rawfix={}),R=rawResolve(b,MAN);
+    b.raw=(b.raw||[]).filter(function(r){var f=fx[r]||{},c=f.color||(R.info[r]||{}).color||'',sd=f.side||(R.info[r]||{}).res||'';if(c!=='Beyaz'||sd!==yk||(f.g===2)!==(g===2))return true;delete fx[r];return false;});
+    b.raw.push(key);fx[key]={color:'Beyaz',side:yk};if(g===2)fx[key].g=2;var ce={file:ck,color:'Beyaz',ns:oc.ns,rgb:oc.rgb};(b.rawcut||(b.rawcut={}))[key]=ce;
+    var o=g===2?(b.ai2||(b.ai2={})):(b.ai||(b.ai={}));o['Beyaz']=Object.assign({},o['Beyaz']||{});o['Beyaz'][yk]=key;
+    aiSay('Kaydediliyor…');dirty();await adSave();AIG.pa='';AIG.txt='';toast('Kalıp '+(yk==='front'?'ön':'arka')+' kaydedildi, oranı uygun (%'+Math.round(orn*100)+').');
+  }catch(er){AIG.pa='';AIG.txt='';toast((er&&er.message)||'Yüklenemedi');}
+  adRender();});
 /* Kalıptan boyama: beyaz kalıbın gölge ve kıvrımları korunur, kumaş rengi değişir (telefonda, ücretsiz). Her renk ve her kalıp için ön + arka. */
 function kbImg(u){return new Promise(function(res,rej){var im=new Image();im.crossOrigin='anonymous';im.onload=function(){res(im);};im.onerror=function(){rej(new Error('Kalıp fotoğrafı açılamadı.'));};im.src=u;});}
 function kbPaint(im,hex){var W=im.naturalWidth,H=im.naturalHeight,c=document.createElement('canvas');c.width=W;c.height=H;var x=c.getContext('2d');x.drawImage(im,0,0);var D=x.getImageData(0,0,W,H),p=D.data,i,n=W*H;
