@@ -1785,7 +1785,7 @@ var PH_WARNED={};
 function phRatioCheck(rec,u){var o=phOwner(u),m=(SZM[o.p]||{})[o.cut];if(!m)return;var ref=m.M||m['7-8'];if(!ref)return;var body=rec.cw||rec.bw;if(!body)return;
   var got=body/(rec.bot-rec.top+1),want=ref[0]/ref[1];rec.ratio=got;rec.ratioWant=want;
   if(Math.abs(got/want-1)>.1&&!PH_WARNED[u]&&document.body.classList.contains('wfadm')){PH_WARNED[u]=1;
-    setTimeout(function(){try{longToast('Yönetici notu: '+(o.name||'bu ürün')+' fotoğrafında gövde eni boyunun %'+Math.round(got*100)+'\'i; beden tablosuna göre %'+Math.round(want*100)+' olmalı. Ürün gerçek oranında görünsün diye bu fotoğrafı oranı doğru olanla değiştir.');}catch(_){}},1200);}}
+    setTimeout(function(){try{longToast('Yönetici notu: '+(o.name||'bu ürün')+' fotoğrafında gövde en/boy oranı %'+Math.round(got*100)+', beden tablosuna göre %'+Math.round(want*100)+' olmalı. Ürün gerçek oranında görünsün diye bu fotoğrafı oranı doğru olanla değiştir.');}catch(_){}},1200);}}
 function phCalib(u){
   if(PH.cal[u])return PH.cal[u];
   var rec={ready:false};PH.cal[u]=rec;
