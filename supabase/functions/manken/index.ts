@@ -221,7 +221,16 @@ Deno.serve(async (req) => {
         refBlob = new Blob([await rr.arrayBuffer()], { type: rr.headers.get('content-type') || 'image/jpeg' });
       }
       const g = `${gar}, ${fit}`;
-      if (!refBlob) {
+      // Kalıp: beyaz ön için panel, beden tablosu ölçüsüyle çizilmiş düz bir siluet gönderir; ürün bu siluetin içini birebir doldurur
+      const kp = String(b.kalip || '');
+      if (!refBlob && kp.startsWith('data:image/png;base64,') && kp.length < 3_000_000) {
+        const bin = Uint8Array.from(atob(kp.slice(22)), (ch) => ch.charCodeAt(0));
+        refBlob = new Blob([bin], { type: 'image/png' });
+        prompt = `${URUN_STYLE} The product: ${g}, color ${col}. Front view of the garment. The input image is an exact SIZE TEMPLATE: a flat grey silhouette drawn to the real measurements of this garment (body width from armpit to armpit and body length from shoulder top to hem). Replace the grey silhouette with the real garment so that it fills EXACTLY this silhouette: the same outer contour, the same body width and length, the same sleeve position, the same size and the same position in the frame. Do not make the body narrower, slimmer or longer than the template; the body stays as wide as the template all the way down to the hem. Neckline and collar details may follow the real garment. Remove the template completely (no grey shape, no outline left) and use a plain light-grey studio background.`;
+      }
+      if (prompt) {
+        // kalıplı istem hazır
+      } else if (!refBlob) {
         prompt = `${URUN_STYLE} The product: ${g}, color ${col}. ${oranText(String(b.tur), String(b.kesim))} ${back ? 'Back view of the garment.' : 'Front view of the garment.'}`;
       } else if (b.ref_yuz === 'front' && back) {
         prompt = `The reference image is the FRONT of a garment (${g}). Create the BACK view of exactly the same garment: same fabric, same color and exact same tone (${col}), same fit and proportions, same size and position in the frame (${oranText(String(b.tur), String(b.kesim))}), same lighting, same shadow and the same plain light-grey background. Straight-on back view: ${ARKA[String(b.tur)] ? 'seen from directly behind' + ARKA[String(b.tur)] : 'the back neckline sits higher than the front, the whole back is smooth and fully visible' + (String(b.tur) === 'polo' ? ', the collar seen from behind, no placket or buttons on the back' : '')}. ${URUN_STYLE}`;
