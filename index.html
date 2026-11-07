@@ -3899,7 +3899,8 @@ function aiEd(pa,b){if(!aiTur(b)||!sbAdmin())return '';var cut=GENS.indexOf(b.cu
    yapay zekâ beyaz önü bu kalıbın içini birebir doldurarak üretir. Ölçü: boy = omuz üstünden etek ucuna, en = koltuk altından koltuk altına göğüs eni. */
 var KALIP_OLCU={tee:{erkek:[53,72],kadin:[47,64],cocuk:[38,52]},sweat:{erkek:[56,70],kadin:[51,64],cocuk:[40,52]}};KALIP_OLCU.polo=KALIP_OLCU.tee;KALIP_OLCU.hood=KALIP_OLCU.sweat;KALIP_OLCU.zip=KALIP_OLCU.sweat;
 function kalipOran(tur,cut,g){var o=kgOlcu(tur,cut,g||1);return o[0]/o[1];}
-function kalipUrl(tur,cut,g){var Wc=1024,Hc=1536,c=document.createElement('canvas');c.width=Wc;c.height=Hc;var x=c.getContext('2d');x.fillStyle='#ffffff';x.fillRect(0,0,Wc,Hc);
+/* mask=true: OpenAI için düzenleme maskesi. Siluetin içi saydam (yalnız orası çizilir), dışı opak; ürün siluetin dışına taşamaz, içini doldurur */
+function kalipUrl(tur,cut,g,mask){var Wc=1024,Hc=1536,c=document.createElement('canvas');c.width=Wc;c.height=Hc;var x=c.getContext('2d');x.fillStyle=mask?'#000000':'#ffffff';x.fillRect(0,0,Wc,Hc);if(mask){x.globalCompositeOperation='destination-out';x.strokeStyle='#000';x.lineWidth=14;x.lineJoin='round';}
   var hood=tur==='hood'||tur==='zip',uzun=/^(sweat|hood|zip)$/.test(tur),L=hood?820:uzun?880:940,BW=kalipOran(tur,cut,g)*L,cx=Wc/2,hb=BW/2,nk=BW*.17,sh=BW*.47;
   var top=Math.round((Hc-L)/2)+(hood?70:0);
   var pts=[[-sh,.045]];
@@ -3911,8 +3912,8 @@ function kalipUrl(tur,cut,g){var Wc=1024,Hc=1536,c=document.createElement('canva
   all.forEach(function(q){x.lineTo(cx+q[0],top+q[1]*L);});
   x.lineTo(cx+nk,top);
   if(hood)x.lineTo(cx-nk,top);else x.quadraticCurveTo(cx,top+L*.085,cx-nk,top); /* kapüşonluda yaka kapüşonun altında kalır */
-  x.closePath();x.fill();
-  if(hood){x.beginPath();x.moveTo(cx-nk*1.5,top+L*.03);x.bezierCurveTo(cx-nk*1.9,top-L*.2,cx+nk*1.9,top-L*.2,cx+nk*1.5,top+L*.03);x.closePath();x.fill();}
+  x.closePath();x.fill();if(mask)x.stroke();
+  if(hood){x.beginPath();x.moveTo(cx-nk*1.5,top+L*.03);x.bezierCurveTo(cx-nk*1.9,top-L*.2,cx+nk*1.9,top-L*.2,cx+nk*1.5,top+L*.03);x.closePath();x.fill();if(mask)x.stroke();}
   return c.toDataURL('image/png');}
 /* Üretilen fotoğrafta gövde en/boy oranı (zemini temizlenmiş, saydam görselden) */
 function oranOlc(blob){return new Promise(function(res){var u=URL.createObjectURL(blob),im=new Image();im.onload=function(){try{var W=im.width,H=im.height,c=document.createElement('canvas');c.width=W;c.height=H;var x=c.getContext('2d');x.drawImage(im,0,0);var p=x.getImageData(0,0,W,H).data,t=H,b=-1,l=W,r=-1,i,y,xx;
@@ -3928,7 +3929,7 @@ async function aiGen(pa,step){
   /* Bir yüz: üret, zemini temizle, oranı ölç; %5'ten fazla saparsa (en çok 3 deneme) yeniden üret */
   async function side(yuz,refFront){var last=null;
     for(var t=1;t<=3;t++){var body={mode:'urun',tur:tur,kesim:cut,renk:'Beyaz',yuz:yuz,cg:cut==='cocuk'?(b.cg||''):'',oran:ol};
-      if(yuz==='front')body.kalip=kalipUrl(tur,cut,g);else{body.ref=aiUrl(refFront);body.ref_yuz='front';}
+      if(yuz==='front'){body.kalip=kalipUrl(tur,cut,g);body.kalipMaske=kalipUrl(tur,cut,g,true);}else{body.ref=aiUrl(refFront);body.ref_yuz='front';}
       n++;aiSay((yuz==='front'?'Ön':'Arka')+' kalıp üretiliyor'+(t>1?' ('+t+'. deneme)':'')+'… (1-2 dakika)');if(n>1)await new Promise(function(r){setTimeout(r,6000);});
       var url=await one(body),k=url.indexOf('/storage/v1/object/public/site/');if(k<0)throw new Error('Fotoğraf kaydedilemedi.');
       var key=url.slice(k+'/storage/v1/object/public/site/'.length),oc=null,orn=0;

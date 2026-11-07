@@ -181,6 +181,7 @@ Deno.serve(async (req) => {
     let prompt = '';
     let size = '1024x1536';
     let refBlob: Blob | null = null;
+    let maskBlob: Blob | null = null;
 
     if (mode === 'sahne') {
       const S = b.__sahne;
@@ -230,7 +231,10 @@ Deno.serve(async (req) => {
       if (!refBlob && kp.startsWith('data:image/png;base64,') && kp.length < 3_000_000) {
         const bin = Uint8Array.from(atob(kp.slice(22)), (ch) => ch.charCodeAt(0));
         refBlob = new Blob([bin], { type: 'image/png' });
-        prompt = `${URUN_STYLE} The product: ${g}, color ${col}. Front view of the garment. The input image is an exact SIZE TEMPLATE: a flat grey silhouette drawn to the real measurements of this garment (body width from armpit to armpit and body length from shoulder top to hem). Replace the grey silhouette with the real garment so that it fills EXACTLY this silhouette: the same outer contour, the same body width and length, the same sleeve position, the same size and the same position in the frame. Do not make the body narrower, slimmer or longer than the template; the body stays as wide as the template all the way down to the hem. Neckline and collar details may follow the real garment. Remove the template completely (no grey shape, no outline left) and use a plain light-grey studio background.`;
+        // Maske: siluetin içi saydam = yalnız orası düzenlenir; ürün siluetin dışına taşamaz ve içini doldurur (oran tutsun diye)
+        const km = String(b.kalipMaske || '');
+        if (km.startsWith('data:image/png;base64,') && km.length < 3_000_000) maskBlob = new Blob([Uint8Array.from(atob(km.slice(22)), (ch) => ch.charCodeAt(0))], { type: 'image/png' });
+        prompt = `${URUN_STYLE} The product: ${g}, color ${col}. Front view of the garment. This is a wide, boxy, regular-fit garment: the torso is ${oranText(String(b.tur), String(b.kesim)).match(/about (\d+)%/)?.[1] || '74'}% as wide as it is long. The input image is an exact SIZE TEMPLATE: a flat grey silhouette drawn to the real measurements of this garment (body width from armpit to armpit and body length from shoulder top to hem). Replace the grey silhouette with the real garment so that it fills EXACTLY this silhouette: the same outer contour, the same body width and length, the same sleeve position, the same size and the same position in the frame. Do not make the body narrower, slimmer or longer than the template; the body stays as wide as the template all the way down to the hem. Neckline and collar details may follow the real garment. Remove the template completely (no grey shape, no outline left) and use a plain light-grey studio background.`;
       }
       if (prompt) {
         // kalıplı istem hazır
@@ -292,6 +296,7 @@ Deno.serve(async (req) => {
         fd.append('n', '1');
         for (const k in opts) fd.append(k, opts[k]);
         fd.append('image', refBlob, 'ref.' + ((refBlob.type.split('/')[1] || 'jpeg').replace('jpeg', 'jpg')));
+        if (maskBlob) fd.append('mask', maskBlob, 'mask.png');
         return await fetch('https://api.openai.com/v1/images/edits', { method: 'POST', headers: { Authorization: `Bearer ${key}` }, body: fd, signal: AbortSignal.timeout(140000) });
       }
       const pj: Record<string, unknown> = { model, prompt, n: 1 };
