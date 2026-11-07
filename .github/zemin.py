@@ -34,15 +34,25 @@ def convert(data):
     if s < 1:
         rgb = cv2.resize(rgb, (round(w * s), round(h * s)), interpolation=cv2.INTER_AREA)
         h, w = rgb.shape[:2]
-    a = kes.matte(rgb)
-    # Düz zemin anahtarı: kenardan başlayıp zemin rengine çok yakın olan bölge kesin zemin
-    diff = np.abs(rgb.astype(np.float32) - BG).max(2)
-    near = (diff <= 5).astype(np.uint8)
-    n, lab = cv2.connectedComponents(near)
+    # Eski zemin düz tek renk (#f1f3f2): kenardan başlayıp yalnız o renge çok yakın, kenara bağlı bölge zemin sayılır.
+        sm = cv2.GaussianBlur(rgb.astype(np.float32), (5, 5), 0)
+    diff = np.abs(sm - BG).max(2)
+    near = (diff <= 3.5).astype(np.uint8)
+    n, lab = cv2.connectedComponents(near, connectivity=4)
     edge = set(np.unique(np.concatenate([lab[0], lab[-1], lab[:, 0], lab[:, -1]]))) - {0}
-    bgm = np.isin(lab, list(edge)) if edge else np.zeros_like(near, bool)
-    bgm = cv2.erode(bgm.astype(np.uint8), np.ones((3, 3), np.uint8)).astype(bool)
-    a[bgm] = 0
+    bgm = np.isin(lab, list(edge)) if edge else np.zeros(near.shape, bool)
+    # küçük delikleri kapat (zemin içindeki JPEG kırıntıları), ürünü kemirme
+    bgm = cv2.morphologyEx(bgm.astype(np.uint8), cv2.MORPH_OPEN, np.ones((3, 3), np.uint8)).astype(bool)
+    # İki yöntem birlikte: yapay zekâ (ISNet) ürün dediği yeri ya da zemin renginden ayrışan yeri ürün sayar.
+    # Biri yanılsa öbürü tutar (beyaz kumaşın zemine çok yakın parlak yerleri / yapay zekânın beyaz kumaşı oyması).
+    ai = kes.matte(rgb)
+    bgm = bgm & (ai < .5)
+    bgm = cv2.morphologyEx(bgm.astype(np.uint8), cv2.MORPH_OPEN, np.ones((3, 3), np.uint8)).astype(bool)
+    a = (~bgm).astype(np.float32)
+    # yumuşak kenar: zemine bitişik 2 piksellik şeritte farka göre kısmi saydamlık
+    band = cv2.dilate(bgm.astype(np.uint8), np.ones((5, 5), np.uint8)).astype(bool) & ~bgm
+    dr = np.abs(rgb.astype(np.float32) - BG).max(2)
+    a[band] = np.clip((dr[band] - 2) / 14, 0, 1)
     if (a > .5).mean() < .02:
         raise ValueError('ürün bulunamadı')
     f = rgb.astype(np.float32)
