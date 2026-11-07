@@ -61,5 +61,5 @@ jobs:
             [ -d "supabase/functions/$f" ] || { echo "$f klasörü yok, atlandı"; continue; }
             ek=""; case " $ACIK " in *" $f "*) ek="--no-verify-jwt";; esac
             echo "→ $f $ek"
-            supabase functions deploy "$f" --project-ref "$PROJE" --use-api $ek
+            supabase functions deploy "$f" --project-ref "$PROJE" --use-api --yes $ek
           done
