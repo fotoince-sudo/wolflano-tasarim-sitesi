@@ -668,6 +668,7 @@ img{-webkit-touch-callout:none;-webkit-user-drag:none}
     <div class="stagebar" id="stageBar" hidden>
       <button data-c="center" data-t="text clip image"><svg class="i" viewBox="0 0 24 24"><path d="M12 3v18M3 12h18"/><rect x="7" y="7" width="10" height="10" rx="2"/></svg>Ortala</button>
       <button data-c="gcenter" data-g="1"><svg class="i" viewBox="0 0 24 24"><path d="M12 3v18M3 12h18"/><rect x="7" y="7" width="10" height="10" rx="2"/></svg>Ortala</button>
+      <button data-c="fill" data-t="image"><svg class="i" viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>Doldur</button>
       <button data-c="fwd" data-t="text clip image"><svg class="i" viewBox="0 0 24 24"><path d="M12 19V5M5 12l7-7 7 7"/></svg>Öne</button>
       <button data-c="bwd" data-t="text clip image"><svg class="i" viewBox="0 0 24 24"><path d="M12 5v14M5 12l7 7 7-7"/></svg>Arkaya</button>
     </div>
@@ -2240,7 +2241,9 @@ function layout(){
   var H0=H;H=H-padT-padB;var oy=padT+H/2-H0/2;
   var k=CUT_K[state.cut]||CUT_K.erkek,ay=NECK_Y[face(view.side)],vb=prodVB(),base,s,cx=STAGE_W/2,cy;
   if(vb&&mugWrap())vb={cx:267,cy:305,w:178,h:118};
-  if(vb){base=Math.min(W/vb.w,H/vb.h)*0.97;cx=vb.cx;cy=vb.cy;}
+  if(vb){base=Math.min(W/vb.w,H/vb.h)*0.97;cx=vb.cx;cy=vb.cy;
+    /* Canvas da giyimle aynı 120 cm baskı duvarında: gerçek boyutunda durur (35 × 50 küçük, 50 × 70 büyük), etrafında parmağa yer kalır */
+    if(state.product==='canvas'){var mobc=W<700;base=Math.min((W-(mobc?20:64))/(WALL_CM*PPC),H*0.94/vb.h);}}
   else{var fb=fitBox(view.side),fh=fb.bot-fb.top;/* Giyimde baskı duvarı sabit 120 cm genişliğinde: ölçek bedenden bağımsız, ürün duvarda gerçek oranında durur (S küçük, 3XL büyük görünür);
        tasarlarken yakınlaştırıp kaydırılır */
     var mob=W<700,gx=mob?0.94:0.9;base=Math.min((W-(mob?20:64))/(WALL_CM*PPC),(H-(mob?26:60))*gx/fh);cy=(fb.top+fb.bot)/2-4;}
@@ -4127,6 +4130,8 @@ function ctxClick(e){
   else if(c==='dup')dupSel();
   else if(c==='zin'||c==='zout'){var zo=selObj();if(zo&&!zo.lock){if(zo.slot&&slotPan(zo)){toast('Fotoğrafı köşedeki beyaz kareyle büyüt, küçült.');return;}applySize(zo,limitScale(zo.w,zo.h,c==='zin'?1.05:1/1.05,zo,zo.size||0),{w:zo.w,h:zo.h,s:zo.size||0});syncCtx();pushHist();}}
   else if(c==='center'){var co=selObj();if(co){var CA=areaBox(view.side,cur().area),ci=inkCenter(co);co.x+=CA.cx-ci.x;co.y+=CA.cy-ci.y;place(els[co.id],co);updateSel();var ab=$('#areaBox');ab.classList.add('onV','onH');setTimeout(centerOff,900);pushHist();toast('Baskı alanına ortalandı');}}
+  /* Doldur: seçili görsel baskı alanını kenarlara kadar kaplar (canvas'ta yanlara sarılan 4 cm dahil); oran korunur, taşan kısım basılmaz */
+  else if(c==='fill'){var fo=selObj();if(fo&&fo.type==='image'&&!fo.slot){var FA=areaBox(view.side,cur().area);fo.rot=0;var fk=Math.max(FA.w/fo.w,FA.h/fo.h);fo.w*=fk;fo.h*=fk;fo.x=FA.cx;fo.y=FA.cy;place(els[fo.id],fo);var fi=inkCenter(fo);fo.x+=FA.cx-fi.x;fo.y+=FA.cy-fi.y;place(els[fo.id],fo);updateSel();syncCtx();pushHist();toast(state.product==='canvas'?'Görsel kenarlara oturtuldu (yanlara sarılan kısım dahil)':'Görsel baskı alanını kapladı');}}
   else if(c==='nobg')removeBg();
   else if(c==='holes')openHoles();
   else if(c==='crop')openCrop();
