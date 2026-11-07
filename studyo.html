@@ -1298,8 +1298,8 @@ function CL(k,c,w,dy,dx,r){return {t:'clip',k:k,c:c,w:w,dx:dx||0,dy:dy,r:r||0};}
 /* Fotoğraf yeri: müşteri dokunup kendi fotoğrafını koyar (e: kenar tarzı, ör. 'firca' ya da 'murekkep') */
 function PH(w,h,dy,dx,e,r){return {t:'ph',w:w,h:h,dx:dx||0,dy:dy,e:e||'none',r:r||0};}
 var TC='#159b91',RD='#e63946',YL='#ffd23f',OR='#f4a261',BL='#1d70b8',GR='#3fae49',PU='#7b3fa0',PK='#e75a9a',BR='#7a5230',NV='#2f3e9e';
-var TPL_CANON=['Özel günler','İmza koleksiyonu','Wolf tasarımları','Türkiye','Şehirler ve köklerimiz','Spor ve kulüp','Okul ve sınıf','Şirket ve ekip','Aile ve aşk','Kutlama ve etkinlik','Doğa ve macera','Retro ve arma','Yazı ve söz','Minimal'];
-var TPL_CATS=['Tümü','Kurt geziyor','Özel günler','İmza koleksiyonu','Wolf tasarımları','Türkiye','Şehirler ve köklerimiz','Spor ve kulüp','Okul ve sınıf','Şirket ve ekip','Aile ve aşk','Kutlama ve etkinlik','Doğa ve macera','Retro ve arma','Yazı ve söz','Minimal'];
+var TPL_CANON=['Süslemeler','Özel günler','İmza koleksiyonu','Wolf tasarımları','Türkiye','Şehirler ve köklerimiz','Spor ve kulüp','Okul ve sınıf','Şirket ve ekip','Aile ve aşk','Kutlama ve etkinlik','Doğa ve macera','Retro ve arma','Yazı ve söz','Minimal'];
+var TPL_CATS=['Tümü','Kurt geziyor','Süslemeler','Özel günler','İmza koleksiyonu','Wolf tasarımları','Türkiye','Şehirler ve köklerimiz','Spor ve kulüp','Okul ve sınıf','Şirket ve ekip','Aile ve aşk','Kutlama ve etkinlik','Doğa ve macera','Retro ve arma','Yazı ve söz','Minimal'];
 var TPLS=[
 /* Kurt geziyor: özel günler */
 {c:'Kurt geziyor',n:'23 Nisan · dikey',p:'giyim',yon:'dikey',box:[3508,4961],items:[{t:'img',u:'sablon/web/23nisan-dikey.webp',hi:'https://raw.githubusercontent.com/fotoince-sudo/wolflano-tasarim-sitesi/baski/baski/23nisan-dikey.png',aw:1131,ah:1600,w:3508,h:4961,dx:0,dy:0}]},
@@ -3556,6 +3556,9 @@ function applyTemplate(t,silent){
   /* Yatay/dikey hazır görsel: baskı alanı döndürülebiliyorsa kendiliğinden o yöne çevrilir */
   if(t.yon&&AREAS[cur().area]&&AREAS[cur().area].rot&&!forcedLand(cur().area)&&!!cur().land!==(t.yon==='yatay'))setLand(t.yon==='yatay');
   var A=areaBox(view.side,cur().area);
+  if(t.ek){var nb=tplObjects(t,A,Math.min(A.w/tplBox(t)[0],A.h/tplBox(t)[1]),autoInk());cur().objs=cur().objs.concat(nb);
+    if(!silent&&view.tab==='tpl'&&innerWidth<700)closeTab();view.grp=false;renderAll();pushHist();if(nb.length===1)select(nb[0].id);
+    if(!silent)toast('Süsleme eklendi. Taşıyıp büyütebilir, rengini değiştirebilirsin.');return;}
   var kept=cur().objs.filter(function(o){return o.lock;});
   var bx=tplBox(t);cur().objs=kept.concat(tplObjects(t,A,Math.min(A.w/bx[0],A.h/bx[1]),autoInk()));
   if(!silent&&view.tab==='tpl'&&innerWidth<700)closeTab();
@@ -3874,6 +3877,9 @@ function tplMatch(t,q){if(!q)return true;var hay=tplText(t);return q.split(/\s+/
 /* Şablonlar baskı ölçüsüne göre gruplanır; her ürün yalnız kendi grubunu görür:
    giyim = tişört, sweatshirt, polo (A4 / A3) · sapka = 20 × 10 cm · kupa = 20 × 9 cm · canvas = 35 × 50 / 50 × 70.
    Şablonda p yazmıyorsa giyim şablonudur. Başka ürüne de uyuyorsa p:['kupa','sapka'] gibi yazılır. */
+/* Süslemeler şablonları: Şekil > Süslemeler'deki her parça (yıldız, bayrak flaması, kurdele, balon...) tişört, şapka, kupa ve canvas şablonlarında da çıkar.
+   ek:1 = mevcut tasarımı silmez, süslemeyi üstüne ekler; rengi ürün rengine göre kendiliğinden açık/koyu olur. */
+CLIPS.forEach(function(c){if(c[2]!=='Süslemeler')return;var a=clipAsp(c[0]);TPLS.push({c:'Süslemeler',n:c[1],p:['giyim','sapka','kupa','canvas'],ek:1,box:[100,100],items:[CL(c[0],'ink',a<0.6?90:62,0,0)]});});
 var TPL_GROUP_NAME={giyim:'giyim',sapka:'şapka',kupa:'kupa',canvas:'canvas'};
 function tplGroup(p){p=p===undefined?state.product:p;return p==='mug'?'kupa':p==='canvas'?'canvas':p==='hat'?'sapka':'giyim';}
 function tplBox(t){return t.box||[REF_W,REF_H];}
