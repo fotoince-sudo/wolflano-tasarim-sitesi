@@ -1764,6 +1764,7 @@ var STDC=[{name:'Beyaz',hex:'#f4f4f2'},{name:'Lacivert',hex:'#2b3d82'},{name:'Si
 /* Ürün (kumaş) renk kodları: standart renk sırasıyla K01…K05. Üretimde ve teknik şartnamede bu numaralar kullanılır. */
 function kCode(name){for(var i=0;i<STDC.length;i++)if(STDC[i].name===name)return 'K0'+(i+1);return '';}
 function teeLabel(name){var k=kCode(name);return (k?k+' · ':'')+name;}
+function colorNameOf(hex){var h=String(hex||'').toLowerCase(),t=TEES.filter(function(x){return String(x[1]).toLowerCase()===h;})[0];return t?t[0]:'';}
 function teeFull(name,hex){var k=kCode(name);return (k?k+' · ':'')+name+(hex?' · '+String(hex).toUpperCase():'');}
 function manGet(b,man,r){var c=b&&b.rawcut&&b.rawcut[r],m=man&&man[r];if(c&&!c.tmp)return c;return m||c||null;}
 function rawResolve(b,man){var fix=b.rawfix||{},by={},info={};
@@ -4617,8 +4618,11 @@ async function addToCart(silent){
     var c=await renderPreview(sidesOf()[0],0.35);
     var bg=document.createElement('canvas');bg.width=c.width;bg.height=c.height;var bx=bg.getContext('2d');bx.fillStyle='#eef1ef';bx.fillRect(0,0,bg.width,bg.height);bx.drawImage(c,0,0);
     var views=[];try{var sd=sidesOf();for(var vi=0;vi<sd.length;vi++){var sdn=sd[vi];if(vi>0&&!(state[sdn]&&state[sdn].objs&&state[sdn].objs.length))continue;var vc=await renderPreview(sdn,1.2);var vb=document.createElement('canvas');vb.width=vc.width;vb.height=vc.height;var vx=vb.getContext('2d');vx.fillStyle='#eef1ef';vx.fillRect(0,0,vb.width,vb.height);vx.drawImage(vc,0,0);views.push({n:SIDE_NAME[sdn]||sdn,src:vb.toDataURL('image/jpeg',0.82)});}}catch(_){views=[];}
+    /* Baskı dosyaları (300 dpi PNG): sepete eklenirken hazırlanır, sipariş verilince Wolflano'ya gönderilir (Yönetim → Siparişler → Baskı dosyaları) */
+    var prints=[];try{var sdp=sidesOf().filter(function(x){return state[x]&&state[x].objs&&state[x].objs.length;});for(var pi=0;pi<sdp.length;pi++){var sx=sdp[pi],pr=await renderPrint(sx),pbl=await new Promise(function(r){pr.canvas.toBlob(r,'image/png');});
+      if(pbl)prints.push({side:sx,blob:pbl,meta:{yuz:SIDE_NAME[sx]||sx,alan:areaTitle(sx),cm:cmText(state[sx].area,isLand(sx)),dpi:pr.dpi,renkler:usedColors().map(colLabel).join(', ')}});}}catch(_){}
     var szs=need?JSON.parse(JSON.stringify(state.sizes)):{};if(!need){var sl0=sizeList()||[];if(sl0.length===1)szs[sl0[0]]=1;else{var cz0=curSize();if(cz0)szs[cz0]=1;}}
-    cartItems.push({sig:sig,thumb:bg.toDataURL('image/jpeg',0.8),views:views,label:productLabel(),cut:state.cut,unit:p.unit,szList:sizeList(),sizes:szs,lines:designLines(),roster:rosterRows()});wfStat(['e:stud-sepet']);
+    cartItems.push({sig:sig,prints:prints,tee:state.tee,thumb:bg.toDataURL('image/jpeg',0.8),views:views,label:productLabel(),cut:state.cut,unit:p.unit,szList:sizeList(),sizes:szs,lines:designLines(),roster:rosterRows()});wfStat(['e:stud-sepet']);
     ok=true;
   }catch(_){toast('Sepete eklenemedi');}
   b.disabled=false;renderCart();
@@ -4808,6 +4812,13 @@ $('#coForm').addEventListener('submit',async function(e){
     ship:sh,total:T.net+sh,special:special?{type:special.type,document:special.document}:null,school:school});
   if(rec&&rec.error&&special&&/belge/i.test(rec.message||'')){m.textContent=rec.message;return;}
   if(rec&&rec.code)txt='Sipariş no: '+rec.code+'\n'+txt;
+  if(rec&&rec.code&&rec.up){m.textContent='Baskı dosyaları gönderiliyor…';var pf=0,pt=0;
+    for(var li=0;li<live.length;li++){var it=live[li],szt=SIZE_SETS[it.cut].filter(function(k){return it.sizes[k]>0;}).map(function(k){return k+'×'+it.sizes[k];}).join(', ');
+      for(var pj=0;pj<(it.prints||[]).length;pj++){var P0=it.prints[pj];pt++;m.textContent='Baskı dosyaları gönderiliyor… ('+pt+')';
+        try{var fd=new FormData();fd.append('code',rec.code);fd.append('sig',rec.up);fd.append('i',String(li+1));fd.append('side',P0.side);
+          fd.append('meta',JSON.stringify(Object.assign({urun:it.label,renk:teeFull(colorNameOf(it.tee),it.tee),bedenler:szt,adet:itQty(it)},P0.meta)));fd.append('file',new File([P0.blob],'baski.png',{type:'image/png'}));
+          var ur=await fetch(SB.url+'/functions/v1/baski-dosya',{method:'POST',headers:{apikey:SB.key},body:fd});if(!ur.ok)pf++;}catch(_){pf++;}}}
+    if(pf)txt+='\n\nNOT: '+pf+' baskı dosyası gönderilemedi; Wolflano seninle iletişime geçecek.';}
   PAYMENT.pay({code:rec&&rec.code,total:T.net+sh,subtotal:T.sub,special:special,school:school,shipping:{fee:sh,carrier:CARGO.provider,quote:shipQuote,il:$('#cIl').value,ilce:$('#cIlce').value},method:yo,text:txt}).then(function(r){
     if(r&&r.ok&&r.url){location.href=r.url;return;}
     m.innerHTML='Kartla ödeme sistemimiz yapım aşamasındadır, çok yakında hizmete girecektir. Siparişin hazır, kopyalayıp Wolflano ile paylaşabilirsin.<div style="margin-top:10px"><button type="button" class="ghost" id="coCopy">Siparişi kopyala</button></div>';

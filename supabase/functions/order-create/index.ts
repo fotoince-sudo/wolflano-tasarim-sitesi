@@ -28,6 +28,13 @@ const SPECIAL: Record<string, { label: string; rate: number }> = {
 // Okul siparişi: her ücretli 100 adete 10 adet ücretsiz (ihtiyaç sahibi öğrenciler için)
 const SCHOOL = { per: 100, free: 10 };
 
+// Baskı dosyası imzası: müşteri bu imzayla siparişine baskı dosyalarını yükler (sunucu: baski-dosya)
+async function baskiSig(code: string) {
+  const k = await crypto.subtle.importKey('raw', new TextEncoder().encode(SRK), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
+  const b = new Uint8Array(await crypto.subtle.sign('HMAC', k, new TextEncoder().encode('baski:' + code)));
+  return Array.from(b.slice(0, 16)).map((x) => x.toString(16).padStart(2, '0')).join('');
+}
+
 function makeCode() {
   const a = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
   let c = '';
@@ -163,7 +170,7 @@ Deno.serve(async (req) => {
         // E-postalar arka planda gider; müşteri sipariş onayını beklemez
         const p = orderMails(row).catch((e) => console.error('order mails', String(e)));
         try { (globalThis as any).EdgeRuntime?.waitUntil(p); } catch { /* yoksa sorun değil */ }
-        return j({ ok: true, code: row.code, total });
+        return j({ ok: true, code: row.code, total, up: await baskiSig(String(row.code)) });
       }
       const t = await r.text();
       if (/duplicate|unique/i.test(t)) { row.code = makeCode(); continue; }

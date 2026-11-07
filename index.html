@@ -1341,8 +1341,31 @@ async function shipMail(o,f){
 function crmOrderCard(o){
   var its=(o.items||[]).map(function(x){return '<div class="sumr"><span>'+esc(x.n)+' × '+x.q+'</span><span>'+tl(x.t)+'</span></div>'+(x.r&&x.r.length?'<p class="note" style="margin:0 0 6px">İsim/numara: '+esc(x.r.map(function(r){return r.s+' '+([r.n,r.k].filter(Boolean).join(' ')||'(boş)');}).join(', '))+'</p>':'');}).join('');
   var st=ORST.map(function(v){return '<option'+(o.status===v?' selected':'')+'>'+v+'</option>';}).join('');
-  return '<div class="panel crmc"><div class="crmh"><b>'+esc(o.code)+'</b><span class="note" style="margin:0">'+crmDate(o.created_at)+'</span></div><div class="sumr"><span>'+esc(o.ad)+'</span><span><b>'+tl(o.total)+'</b></span></div>'+its+'<p class="note" style="margin:0">'+esc((o.adres||'')+', '+(o.ilce||'')+'/'+(o.il||''))+(o.note?'<br>Not: '+esc(o.note):'')+'</p>'+crmSpecial(o)+crmFf(o)+crmContact(o)+'<label class="crmsel">Durum<select data-crm="ost" data-id="'+esc(o.id)+'">'+st+'</select></label></div>';
+  return '<div class="panel crmc"><div class="crmh"><b>'+esc(o.code)+'</b><span class="note" style="margin:0">'+crmDate(o.created_at)+'</span></div><div class="sumr"><span>'+esc(o.ad)+'</span><span><b>'+tl(o.total)+'</b></span></div>'+its+'<p class="note" style="margin:0">'+esc((o.adres||'')+', '+(o.ilce||'')+'/'+(o.il||''))+(o.note?'<br>Not: '+esc(o.note):'')+'</p>'+crmSpecial(o)+crmFiles(o)+crmFf(o)+crmContact(o)+'<label class="crmsel">Durum<select data-crm="ost" data-id="'+esc(o.id)+'">'+st+'</select></label></div>';
 }
+/* Baskı dosyaları: müşteri sipariş verince stüdyo her tasarımın 300 dpi PNG baskı dosyasını gönderir (designs/siparis/<no>/). Matbaaya bu dosyalar gider. */
+var CF={};
+function crmFiles(o){var l=CF[o.code];
+  var h='<div class="crmbox"><b>Baskı dosyaları</b>';
+  if(!l)h+='<div class="crmact"><button type="button" class="btn sm" data-crm="files" data-v="'+esc(o.code)+'">Baskı dosyalarını göster</button></div>';
+  else if(l==='y')h+='<span class="note" style="margin:0">Yükleniyor…</span>';
+  else if(!l.length)h+='<span class="note" style="margin:0">Bu siparişte baskı dosyası yok (hazır ürün siparişi ya da eski sipariş).</span>';
+  else h+=l.map(function(f){var m=f.m||{};return '<div style="display:flex;gap:10px;align-items:center;margin:6px 0"><img src="'+esc(f.u)+'" alt="" style="width:64px;height:64px;object-fit:contain;background:repeating-conic-gradient(#eee 0 25%,#fff 0 50%) 50%/12px 12px;border:1px solid #0001;border-radius:8px">'+
+    '<span style="flex:1;font-size:13px;line-height:1.35"><b>'+esc(m.urun||('Ürün '+f.i))+' · '+esc(m.yuz||'')+'</b><br>'+esc([m.alan,m.cm,m.dpi?m.dpi+' dpi':''].filter(Boolean).join(' · '))+(m.renk?'<br>Ürün rengi: '+esc(m.renk):'')+(m.bedenler?'<br>Beden: '+esc(m.bedenler):'')+(m.renkler?'<br>Baskı renkleri: '+esc(m.renkler):'')+'</span>'+
+    '<a class="btn sm" href="'+esc(f.d)+'" target="_blank" rel="noopener">İndir</a></div>';}).join('');
+  return h+'</div>';}
+async function crmFilesLoad(code){CF[code]='y';crmRender();var tk=await sbToken();if(!tk){CF[code]=null;crmRender();return;}
+  try{var H={apikey:SB.key,Authorization:'Bearer '+tk,'Content-Type':'application/json'},pre='siparis/'+code+'/';
+    var ls=await fetch(SB.url+'/storage/v1/object/list/designs',{method:'POST',headers:H,body:JSON.stringify({prefix:pre,limit:200,sortBy:{column:'name',order:'asc'}})}).then(function(r){return r.ok?r.json():[];});
+    var pngs=(ls||[]).filter(function(x){return /\.png$/.test(x.name);}),out=[];
+    for(var k=0;k<pngs.length;k++){var nm=pngs[k].name,base=nm.replace(/\.png$/,''),path=pre+nm;
+      var sg=await fetch(SB.url+'/storage/v1/object/sign/designs/'+path,{method:'POST',headers:H,body:JSON.stringify({expiresIn:86400})}).then(function(r){return r.json();}).catch(function(){return {};});
+      var su=sg&&(sg.signedURL||sg.signedUrl);if(!su)continue;var u=SB.url+'/storage/v1'+su,m={};
+      try{var mj=await fetch(SB.url+'/storage/v1/object/authenticated/designs/'+pre+base+'.json',{headers:{apikey:SB.key,Authorization:'Bearer '+tk}});if(mj.ok)m=await mj.json();}catch(_){}
+      var fn=(code+'-'+base+'-'+(m.yuz||'')+'-'+(m.alan||'')).replace(/[^\wığüşöçİĞÜŞÖÇ-]+/g,'-')+'.png';
+      out.push({i:+base.split('-')[0]||k+1,u:u,d:u+(u.indexOf('?')<0?'?':'&')+'download='+encodeURIComponent(fn),m:m});}
+    CF[code]=out;}catch(_){CF[code]=null;toast('Baskı dosyaları açılamadı');}
+  crmRender();}
 /* Özel indirim belgesi ve okul siparişi kutusu */
 var DOCST={bekliyor:['Belge kontrolü bekliyor','#a96a0f'],'onaylandı':['Belge onaylandı','#1d7f48'],reddedildi:['Belge reddedildi','#c42f36']};
 function crmSpecial(o){
@@ -1402,6 +1425,7 @@ document.addEventListener('click',async function(e){
   else if(a==='doc'){var w=window.open('','_blank');var tkd=await sbToken();if(!tkd){if(w)w.close();return;}
     var sr=await fetch(SB.url+'/storage/v1/object/sign/belgeler/'+encodeURIComponent(v),{method:'POST',headers:{apikey:SB.key,Authorization:'Bearer '+tkd,'Content-Type':'application/json'},body:JSON.stringify({expiresIn:600})}).then(function(x){return x.json();}).catch(function(){return {};});
     var su=sr&&(sr.signedURL||sr.signedUrl);if(su){var full=SB.url+'/storage/v1'+su;if(w)w.location.href=full;else location.href=full;}else{if(w)w.close();toast('Belge açılamadı');}}
+  else if(a==='files'){crmFilesLoad(v);}
   else if(a==='docok'||a==='docno'){var ns=a==='docok'?'onaylandı':'reddedildi',tkx=await sbToken();if(!tkx)return;
     var rx=await sbReq('/rest/v1/orders?id=eq.'+encodeURIComponent(b.dataset.id),{method:'PATCH',token:tkx,prefer:'return=minimal',body:{doc_status:ns}});
     if(rx.ok){C.orders.forEach(function(o){if(o.id===b.dataset.id)o.doc_status=ns;});toast(ns==='onaylandı'?'Belge onaylandı':'Belge reddedildi');crmRender();}else toast('Güncellenemedi');}
