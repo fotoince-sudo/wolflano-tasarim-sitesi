@@ -1003,7 +1003,7 @@ function dimsOf(key,land){var d=key==='mugw'?mugwCm():AREAS[key].cm;d=(land&&ARE
 function dimsNom(key,land){var d=key==='mugw'?mugwCm():AREAS[key].cm;return (land&&AREAS[key].rot)?[d[1],d[0]]:d;}
 /* Küçük çocuk bedenleri: A4 tişörte sığmıyorsa oranı korunarak santimetre olarak küçültülür (yaka + 8 cm + boy + 3 cm etek payı; yanlarda 2'şer cm) */
 function kidK(key,d){if(state.cut!=='cocuk'||!AREAS[key]||AREAS[key].at||key==='logo'||key==='logo2'||!/^(a4|a3)$/.test(key))return 1;var z=kidDims();if(!z)return 1;
-  var ah=z[1]-ndrop('front',z)/PPC-DROP_CM_COCUK-3,aw=z[0]-4;return Math.max(.5,Math.min(1,ah/d[1],aw/d[0]));}
+  var hb=hoodBackDrop(z),ah=z[1]-Math.max(ndrop('front',z),hb==null?0:hb)/PPC-DROP_CM_COCUK-(SWEATY[state.product]?5:3),aw=z[0]-4;return Math.max(.5,Math.min(1,ah/d[1],aw/d[0]));}
 function landFor(side,key){if(!AREAS[key].rot)return false;return forcedLand(key)?true:!!state[side].land;}
 function isLand(side){return landFor(side,state[side].area);}
 function areaTitle(side){return AREAS[state[side].area].name+(isLand(side)?' yatay':'');}
@@ -1721,7 +1721,33 @@ var SZM={
 };SZM.polo=SZM.tee;SZM.hood=SZM.sweat;SZM.zip=SZM.sweat;
 var NECK_DROP={front:39,back:14};
 /* Omuz ile yaka arası: çocuk bedenlerinde boya göre küçülür (3-4 yaşta yaka çizgisi omuza daha yakın) */
-function ndrop(side,d){if(state.cut!=='cocuk')return NECK_DROP[side];if(d===undefined){try{d=phDims(state.product,state.cut);}catch(_){d=null;}}var k=d&&d[1]?Math.max(.55,Math.min(1,d[1]/72)):1;return NECK_DROP[side]*k;}
+/* Yaka derinliği fotoğraftan: her ürün fotoğrafında yakanın (ribanın alt kenarı) üst kenardan ne kadar aşağıda olduğu, ürün boyunun oranı olarak ölçüldü.
+   Fotoğraf seçilen bedenin boyuna ölçeklendiği için yaka derinliği de her bedende o bedenin boyuyla birlikte büyür/küçülür;
+   böylece A4/A3 her bedende ve her renkte fotoğraftaki yakanın tam 8 cm altında başlar. Arka yüzde ense ribası ölçülür.
+   Tabloda olmayan yeni fotoğraf ürün ve kesimin ortalama değerini alır. Kapüşonlu ve polo eski sabit ölçüde kalır. */
+var NECKF={'cut/mvme1rcne5m0.webp':.128,'cut/mvme1qqvog0u.webp':.125,'cut/mvme1qybhxhu.webp':.122,'cut/mvme1r6j11o4.webp':.115,'cut/mvme1rkt2yzp.webp':.12,
+ 'cut/urun-tee-erkek-mvsqx3m23whg.webp':.098,'cut/urun-tee-erkek-mvsrfyv8u6kc.webp':.10,'cut/mvsrf5b1wf1a.webp':.10,'cut/mvmsg6zdf9vt.webp':.10,'cut/mvmsg6zdh5uq.webp':.10,
+ 'cut/mvv81ebypkyr.webp':.08,'cut/mvv81ebyuj72.webp':.088,'cut/mvv81ebyyws1.webp':.09,'cut/mvv81ebypkzu.webp':.083,
+ 'cut/mvmslv44asnm.webp':.125,'cut/mvmslvdyi799.webp':.14,'cut/mvmslvdyorbp.webp':.12,'cut/mvmslvdyqcbq.webp':.10,'cut/mvmslvdycr2a.webp':.135};
+var NECKB={'cut/mvmslvdy22jj.webp':.04,'cut/mvmslvdyu1ri.webp':.045,'cut/mvmslvdy5b9s.webp':.04,'cut/mvmslvdysvap.webp':.04,'cut/mvmslvdykp8p.webp':.045,
+ 'cut/mvmf7hcyyobd.webp':.035,'cut/mvmf7ig5mukl.webp':.035,'cut/mvv81ebym01z.webp':.025,'cut/mvv81ebyap8s.webp':.025,'cut/mvv81ebyhyxc.webp':.025};
+/* Ürün ve kesimin ortalaması: [ön, arka]. Çocuk ve kadın sweatshirt fotoğraflarında ön ve arka aynı fotoğraf olduğundan arkada da ön yaka görünür. */
+var NECKF_DEF={tee:{erkek:[.095,.03],kadin:[.122,.032],cocuk:[.168,.168]},sweat:{erkek:[.124,.043],kadin:[.107,.107],cocuk:[.14,.14]}};
+function neckFrac(side,product,cut){product=product||state.product;cut=cut||state.cut;var df=(NECKF_DEF[product]||{})[cut];if(!df)return 0;
+  try{var co=phPick(phColors(phBlank(product,cut)),state.tee);if(!co)return 0;var f=co.front||'',b=co.back||'';
+    if(side==='back'){var u=b||f;if(NECKB[u])return NECKB[u];if(!b||b===f)return NECKF[u]||(u&&NECKF[f])||df[0];return df[1];}
+    var cal=PH.cal[phSrc(f||b)];if(cal&&cal.hood)return 0;return NECKF[f||b]||df[0];}catch(_){return 0;}}
+/* Kapüşonlu arka: kapüşon sırtta aşağı sarkar. A4/A3 kapüşonun alt ucunun 4 cm altından başlar (kapüşonun üstüne basılmaz).
+   Değer: fotoğrafta kapüşonun alt ucunun ürünün en üstünden uzaklığı, toplam boyun oranı olarak. */
+var HOODB={kadin:.29,cocuk:.27,erkek:.29},HOOD_GAP=4;
+function hoodBackDrop(d){if(!/^(hood|zip)$/.test(state.product)||!PH.site||!d)return null;
+  try{var co=phPick(phColors(phBlank(state.product,state.cut)),state.tee);if(!co||!co.back)return null;var c=PH.cal[phSrc(co.back)]||phCalib(phSrc(co.back));if(!c||!c.ready||c.raw)return null;
+    var ot=c.top-(c.hood||0),Lr=c.bot-ot+1,yb=ot+(HOODB[state.cut]||.29)*Lr,sc=d[1]*PPC/Math.max(1,c.bot-c.top+1);
+    return (yb-c.top)*sc+(HOOD_GAP-DROP_CM)*PPC;}catch(_){return null;}}
+function ndrop(side,d){if(d===undefined){try{d=phDims(state.product,state.cut);}catch(_){d=null;}}
+  if(side==='back'){var hb=hoodBackDrop(d);if(hb!=null)return hb;}
+  var fr=(PH.site&&!P().draw&&d&&d[1])?neckFrac(side):0;if(fr)return fr*d[1]*PPC;
+  if(state.cut!=='cocuk')return NECK_DROP[side];var k=d&&d[1]?Math.max(.55,Math.min(1,d[1]/72)):1;return NECK_DROP[side]*k;}
 /* Baskı alanı seçilen bedene sığıyor mu (çocuk): yaka + 8 cm + alan boyu + 2 cm etek payı ≤ beden boyu; alan eni ≤ beden eni − 1 cm.
    Siparişte birden çok beden varsa en küçüğüne bakılır. */
 function kidDims(){var m=(SZM[state.product]||{})[state.cut];if(!m)return null;var ks=Object.keys(state.sizes||{}).filter(function(z){return (state.sizes[z]||0)>0&&m[z];});var p=phSize();if(p&&m[p])ks.push(p);var best=null;ks.forEach(function(z){if(!best||m[z][1]<best[1])best=m[z];});return best;}
