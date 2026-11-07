@@ -1783,6 +1783,18 @@ function phSc(cal,d){return d[1]*PPC/Math.max(1,cal.bot-cal.top+1);}
    seçilen bedenin en/boy oranının orta bedene oranı kadar (en çok ±%12) enine açılır/daralır; M ile 3XL arasındaki fark görünür olur. */
 function phSX(cal,d,sc,product){var m=(SZM[product||state.product]||{})[state.cut];if(!m||!d||!d[0]||!d[1])return sc;var r=m.M||m['7-8']||null;if(!r)return sc;
   var k=(d[0]/d[1])/(r[0]/r[1]);return sc*Math.max(.88,Math.min(1.12,k));}
+/* Mankenli fotoğrafta gövde, giyildiği için önden düz serilmiş eninden dar görünür; baskı ise düz basılır. Gövdenin yanları beden tablosundaki
+   orta bedenin en/boy oranına kadar genişletilir: yaka ortası ve kollar bozulmaz (yaka bölgesi 1:1, kollar yalnız yana kayar).
+   Böylece baskı alanı ürünün üzerinde tablodaki gerçek oranıyla durur (A3 küçük bedende gövdeden taşmaz). */
+function phOwner(u){var l=(PH.site&&PH.site.blanks)||[];for(var i=0;i<l.length;i++){var b=l[i];if(!b)continue;var cs=b.colors||[];for(var j=0;j<cs.length;j++){if(phSrc(cs[j].front)===u||phSrc(cs[j].back)===u)return {p:b.p||b.id,cut:b.cut};}}return {p:state.product,cut:state.cut};}
+function phWiden(rec,c,u){var o=phOwner(u),m=(SZM[o.p]||{})[o.cut];if(!m)return;var ref=m.M||m['7-8'];if(!ref)return;
+  var body=rec.cw||rec.bw;if(!body)return;var H0=rec.bot-rec.top+1,tgt=ref[0]/ref[1]*H0,k=tgt/body;if(!(k>1.04))return;k=Math.min(k,1.9);
+  var cx=Math.round((rec.l+rec.r)/2),hb=body/2,col=Math.round(hb*.4),d=Math.round((body*k-body)/2),W=rec.W,H=rec.H,nw=W+2*d;
+  var n=document.createElement('canvas');n.width=nw;n.height=H;var x=n.getContext('2d');x.imageSmoothingQuality='high';
+  var seg=function(s0,s1,d0,d1){if(s1-s0<1)return;x.drawImage(c,s0,0,s1-s0,H,d0,0,d1-d0,H);};
+  var L=Math.max(0,Math.round(cx-hb)),R=Math.min(W,Math.round(cx+hb));
+  seg(0,L,0,L);seg(L,cx-col,L,cx-col+d);seg(cx-col,cx+col,cx-col+d,cx+col+d);seg(cx+col,R,cx+col+d,R+2*d);seg(R,W,R+2*d,W+2*d);
+  rec.url=n.toDataURL('image/png');rec.W=nw;rec.r=rec.r+2*d;if(rec.bw)rec.bw+=2*d;if(rec.cw)rec.cw+=2*d;rec.wide=k;}
 function phCalib(u){
   if(PH.cal[u])return PH.cal[u];
   var rec={ready:false};PH.cal[u]=rec;
@@ -1838,7 +1850,8 @@ function phCalib(u){
       /* Kapüşon: ürünün en üstü kapüşonsa ölçü ve yerleşim omuzdan başlar (yoksa ürün kapüşon boyu kadar aşağı kayar, logo omuza düşerdi).
          Omuz satırı = eni kutunun %55'ini geçen ilk satır; normal yakada bu, boyun %6-8'i kadar aşağıdadır. */
       var shy=-1;for(var yy2=top;yy2<bot;yy2++){var a2=-1,z2=-1;for(var q3=l;q3<=r2;q3+=2){if(p[(yy2*W+q3)*4+3]>110){if(a2<0)a2=q3;z2=q3;}}if(z2-a2+1>bx*.55){shy=yy2;break;}}
-      if(shy>0&&(shy-top)/Math.max(1,bot-top)>.12){var nt=Math.round(shy-.07*(bot-shy));rec.hood=nt-top;rec.top=nt;}}
+      if(shy>0&&(shy-top)/Math.max(1,bot-top)>.12){var nt=Math.round(shy-.07*(bot-shy));rec.hood=nt-top;rec.top=nt;}
+      try{phWiden(rec,c,u);}catch(_){}}
     rec.ready=true;try{renderShirt();layout();}catch(_){}
   }catch(er){rec.fail=true;}};
   im.onerror=function(){rec.fail=true;};
