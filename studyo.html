@@ -1767,16 +1767,16 @@ function teeLabel(name){var k=kCode(name);return (k?k+' · ':'')+name;}
 function teeFull(name,hex){var k=kCode(name);return (k?k+' · ':'')+name+(hex?' · '+String(hex).toUpperCase():'');}
 function manGet(b,man,r){var c=b&&b.rawcut&&b.rawcut[r],m=man&&man[r];if(c&&!c.tmp)return c;return m||c||null;}
 function rawResolve(b,man){var fix=b.rawfix||{},by={},info={};
-  (b.raw||[]).forEach(function(r){var m=manGet(b,man,r),f=fix[r]||{},col=f.color||(m&&m.color)||'';info[r]={ready:!!m,color:col,side:f.side||'',ns:m?+m.ns||0:0};if(col)(by[col]||(by[col]=[])).push(r);});
+  var g2={};(b.raw||[]).forEach(function(r){var m=manGet(b,man,r),f=fix[r]||{},col=f.color||(m&&m.color)||'';if(f.g===2){info[r]={ready:!!m,color:col,auto:!f.color,side:f.side||'',ns:m?+m.ns||0:0,g:2,res:f.side||''};if(m&&f.color&&f.side)(g2[f.color]||(g2[f.color]={}))[f.side]=m.file;return;}info[r]={ready:!!m,color:col,side:f.side||'',ns:m?+m.ns||0:0};if(col)(by[col]||(by[col]=[])).push(r);});
   var res={};STDC.forEach(function(c){var l=by[c.name];if(!l||!l.length)return;var o={front:'',back:''};
     l.filter(function(r){return info[r].side;}).forEach(function(r){if(!o[info[r].side])o[info[r].side]=r;});
     /* Etiketsiz fotoğraflar: ön = en "ön görünümlü", arka = en "arka görünümlü" (aynı renk iki kez yüklenince ikinci ön fotoğraf arkaya düşmesin) */var un=l.filter(function(r){return !info[r].side;}).sort(function(a,z){return info[z].ns-info[a].ns;});if(un.length){if(!o.front)o.front=un[0];if(!o.back){var bk=un[un.length-1];if(bk!==o.front&&info[bk].ns!==info[o.front].ns)o.back=bk;else if(un.length>1&&un[1]!==o.front)o.back=un[1];}}
     res[c.name]=o;});
-  return {by:res,info:info};}
+  return {by:res,info:info,g2:g2};}
 /* Yönetimde eklenen ek renkler (5 standart rengin ardından) */
 var STDC_BASE=STDC.slice();function stdcSync(d){var ex=((d&&d.renkler)||[]).filter(function(c){return c&&c.name&&/^#[0-9a-f]{6}$/i.test(c.hex||'')&&!STDC_BASE.some(function(s){return s.name===c.name;});});STDC=STDC_BASE.concat(ex.map(function(c){return {name:c.name,hex:c.hex};}));}
-function cutMerge(d,man){man=man||{};stdcSync(d);((d&&d.blanks)||[]).forEach(function(b){if(!b||!(b.raw||[]).length)return;var R=rawResolve(b,man).by,cs=[];
-  STDC.forEach(function(c){var o=R[c.name];if(!o)return;var mf=o.front&&manGet(b,man,o.front),mk=o.back&&manGet(b,man,o.back),f=mf?mf.file:'',k=mk?mk.file:'';if(!f&&!k)return;cs.push({name:c.name,hex:c.hex,front:f||k,back:f?k:''});});
+function cutMerge(d,man){man=man||{};stdcSync(d);((d&&d.blanks)||[]).forEach(function(b){if(!b||!(b.raw||[]).length)return;var RR=rawResolve(b,man),R=RR.by,G2=RR.g2||{},cs=[];
+  STDC.forEach(function(c){var o=R[c.name];if(!o)return;var mf=o.front&&manGet(b,man,o.front),mk=o.back&&manGet(b,man,o.back),f=mf?mf.file:'',k=mk?mk.file:'';if(!f&&!k)return;var e={name:c.name,hex:c.hex,front:f||k,back:f?k:''},q=G2[c.name];if(q&&q.front){e.front2=q.front;e.back2=q.back||'';}cs.push(e);});
   if(cs.length)b.colors=cs;});return d;}
 /* Renkler her üründe aynı sırada ve aynı tonda: standart sıra (Beyaz, Lacivert, Siyah, Mavi, Yeşil), sonra diğerleri */
 function phColors(b){var L=((b&&b.colors)||[]).filter(function(c){return c&&(c.front||c.back)&&/^#[0-9a-f]{6}$/i.test(c.hex||'');}),ix=function(c){for(var i=0;i<STDC.length;i++)if(STDC[i].name===c.name)return i;return STDC.length;};
@@ -1786,7 +1786,12 @@ function phColors(b){var L=((b&&b.colors)||[]).filter(function(c){return c&&(c.f
 function hexRGB(h){h=String(h||'').replace('#','');return /^[0-9a-f]{6}$/i.test(h)?[parseInt(h.slice(0,2),16),parseInt(h.slice(2,4),16),parseInt(h.slice(4,6),16)]:null;}
 /* Eski renk tonları (ilk ürün fotoğraflarıyla kaydedilmiş tasarımlar): ton yakın olmasa da adıyla eşleşir (eski lacivert siyaha çok yakın) */
 var OLD_TONE={'#f6f6f4':'Beyaz','#17181a':'Siyah','#1c2a4b':'Lacivert','#2f6fb5':'Mavi','#1f6b4a':'Yeşil','#8f9598':'Gri','#5b3a29':'Kahve','#b2502d':'Kiremit','#111111':'Siyah','#000000':'Siyah','#ffffff':'Beyaz'};
-function phPick(cs,hex,name){if(!cs||!cs.length)return null;var h=String(hex||'').toLowerCase(),c=cs.filter(function(x){return String(x.hex).toLowerCase()===h;})[0];if(c)return c;name=name||OLD_TONE[h];
+/* İki kalıplı ürünler: büyük bedenlerde (erkek XL–3XL, kadın L–2XL) ikinci kalıbın fotoğrafı kullanılır. Bedenler büyüdükçe tişört boyundan çok enine büyür;
+   tek fotoğraf köşeden büyütülünce büyük bedende dar kalırdı. */
+var KG2={erkek:['XL','XXL','2XL','3XL'],kadin:['L','XL','XXL','2XL']};
+function inG2(){var l=KG2[state.cut];if(!l)return false;var z='';try{z=phSize();}catch(_){}return l.indexOf(z)>=0;}
+function phPick(cs,hex,name){var c=phPick0(cs,hex,name);if(c&&c.front2&&inG2())c=Object.assign({},c,{front:c.front2,back:c.back2||c.back});return c;}
+function phPick0(cs,hex,name){if(!cs||!cs.length)return null;var h=String(hex||'').toLowerCase(),c=cs.filter(function(x){return String(x.hex).toLowerCase()===h;})[0];if(c)return c;name=name||OLD_TONE[h];
   var nm=String(name||'').trim().toLocaleLowerCase('tr');if(nm){c=cs.filter(function(x){return String(x.name||'').trim().toLocaleLowerCase('tr')===nm;})[0];if(c)return c;}
   var a=hexRGB(hex),best=cs[0],bd=1e9;if(!a)return best;cs.forEach(function(x){var b=hexRGB(x.hex);if(!b)return;var d=Math.pow(a[0]-b[0],2)+Math.pow(a[1]-b[1],2)+Math.pow(a[2]-b[2],2);if(d<bd){bd=d;best=x;}});return best;}
 /* Renk değişince fotoğrafın yüklenip ölçülmesini bekler (beklemeden çizilince fotoğraf yerine vektör çizim kaydediliyordu) */

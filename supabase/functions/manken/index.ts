@@ -97,8 +97,10 @@ const ORAN: Record<string, Record<string, [number, number]>> = {
   sweat: { erkek: [56, 70], kadin: [51, 64], cocuk: [40, 52] },
 };
 ORAN.polo = ORAN.tee; ORAN.hood = ORAN.sweat; ORAN.zip = ORAN.sweat;
+// İki kalıplı ürünlerde büyük beden kalıbı kendi ölçüsünü gönderir (b.oran = [en, boy] cm)
+let ORAN_OV: [number, number] | null = null;
 function oranText(tur: string, kesim: string): string {
-  const o = (ORAN[tur] || ORAN.tee)[kesim] || (ORAN[tur] || ORAN.tee).erkek;
+  const o = ORAN_OV || (ORAN[tur] || ORAN.tee)[kesim] || (ORAN[tur] || ORAN.tee).erkek;
   const pct = Math.round((o[0] / o[1]) * 100);
   return `TRUE GARMENT PROPORTIONS (very important): the body width measured flat from armpit to armpit and the body length measured from the top of the shoulder to the bottom hem are in the exact ratio ${o[0]}:${o[1]}, so the body is about ${pct}% as wide as it is long. This is a real, roomy regular fit, NOT slim, narrow, tapered or elongated; the body below the armpits stays this wide all the way down. Draw the garment perfectly flat-on (no perspective, no turning) so this ratio is visible in the photo.`;
 }
@@ -206,6 +208,8 @@ Deno.serve(async (req) => {
     } else if (mode === 'urun') {
       // ref yoksa: beyaz ön sıfırdan; ref varsa: aynı ürünün arkası (yuz=back) ya da başka rengi (aynı yüz)
       const gar = URUN[String(b.tur)];
+      const ov = Array.isArray(b.oran) ? b.oran.map(Number) : null;
+      ORAN_OV = ov && ov.length === 2 && ov[0] > 20 && ov[0] < 90 && ov[1] > 30 && ov[1] < 100 ? [ov[0], ov[1]] : null;
       const fit = (KESIM[String(b.kesim)] || KESIM.erkek) + (String(b.kesim) === 'cocuk' && b.cg === 'kiz' ? ", girls' cut (a little more fitted, girls' style)" : String(b.kesim) === 'cocuk' && b.cg === 'erkek' ? ", boys' cut (straight, boys' style)" : '');
       // Standart 5 renk tanımlı tonuyla; yönetimde eklenen renkler (ör. Bordo) adı ve tonuyla (#hex) gelir
       const rhex = /^#[0-9a-f]{6}$/i.test(String(b.renkHex || '')) ? String(b.renkHex) : '';
