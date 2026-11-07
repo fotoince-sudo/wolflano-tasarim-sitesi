@@ -48,6 +48,18 @@ def convert(data):
     ai = kes.matte(rgb)
     bgm = bgm & (ai < .5)
     bgm = cv2.morphologyEx(bgm.astype(np.uint8), cv2.MORPH_OPEN, np.ones((3, 3), np.uint8)).astype(bool)
+    # Eski stüdyo ışık katmanını ürünün biraz dışına taşırıyordu: ürün çevresinde zeminden açık, renksiz bir şerit (hale) var.
+    # Zemin, en çok genişliğin %2,5'i kadar, yalnız bu açık ve renksiz piksellere doğru büyütülür (kumaşın koyu kenar çizgisinde durur).
+    rf = rgb.astype(np.int16)
+    cand = (rf.min(2) >= 239) & ((rf.max(2) - rf.min(2)) <= 7) & (ai < .99)
+    g = bgm.astype(np.uint8)
+    k3 = np.ones((3, 3), np.uint8)
+    for _ in range(max(6, int(w * .025))):
+        g2 = cv2.dilate(g, k3) & cand.astype(np.uint8) | g
+        if (g2 == g).all():
+            break
+        g = g2
+    bgm = g.astype(bool)
     a = (~bgm).astype(np.float32)
     # Kenar şeridi: JPEG'in ürün kenarında bozduğu eski zemin rengi (hale) temizlenir; zemine yakın renkli pikseller kısmi saydam olur
     R = max(4, w // 200) | 1
