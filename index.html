@@ -1437,12 +1437,20 @@ document.addEventListener('click',async function(e){
     if(r.ok&&Array.isArray(r.j)&&r.j[0]){C.notes.unshift(r.j[0]);toast('Kaydedildi');crmRender();}else toast('Kaydedilemedi');}
   else if(a==='done'){var tk2=await sbToken();if(!tk2)return;var r3=await sbReq('/rest/v1/crm_notes?id=eq.'+encodeURIComponent(b.dataset.id),{method:'PATCH',token:tk2,prefer:'return=minimal',body:{done:true}});if(r3.ok){C.notes.forEach(function(x){if(x.id===b.dataset.id)x.done=true;});crmRender();}else toast('Güncellenemedi');}
 });
+function bkDb(){return new Promise(function(res,rej){var r=indexedDB.open('wf_baski',1);r.onupgradeneeded=function(){r.result.createObjectStore('f');};r.onsuccess=function(){res(r.result);};r.onerror=function(){rej(r.error);};});}
+async function bkGet(k){try{var db=await bkDb();return await new Promise(function(res){var t=db.transaction('f','readonly'),q=t.objectStore('f').get(k);q.onsuccess=function(){res(q.result||null);};q.onerror=function(){res(null);};});}catch(_){return null;}}
+async function bkDel(k){try{var db=await bkDb();db.transaction('f','readwrite').objectStore('f').delete(k);}catch(_){}}
 async function crmSend(o){
   try{var tk=await sbToken(),h={'Content-Type':'application/json',apikey:SB.key};if(tk)h.Authorization='Bearer '+tk;
    var r=await fetch(SB.url+'/functions/v1/order-create',{method:'POST',headers:h,body:JSON.stringify({ad:o.ad,mail:o.mail,tel:normPhone(o.tel)||o.tel,adres:o.adr,il:o.il,ilce:o.ilce,note:o.not,items:o.items,ship:o.ship,total:o.total,special:o.special?{type:o.special.type,document:o.special.document}:null,school:o.school})});
    var j=await r.json().catch(function(){return {};});
    if(r.ok)stEvent('siparis');
    if(r.ok&&j.code){var l=lastOrder();if(l){l.code=j.code;localStorage.setItem('wf_last',JSON.stringify(l));}}
+   /* Stüdyo tasarımlarının baskı dosyaları (stüdyo sepete eklerken tarayıcı deposuna koydu) siparişe eklenir */
+   if(r.ok&&j.code&&j.up&&o.__sc&&o.__sc.length){for(var si=0;si<o.__sc.length;si++){var it=o.__sc[si];
+     for(var pj=0;pj<it.pk.length;pj++){var P0=it.pk[pj];try{var bl=await bkGet(it.sig+'|'+P0.side);if(!bl)continue;var fd=new FormData();fd.append('code',j.code);fd.append('sig',j.up);fd.append('i',String(si+1));fd.append('side',P0.side);
+       fd.append('meta',JSON.stringify(Object.assign({urun:it.label,renk:it.tee||'',bedenler:it.sz,adet:it.q},P0.meta||{})));fd.append('file',new File([bl],'baski.png',{type:'image/png'}));
+       var ur=await fetch(SB.url+'/functions/v1/baski-dosya',{method:'POST',headers:{apikey:SB.key},body:fd});if(ur.ok)bkDel(it.sig+'|'+P0.side);}catch(_){}}}}
   }catch(_){}
 }
 
@@ -2223,7 +2231,7 @@ function saveLast(L,tot,shp,yo,special,school){
   scLive().forEach(function(it){items.push({id:'tasarim',n:'Tasarım: '+(it.label||'')+' ('+scSizes(it)+')',q:scQty(it),t:scTot(it)});});
   var hm=(document.querySelector('input[name=oH]:checked')||{}).value||'guest';
   var o={mode:hm,ad:g('oAd'),mail:g('oMail'),tel:normPhone(g('oTel'))||g('oTel'),adr:g('oAdr'),il:g('oIl'),ilce:g('oIlce'),not:g('oNot'),items:items,ship:shp,total:tot+shp,pay:yo,date:new Date().toISOString().slice(0,10)};
-  var o2=JSON.parse(JSON.stringify(o));o2.special=special||null;o2.school=school||null;
+  var o2=JSON.parse(JSON.stringify(o));o2.special=special||null;o2.school=school||null;o2.__sc=scLive().map(function(it){return {sig:it.sig,label:it.label,tee:it.tee,pk:it.pk||[],sz:scSizes(it),q:scQty(it)};});
   try{localStorage.setItem('wf_last',JSON.stringify(o));}catch(_){}crmSend(o2);try{if(ACCOUNT.user&&ACCOUNT.saveProfile)ACCOUNT.saveProfile({ad:o.ad,tel:o.tel,adres:o.adr,il:o.il,ilce:o.ilce});}catch(_){}
 }
 function profPanel(){
@@ -3394,7 +3402,8 @@ yorumlar:function(){return rvPage();},
   return '<div class="wrap page"><p class="eyebrow">Wolflano</p><h1 class="h2">İletişim</h1><p class="lead">Sipariş, baskı ve toplu sipariş için bize ulaş.</p><div class="clist">'+rows.map(function(r){return '<div class="cr">'+r[0]+'<div><b>'+r[1]+'</b><span>'+r[2]+'</span></div></div>';}).join('')+'</div></div>';
  }
 };
-async function coSubmit(){var miss=coMiss();if(miss){coFocus(miss);return;}{var cv=$('#coMsg');if(!normPhone($('#oTel').value)){cv.hidden=false;cv.textContent='Geçerli bir cep telefonu numarası yaz (05xx xxx xx xx).';$('#oTel').focus();return;}if($('#oAdr').value.trim().length<10||!$('#oIl').value.trim()||!$('#oIlce').value.trim()){cv.hidden=false;cv.textContent='Teslimat için açık adres, il ve ilçe zorunludur.';return;}}var cm=$('#coMsg'),yo=(document.querySelector('input[name=oY]:checked')||{}).value,ids=Object.keys(cart).filter(function(k){return cart[k]>0;}),tot=0,L=['WOLFLANO sipariş','Ad: '+$('#oAd').value,'E-posta: '+$('#oMail').value,'Telefon: '+$('#oTel').value,'Adres: '+$('#oAdr').value+', '+$('#oIlce').value+'/'+$('#oIl').value,'Ödeme: '+(yo==='havale'?'Havale / EFT':'Kart')],dm=((document.querySelector('input[name=oT]:checked')||{}).value)||'kargo';L.push('Teslimat: '+(dm==='elden'?'İzmir’de elden teslim':'Kargo'));if($('#oNot')&&$('#oNot').value.trim())L.push('Not: '+$('#oNot').value.trim());
+var CO_SENT=0;
+async function coSubmit(){if(Date.now()-CO_SENT<120000){var cx=$('#coMsg');if(cx){cx.hidden=false;cx.textContent='Siparişin zaten oluşturuldu. Tekrar göndermene gerek yok.';}return;}var miss=coMiss();if(miss){coFocus(miss);return;}{var cv=$('#coMsg');if(!normPhone($('#oTel').value)){cv.hidden=false;cv.textContent='Geçerli bir cep telefonu numarası yaz (05xx xxx xx xx).';$('#oTel').focus();return;}if($('#oAdr').value.trim().length<10||!$('#oIl').value.trim()||!$('#oIlce').value.trim()){cv.hidden=false;cv.textContent='Teslimat için açık adres, il ve ilçe zorunludur.';return;}}var cm=$('#coMsg'),yo=(document.querySelector('input[name=oY]:checked')||{}).value,ids=Object.keys(cart).filter(function(k){return cart[k]>0;}),tot=0,L=['WOLFLANO sipariş','Ad: '+$('#oAd').value,'E-posta: '+$('#oMail').value,'Telefon: '+$('#oTel').value,'Adres: '+$('#oAdr').value+', '+$('#oIlce').value+'/'+$('#oIl').value,'Ödeme: '+(yo==='havale'?'Havale / EFT':'Kart')],dm=((document.querySelector('input[name=oT]:checked')||{}).value)||'kargo';L.push('Teslimat: '+(dm==='elden'?'İzmir’de elden teslim':'Kargo'));if($('#oNot')&&$('#oNot').value.trim())L.push('Not: '+$('#oNot').value.trim());
     ids.forEach(function(id){var p=ALLP.filter(function(x){return x.id===ckId(id);})[0];if(p){tot+=p.price*cart[id];L.push(p.name+' ['+pCode(p)+']'+(p.color?' · '+p.color:'')+szLbl(id)+' × '+cart[id]+' = '+tl(p.price*cart[id]));}});
     var scl=scLive();scl.forEach(function(it,j){var t=scTot(it);tot+=t;L.push('BASKI TASARIMI '+(j+1)+': '+(it.label||'')+' · Bedenler: '+scSizes(it)+' = '+tl(t));(it.lines||[]).forEach(function(x){L.push('   '+x);});});var shp=shipFee(tot),T=coTotals(),special=null,school=null;
     if(T.sp){var fd=$('#oSdoc').files[0];if(!fd){cm.hidden=false;cm.textContent='Özel indirim için '+T.sp[3].toLowerCase()+' gerekli. Fotoğrafı ekle ya da "Yok"u seç.';return;}var doc=null;try{doc=await readDoc(fd);}catch(_){}if(!doc){cm.hidden=false;cm.textContent='Belge fotoğrafı açılamadı. JPG veya PNG dene.';return;}
@@ -3404,7 +3413,7 @@ async function coSubmit(){var miss=coMiss();if(miss){coFocus(miss);return;}{var 
     if(special)L.push('ÖZEL İNDİRİM: '+special.label+' %'+Math.round(special.rate*100)+' = −'+tl(special.discount),'DURUM: BELGE KONTROLÜ BEKLİYOR (kargodan önce belgeyi kontrol et)');
     var net=tot-(special?special.discount:0);
     L.push('Kargo: '+(shp?tl(shp):'Ücretsiz'));L.push('Toplam: '+tl(net+shp));
-    var inv=invoiceInfo();saveLast(L,net,shp,yo,special,school);L.push((inv.corp?'Fatura: kurumsal - '+inv.title+', VKN '+inv.taxNo+', '+inv.taxOffice:'Fatura: bireysel')+' · Fatura adresi: '+inv.address);var order={designs:scl.map(function(it){return {label:it.label,cut:it.cut,sizes:it.sizes,unit:it.unit,total:scTot(it),lines:it.lines||[],roster:it.roster||null,thumb:it.thumb||''};}),lines:L,invoice:inv,total:net+shp,subtotal:tot,special:special,school:school,shipping:{method:dm,fee:shp,carrier:CARGO.provider,quote:shipQuote,il:$('#oIl').value,ilce:$('#oIlce').value},method:yo};cm.hidden=false;cm.textContent='Hazırlanıyor…';
+    CO_SENT=Date.now();var inv=invoiceInfo();saveLast(L,net,shp,yo,special,school);L.push((inv.corp?'Fatura: kurumsal - '+inv.title+', VKN '+inv.taxNo+', '+inv.taxOffice:'Fatura: bireysel')+' · Fatura adresi: '+inv.address);var order={designs:scl.map(function(it){return {label:it.label,cut:it.cut,sizes:it.sizes,unit:it.unit,total:scTot(it),lines:it.lines||[],roster:it.roster||null,thumb:it.thumb||''};}),lines:L,invoice:inv,total:net+shp,subtotal:tot,special:special,school:school,shipping:{method:dm,fee:shp,carrier:CARGO.provider,quote:shipQuote,il:$('#oIl').value,ilce:$('#oIlce').value},method:yo};cm.hidden=false;cm.textContent='Hazırlanıyor…';
     PAYMENT.pay(order).then(function(r){
       if(r&&r.ok&&r.url){location.href=r.url;return;}if(r&&r.ok){location.hash='#siparis';return;}
       cm.innerHTML='Kartla ödeme sistemimiz yapım aşamasındadır, çok yakında hizmete girecektir. Siparişin hazır, kopyalayıp Wolflano ile paylaşabilirsin.<div style="margin-top:10px"><button type="button" class="btn soft sm" id="copyOrder">Siparişi kopyala</button> <a class="btn soft sm" href="#siparis">Ödeme sonrası ekranı (önizleme)</a></div>';

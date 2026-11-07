@@ -4607,6 +4607,11 @@ function renderCart(){
   var b=$('#addCart');if(b)b.textContent=cartItems.some(function(x){return x.sig===designSig();})?'Sepette ✓':'Sepete ekle';
   saveCart();syncCartUI();
 }
+/* Baskı dosyaları tarayıcının kendi deposunda (IndexedDB) saklanır: sepet sitede (index.html) tamamlanınca oradan Wolflano'ya gönderilir.
+   localStorage büyük PNG'leri taşıyamaz; IndexedDB aynı sitede her iki sayfadan okunur. Anahtar: tasarım imzası|yüz */
+function bkDb(){return new Promise(function(res,rej){var r=indexedDB.open('wf_baski',1);r.onupgradeneeded=function(){r.result.createObjectStore('f');};r.onsuccess=function(){res(r.result);};r.onerror=function(){rej(r.error);};});}
+async function bkPut(k,b){var db=await bkDb();return new Promise(function(res,rej){var t=db.transaction('f','readwrite');t.objectStore('f').put(b,k);t.oncomplete=function(){res();};t.onerror=function(){rej(t.error);};});}
+async function bkGet(k){var db=await bkDb();return new Promise(function(res){var t=db.transaction('f','readonly'),q=t.objectStore('f').get(k);q.onsuccess=function(){res(q.result||null);};q.onerror=function(){res(null);};});}
 async function addToCart(silent){
   var sig=designSig();
   if(cartItems.some(function(x){return x.sig===sig;})){if(silent!==true)showAdded(true);return true;}
@@ -4622,7 +4627,8 @@ async function addToCart(silent){
     var prints=[];try{var sdp=sidesOf().filter(function(x){return state[x]&&state[x].objs&&state[x].objs.length;});for(var pi=0;pi<sdp.length;pi++){var sx=sdp[pi],pr=await renderPrint(sx),pbl=await new Promise(function(r){pr.canvas.toBlob(r,'image/png');});
       if(pbl)prints.push({side:sx,blob:pbl,meta:{yuz:SIDE_NAME[sx]||sx,alan:areaTitle(sx),cm:cmText(state[sx].area,isLand(sx)),dpi:pr.dpi,renkler:usedColors().map(colLabel).join(', ')}});}}catch(_){}
     var szs=need?JSON.parse(JSON.stringify(state.sizes)):{};if(!need){var sl0=sizeList()||[];if(sl0.length===1)szs[sl0[0]]=1;else{var cz0=curSize();if(cz0)szs[cz0]=1;}}
-    cartItems.push({sig:sig,prints:prints,tee:state.tee,thumb:bg.toDataURL('image/jpeg',0.8),views:views,label:productLabel(),cut:state.cut,unit:p.unit,szList:sizeList(),sizes:szs,lines:designLines(),roster:rosterRows()});wfStat(['e:stud-sepet']);
+    var pk=[];try{for(var pq=0;pq<prints.length;pq++){await bkPut(sig+'|'+prints[pq].side,prints[pq].blob);pk.push({side:prints[pq].side,meta:prints[pq].meta});}}catch(_){pk=[];}
+    cartItems.push({sig:sig,pk:pk,tee:state.tee,thumb:bg.toDataURL('image/jpeg',0.8),views:views,label:productLabel(),cut:state.cut,unit:p.unit,szList:sizeList(),sizes:szs,lines:designLines(),roster:rosterRows()});wfStat(['e:stud-sepet']);
     ok=true;
   }catch(_){toast('Sepete eklenemedi');}
   b.disabled=false;renderCart();
@@ -4785,8 +4791,12 @@ $('#goPay').addEventListener('click',async function(){
 });
 var coFrom='order';
 $('#coClose').addEventListener('click',function(){$('#checkout').hidden=true;if(coFrom==='cart')openCartPage(cpFrom);else if(coFrom==='order')$('#order').hidden=false;});
+var CO_BUSY=false;
 $('#coForm').addEventListener('submit',async function(e){
-  e.preventDefault();
+  e.preventDefault();if(CO_BUSY)return;CO_BUSY=true;try{await coSubmitStudio();}finally{CO_BUSY=false;}});
+var CO_DONE=0;
+async function coSubmitStudio(){
+  if(Date.now()-CO_DONE<120000){var mm=$('#coMsg');mm.hidden=false;mm.textContent='Siparişin zaten oluşturuldu. Tekrar göndermene gerek yok.';return;}
   var m=$('#coMsg'),T=coTotals(),sh=T.sh,yo=(document.querySelector('input[name=cY]:checked')||{}).value,special=null;
   if(T.sp){
     var f=$('#spDoc').files[0];
@@ -4811,10 +4821,11 @@ $('#coForm').addEventListener('submit',async function(e){
     items:live.map(function(it,i){var sz=SIZE_SETS[it.cut].filter(function(k){return it.sizes[k]>0;}).map(function(k){return k+'×'+it.sizes[k];}).join(', ');var o1={id:'baski-'+(i+1),n:it.label+' (özel baskı'+(sz?', '+sz:'')+')',q:itQty(it),t:Math.round(itTotal(it)*100)/100};if(it.roster)o1.r=it.roster;return o1;}),
     ship:sh,total:T.net+sh,special:special?{type:special.type,document:special.document}:null,school:school});
   if(rec&&rec.error&&special&&/belge/i.test(rec.message||'')){m.textContent=rec.message;return;}
+  if(rec&&rec.code)CO_DONE=Date.now();
   if(rec&&rec.code)txt='Sipariş no: '+rec.code+'\n'+txt;
   if(rec&&rec.code&&rec.up){m.textContent='Baskı dosyaları gönderiliyor…';var pf=0,pt=0;
     for(var li=0;li<live.length;li++){var it=live[li],szt=SIZE_SETS[it.cut].filter(function(k){return it.sizes[k]>0;}).map(function(k){return k+'×'+it.sizes[k];}).join(', ');
-      for(var pj=0;pj<(it.prints||[]).length;pj++){var P0=it.prints[pj];pt++;m.textContent='Baskı dosyaları gönderiliyor… ('+pt+')';
+      for(var pj=0;pj<(it.pk||[]).length;pj++){var P0=it.pk[pj];P0.blob=await bkGet(it.sig+'|'+P0.side);if(!P0.blob){pf++;continue;}pt++;m.textContent='Baskı dosyaları gönderiliyor… ('+pt+')';
         try{var fd=new FormData();fd.append('code',rec.code);fd.append('sig',rec.up);fd.append('i',String(li+1));fd.append('side',P0.side);
           fd.append('meta',JSON.stringify(Object.assign({urun:it.label,renk:teeFull(colorNameOf(it.tee),it.tee),bedenler:szt,adet:itQty(it)},P0.meta)));fd.append('file',new File([P0.blob],'baski.png',{type:'image/png'}));
           var ur=await fetch(SB.url+'/functions/v1/baski-dosya',{method:'POST',headers:{apikey:SB.key},body:fd});if(!ur.ok)pf++;}catch(_){pf++;}}}
@@ -4825,7 +4836,7 @@ $('#coForm').addEventListener('submit',async function(e){
     m.dataset.text=txt;
     $('#coCopy').addEventListener('click',async function(){try{await navigator.clipboard.writeText(txt);toast('Sipariş kopyalandı');}catch(_){var ta=document.createElement('textarea');ta.value=txt;document.body.appendChild(ta);ta.select();try{document.execCommand('copy');toast('Sipariş kopyalandı');}catch(__){toast('Kopyalanamadı');}ta.remove();}});
   });
-});
+}
 
 document.addEventListener('contextmenu',function(e){var t=e.target;if(t&&(t.tagName==='IMG'||t.tagName==='svg'||(t.closest&&t.closest('#stage,.tpl,.atpl,.clipb,.wcard'))))e.preventDefault();});
 /* ---------- Başlangıç: örnek bir tasarımla açılır ---------- */

@@ -150,6 +150,16 @@ Deno.serve(async (req) => {
       note: s(body.note, 500) || null, special, school,
       doc_status: special ? 'bekliyor' : null,
     };
+    // Çift gönderim: aynı kişi 3 dakika içinde aynı tutarda aynı ürünlerle tekrar gönderirse yeni sipariş açılmaz, ilki döner
+    try {
+      const since = new Date(Date.now() - 180e3).toISOString();
+      const dr = await fetch(`${SB_URL}/rest/v1/orders?select=code,items&mail=eq.${encodeURIComponent(mail)}&total=eq.${total}&created_at=gte.${since}&order=created_at.desc&limit=5`, { headers: { apikey: SRK, Authorization: `Bearer ${SRK}` } });
+      if (dr.ok) {
+        const sig = JSON.stringify(items.map((x: any) => [x.n, x.q, x.t]));
+        const hit = ((await dr.json()) as any[]).find((o) => JSON.stringify((o.items || []).map((x: any) => [x.n, x.q, x.t])) === sig);
+        if (hit) return j({ ok: true, code: hit.code, total, up: await baskiSig(String(hit.code)), dup: true });
+      }
+    } catch { /* kontrol edilemezse normal devam */ }
     for (let i = 0; i < 3; i++) {
       if (doc) {
         const path = `${row.code}.${doc.ext}`;
