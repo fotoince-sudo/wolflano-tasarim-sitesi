@@ -2377,7 +2377,7 @@ window.__wfSeo=function(){var L=[{h:'ana',path:''}];
   Object.keys(SEO_SL).forEach(function(h){if(VIEWS[h])L.push({h:h,path:SEO_SL[h]});});
   CATS.forEach(function(c){var p=seoPath('kat-'+c[0]);if(p)L.push({h:'kat-'+c[0],path:p});});
   (D.cpages||[]).forEach(function(x){var p=seoPath('p-'+x.id);if(p)L.push({h:'p-'+x.id,path:p});});
-  PRODUCTS.forEach(function(P){var p=seoPath('urun-'+P.id);if(p)L.push({h:'urun-'+P.id,path:p,img:(P.imgs||[])[0]||''});});
+  PRODUCTS.forEach(function(P){var p=seoPath('urun-'+P.id),i=(P.imgs||[])[0]||'';if(p)L.push({h:'urun-'+P.id,path:p,img:i&&i.indexOf('builtin:')!==0?src(i):''});});
   return {ready:ready&&PRODUCTS.length>0,dom:((D.seo||{}).domain||'https://wolflano.com.tr').replace(/\/+$/,''),items:L};};
 function seoUpdate(){
   try{
