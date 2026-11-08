@@ -736,7 +736,7 @@ img{-webkit-touch-callout:none;-webkit-user-drag:none}
     <div class="panel" data-p="image" hidden>
       <label class="primary wide" for="fileIn" style="height:44px;cursor:pointer"><svg class="i" viewBox="0 0 24 24"><path d="M12 16V4M7 9l5-5 5 5"/><path d="M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"/></svg>Fotoğraf yükle</label>
       <input id="fileIn" type="file" accept="image/*" hidden>
-      <input id="swapIn" type="file" accept="image/*" hidden>
+      <input id="swapIn" type="file" accept="image/*" hidden><input id="slotsIn" type="file" accept="image/*" multiple hidden>
       <p class="note" id="imgNote">PNG, JPG veya WebP yükle. Net baskı için fotoğrafı büyük boyutta yükle. Fotoğrafın arkasındaki duvarı, odayı silmek için fotoğrafı seçip <b>Arka planı sil</b>'e dokun.</p>
       <div class="thumb-grid" id="upGrid"></div>
     </div>
@@ -2396,7 +2396,7 @@ function longToast(m){var t=toastEl();t.textContent=m;t.hidden=false;t.classList
 function select(id){
   view.sel=id||null;view.pop=null;view.grp=false;
   buildSel();syncCtx();syncTextInput();
-  var so=selObj();if(so&&so.phEmpty&&!so.lock&&!view.noPick){view.swapId=so.id;try{$('#swapIn').click();}catch(_){}}
+  var so=selObj();if(so&&so.phEmpty&&!so.lock&&!view.noPick){slotPick(so.id);}
 }
 function syncTextInput(){
   var o=selObj(),isT=o&&o.type==='text'&&!o.lock;
@@ -3096,9 +3096,24 @@ function phAsset(edge,asp){var key=edge+'|'+asp.toFixed(3);if(PH_CACHE[key]&&ass
   x.fillStyle='#857a6d';x.textAlign='center';x.textBaseline='middle';x.font='700 '+Math.round(Math.min(W,H)*0.085)+'px Manrope, sans-serif';x.fillText('Fotoğrafını ekle',cx,cy+s*1.35);
   var mk=false;if(isBrush(edge)&&brushOk()){c=brushApply(c,edge);mk=true;}
   var id=PH_CACHE[key]||('ph'+(++assetN));assets[id]={url:c.toDataURL('image/png'),w:W,h:H,bg:true,ph:true,mk:mk};PH_CACHE[key]=id;return id;}
+/* Şablonda boş fotoğraf yerleri: soldan sağa, yukarıdan aşağı sıralı */
+function emptySlots(){return cur().objs.filter(function(o){return o.phEmpty;}).sort(function(a,b){return Math.abs(a.y-b.y)>Math.min(a.h,b.h)*0.5?a.y-b.y:a.x-b.x;});}
+/* Boş yerlere dokununca: birden çok boş yer varsa çoklu seçim açılır, seçilen fotoğraflar sırayla kendiliğinden yerleşir */
+function slotPick(firstId){var E=emptySlots();if(!E.length)return;view.slotFirst=firstId||null;
+  if(E.length>1){try{$('#slotsIn').click();}catch(_){}}else{view.swapId=E[0].id;try{$('#swapIn').click();}catch(_){}}}
+async function fillSlots(files){var E=emptySlots(),f=view.slotFirst;view.slotFirst=null;
+  if(f){var i0=E.findIndex(function(o){return o.id===f;});if(i0>0)E=E.slice(i0).concat(E.slice(0,i0));}
+  var n=Math.min(files.length,E.length),bad=0;
+  for(var i=0;i<n;i++){bgToast('Fotoğraflar yerleştiriliyor… '+(i+1)+' / '+n);try{await fillSlot(E[i],files[i],true);}catch(_){bad++;}}
+  var t=$('#toast');if(t)t.hidden=true;view.sel=null;renderAll();
+  var left=slotEmpty();
+  if(bad)longToast(bad+' dosya açılamadı. PNG veya JPG dene.');
+  else if(left)longToast(n+' fotoğraf yerleşti. '+left+' fotoğraf yeri daha boş; dokunup ekleyebilirsin.');
+  else if(files.length>n)longToast('Fotoğraflar yerleşti. Şablonda '+E.length+' yer olduğu için fazladan seçilenler eklenmedi.');
+  else longToast('Fotoğraflar yerleşti. Yerini değiştirmek ya da kırpmak için fotoğrafa dokun.');}
 function slotEmpty(){var n=0;['front','logo','logo2','back'].forEach(function(sd){((state[sd]&&state[sd].objs)||[]).forEach(function(o){if(o.phEmpty)n++;});});return n;}
 /* Fotoğraf yerine yeni fotoğraf: yer aynı kalır, fotoğraf ortadan kırpılıp yere sığdırılır, kenar tarzı korunur */
-async function fillSlot(o,file){
+async function fillSlot(o,file,quiet){
   var url=URL.createObjectURL(file),im=await loadImg(url);
   var id='a'+(++assetN);assets[id]={url:url,w:im.naturalWidth,h:im.naturalHeight,up:true};assetList.push(id);renderUploads();
   var A=o.w/o.h,asp=im.naturalWidth/im.naturalHeight,cr={x:0,y:0,w:1,h:1};
@@ -3106,7 +3121,7 @@ async function fillSlot(o,file){
   bgToast('Fotoğraf yerleştiriliyor…');await brushReady();
   var nid=await fxProcess(id,'none',o.edge||'none',0.5,cr,0);
   o.base=id;o.crop=cr;o.phs='none';o.phe=o.edge||'none';o.phf=0.5;o.assetId=nid;delete o.phEmpty;
-  renderObjects();select(o.id);pushHist();var t=$('#toast');if(t)t.hidden=true;
+  renderObjects();select(o.id);pushHist();var t=$('#toast');if(t)t.hidden=true;if(quiet)return;
   var left=slotEmpty();if(left)longToast('Fotoğraf eklendi. Diğer fotoğraf yerine de dokun.');
   else{var q=qualityOf(o);if(q&&q.cls==='low')longToast('Fotoğraf eklendi. Biraz küçük; daha büyük bir sürümünü yüklersen daha net basılır.');else toast('Fotoğraf eklendi. Kırpmak ya da kenarı değiştirmek için fotoğrafa dokun.');}
 }
@@ -3615,7 +3630,7 @@ function applyTemplate(t,silent){
   view.sel=null;view.grp=false;renderAll();pushHist();
   if(!silent&&grpObjs().length>1){view.grp=true;buildSel();syncCtx();}
   if(!silent&&t.items.some(function(it){return it.t==='ph';})){var fs=cur().objs.filter(function(o){return o.phEmpty;})[0];
-    if(fs){view.swapId=fs.id;try{$('#swapIn').click();}catch(_){}}longToast(t.items.filter(function(it){return it.t==='ph';}).length>1?'Şablon uygulandı. Her fotoğraf yerine dokunup kendi fotoğrafını ekle.':'Şablon uygulandı. Fotoğraf yerine dokunup kendi fotoğrafını ekle.');return;}
+    var ne=emptySlots().length;if(fs)slotPick();longToast(ne>1?'Şablon uygulandı. '+ne+' fotoğraf seç; sırayla kendiliğinden yerleşir.':'Şablon uygulandı. Fotoğrafını seç, yerine kendiliğinden oturur.');return;}
   if(!silent){if(t.items.some(function(it){return it.fx&&it.fx.rs;}))longToast('Şablon uygulandı. İsim ve numarayı siparişte her kişi için ayrı yazacaksın.');else toast('Şablon uygulandı. Sol üstteki beyaz kareyle hepsini birlikte büyütebilirsin.');}
 }
 
@@ -3737,7 +3752,7 @@ function inkEnsure(o){if(!o||inkOf(o)||INKQ[o.id]||g)return;INKQ[o.id]=1;inkComp
 function inkCenter(o){var r=inkOf(o);if(!r)return {x:o.x,y:o.y};var a=o.rot*PI/180,c=Math.cos(a),s2=Math.sin(a);return {x:o.x+r.dx*c-r.dy*s2,y:o.y+r.dx*s2+r.dy*c};}
 function moveBounds(o,A){var m=Math.min(o.w,o.h)*0.45;return {l:A.l-m,r:A.r+m,t:A.t-m,b:A.b+m};}
 function slotDown(o,p){
-  if(o.phEmpty){view.swapId=o.id;try{$('#swapIn').click();}catch(_){}return;}
+  if(o.phEmpty){slotPick(o.id);return;}
   if(slotPan(o))g={kind:'pan',id:o.id,px:p.x,py:p.y,c0:JSON.parse(JSON.stringify(o.crop)),moved:false};
 }
 function startMove(id,p){
@@ -4152,6 +4167,7 @@ $('#clipCats').addEventListener('click',function(e){
 });
 $('#clipGrid').addEventListener('click',function(e){var b=e.target.closest('[data-clip]');if(b)addClip(b.dataset.clip);});
 /* Değiştir: seçili şekli/görseli (ör. şablondaki kurt logosu) kendi logon ya da fotoğrafınla aynı yerde, aynı boyutta değiştirir */
+$('#slotsIn').addEventListener('change',function(e){var fs=Array.prototype.slice.call(e.target.files||[]);e.target.value='';if(!fs.length)return;fillSlots(fs);});
 $('#swapIn').addEventListener('change',function(e){var file=e.target.files[0];e.target.value='';if(!file)return;
   var old=objById(view.swapId);if(!old){toast('Değiştirilecek parça bulunamadı');return;}
   if(old.slot){fillSlot(old,file).catch(function(){toast('Bu dosya açılamadı. PNG veya JPG dene.');});return;}
@@ -5991,7 +6007,7 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
     catch(err){toast(err&&err.msg?err.msg:(err&&(err.status===401||err.status===403||err.code==='auth')?'Oturum süresi doldu, yeniden giriş yap.':'Kaydedilemedi, tekrar dene.'));}
     ADM.busy=false;},true);
   document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('[data-adtpl]');if(!b)return;e.preventDefault();e.stopPropagation();
-    var t=ADM.tpls.filter(function(x){return x.id===b.dataset.adtpl;})[0];if(!t)return;applyDesign(t.data,false);closeTab();toast('Şablon uygulandı. Geri almak için ↶');},true);
+    var t=ADM.tpls.filter(function(x){return x.id===b.dataset.adtpl;})[0];if(!t)return;applyDesign(t.data,false);closeTab();var ne=emptySlots().length;if(ne){longToast(ne>1?'Şablon uygulandı. '+ne+' fotoğraf seç; sırayla kendiliğinden yerleşir.':'Şablon uygulandı. Fotoğrafını seç, yerine kendiliğinden oturur.');slotPick();}else toast('Şablon uygulandı. Geri almak için ↶');},true);
 
   /* ---- Başlangıç ---- */
   async function init(){
