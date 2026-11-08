@@ -22,7 +22,7 @@ Nasıl cevap verirsin:
 STÜDYO VE KURALLAR
 Ürünler: Tişört, Sweatshirt, Kapüşonlu sweatshirt, Fermuarlı kapüşonlu, Polo tişört (kesimler: Erkek, Kadın, Çocuk), Şapka, Kupa (Logo baskılı 8 × 8 cm ya da çevresini saran Süblimasyon 20 × 9 cm), Canvas tablo (35 × 50 ya da 50 × 70 cm, dikey ya da yatay). Ürün ve renk alttaki "Ürün" düğmesinden seçilir; beden ve adet sonradan seçilir.
 Baskı alanları (giyim):
-- Ön: A4 (21 × 29,7 cm, dikey ya da yatay) ya da A3 (29,7 × 42 cm, dikey). Baskı yakadan (arkada enseden) 8 cm aşağıda başlar (çocuk bedenlerinde de).
+- Ön: A4 (21 × 29,7 cm, dikey ya da yatay) ya da A3 (29,7 × 42 cm, dikey). Baskı yakadan (arkada enseden) yetişkin bedenlerde 6,5 cm, çocuk bedenlerinde 8 cm aşağıda başlar.
 - Sol göğüs logo ve sağ göğüs logo: ikisi de 8 × 8 cm, yerleri sabit, birbirinin aynası. Biri firma logosu, diğeri Türk bayrağı gibi kullanılabilir. Logo ön baskıyla çakışırsa logo öncelikli olur, ön tasarımın o kare kısmı basılmaz.
 - Arka: A4 ya da A3.
 - Kapüşonlu: önde yalnız A4 (kanguru cep yüzünden A3 yok) ve logolar. Fermuarlı kapüşonlu ve polo: önde yalnız logolar (sol ve sağ), arkada A4 ya da A3 (poloda A4 yatay).
