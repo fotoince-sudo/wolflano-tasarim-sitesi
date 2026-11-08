@@ -4,7 +4,15 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#f8fbf9">
-<title>Wolflano</title>
+<title>Wolflano · Baskılı tişört, sweatshirt, kupa ve kanvas</title>
+<meta name="description" content="Wolflano: kaliteli pamuk tişört, sweatshirt, polo, şapka, kupa ve kanvas tablo. Hazır kurt ve şehir tasarımları ya da kendi tasarımını stüdyoda yap, biz basıp kargolayalım.">
+<link rel="canonical" href="https://wolflano.com.tr/">
+<link rel="icon" href="img/wolflano-logo.png">
+<meta property="og:type" content="website"><meta property="og:site_name" content="Wolflano"><meta property="og:locale" content="tr_TR">
+<meta property="og:url" content="https://wolflano.com.tr/"><meta property="og:title" content="Wolflano · Baskılı tişört, sweatshirt, kupa ve kanvas">
+<meta property="og:description" content="Wolflano: kaliteli pamuk tişört, sweatshirt, polo, şapka, kupa ve kanvas tablo. Hazır kurt ve şehir tasarımları ya da kendi tasarımını stüdyoda yap, biz basıp kargolayalım.">
+<meta property="og:image" content="https://wolflano.com.tr/assets/wolflano-paylasim.jpg"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Cormorant+Garamond:wght@400&display=swap">
 <style>
@@ -2366,7 +2374,7 @@ function seoUpdate(){
   else if(P){title=P.name+' | Wolflano';desc=(P.desc&&P.desc.trim())||(P.name+' - premium kalite, İtalyan estetiği, Wolflano karakteri. KDV dahil '+tl(P.price)+'.');path='urun/'+slug(P.name)+'-'+P.id;}
   else{title=pg.t||'Wolflano';desc=pg.d||'';path=SL[h]!==undefined?SL[h]:h;}
   document.title=title;
-  var noidx=/^(odeme|sepet|hesabim|favoriler|yonetim)$/.test(h),url=dom?dom+'/'+path:'';
+  var noidx=/^(odeme|sepet|hesabim|favoriler|yonetim)$/.test(h),url=dom?dom+'/':''; /* site tek sayfa: /urun/... gibi yollar sunucuda yok (404), bu yüzden kanonik adres hep ana sayfa */
   seoMeta('meta[name=description]',{name:'description'},desc);
   seoMeta('meta[name=keywords]',{name:'keywords'},S.keywords||'');
   seoMeta('meta[name=robots]',{name:'robots'},noidx?'noindex,nofollow':'index,follow,max-image-preview:large');
