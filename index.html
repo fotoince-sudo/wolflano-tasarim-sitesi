@@ -3297,8 +3297,10 @@ function cIx(c){c=String(c||'').trim().toLocaleLowerCase('tr');for(var i=0;i<STD
 function cHex(c){var n=String(c||'').trim().toLocaleLowerCase('tr');for(var i=0;i<STDC.length;i++)if(STDC[i].name.toLocaleLowerCase('tr')===n)return STDC[i].hex;return RENK[n]||'';}
 function grpP(list){var by={},out=[];list.forEach(function(p){var k=dKey(p),c=String(p.color||'').trim().toLocaleLowerCase('tr');
   /* aynı renkten ikinci kopya ayrı kart kalır, tek kartta iki aynı nokta olmasın */
-  if(by[k]&&c&&!by[k].some(function(x){return String(x.color||'').trim().toLocaleLowerCase('tr')===c;})){by[k].push(p);return;}
-  if(by[k]||!c)k=k+'@'+p.id;by[k]=[p];out.push(k);});
+  var has=function(g){return g.some(function(x){return String(x.color||'').trim().toLocaleLowerCase('tr')===c;});};
+  /* Aynı tasarımın ikinci takımı (aynı renkler yeniden): dağınık tek kartlar yerine kendi renkleriyle ikinci bir kartta toplanır */
+  if(c){var kk=k,n=1;while(by[kk]&&has(by[kk])){n++;kk=k+'#'+n;}if(by[kk]){by[kk].push(p);return;}by[kk]=[p];out.push(kk);return;}
+  k=k+'@'+p.id;by[k]=[p];out.push(k);});
   return out.map(function(k){var l=by[k];if(l.length<2)return l[0];
     l=l.slice().sort(function(a,b){return cIx(a.color)-cIx(b.color);});
     var r=Object.assign({},l[0]);r._vars=l;return r;});}
