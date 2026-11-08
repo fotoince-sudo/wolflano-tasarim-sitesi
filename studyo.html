@@ -2149,7 +2149,8 @@ function updateEl(el,o){
    Ekranda canlı gösterim CSS ile (maske + kırpma); baskı ve önizleme için hareket bitince aynı kırpmayla dosya üretilir. */
 function slotPan(o){return !!(o&&o.slot&&o.base&&assets[o.base]&&!o.phEmpty&&!/^ai-/.test(o.phs||'')&&o.crop);}
 /* Kayıtlı tasarımda asıl fotoğraf yoksa: yerdeki fotoğraf temel olur (büyütüp kaydırılabilir) */
-function slotFix(o){if(o&&o.slot&&!o.phEmpty&&(!o.base||!assets[o.base]||!o.crop)&&assets[o.assetId]&&!/^ai-/.test(o.phs||'')){if(!o.base||!assets[o.base]){o.base=o.assetId;o.crop={x:0,y:0,w:1,h:1};o.phs='none';}else if(!o.crop)o.crop={x:0,y:0,w:1,h:1};}}
+function slotFix(o){if(o&&o.slot&&!o.phEmpty&&/^ai-/.test(o.phs||'')&&!o.fixing){slotRepair(o);return;}
+  if(o&&o.slot&&!o.phEmpty&&(!o.base||!assets[o.base]||!o.crop)&&assets[o.assetId]&&!/^ai-/.test(o.phs||'')){if(!o.base||!assets[o.base]){o.base=o.assetId;o.crop={x:0,y:0,w:1,h:1};o.phs='none';}else if(!o.crop)o.crop={x:0,y:0,w:1,h:1};}}
 function slotLive(o){return slotPan(o)&&isBrush(o.phe)&&!o.wout;}
 function slotRender(el,o){
   if(el.dataset.slot!==o.base+'|'+o.phe){el.dataset.slot=o.base+'|'+o.phe;el.dataset.asset='';
@@ -2159,6 +2160,15 @@ function slotRender(el,o){
   var c=o.crop,im=$('img',el);if(!im)return;
   im.style.width=(100/c.w)+'%';im.style.height=(100/c.h)+'%';im.style.left=(-c.x/c.w*100)+'%';im.style.top=(-c.y/c.h*100)+'%';
 }
+/* Eski Wolf çizimi: çizim yerin boyunu bozmuştu. Çerçevedeki pencere bulunur, yer pencereye oturtulur, çizim temel olur */
+async function slotRepair(o){o.fixing=1;try{var f=tplFrame(),fa=f&&assets[f.assetId],na=assets[o.assetId];if(!na)return;
+    if(fa&&cur().objs.indexOf(f)>cur().objs.indexOf(o)){var im=await loadImg(fa.url),W=im.naturalWidth,H=im.naturalHeight,c=document.createElement('canvas');c.width=W;c.height=H;var x=c.getContext('2d');x.drawImage(im,0,0);
+      var k=W/f.w,cx=Math.round((o.x-(f.x-f.w/2))*k),cy=Math.round((o.y-(f.y-f.h/2))*(H/f.h)),row=x.getImageData(0,cy,W,1).data,col=x.getImageData(cx,0,1,H).data,l=cx,r=cx,t=cy,b=cy;
+      if(row[cx*4+3]<60){while(l>0&&row[(l-1)*4+3]<60)l--;while(r<W-1&&row[(r+1)*4+3]<60)r++;while(t>0&&col[(t-1)*4+3]<60)t--;while(b<H-1&&col[(b+1)*4+3]<60)b++;
+        if(r-l>20&&b-t>20){var kh=H/f.h;o.w=(r-l+28)/k;o.h=(b-t+28)/kh;o.x=(f.x-f.w/2)+(l+r)/2/k;o.y=(f.y-f.h/2)+(t+b)/2/kh;}}}
+    var A=o.w/o.h,asp=na.w/na.h,cr={x:0,y:0,w:1,h:1};if(asp>A){cr.w=A/asp;cr.x=(1-cr.w)/2;}else{cr.h=asp/A;cr.y=(1-cr.h)/2;}
+    o.base=o.assetId;o.crop=cr;o.phs='none';o.aiOk=1;await slotBake(o);renderObjects();updateSel();pushHist();toast('Fotoğraf yerine oturdu. Şimdi kaydırıp büyütebilirsin.');}
+  catch(_){}finally{delete o.fixing;}}
 function slotPos(o){var el=els[o.id];if(!el)return;if(slotLive(o)){slotRender(el,o);return;}if(slotPan(o))slotPlain(el,o);}
 /* Kaydırırken canlı önizleme: asıl fotoğraf yerin içinde hareket eder; parmak kalkınca kenar ve filtre yeniden uygulanır */
 function slotPlain(el,o){var k='p|'+o.base;if(el.dataset.slot!==k){el.dataset.slot=k;el.dataset.asset='';el.innerHTML='<div style="position:absolute;inset:0;overflow:hidden;border-radius:4%"><img alt="" draggable="false" style="position:absolute;max-width:none;object-fit:fill"></div>';$('img',el).src=assets[o.base].url;}
@@ -2407,6 +2417,7 @@ function select(id){
   view.sel=id||null;view.pop=null;view.grp=false;
   buildSel();syncCtx();syncTextInput();
   var so=selObj();if(so&&so.phEmpty&&!so.lock&&!view.noPick&&!view.inDown){slotPick(so.id);}
+  if(so&&so.slot&&!so.phEmpty)slotFix(so);
 }
 function syncTextInput(){
   var o=selObj(),isT=o&&o.type==='text'&&!o.lock;
