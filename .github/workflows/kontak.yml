@@ -20,7 +20,7 @@ jobs:
           from PIL import Image, ImageDraw, ImageFont
           L = json.load(open('getir/kontak.json'))
           base = 'https://wgovwmeirlzwalelazfj.supabase.co/storage/v1/object/public/site/'
-          C, R, W = 5, 5, 300
+          C, R, W = 4, 4, 400
           font = ImageFont.truetype('/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf', 34)
           for s in range(0, len(L), C * R):
               sheet = Image.new('RGB', (C * W, R * W), 'white'); d = ImageDraw.Draw(sheet)
@@ -29,6 +29,11 @@ jobs:
                   try:
                       u = img if img.startswith('http') else base + img
                       im = Image.open(io.BytesIO(urllib.request.urlopen(u, timeout=30).read())).convert('RGB')
+                      w0, h0 = im.size
+                      if 'ortam-canvas' in img: box = (0.30, 0.10, 0.70, 0.42)
+                      elif 'tas-hq' in img: box = (0.40, 0.35, 0.98, 0.85)
+                      else: box = (0.28, 0.18, 0.72, 0.62)
+                      im = im.crop((int(box[0]*w0), int(box[1]*h0), int(box[2]*w0), int(box[3]*h0)))
                       im.thumbnail((W - 6, W - 6)); sheet.paste(im, (x + (W - im.width) // 2, y + (W - im.height) // 2))
                   except Exception as e:
                       d.text((x + 10, y + 120), 'yok', fill='red', font=font)
