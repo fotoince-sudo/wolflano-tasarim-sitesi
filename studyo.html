@@ -3531,7 +3531,7 @@ function pgExpand(l){var o=[];l.forEach(function(b){if((b.p||b.id)==='mug'&&b.v=
 function pgKey(b){return b.id||((b.p||'')+'-'+(b.cut||''));}
 function renderProdPage(){
   var nm='',sw='',h='';
-  TEES.forEach(function(t){if(t[1]===state.tee)nm=teeLabel(t[0]);sw+='<button class="csw'+(t[1]===state.tee?' on':'')+'" data-tee="'+t[1]+'" style="background:'+t[1]+'" aria-label="'+t[0]+'"></button>';});
+  teeOK().forEach(function(t){if(t[1]===state.tee)nm=teeLabel(t[0]);sw+='<button class="csw'+(t[1]===state.tee?' on':'')+'" data-tee="'+t[1]+'" style="background:'+t[1]+'" aria-label="'+t[0]+'"></button>';});
   $('#pgColors').innerHTML=sw;$('#pgColorName').textContent=nm;
   var bl=((PH.site&&PH.site.blanks)||[]).filter(function(b){return b&&b.show!==false&&PRODUCTS[b.p||b.id]&&!(b.stock!=null&&b.stock!==''&&+b.stock<=0)&&(phColors(b).length||(b.imgs&&b.imgs.length));});
   if(bl.length){
@@ -3579,7 +3579,7 @@ function openWolf(){closeTab();select(null);closeProdPage();renderWolf();$('#wol
 function closeWolf(){$('#wolfPage').hidden=true;}
 function renderWolf(){
   var sw='',nm='',h='',ink=autoInk();
-  TEES.forEach(function(t){if(t[1]===state.tee)nm=teeLabel(t[0]);sw+='<button class="csw'+(t[1]===state.tee?' on':'')+'" data-tee="'+t[1]+'" style="background:'+t[1]+'" aria-label="'+t[0]+'"></button>';});
+  teeOK().forEach(function(t){if(t[1]===state.tee)nm=teeLabel(t[0]);sw+='<button class="csw'+(t[1]===state.tee?' on':'')+'" data-tee="'+t[1]+'" style="background:'+t[1]+'" aria-label="'+t[0]+'"></button>';});
   $('#wfColors').innerHTML=sw;$('#wfColorName').textContent=nm;
   TPLS.forEach(function(t,i){if(t.c==='Wolf tasarımları'&&tplFits(t,'giyim'))h+='<button class="wcard" data-tpl="'+i+'"><div class="prev" style="background:'+state.tee+'"><div class="in"></div></div><b>'+t.n+'</b><small>A4 dikey · A4 yatay · A3</small></button>';});
   $('#wfGrid').innerHTML=h;
@@ -3948,11 +3948,14 @@ function renderTplPreviews(){
 function syncTeeUI(){if(!$('#prodPage').hidden)renderProdPage();syncOpt();if(view.tab==='opt')renderOpt();}
 /* Stüdyodan çıkmadan ürün rengi ve beden değişimi (üst satırdaki renk noktası) */
 function curSize(){var l=sizeList()||[];if(!l.length||isStd())return '';try{var z=phSize();if(z&&l.indexOf(z)>=0)return z;}catch(_){}var best='',mx=0;l.forEach(function(z){if((state.sizes[z]||0)>mx){mx=state.sizes[z];best=z;}});return best||PH.want||'';}
-function syncOpt(){var d=$('#optDot'),z=$('#optSz');if(!d)return;$('#optBtn').hidden=state.product==='canvas';d.style.background=kulpOn()?(kulpHex()||KULP[0][1]):state.tee;var cs=curSize(),cn=state.product==='mug'?(kulpOn()&&kulpHex()?kulpName()+' kulp':''):shirtName(),zt=[cn,cs].filter(Boolean).join(' · ');z.textContent=zt;z.hidden=!zt;$('#optBtn').classList.toggle('on',view.tab==='opt');try{livePrice();}catch(_){}}
+/* Yalnız belli renklerde yapılabilen ürünler (ör. süblimasyon tişört yalnız beyaz): boş üründe onlyColors işaretliyse renk seçimi onun renkleriyle sınırlı */
+function teeOK(){var b=null;try{b=phBlank(state.product,state.cut);}catch(_){}if(!b||!b.onlyColors)return TEES;var nm=phColors(b).map(function(c){return c.name;});var L=TEES.filter(function(t){return nm.indexOf(t[0])>=0;});return L.length?L:TEES;}
+function teeFix(){var L=teeOK();if(L!==TEES&&!L.some(function(t){return t[1]===state.tee;}))state.tee=L[0][1];}
+function syncOpt(){var d=$('#optDot'),z=$('#optSz');teeFix();if(!d)return;$('#optBtn').hidden=state.product==='canvas';d.style.background=kulpOn()?(kulpHex()||KULP[0][1]):state.tee;var cs=curSize(),cn=state.product==='mug'?(kulpOn()&&kulpHex()?kulpName()+' kulp':''):shirtName(),zt=[cn,cs].filter(Boolean).join(' · ');z.textContent=zt;z.hidden=!zt;$('#optBtn').classList.toggle('on',view.tab==='opt');try{livePrice();}catch(_){}}
 function renderOpt(){
   var nm='',sw='';
   if(kulpOn()){var kh=kulpHex()||KULP[0][1];KULP.forEach(function(t){if(t[1]===kh)nm=t[0];sw+='<button class="csw'+(t[1]===kh?' on':'')+'" data-kulp="'+t[1]+'" style="background:'+t[1]+'" aria-label="Kulp '+t[0]+'"></button>';});}
-  else TEES.forEach(function(t){if(t[1]===state.tee)nm=teeLabel(t[0]);sw+='<button class="csw'+(t[1]===state.tee?' on':'')+'" data-tee="'+t[1]+'" style="background:'+t[1]+'" aria-label="'+t[0]+'"></button>';});
+  else teeOK().forEach(function(t){if(t[1]===state.tee)nm=teeLabel(t[0]);sw+='<button class="csw'+(t[1]===state.tee?' on':'')+'" data-tee="'+t[1]+'" style="background:'+t[1]+'" aria-label="'+t[0]+'"></button>';});
   var ct=$('#optColT');if(ct)ct.textContent=kulpOn()?'Kulp rengi':'Ürün rengi';
   $('#optColors').innerHTML=sw;$('#optColorName').textContent=nm;
   var l=isStd()?[]:(sizeList()||[]),cz=curSize();$('#optSizeWrap').hidden=!l.length;
@@ -4080,7 +4083,7 @@ $('#pgColors').addEventListener('click',function(e){var b=e.target.closest('[dat
 $('#pgList').addEventListener('click',function(e){
   var kd=e.target.closest('[data-pgkulp]');if(kd){e.stopPropagation();PG.kulp[kd.dataset.pgkulp]=kd.dataset.kh;renderProdPage();return;}
   var d=e.target.closest('[data-pgc]');if(d){e.stopPropagation();var cd=d.closest('.pcard');if(cd){cd.dataset.pgman=1;pgShow(cd,+d.dataset.pgc,false);}else{PG.col[d.dataset.pgk]=+d.dataset.pgc;renderProdPage();}return;}
-  var b=e.target.closest('[data-p]');if(!b)return;var hx=b.dataset.hex,nb=b.dataset.b||'',bch=nb!==(state.bid||'');state.bid=nb;if(b.dataset.kulp!=null){if((state.kulp||'')!==b.dataset.kulp)bch=true;state.kulp=b.dataset.kulp;}chooseProduct(b.dataset.p,b.dataset.c);if(bch){try{phApplyColors();}catch(_){}renderAll();layout();pushHist();}
+  var b=e.target.closest('[data-p]');if(!b)return;var hx=b.dataset.hex,nb=b.dataset.b||'',bch=nb!==(state.bid||'');state.bid=nb;if(b.dataset.kulp!=null){if((state.kulp||'')!==b.dataset.kulp)bch=true;state.kulp=b.dataset.kulp;}chooseProduct(b.dataset.p,b.dataset.c);var t0=state.tee;teeFix();if(bch||t0!==state.tee){try{phApplyColors();}catch(_){}renderAll();layout();pushHist();}
   /* Seçilen kartın rengiyle açılır; ardından renk ve beden paneli açılır ki müşteri bedenini seçsin */
   if(hx&&TEES.some(function(t){return String(t[1]).toLowerCase()===hx.toLowerCase();})&&String(state.tee).toLowerCase()!==hx.toLowerCase()){teeSwap(hx);renderAll();pushHist();}
   if(!isStd()&&(sizeList()||[]).length){setTimeout(function(){openTab('opt');toast('Bedenini seç. Rengi de buradan değiştirebilirsin.');},60);}});
