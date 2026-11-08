@@ -926,7 +926,7 @@ p,li,.lead{text-wrap:pretty}
 .dd .ddl button.on{color:var(--green);font-weight:700}.dd .ddl .ok{color:var(--green)}
 .dd .ddh{font-weight:600!important;border-top:1px solid var(--line)!important}.dd .ddi button{padding-left:30px}
 .atv{max-width:560px;margin:28px auto 8px;text-align:center}.atvh{display:block;font:800 13px var(--ui,Manrope),sans-serif;letter-spacing:.16em;color:#3f8f55;margin-bottom:12px}.atv video{width:100%;aspect-ratio:4/5;border-radius:18px;background:#eef3ef;box-shadow:0 10px 30px rgba(20,24,22,.12);display:block}label.fs.onay{display:flex;gap:10px;align-items:flex-start;font-size:14px;line-height:1.45;font-weight:500}label.fs.onay input{width:22px;height:22px;flex:none;margin:1px 0 0;accent-color:var(--green)}
-.ttg{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px}.ttc{display:flex;flex-direction:column;gap:6px;background:var(--panel,#fff);border:1px solid #0001;border-radius:14px;padding:10px}.ttc img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:10px;background:#eceeec}.ttc b{font-size:14px;line-height:1.3}.ttc small{color:#6b746e;font-size:12px}
+.ttt{display:grid!important;grid-template-columns:1fr 1fr;gap:8px;overflow:visible!important}.ttt button{width:100%;padding:10px 8px!important;white-space:nowrap;justify-content:center;text-align:center}.ttg{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px}.ttc{display:flex;flex-direction:column;gap:6px;background:var(--panel,#fff);border:1px solid #0001;border-radius:14px;padding:10px}.ttc img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:10px;background:#eceeec}.ttc b{font-size:14px;line-height:1.3}.ttc small{color:#6b746e;font-size:12px}
 .ttp{display:grid;gap:3px;font-size:13px}.ttp span{display:flex;justify-content:space-between;gap:6px;font-weight:700}.ttp small{font-weight:500}.ttq{display:flex;gap:6px}.ttq input{width:72px;min-width:0;flex:1}.ttl{display:grid;gap:4px;border-bottom:1px solid #0001;padding-bottom:8px}.ttl .lk{justify-self:start;background:none;border:0;color:#c42f36;padding:0;font-size:13px}
 </style>
 
@@ -3063,10 +3063,9 @@ function toptanHTML(){var uid=ACCOUNT.user?ACCOUNT.user.id:'';if(TT.uid!==uid){T
   else if(a.status==='reddedildi')h+=ttForm(true);
   else if(!TT.ayar)h+='<p class="note">Fiyatlar yükleniyor…</p>';
   else h+='<div class="panel" style="gap:6px"><h3>Hoş geldin, '+esc(a.firma)+'</h3><p class="note" style="margin:0">Fiyatlar KDV dahildir; adet arttıkça birim fiyat düşer'+((TT.ayar.min)?', ürün başına en az '+TT.ayar.min+' adet':'')+'.</p></div>'+ttCartHTML();
-  var tabs=[['bos','Baskısız ürünler'],['bas','Baskılı ürünler'],['ozel','Firmaya özel baskı']];
-  h+='<div class="chips" style="margin:16px 0 10px;flex-wrap:wrap;overflow:visible">'+tabs.map(function(t){return '<button type="button" data-tt="tab" data-k="'+t[0]+'"'+(TT.tab===t[0]?' class="on"':'')+'>'+t[1]+'</button>';}).join('')+'</div>';
-  if(TT.tab==='ozel')h+='<div class="panel" style="max-width:560px;gap:10px"><h3>Logonuzla toplu baskı</h3><p class="note" style="margin:0">Firmanızın logosu, ekip kıyafetleri, promosyon ve etkinlik ürünleri. Tasarımı stüdyoda kendin hazırlayabilir ya da bize gönderebilirsin; adet ve ürünlere göre teklif veririz.</p><a class="btn" href="studyo.html">Stüdyoda tasarla</a><a class="btn soft" href="#iletisim">Teklif iste</a></div>';
-  else{var L=ttItems().filter(function(x){return x.g===TT.tab;});h+=L.length?'<div class="ttg">'+L.map(ttCard).join('')+'</div>':'<p class="empty">Bu grupta henüz ürün yok.</p>';}
+  var tabs=[['bos','Baskısız ürünler'],['bas','Baskılı ürünler']];
+  h+='<div class="chips ttt" style="margin:16px 0 10px">'+tabs.map(function(t){return '<button type="button" data-tt="tab" data-k="'+t[0]+'"'+(TT.tab===t[0]?' class="on"':'')+'>'+t[1]+'</button>';}).join('')+'</div>';
+  var L=ttItems().filter(function(x){return x.g===TT.tab;});h+=L.length?'<div class="ttg">'+L.map(ttCard).join('')+'</div>':'<p class="empty">Bu grupta henüz ürün yok.</p>';
   return h+'</section>';}
 document.addEventListener('submit',async function(e){if(!e.target||e.target.id!=='ttForm')return;e.preventDefault();var m=document.getElementById('ttMsg'),g=function(i){return (document.getElementById(i)||{}).value||'';};
   var f=document.getElementById('ttLevha').files[0];if(!f){m.hidden=false;m.textContent='Vergi levhasını ekle.';return;}
