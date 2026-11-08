@@ -6263,7 +6263,7 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
   }
   /* Asistan: sorular stüdyonun kurallarını bilen yardım asistanına (sunucu: yardim) gider; konuşma yalnız bu cihazda tutulur */
   /* Asistanın görseli: assets/aybuke içinde aybuke.webp/png/jpg varsa o, yoksa çizim (aybuke.svg) */
-  var AYB='assets/aybuke/aybuke.svg';['webp','png','jpg'].some(function(x){var im=new Image();im.onload=function(){AYB=im.src;};im.src='assets/aybuke/aybuke.'+x;return false;});
+  var AYB='assets/aybuke/aybuke.svg';(function(){var im=new Image();im.onload=function(){AYB=im.src;};im.src='assets/aybuke/aybuke.webp';})();
   /* Sesli: telefonun / tarayıcının kendi ses tanıması ve okuması (ücretsiz). Desteklenmeyen tarayıcıda düğmeler görünmez. */
   var SR=window.SpeechRecognition||window.webkitSpeechRecognition,TTS=!!window.speechSynthesis,micOn=false,rec=null,ttsOn=false;
   try{ttsOn=localStorage.getItem('wf_ask_tts')==='1';}catch(_){}

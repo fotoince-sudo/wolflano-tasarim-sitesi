@@ -61,6 +61,7 @@ jobs:
         run: |
           [ -f kontrol-sonuc/ozet.txt ] || echo "Robot siteyi gezemedi (çalışma hatası)." > kontrol-sonuc/ozet.txt
           if [ "${BOZUK:-1}" = "0" ]; then KONU="Wolflano site kontrolü: her şey yolunda"; GIRIS="Robot siteyi baştan sona gezdi, sorun bulmadı."; else KONU="Wolflano site kontrolü: ${BOZUK:-?} sorun bulundu"; GIRIS="Robot siteyi gezerken sorun buldu. Claude'a bu e-postayı gösterirsen düzeltir. (✓ tamam, ! uyarı, ✗ hata)"; fi
+          export KONU GIRIS
           python3 - <<'PY'
           import json,os,urllib.request
           t=os.environ.get('GIRIS','')+'\n\n'+open('kontrol-sonuc/ozet.txt',encoding='utf-8').read()

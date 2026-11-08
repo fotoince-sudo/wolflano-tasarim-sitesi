@@ -38,6 +38,7 @@ async function adim(ad, fn) {
   } catch (e) { const yeni = hatalar.splice(once); sonuc.push({ adim: ad, durum: 'hata', not: [String(e.message || e).split('\n')[0].slice(0, 220), ...yeni].join(' | ') }); }
   await shot(ad.replace(/[^a-z0-9]+/gi, '-').toLowerCase().slice(0, 30));
 }
+async function sayfaLink(re) { return await page.evaluate((s) => { const r = new RegExp(s, 'i'); const a = [...document.querySelectorAll('a[href^="#p-"]')].find((x) => r.test(x.textContent || '')); return a ? a.getAttribute('href') : ''; }, re); }
 const git = async (h) => { await page.evaluate((x) => { location.hash = x; }, h); await page.waitForTimeout(1500); };
 
 await adim('Ana sayfa', async () => { await page.goto(SITE, { waitUntil: 'domcontentloaded', timeout: 45000 }); await page.waitForTimeout(4000); const t = await page.title(); if (!/wolflano/i.test(t)) throw new Error('Başlık beklenmedik: ' + t); });
@@ -47,7 +48,7 @@ await adim('Ürün sayfası', async () => { await page.locator('article.card a.p
   if (!/^#urun-/.test(urunHash)) throw new Error('Ürün sayfası açılmadı');
   const ok = await page.evaluate(() => { const i = document.querySelector('#gal img'); return !!(i && i.complete && i.naturalWidth > 0); }); if (!ok) throw new Error('Ürün fotoğrafı görünmüyor'); return urunHash; });
 await adim('Sepete ekle (kupa)', async () => {
-  await git('#hazir'); await page.waitForSelector('article.card', { timeout: 15000 });
+  await git('#ana'); const hd = await sayfaLink('hediye'); if (!hd) throw new Error('Hediye & Dekor bağlantısı bulunamadı'); await git(hd); await page.waitForSelector('article.card', { timeout: 15000 });
   const id = await page.evaluate(() => { const c = [...document.querySelectorAll('article.card')].find((a) => /KUPA/i.test(a.innerText) && a.querySelector('[data-add]')); return c ? c.querySelector('[data-add]').dataset.add : ''; });
   if (!id) throw new Error('Sepete eklenecek kupa bulunamadı');
   await page.locator(`[data-add="${id}"]`).first().click(); await page.waitForTimeout(1500);
@@ -55,7 +56,6 @@ await adim('Sepete ekle (kupa)', async () => {
   if (/Sepetin boş/i.test(tx)) throw new Error('Ürün sepete eklenmedi'); return 'kupa sepette'; });
 await adim('Ödeme sayfası', async () => { await git('#odeme'); const tx = await page.evaluate(() => document.body.innerText); if (/Sepetin boş/i.test(tx)) throw new Error('Ödeme sayfası sepeti boş görüyor'); if (!/Ödeme/i.test(tx)) throw new Error('Ödeme sayfası açılmadı'); const n = await page.locator('input').count(); if (n < 3) throw new Error('Ödeme formu eksik (' + n + ' alan)'); });
 await adim('Baskı Atölyesi', async () => { await git('#tasarla'); await page.waitForTimeout(1500); const tx = await page.evaluate(() => document.body.innerText); if (!/Tasarla|Ürün seç/i.test(tx)) throw new Error('Atölye sayfası boş'); });
-async function sayfaLink(re) { return await page.evaluate((s) => { const r = new RegExp(s, 'i'); const a = [...document.querySelectorAll('a[href^="#p-"]')].find((x) => r.test(x.textContent || '')); return a ? a.getAttribute('href') : ''; }, re); }
 await adim('Hediye & Dekor', async () => { await git('#ana'); const h = await sayfaLink('hediye'); if (!h) throw new Error('Hediye & Dekor bağlantısı bulunamadı'); await git(h); await page.waitForTimeout(1500); const n = await page.locator('article.card').count(); if (n < 3) throw new Error('Hediye & Dekor sayfasında az ürün: ' + n); return n + ' ürün'; });
 await adim('Toptan', async () => { await git('#ana'); const h = await sayfaLink('toptan'); if (!h) throw new Error('Toptan bağlantısı bulunamadı'); await git(h); await page.waitForTimeout(2500); const n = await page.locator('.ttcat button').count(); if (n < 3) throw new Error('Toptan kategorileri görünmüyor (' + n + ')'); return n + ' kategori'; });
 await adim('Hesabım', async () => { await git('#hesabim'); const tx = await page.evaluate(() => document.body.innerText); if (!/Giriş yap|Üye ol|Hesabım/i.test(tx)) throw new Error('Hesabım sayfası açılmadı'); });
