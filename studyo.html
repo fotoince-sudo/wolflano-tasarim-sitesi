@@ -376,7 +376,7 @@ body.odak .sidebar{display:none!important}
 .tabs button.on{color:var(--accent)}
 
 #cpBody #cartSec>h3{display:none}
-#order,#prodPage,#cartPage,#checkout,#wolfPage{position:fixed;inset:0;z-index:50;background:var(--bg);display:flex;flex-direction:column;padding-top:env(safe-area-inset-top,0px)}
+#order,#prodPage,#cartPage,#wolfPage{position:fixed;inset:0;z-index:50;background:var(--bg);display:flex;flex-direction:column;padding-top:env(safe-area-inset-top,0px)}
 .o-head{display:flex;align-items:center;gap:10px;padding:10px 16px;background:var(--panel);border-bottom:1px solid var(--line)}
 .o-head h2{font:700 20px var(--disp);letter-spacing:.08em;text-transform:uppercase;margin:0}
 .o-body{flex:1;min-height:0;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:22px}
@@ -400,14 +400,6 @@ body.odak .sidebar{display:none!important}
 .btnrow{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
 .filerow{display:flex;flex-wrap:wrap;gap:8px;align-items:center;width:100%}
 .filerow b{width:44px}
-#checkout .f{display:grid;gap:6px;font:600 13px var(--ui)}
-#checkout input,#checkout textarea{font:400 16px var(--ui);color:var(--ink);background:var(--panel);border:1px solid var(--line2);border-radius:10px;padding:11px 12px;width:100%}
-#checkout .two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-#checkout .rad{display:flex;gap:10px;align-items:flex-start;border:1px solid var(--line);border-radius:12px;padding:11px;background:var(--panel);font:500 14px var(--ui)}
-#checkout .rad input{width:auto;margin-top:3px}#checkout .rad small{display:block;color:var(--muted);font-weight:400}
-#checkout .sr2{display:flex;justify-content:space-between;gap:10px;padding:5px 0;font:500 14px var(--ui)}
-#checkout .sr2.t{border-top:1px solid var(--line);margin-top:6px;padding-top:10px;font:700 18px var(--ui)}
-#checkout .msg{background:var(--panel2);border-radius:12px;padding:12px;font:500 14px/1.45 var(--ui)}
 .cl2{border:1px solid var(--line);background:var(--panel);border-radius:12px;padding:8px;display:grid;gap:8px}
 .cl2h{display:grid;grid-template-columns:56px 1fr auto;gap:10px;align-items:center}
 .cl2h img{width:56px;height:56px;object-fit:contain;background:var(--stage);border-radius:8px}
@@ -870,24 +862,7 @@ img{-webkit-touch-callout:none;-webkit-user-drag:none}
   <div class="o-foot"><div><small>Sepet toplamı</small><b id="cpTot">0 ₺</b></div><button class="primary" id="cpPay" type="button">Sepete dön</button></div>
 </div>
 
-<div id="checkout" hidden>
-  <div class="o-head"><button class="ib" id="coClose" aria-label="Geri"><svg class="i" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button><h2>Ödeme</h2></div>
-  <form id="coForm" style="display:contents">
-  <div class="o-body">
-    <section><h3>İletişim</h3><div style="display:grid;gap:10px"><label class="f" for="cAd">Ad soyad<input id="cAd" autocomplete="name" required></label><div class="two"><label class="f" for="cMail">E-posta<input id="cMail" type="email" autocomplete="email" required></label><label class="f" for="cTel">Telefon<input id="cTel" type="tel" autocomplete="tel" required></label></div></div></section>
-    <section><h3>Teslimat adresi</h3><div style="display:grid;gap:10px"><label class="f" for="cAdr">Adres<textarea id="cAdr" rows="3" autocomplete="street-address" required></textarea></label><div class="two"><label class="f" for="cIl">İl<input id="cIl" autocomplete="address-level1" required></label><label class="f" for="cIlce">İlçe<input id="cIlce" autocomplete="address-level2" required></label></div><label class="f" for="cNot">Sipariş notu (isteğe bağlı)<input id="cNot"></label></div></section>
-    <section><h3>Ödeme yöntemi</h3><div style="display:grid;gap:8px"><label class="rad" for="cY2"><input type="radio" name="cY" id="cY2" value="havale" checked><span>Havale / EFT<small>Sipariş sonrası banka bilgisi paylaşılır.</small></span></label><label class="rad" for="cY1" style="opacity:.6"><input type="radio" name="cY" id="cY1" value="kart" disabled><span>Kredi veya banka kartı · Yakında<small>Kartla ödeme sistemimiz yapım aşamasındadır, çok yakında hizmete girecektir.</small></span></label></div></section>
-    <section><h3>Okul siparişi</h3>
-      <label class="rad" for="scOn"><input type="checkbox" id="scOn"><span>Bu bir okul siparişi<small>Okul siparişlerinde her 100 adete 10 adet, ihtiyaç sahibi öğrenciler için ücretsiz eklenir.</small></span></label>
-      <div id="scWrap" hidden style="margin-top:10px;display:grid;gap:10px"><label class="f" for="scAd">Okul adı<input id="scAd" autocomplete="organization"></label><label class="f" for="scBeden">Ücretsiz ürünlerin bedenleri (isteğe bağlı)<input id="scBeden" placeholder="Örn. 5 × M, 5 × L"></label><div class="msg" id="scInfo"></div></div></section>
-    <section><h3>Özel indirim</h3><div style="display:grid;gap:8px" id="spList"></div>
-      <div id="spDocWrap" hidden style="margin-top:10px;display:grid;gap:8px"><label class="f" for="spDoc"><span id="spDocLab">Belge fotoğrafı</span><input id="spDoc" type="file" accept="image/*"></label><p class="note" style="margin:0">İndirim hemen uygulanır. Siparişin belgen kontrol edildikten sonra baskıya alınır; belge uygun değilse seninle iletişime geçeriz. Belgen yalnızca bu kontrol için kullanılır.</p></div></section>
-    <section><h3>Onaylar</h3><div style="display:grid;gap:8px"><label class="rad" for="cKvkk"><input type="checkbox" id="cKvkk" required><span><a href="index.html#kvkk" target="_blank" style="color:inherit;text-decoration:underline">KVKK Aydınlatma Metni</a>'ni okudum; iletişim bilgilerimin siparişim için kaydedilmesini onaylıyorum.</span></label><label class="rad" for="cSoz"><input type="checkbox" id="cSoz" required><span><a href="index.html#mesafeli" target="_blank" style="color:inherit;text-decoration:underline">Ön Bilgilendirme Formu ve Mesafeli Satış Sözleşmesi</a>'ni, <a href="index.html#iade" target="_blank" style="color:inherit;text-decoration:underline">Cayma ve İade Koşulları</a>'nı ve <a href="index.html#sartlar" target="_blank" style="color:inherit;text-decoration:underline">Kullanım Şartları</a>'nı okudum, kabul ediyorum.<small>Kişiye özel baskılı ürünlerde yasa gereği cayma hakkı yoktur; hatalı üretimde ücretsiz yenilenir.</small></span></label></div></section>
-    <section><h3>Sipariş özeti</h3><div id="coSum"></div><div class="msg" id="coMsg" hidden></div></section>
-  </div>
-  <div class="o-foot"><div><small>Genel toplam</small><b id="coTot">0 ₺</b></div><button class="primary" type="submit">Ödemeye geç</button></div>
-  </form>
-</div>
+
 
 <script>
 (function(){
@@ -4019,7 +3994,7 @@ function renderAll(){
 
 var toastT=0;
 /* Sipariş, ödeme veya ürün sayfası açıkken bildirim tasarım alanının arkasında kalmasın diye en üstte gösterilir. */
-function toastEl(){var top=['#order','#checkout','#prodPage','#wolfPage'].some(function(q){var e=$(q);return e&&!e.hidden;});
+function toastEl(){var top=['#order','#prodPage','#wolfPage'].some(function(q){var e=$(q);return e&&!e.hidden;});
   var t=top?$('#toastTop'):$('#toast'),o=top?$('#toast'):$('#toastTop');if(o)o.hidden=true;if(t){t.classList.remove('tap');t.style.pointerEvents='';t.onclick=null;}return t;}
 function toast(m){var t=toastEl();t.classList.remove('long');t.textContent=m;t.hidden=false;clearTimeout(toastT);toastT=setTimeout(function(){t.hidden=true;},2400);}
 
@@ -4720,35 +4695,6 @@ $('#copyAll').addEventListener('click',async function(){
   try{await navigator.clipboard.writeText(txt);toast('Sepet kopyalandı');}
   catch(_){var ta=$('#sum');ta.value=txt;ta.focus();ta.select();toast('Metin seçildi. Kopyala seçeneğine dokun.');}
 });
-/* ---------- Özel indirimler ----------
-   Süresizdir; genel kampanya veya adet indirimi olsa bile ondan SONRA ayrıca uygulanır. Bir kişi tek grup seçer (en yüksek oran ilk sırada). */
-var SPECIAL=[
-  ['sehit','Şehit yakını (birinci derece)',0.20,'Şehit yakını kimlik kartının fotoğrafı'],
-  ['gazi','Gazi veya gazi yakını (birinci derece)',0.20,'Gazi / gazi yakını kimlik kartının fotoğrafı'],
-  ['tsk','Silahlı Kuvvetler, polis, jandarma (subay, astsubay dahil)',0.10,'Kurum kimlik kartının fotoğrafı'],
-  ['yargi','Hâkim veya savcı',0.10,'Meslek kimlik kartının fotoğrafı'],
-  ['doktor','Doktor',0.10,'Hekim kimlik kartının fotoğrafı']
-];
-function spCur(){var r=document.querySelector('input[name=cS]:checked'),v=r&&r.value;for(var i=0;i<SPECIAL.length;i++){if(SPECIAL[i][0]===v)return SPECIAL[i];}return null;}
-function renderSpList(){
-  var h='<label class="rad" for="cS0"><input type="radio" name="cS" id="cS0" value="" checked><span>Yok</span></label>';
-  SPECIAL.forEach(function(x,i){h+='<label class="rad" for="cS'+(i+1)+'"><input type="radio" name="cS" id="cS'+(i+1)+'" value="'+x[0]+'"><span>'+x[1]+' <b style="color:var(--accent)">%'+Math.round(x[2]*100)+'</b></span></label>';});
-  $('#spList').innerHTML=h;
-}
-function readDoc(file){return new Promise(function(res,rej){var u=URL.createObjectURL(file),im=new Image();im.onload=function(){var k=Math.min(1,1400/Math.max(im.naturalWidth,im.naturalHeight)),c=document.createElement('canvas');c.width=Math.round(im.naturalWidth*k);c.height=Math.round(im.naturalHeight*k);c.getContext('2d').drawImage(im,0,0,c.width,c.height);URL.revokeObjectURL(u);res(c.toDataURL('image/jpeg',0.82));};im.onerror=function(){rej(new Error('img'));};im.src=u;});}
-/* Okul siparişi: her 100 adete 10 adet ücretsiz (ihtiyaç sahibi öğrenciler için) */
-var SCHOOL={per:100,free:10};
-function cartQty(){var n=0;cartItems.forEach(function(it){n+=itQty(it);});return n;}
-function schoolFree(){return $('#scOn')&&$('#scOn').checked?Math.floor(cartQty()/SCHOOL.per)*SCHOOL.free:0;}
-function syncSchool(){
-  var on=$('#scOn').checked,q=cartQty(),fr=schoolFree(),i=$('#scInfo');$('#scWrap').hidden=!on;if(!on)return;
-  i.textContent=fr?('Siparişin '+q+' adet: '+fr+' adet ihtiyaç sahibi öğrenciler için ücretsiz eklenecek.'):('Siparişin '+q+' adet. Ücretsiz ürün için en az '+SCHOOL.per+' adet gerekli ('+(SCHOOL.per-q)+' adet daha).');
-}
-$('#scOn').addEventListener('change',function(){syncSchool();renderCoSum();});
-/* Ücretsiz kargo sınırı indirimden önceki tutara bakar; özel indirim kimseyi ücretsiz kargodan etmez */
-function coTotals(){var sub=cartSub(),sp=spCur(),dsc=sp?sub*sp[2]:0,net=sub-dsc;return {sub:sub,sp:sp,dsc:dsc,net:net,sh:shipFee(sub)};}
-renderSpList();
-$('#spList').addEventListener('change',function(){var sp=spCur();$('#spDocWrap').hidden=!sp;if(sp)$('#spDocLab').textContent=sp[3];renderCoSum();});
 /* ---------- Siparişi yönetim paneline (Supabase) kaydet: indirim ve ücretsiz adet sunucuda yeniden hesaplanır ---------- */
 var SB={url:'https://wgovwmeirlzwalelazfj.supabase.co',key:'sb_publishable_PP5xFd7ga61xaDOCHeET_Q_zfMaE_4G'};
 /* Ziyaretçi sayacı (çerezsiz, kişisel veri yok) */
@@ -4762,91 +4708,12 @@ function wfStat(k){try{if(localStorage.getItem('wf_nostat')||navigator.webdriver
   k.push('v','r:'+src,'d:'+(/Mobi|Android|iPhone|iPad/i.test(u)?'mobil':'masaustu'));}}catch(_){}wfStat(k);})();
 function sbTok(){try{var x=JSON.parse(localStorage.getItem('wf_sb')||'null');return x&&x.access&&x.exp>Date.now()?x.access:null;}catch(_){return null;}}
 function telNorm(t){var d=String(t||'').replace(/\D/g,'');if(d.indexOf('90')===0&&d.length===12)d=d.slice(2);if(d.length===10&&d.charAt(0)==='5')d='0'+d;return d;}
-async function orderCreate(o){
-  try{var h={'Content-Type':'application/json',apikey:SB.key},tk=sbTok();if(tk)h.Authorization='Bearer '+tk;
-    var r=await fetch(SB.url+'/functions/v1/order-create',{method:'POST',headers:h,body:JSON.stringify(o)});var j=await r.json().catch(function(){return {};});
-    return r.ok&&j.code?j:{error:true,message:j.message||''};}catch(_){return {error:true};}
-}
-/* ---------- Ödeme ekranı ---------- */
-function renderCoSum(){
-  var live=cartItems.filter(function(it){return itQty(it)>0;});
-  var T=coTotals(),sub=T.sub,sh=T.sh,h='';
-  live.forEach(function(it){h+='<div class="sr2"><span>'+it.label+' × '+itQty(it)+'</span><span>'+fmt(itTotal(it))+'</span></div>';});
-  h+='<div class="sr2"><span>Ara toplam</span><span>'+fmt(sub)+'</span></div>';
-  var fr=schoolFree();if(fr)h+='<div class="sr2" style="color:var(--ok)"><span>Okul hediyesi: '+fr+' adet<small style="display:block;color:var(--muted)">İhtiyaç sahibi öğrenciler için</small></span><span>Ücretsiz</span></div>';
-  if(T.sp)h+='<div class="sr2" style="color:var(--ok)"><span>Özel indirim (%'+Math.round(T.sp[2]*100)+')<small style="display:block;color:var(--muted)">'+T.sp[1]+' · belge kontrolüyle</small></span><span>−'+fmt(T.dsc)+'</span></div>';
-  h+='<div class="sr2"><span>Kargo'+(SHIP.free>0&&sh>0?'<small style="display:block;color:var(--muted)">'+fmt(SHIP.free)+' ve üzeri ücretsiz, '+fmt(SHIP.free-T.sub)+' daha ekle</small>':'')+'</span><span>'+(sh?fmt(sh):'Ücretsiz')+'</span></div><div class="sr2 t"><span>Genel toplam</span><span>'+fmt(T.net+sh)+'</span></div>';
-  if(shipQuote&&shipQuote.days)h=h.replace('<div class="sr2 t">','<div class="sr2"><span>Tahmini teslimat</span><span>'+shipQuote.days+' iş günü'+(shipQuote.carrier?' · '+shipQuote.carrier:'')+'</span></div><div class="sr2 t">');
-  $('#coSum').innerHTML=h;$('#coTot').textContent=fmt(T.net+sh);
-}
-function openCheckout(){
-  var live=cartItems.filter(function(it){return itQty(it)>0;});
-  if(!live.length){toast('Önce sepete bir tasarım ekle');return;}
-  shipQuote=null;syncSchool();renderCoSum();$('#coMsg').hidden=true;
-  closeOrder();$('#checkout').hidden=false;$('#checkout .o-body').scrollTop=0;
-}
-var cqT=0;
-function askQuote(){
-  if(!CARGO.provider)return;clearTimeout(cqT);
-  cqT=setTimeout(function(){var il=$('#cIl').value.trim(),ilce=$('#cIlce').value.trim();if(!il||!ilce)return;
-    CARGO.quote({il:il,ilce:ilce,subtotal:cartSub(),items:cartItems.length}).then(function(q){shipQuote=q;renderCoSum();}).catch(function(){shipQuote=null;});},500);
-}
-$('#cIl').addEventListener('input',askQuote);$('#cIlce').addEventListener('input',askQuote);
 $('#goPay').addEventListener('click',async function(){
   var has=sidesOf().some(function(sd){return state[sd].objs.length;});
   if(has&&priceInfo().qty){var pw=issueText();if(pw)longToast(pw);}
   if(has&&priceInfo().qty&&!cartItems.some(function(x){return x.sig===designSig();}))await addToCart(true);
   goSepet();
 });
-var coFrom='order';
-$('#coClose').addEventListener('click',function(){$('#checkout').hidden=true;if(coFrom==='cart')openCartPage(cpFrom);else if(coFrom==='order')$('#order').hidden=false;});
-var CO_BUSY=false;
-$('#coForm').addEventListener('submit',async function(e){
-  e.preventDefault();if(CO_BUSY)return;CO_BUSY=true;try{await coSubmitStudio();}finally{CO_BUSY=false;}});
-var CO_DONE=0;
-async function coSubmitStudio(){
-  if(Date.now()-CO_DONE<120000){var mm=$('#coMsg');mm.hidden=false;mm.textContent='Siparişin zaten oluşturuldu. Tekrar göndermene gerek yok.';return;}
-  var m=$('#coMsg'),T=coTotals(),sh=T.sh,yo=(document.querySelector('input[name=cY]:checked')||{}).value,special=null;
-  if(T.sp){
-    var f=$('#spDoc').files[0];
-    if(!f){m.hidden=false;m.textContent='Özel indirim için '+T.sp[3].toLowerCase()+' gerekli. Fotoğrafı ekle ya da "Yok"u seç.';$('#spDoc').focus();return;}
-    var doc=null;try{doc=await readDoc(f);}catch(_){}
-    if(!doc){m.hidden=false;m.textContent='Belge fotoğrafı açılamadı. JPG veya PNG dene.';return;}
-    special={type:T.sp[0],label:T.sp[1],rate:T.sp[2],discount:Math.round(T.dsc*100)/100,document:doc,status:'Belge kontrolü bekliyor'};
-  }
-  var txt=['Ad: '+$('#cAd').value,'E-posta: '+$('#cMail').value,'Telefon: '+$('#cTel').value,'Adres: '+$('#cAdr').value+', '+$('#cIlce').value+'/'+$('#cIl').value,'Not: '+($('#cNot').value||'—'),'Ödeme: '+(yo==='havale'?'Havale / EFT':'Kart'),'',cartText()];
-  var sfr=schoolFree(),school=null;
-  if($('#scOn').checked){
-    if(!$('#scAd').value.trim()){m.hidden=false;m.textContent='Okul siparişi için okul adını yaz.';$('#scAd').focus();return;}
-    school={name:$('#scAd').value.trim(),qty:cartQty(),free:sfr,sizes:$('#scBeden').value.trim()};
-    txt.push('','OKUL SİPARİŞİ: '+school.name+' · '+school.qty+' adet'+(sfr?' · +'+sfr+' adet ÜCRETSİZ (ihtiyaç sahibi öğrenciler için)'+(school.sizes?' · Bedenler: '+school.sizes:''):''));
-  }
-  if(special)txt.push('','ÖZEL İNDİRİM: '+special.label+' %'+Math.round(special.rate*100)+' = −'+fmt(special.discount),'DURUM: BELGE KONTROLÜ BEKLİYOR (baskıdan önce belgeyi kontrol et)','İndirimli genel toplam: '+fmt(T.net+sh));
-  txt=txt.join('\n');
-  m.hidden=false;m.textContent='Hazırlanıyor…';
-  var live=cartItems.filter(function(it){return itQty(it)>0;});
-  var rec=await orderCreate({onay:{kvkk:true,sozlesme:true,at:new Date().toISOString()},ad:$('#cAd').value.trim(),mail:$('#cMail').value.trim(),tel:telNorm($('#cTel').value),adres:$('#cAdr').value.trim(),il:$('#cIl').value.trim(),ilce:$('#cIlce').value.trim(),
-    note:(('Özel baskı. '+($('#cNot').value||''))+' '+live.map(function(it){return it.lines.join(' / ');}).join(' | ')).slice(0,500),
-    items:live.map(function(it,i){var sz=SIZE_SETS[it.cut].filter(function(k){return it.sizes[k]>0;}).map(function(k){return k+'×'+it.sizes[k];}).join(', ');var o1={id:'baski-'+(i+1),n:it.label+' (özel baskı'+(sz?', '+sz:'')+')',q:itQty(it),t:Math.round(itTotal(it)*100)/100};if(it.roster)o1.r=it.roster;return o1;}),
-    ship:sh,total:T.net+sh,special:special?{type:special.type,document:special.document}:null,school:school});
-  if(rec&&rec.error&&special&&/belge/i.test(rec.message||'')){m.textContent=rec.message;return;}
-  if(rec&&rec.code)CO_DONE=Date.now();
-  if(rec&&rec.code)txt='Sipariş no: '+rec.code+'\n'+txt;
-  if(rec&&rec.code&&rec.up){m.textContent='Baskı dosyaları gönderiliyor…';var pf=0,pt=0;
-    for(var li=0;li<live.length;li++){var it=live[li],szt=SIZE_SETS[it.cut].filter(function(k){return it.sizes[k]>0;}).map(function(k){return k+'×'+it.sizes[k];}).join(', ');
-      for(var pj=0;pj<(it.pk||[]).length;pj++){var P0=it.pk[pj];P0.blob=await bkGet(it.sig+'|'+P0.side);if(!P0.blob){pf++;continue;}pt++;m.textContent='Baskı dosyaları gönderiliyor… ('+pt+')';
-        try{var fd=new FormData();fd.append('code',rec.code);fd.append('sig',rec.up);fd.append('i',String(li+1));fd.append('side',P0.side);
-          fd.append('meta',JSON.stringify(Object.assign({urun:it.label,renk:teeFull(colorNameOf(it.tee),it.tee),bedenler:szt,adet:itQty(it)},P0.meta)));fd.append('file',new File([P0.blob],'baski.png',{type:'image/png'}));
-          var ur=await fetch(SB.url+'/functions/v1/baski-dosya',{method:'POST',headers:{apikey:SB.key},body:fd});if(!ur.ok)pf++;}catch(_){pf++;}}}
-    if(pf)txt+='\n\nNOT: '+pf+' baskı dosyası gönderilemedi; Wolflano seninle iletişime geçecek.';}
-  PAYMENT.pay({code:rec&&rec.code,total:T.net+sh,subtotal:T.sub,special:special,school:school,shipping:{fee:sh,carrier:CARGO.provider,quote:shipQuote,il:$('#cIl').value,ilce:$('#cIlce').value},method:yo,text:txt}).then(function(r){
-    if(r&&r.ok&&r.url){location.href=r.url;return;}
-    m.innerHTML='Kartla ödeme sistemimiz yapım aşamasındadır, çok yakında hizmete girecektir. Siparişin hazır, kopyalayıp Wolflano ile paylaşabilirsin.<div style="margin-top:10px"><button type="button" class="ghost" id="coCopy">Siparişi kopyala</button></div>';
-    m.dataset.text=txt;
-    $('#coCopy').addEventListener('click',async function(){try{await navigator.clipboard.writeText(txt);toast('Sipariş kopyalandı');}catch(_){var ta=document.createElement('textarea');ta.value=txt;document.body.appendChild(ta);ta.select();try{document.execCommand('copy');toast('Sipariş kopyalandı');}catch(__){toast('Kopyalanamadı');}ta.remove();}});
-  });
-}
-
 document.addEventListener('contextmenu',function(e){var t=e.target;if(t&&(t.tagName==='IMG'||t.tagName==='svg'||(t.closest&&t.closest('#stage,.tpl,.atpl,.clipb,.wcard'))))e.preventDefault();});
 /* ---------- Başlangıç: örnek bir tasarımla açılır ---------- */
 buildPanels();
