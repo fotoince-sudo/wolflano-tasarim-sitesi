@@ -2494,9 +2494,9 @@ function zemUrl(k,th){return 'assets/zemin/'+k+(th?'-k':'')+'.jpg';}
 function tplFrame(){var L=cur().objs;if(!L.some(function(o){return o.slot;}))return null;return L.filter(function(o){return o.type==='image'&&o.lock&&o.thru;})[0]||null;}
 /* Mankenler (yönetici): sunucudaki manken fotoğrafları; şablon önizlemesi ve ürün görseli doldurmak için */
 var MK=null;
-async function renderMk(){var g=$('#mkGrid');if(!g||!document.body.classList.contains('wfadm')||MK)return;MK=[];
-  try{var tk=sbTok();var r=await fetch(SB.url+'/storage/v1/object/list/site',{method:'POST',headers:{'Content-Type':'application/json',apikey:SB.key,Authorization:'Bearer '+(tk||SB.key)},body:JSON.stringify({prefix:'img',search:'manken-',limit:300,sortBy:{column:'name',order:'asc'}})});
-    var j=r.ok?await r.json():[];MK=j.filter(function(x){return /^manken-/.test(x.name);}).map(function(x){return SB.url+'/storage/v1/object/public/site/img/'+x.name;});}catch(_){MK=[];}
+async function renderMk(){var g=$('#mkGrid');if(!g||MK)return;MK=[];
+  try{var r=await fetch(SB.url+'/rest/v1/rpc/wf_mankenler',{method:'POST',headers:{'Content-Type':'application/json',apikey:SB.key},body:'{}'});
+    var j=r.ok?await r.json():[];MK=(j||[]).map(function(x){var n=typeof x==='string'?x:(x.wf_mankenler||'');return SB.url+'/storage/v1/object/public/site/'+n;}).filter(function(u){return /manken-/.test(u);});}catch(_){MK=[];}
   g.innerHTML=MK.length?MK.map(function(u){return '<button data-mk="'+u+'" aria-label="Manken"><img alt="" loading="lazy" src="'+u+'"></button>';}).join(''):'<p class="note">Manken fotoğrafı bulunamadı.</p>';}
 async function mkPick(u){try{var so=selObj(),tg=so&&so.slot?so:emptySlots()[0];
     if(tg){bgToast('Manken yerleştiriliyor…');var bl=await (await fetch(u)).blob();await fillSlot(tg,new File([bl],'manken.jpg',{type:bl.type||'image/jpeg'}));return;}
@@ -3956,6 +3956,7 @@ wrap.addEventListener('contextmenu',function(e){e.preventDefault();});
 
 /* ---------- Sekmeler ve paneller ---------- */
 function openTab(name,focusInput){
+  if(name==='image'){try{renderMk();renderZem();}catch(_){}}
   if(document.body.classList.contains('odak'))odakSet(false);
   if(name==='tee'){openProdPage();return;}
   if(view.tab===name&&!focusInput){closeTab();return;}
