@@ -47,3 +47,8 @@ jobs:
             "https://static-159-253-45-63.sunucuhub.com:8443/modules/git/public/web-hook.php?uuid=3b8aaa1b-6ef8-9e45-f026-c2b39e444f9a" \
             -H "Content-Type: application/json" -H "X-GitHub-Event: push" \
             -d '{"ref":"refs/heads/yayin"}' || true
+      - name: Arama motorlarına haber ver (IndexNow, Bing ve Yandex)
+        run: |
+          sleep 90
+          curl -sS -X POST "https://api.indexnow.org/indexnow" -H "Content-Type: application/json; charset=utf-8" \
+            -d '{"host":"wolflano.com.tr","key":"60862039232c2d46f8f91e2dea87bbe1","keyLocation":"https://wolflano.com.tr/60862039232c2d46f8f91e2dea87bbe1.txt","urlList":["https://wolflano.com.tr/","https://wolflano.com.tr/studyo.html"]}' -o /dev/null -w "IndexNow %{http_code}\n" || true
