@@ -926,6 +926,8 @@ p,li,.lead{text-wrap:pretty}
 .dd .ddl button.on{color:var(--green);font-weight:700}.dd .ddl .ok{color:var(--green)}
 .dd .ddh{font-weight:600!important;border-top:1px solid var(--line)!important}.dd .ddi button{padding-left:30px}
 .atv{max-width:560px;margin:28px auto 8px;text-align:center}.atvh{display:block;font:800 13px var(--ui,Manrope),sans-serif;letter-spacing:.16em;color:#3f8f55;margin-bottom:12px}.atv video{width:100%;aspect-ratio:4/5;border-radius:18px;background:#eef3ef;box-shadow:0 10px 30px rgba(20,24,22,.12);display:block}label.fs.onay{display:flex;gap:10px;align-items:flex-start;font-size:14px;line-height:1.45;font-weight:500}label.fs.onay input{width:22px;height:22px;flex:none;margin:1px 0 0;accent-color:var(--green)}
+.ttg{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px}.ttc{display:flex;flex-direction:column;gap:6px;background:var(--panel,#fff);border:1px solid #0001;border-radius:14px;padding:10px}.ttc img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:10px;background:#eceeec}.ttc b{font-size:14px;line-height:1.3}.ttc small{color:#6b746e;font-size:12px}
+.ttp{display:grid;gap:3px;font-size:13px}.ttp span{display:flex;justify-content:space-between;gap:6px;font-weight:700}.ttp small{font-weight:500}.ttq{display:flex;gap:6px}.ttq input{width:72px;min-width:0;flex:1}.ttl{display:grid;gap:4px;border-bottom:1px solid #0001;padding-bottom:8px}.ttl .lk{justify-self:start;background:none;border:0;color:#c42f36;padding:0;font-size:13px}
 </style>
 
 <header class="top"><div class="wrap">
@@ -1276,7 +1278,7 @@ function crmOk(){return !!(ACCOUNT.user&&String(ACCOUNT.user.email||'').toLowerC
 async function crmLoad(){
   if(C.busy)return;C.busy=true;C.err='';
   try{var tk=await sbToken();if(!tk){C.err='Giriş gerekli.';C.orders=[];C.cust=[];C.notes=[];}
-   else{var rs=await Promise.all([sbReq('/rest/v1/orders?select=*&order=created_at.desc&limit=200',{token:tk}),sbReq('/rest/v1/crm_customers?select=*&order=last_order_at.desc.nullslast&limit=500',{token:tk}),sbReq('/rest/v1/crm_notes?select=*&order=created_at.desc&limit=500',{token:tk}),sbReq('/rest/v1/carts?select=*&order=updated_at.desc&limit=300',{token:tk})]);C.carts=rs[3]&&rs[3].ok&&Array.isArray(rs[3].j)?rs[3].j:[];
+   else{var rs=await Promise.all([sbReq('/rest/v1/orders?select=*&order=created_at.desc&limit=200',{token:tk}),sbReq('/rest/v1/crm_customers?select=*&order=last_order_at.desc.nullslast&limit=500',{token:tk}),sbReq('/rest/v1/crm_notes?select=*&order=created_at.desc&limit=500',{token:tk}),sbReq('/rest/v1/carts?select=*&order=updated_at.desc&limit=300',{token:tk}),sbReq('/rest/v1/toptan_basvuru?select=*&order=created_at.desc&limit=300',{token:tk}),sbReq('/rest/v1/toptan_ayar?select=data&id=eq.main',{token:tk})]);C.tb=rs[4]&&rs[4].ok&&Array.isArray(rs[4].j)?rs[4].j:[];C.tay=rs[5]&&rs[5].ok&&rs[5].j[0]?rs[5].j[0].data:{tiers:[[50,25],[100,30],[250,35]],min:50,blanks:true,products:true,hide:[]};C.carts=rs[3]&&rs[3].ok&&Array.isArray(rs[3].j)?rs[3].j:[];
      if(!rs[0].ok||!rs[1].ok||!rs[2].ok){C.err='Veriler okunamadı.';}
      C.orders=Array.isArray(rs[0].j)?rs[0].j:[];C.cust=Array.isArray(rs[1].j)?rs[1].j:[];C.notes=Array.isArray(rs[2].j)?rs[2].j:[];}}
   catch(_){C.err='Bağlantı kurulamadı.';C.orders=C.orders||[];C.cust=C.cust||[];C.notes=C.notes||[];}
@@ -1390,9 +1392,40 @@ function crmSpecial(o){
     (o.doc_status==='reddedildi'?'<span class="note" style="margin:0">Müşteriyi arayıp indirimsiz tutarı ya da yeni belgeyi konuş.</span>':'')+'</div>';}
   return h;
 }
+/* Toptan: firma başvuruları (vergi levhası ile) ve toptan fiyat ayarları. Onaylanan firma, sitedeki Toptan sayfasında kademeli fiyatları görür. */
+function toptanAdmin(){var L=C.tb||[],f=C.tf||'bekliyor',ay=C.tay||{},tr=(ay.tiers||[]).concat([[0,0],[0,0],[0,0]]).slice(0,3);
+  var cnt=function(st){return L.filter(function(x){return x.status===st;}).length;};
+  var h='<div class="crmf">'+[['bekliyor','Bekleyen'],['onaylandı','Onaylı'],['reddedildi','Reddedilen']].map(function(x){return '<button type="button" data-crm="tf" data-v="'+x[0]+'"'+(f===x[0]?' class="on"':'')+'>'+x[1]+' ('+cnt(x[0])+')</button>';}).join('')+'</div>';
+  var list=L.filter(function(x){return x.status===f;});
+  h+=list.length?list.map(function(x){return '<div class="panel crmc"><div class="crmh"><b>'+esc(x.firma)+'</b><span class="crmseg">'+esc(x.status)+'</span></div>'+
+    '<span class="note" style="margin:0">VKN '+esc(x.vkn)+' · '+esc(x.vergi_dairesi)+' VD'+(x.faaliyet?' · '+esc(x.faaliyet):'')+'</span>'+
+    '<span class="note" style="margin:0">'+esc(x.yetkili)+' · <a class="lk" href="tel:'+esc(x.tel)+'">'+esc(x.tel)+'</a> · '+esc(x.mail)+'</span><span class="note" style="margin:0">'+esc(x.il)+' · '+esc(x.adres)+'</span>'+(x.notu?'<span class="note" style="margin:0">Not: '+esc(x.notu)+'</span>':'')+
+    '<span class="note" style="margin:0">Başvuru '+new Date(x.created_at).toLocaleString('tr-TR')+'</span><div style="display:flex;gap:8px;flex-wrap:wrap">'+
+    (x.levha_path?'<button type="button" class="btn soft sm" data-crm="doc" data-v="'+esc(x.levha_path)+'">Vergi levhasını aç</button>':'')+
+    '<a class="btn soft sm" target="_blank" rel="noopener" href="https://ivd.gib.gov.tr/">GİB\'de sorgula</a>'+
+    (x.status!=='onaylandı'?'<button type="button" class="btn sm" data-crm="tok" data-v="'+esc(x.user_id)+'">Onayla</button>':'')+
+    (x.status!=='reddedildi'?'<button type="button" class="btn soft sm" data-crm="tno" data-v="'+esc(x.user_id)+'">'+(x.status==='onaylandı'?'Onayı kaldır':'Reddet')+'</button>':'')+
+    '<button type="button" class="btn soft sm" data-crm="mail" data-v="'+esc(x.mail)+'" data-n="'+esc(x.yetkili||x.firma)+'">✉ E-posta</button></div></div>';}).join(''):'<p class="note">Bu durumda başvuru yok.</p>';
+  h+='<div class="panel crmc" style="gap:10px"><b>Toptan fiyat ayarları</b><p class="note" style="margin:0">Toptan fiyat = sitedeki perakende fiyattan indirim. Adet arttıkça indirim büyür.</p>'+
+    tr.map(function(t,i){return '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><label>'+(i+1)+'. kademe, en az adet<input type="number" inputmode="numeric" id="tyA'+i+'" value="'+(t[0]||'')+'"></label><label>İndirim %<input type="number" inputmode="numeric" id="tyP'+i+'" value="'+(t[1]||'')+'"></label></div>';}).join('')+
+    '<label>Ürün başına en az sipariş adedi<input type="number" inputmode="numeric" id="tyMin" value="'+(+ay.min||0)+'"></label>'+
+    '<label class="fs onay"><input type="checkbox" id="tyB"'+(ay.blanks!==false?' checked':'')+'> <span>Baskısız ürünleri göster</span></label><label class="fs onay"><input type="checkbox" id="tyP"'+(ay.products!==false?' checked':'')+'> <span>Baskılı hazır ürünleri göster</span></label>'+
+    '<button type="button" class="btn" data-crm="tsave">Ayarları kaydet</button></div>';
+  return h;}
+document.addEventListener('click',async function(e){var b=e.target.closest&&e.target.closest('[data-crm]');if(!b)return;var a=b.dataset.crm,v=b.dataset.v;
+  if(a==='tf'){C.tf=v;crmRender();return;}
+  if(a!=='tok'&&a!=='tno'&&a!=='tsave')return;var tk=await sbToken();if(!tk)return;
+  if(a==='tsave'){var g=function(i){return Math.max(0,Math.round(+((document.getElementById(i)||{}).value)||0));};var tiers=[0,1,2].map(function(i){return [g('tyA'+i),Math.min(90,g('tyP'+i))];}).filter(function(t){return t[0]>0&&t[1]>0;}).sort(function(x,y){return x[0]-y[0];});
+    if(!tiers.length){toast('En az bir kademe gir');return;}var d=Object.assign({},C.tay||{},{tiers:tiers,min:g('tyMin'),blanks:document.getElementById('tyB').checked,products:document.getElementById('tyP').checked});
+    var r=await sbReq('/rest/v1/toptan_ayar?id=eq.main',{token:tk,method:'PATCH',body:{data:d},prefer:'return=minimal'});if(r.ok){C.tay=d;toast('Kaydedildi');crmRender();}else toast('Kaydedilemedi');return;}
+  var st=a==='tok'?'onaylandı':'reddedildi',x=(C.tb||[]).filter(function(y){return y.user_id===v;})[0];
+  var r2=await sbReq('/rest/v1/toptan_basvuru?user_id=eq.'+encodeURIComponent(v),{token:tk,method:'PATCH',body:{status:st,decided_at:new Date().toISOString()},prefer:'return=minimal'});
+  if(!r2.ok){toast('Kaydedilemedi');return;}if(x){x.status=st;x.decided_at=new Date().toISOString();}crmRender();
+  toast(st==='onaylandı'?'Onaylandı':'Güncellendi');
+  if(x&&st==='onaylandı')mailCompose(x.mail,x.yetkili||x.firma);});
 function crmHTML(){
-  var bsn=(C.carts||[]).filter(function(c){return c.status==='bekliyor';}).length;
-  var tabs=[['sip','Siparişler'],['mus','Müşteriler'],['sep','Bekleyen sepetler'+(bsn?' ('+bsn+')':'')],['tas','Tasarımlar']].map(function(x){return '<button type="button" data-crm="tab" data-v="'+x[0]+'"'+(C.tab===x[0]?' class="on"':'')+'>'+x[1]+'</button>';}).join('');
+  var bsn=(C.carts||[]).filter(function(c){return c.status==='bekliyor';}).length,tbn=(C.tb||[]).filter(function(c){return c.status==='bekliyor';}).length;
+  var tabs=[['sip','Siparişler'],['mus','Müşteriler'],['sep','Bekleyen sepetler'+(bsn?' ('+bsn+')':'')],['top','Toptan'+(tbn?' ('+tbn+')':'')],['tas','Tasarımlar']].map(function(x){return '<button type="button" data-crm="tab" data-v="'+x[0]+'"'+(C.tab===x[0]?' class="on"':'')+'>'+x[1]+'</button>';}).join('');
   var h='<div class="wrap page crm"><p class="eyebrow">Wolflano</p><h1 class="h2">Yönetim</h1><div class="crmtabs">'+tabs+'<span class="crmsp"></span><button type="button" class="btn sm" data-crm="mail">✉ Yeni e-posta</button><button type="button" class="btn soft sm" data-crm="reload" aria-label="Yenile">↻</button></div>';
   if(C.err)h+='<p class="msg">'+esc(C.err)+'</p>';
   if(C.tab==='sip'){
@@ -1411,6 +1444,7 @@ function crmHTML(){
        (list.length?list.map(function(c){return '<button type="button" class="panel crmc crmrow" data-crm="sel" data-v="'+esc(c.email)+'"><div class="crmh"><b>'+esc(c.ad||c.email)+'</b><span class="crmseg">'+esc(c.segment)+'</span></div><span class="note" style="margin:0">'+esc(c.email)+' · '+esc(c.tel||'')+' · '+esc(c.il||'')+'</span><span class="note" style="margin:0">'+c.order_count+' sipariş · '+tl(c.total_spent)+(c.last_order_at?' · son: '+crmDate(c.last_order_at):'')+'</span></button>';}).join(''):'<p class="note">Müşteri bulunamadı. Siparişler geldikçe burada otomatik oluşur.</p>');
     }
   }else if(C.tab==='sep'){h+=cartsAdmin();
+  }else if(C.tab==='top'){h+=toptanAdmin();
   }else{h+=dsAdmin();}
   return h+'</div>';
 }
@@ -1451,7 +1485,7 @@ document.addEventListener('click',async function(e){
   if(a==='tab'){C.tab=v;C.sel=null;crmRender();}
   else if(a==='filt'){C.filt=v||'';crmRender();}
   else if(a==='doc'){var w=window.open('','_blank');var tkd=await sbToken();if(!tkd){if(w)w.close();return;}
-    var sr=await fetch(SB.url+'/storage/v1/object/sign/belgeler/'+encodeURIComponent(v),{method:'POST',headers:{apikey:SB.key,Authorization:'Bearer '+tkd,'Content-Type':'application/json'},body:JSON.stringify({expiresIn:600})}).then(function(x){return x.json();}).catch(function(){return {};});
+    var sr=await fetch(SB.url+'/storage/v1/object/sign/belgeler/'+String(v).split('/').map(encodeURIComponent).join('/'),{method:'POST',headers:{apikey:SB.key,Authorization:'Bearer '+tkd,'Content-Type':'application/json'},body:JSON.stringify({expiresIn:600})}).then(function(x){return x.json();}).catch(function(){return {};});
     var su=sr&&(sr.signedURL||sr.signedUrl);if(su){var full=SB.url+'/storage/v1'+su;if(w)w.location.href=full;else location.href=full;}else{if(w)w.close();toast('Belge açılamadı');}}
   else if(a==='files'){crmFilesLoad(v);}
   else if(a==='cf'){C.cf=v;crmRender();}
@@ -2986,7 +3020,74 @@ function acDo(img){var u=img.currentSrc||img.src;if(img.dataset.acd||!acNeed(u))
     o.toBlob(function(bl){if(!bl){ACM[u]='-';return;}ACM[u]=URL.createObjectURL(bl);document.querySelectorAll('img').forEach(function(z){if((z.currentSrc||z.src)===u)z.src=ACM[u];});},'image/jpeg',.9);}catch(_){ACM[u]='-';}};
   im.onerror=function(){ACM[u]='-';};im.src=u+(u.indexOf('?')<0?'?':'&')+'ac=1';}
 document.addEventListener('load',function(e){var t=e.target;if(t&&t.tagName==='IMG')acDo(t);},true);
-function cpHTML(x){var im=(x.imgs||[])[0],hg=/hediye|dekor/i.test(x.title||'')?hdGrid():'';var bn=!hg&&x.ban&&x.ban.on?pageBan('sayfa',Object.assign({title:x.title,eyebrow:x.eyebrow},x.ban,{show:true})):'';return '<div class="wrap page cpg">'+(hg?hdHead():(x.eyebrow?'<p class="eyebrow">'+esc(x.eyebrow)+'</p>':'')+'<h1 class="h2">'+esc(x.title||'')+'</h1>')+bn+(hg||(im?'<img class="cpim" src="'+src(im)+'" alt="'+esc(x.title||'')+'">':''))+cpBody(x.body)+'</div>';}
+/* ===== WOLFLANO TOPTAN =====
+   Vergi levhalı firmalar üye olup başvurur (sunucu: toptan-basvuru), yönetici onaylayınca toptan fiyatlar açılır.
+   Toptan fiyat = sitedeki perakende fiyat × (1 − kademe indirimi); kademeler ve en az adet yönetimden (toptan_ayar, yalnız onaylı firma ve yönetici okur).
+   Toptan sepet bu cihazda tutulur (wf_toptan); "Sipariş talebi gönder" siparişi TOPTAN notuyla yönetime düşürür. */
+var TT={ap:undefined,ayar:null,tab:'bos',busy:false,msg:''};
+function ttCart(){try{return JSON.parse(localStorage.getItem('wf_toptan')||'{}')||{};}catch(_){return {};}}
+function ttSave(c){try{localStorage.setItem('wf_toptan',JSON.stringify(c));}catch(_){}}
+async function ttLoad(){if(TT.busy)return;TT.busy=true;try{var tk=await sbToken();if(!tk||!ACCOUNT.user){TT.ap=null;}else{
+  var r=await sbReq('/rest/v1/toptan_basvuru?select=*&user_id=eq.'+ACCOUNT.user.id,{token:tk});TT.ap=r.ok&&r.j[0]?r.j[0]:null;
+  if(TT.ap&&TT.ap.status==='onaylandı'){var a=await sbReq('/rest/v1/toptan_ayar?select=data&id=eq.main',{token:tk});TT.ayar=a.ok&&a.j[0]?a.j[0].data:null;}}}catch(_){TT.ap=null;}
+  TT.busy=false;if(/toptan/i.test(cur)||/^p-/.test(cur)){var y=window.scrollY;route();window.scrollTo(0,y);}}
+function ttOk(){return !!(TT.ap&&TT.ap.status==='onaylandı'&&TT.ayar);}
+function ttTiers(){return ((TT.ayar&&TT.ayar.tiers)||[]).filter(function(t){return +t[0]>0;}).sort(function(a,b){return a[0]-b[0];});}
+function ttUnit(retail,q){var p=0;ttTiers().forEach(function(t){if(q>=+t[0])p=+t[1];});if(!p&&ttTiers()[0])p=+ttTiers()[0][1];return Math.round(retail*(1-p/100)*100)/100;}
+function ttItems(){var ay=TT.ayar||{},hide=ay.hide||[],L=[];
+  if(ay.blanks!==false)BLANKS.forEach(function(b){if(hide.indexOf('b:'+b.id)>=0)return;var c=(b.colors||[])[0]||{};L.push({k:'b:'+b.id,g:'bos',n:b.name||'Ürün',img:c.front||(b.imgs||[])[0]||'',price:+b.price||0,cols:(b.colors||[]).length});});
+  if(ay.products!==false){var seen={};ALLP.forEach(function(p){if(p.show===false||hide.indexOf('p:'+p.name)>=0)return;var k=p.name;if(seen[k]){seen[k].cols++;return;}seen[k]={k:'p:'+p.name,g:'bas',n:p.name,img:(p.imgs||[])[0]||'',price:+p.price||0,cols:1,pid:p.id};L.push(seen[k]);});}
+  return L;}
+function ttCard(it){var ok=ttOk(),c=ttCart()[it.k],q=c?c.q:0,tiers=ttTiers();
+  return '<div class="ttc"><img src="'+esc(src(it.img))+'" alt="" loading="lazy"><b>'+esc(it.n)+'</b>'+(it.cols>1?'<small>'+it.cols+' renk</small>':'')+
+    (ok?'<div class="ttp">'+tiers.map(function(t){return '<span><small>'+t[0]+'+ adet</small>'+tl(ttUnit(it.price,+t[0]))+'</span>';}).join('')+'</div><div class="ttq"><input type="number" min="0" step="10" inputmode="numeric" value="'+(q||'')+'" placeholder="Adet" data-ttq="'+esc(it.k)+'" aria-label="Adet"><button type="button" class="btn sm" data-tt="add" data-k="'+esc(it.k)+'">'+(q?'Güncelle':'Sepete ekle')+'</button></div>':'<p class="note" style="margin:6px 0 0">Toptan fiyat onaylı firmalara açık</p>')+'</div>';}
+function ttForm(re){var a=TT.ap||{},v=function(k){return esc(a[k]||'');};
+  return '<form class="panel" id="ttForm" style="max-width:560px;gap:12px"><h3>Firma başvurusu</h3><p class="note" style="margin:0">Toptan satış yalnız <b>vergi levhalı firmalara</b> açıktır. Başvurun onaylanınca toptan fiyatlar bu sayfada görünür.</p>'+(re?'<p class="msg">Önceki başvurun onaylanmadı. Bilgileri kontrol edip yeniden gönderebilirsin.</p>':'')+
+   '<label>Firma unvanı (vergi levhasındaki gibi)<input id="ttFirma" required value="'+v('firma')+'"></label><div style="display:grid;grid-template-columns:1fr 1fr;gap:10px"><label>Vergi no<input id="ttVkn" inputmode="numeric" maxlength="11" required value="'+v('vkn')+'"></label><label>Vergi dairesi<input id="ttVd" required value="'+v('vergi_dairesi')+'"></label></div>'+
+   '<label>Faaliyet alanı<input id="ttFa" placeholder="ör. baskı atölyesi, butik, hediyelik eşya" value="'+v('faaliyet')+'"></label><div style="display:grid;grid-template-columns:1fr 1fr;gap:10px"><label>Yetkili ad soyad<input id="ttYet" required value="'+v('yetkili')+'"></label><label>Cep telefonu<input id="ttTel" type="tel" inputmode="tel" placeholder="05xx xxx xx xx" required value="'+v('tel')+'"></label></div>'+
+   '<label>İl<input id="ttIl" required value="'+v('il')+'"></label><label>Firma adresi (fatura ve teslimat)<textarea id="ttAdr" required>'+v('adres')+'</textarea></label>'+
+   '<label>Vergi levhası (fotoğraf ya da PDF)<input id="ttLevha" type="file" accept="image/*,application/pdf" required></label><label>Not (isteğe bağlı)<input id="ttNot" value="'+v('notu')+'"></label>'+
+   '<label class="fs onay" for="ttKvkk"><input type="checkbox" id="ttKvkk" required> <span><a href="#kvkk" target="_blank" class="lk">KVKK Aydınlatma Metni</a>\'ni okudum; firma ve yetkili bilgilerimin toptan satış için işlenmesini onaylıyorum.</span></label>'+
+   '<p class="msg" id="ttMsg" hidden></p><button class="btn" type="submit">Başvuruyu gönder</button></form>';}
+function ttCartHTML(){var c=ttCart(),ks=Object.keys(c).filter(function(k){return c[k]&&c[k].q>0;});if(!ks.length)return '';var L=ttItems(),min=+((TT.ayar||{}).min)||0,tot=0;
+  var rows=ks.map(function(k){var it=L.filter(function(x){return x.k===k;})[0];if(!it)return '';var q=c[k].q,u=ttUnit(it.price,q),t=u*q;tot+=t;
+    return '<div class="ttl"><div class="sumr"><span><b>'+esc(it.n)+'</b> × '+q+(min&&q<min?' <em style="color:#c42f36">(en az '+min+' adet)</em>':'')+'</span><span>'+tl(t)+'</span></div><small class="note">Birim '+tl(u)+'</small><input data-ttn="'+esc(k)+'" placeholder="Renk ve beden dağılımı (ör. Beyaz: 20 M, 20 L · Siyah: 10 XL)" value="'+esc(c[k].not||'')+'"><button type="button" class="lk" data-tt="del" data-k="'+esc(k)+'">Kaldır</button></div>';}).join('');
+  var bad=ks.some(function(k){return min&&c[k].q<min;});
+  return '<div class="panel" id="ttSep" style="gap:10px"><h3>Toptan sepet</h3>'+rows+'<div class="sumr t"><span>Ara toplam (KDV dahil, kargo hariç)</span><span>'+tl(tot)+'</span></div><label>Sipariş notu<input id="ttON" placeholder="Teslim tarihi, baskı isteği vb."></label><p class="msg" id="ttSM" hidden></p><button type="button" class="btn" data-tt="send"'+(bad?' disabled':'')+'>Sipariş talebi gönder</button><p class="note" style="margin:0">Talebin bize ulaşır; stok ve teslim tarihini teyit edip faturalı siparişi seninle kesinleştiririz.</p></div>';}
+function toptanHTML(){var uid=ACCOUNT.user?ACCOUNT.user.id:'';if(TT.uid!==uid){TT.uid=uid;TT.ap=undefined;TT.ayar=null;}if(TT.ap===undefined&&ACCOUNT.user){ttLoad();}
+  var h='<section class="tt">',a=TT.ap;
+  if(!ACCOUNT.user)h+='<div class="panel" style="max-width:560px"><h3>Toptan fiyatlar firmalara özel</h3><p class="note" style="margin:0">Toptan fiyatları görmek için önce üye ol ya da giriş yap, ardından vergi levhanla firma başvurunu yap.</p><a class="btn" href="#hesabim" data-acc="register" style="justify-content:center">Üye ol / Giriş yap</a></div>';
+  else if(TT.ap===undefined)h+='<p class="note">Yükleniyor…</p>';
+  else if(!a)h+=ttForm(false);
+  else if(a.status==='bekliyor')h+='<div class="panel" style="max-width:560px"><h3>Başvurun inceleniyor</h3><p class="note" style="margin:0"><b>'+esc(a.firma)+'</b> başvurusu bize ulaştı. Vergi levhanı kontrol edip onayladığımızda toptan fiyatlar bu sayfada açılır ve sana e-posta göndeririz.</p></div>';
+  else if(a.status==='reddedildi')h+=ttForm(true);
+  else if(!TT.ayar)h+='<p class="note">Fiyatlar yükleniyor…</p>';
+  else h+='<div class="panel" style="gap:6px"><h3>Hoş geldin, '+esc(a.firma)+'</h3><p class="note" style="margin:0">Fiyatlar KDV dahildir; adet arttıkça birim fiyat düşer'+((TT.ayar.min)?', ürün başına en az '+TT.ayar.min+' adet':'')+'.</p></div>'+ttCartHTML();
+  var tabs=[['bos','Baskısız ürünler'],['bas','Baskılı ürünler'],['ozel','Firmaya özel baskı']];
+  h+='<div class="chips" style="margin:16px 0 10px;flex-wrap:wrap;overflow:visible">'+tabs.map(function(t){return '<button type="button" data-tt="tab" data-k="'+t[0]+'"'+(TT.tab===t[0]?' class="on"':'')+'>'+t[1]+'</button>';}).join('')+'</div>';
+  if(TT.tab==='ozel')h+='<div class="panel" style="max-width:560px;gap:10px"><h3>Logonuzla toplu baskı</h3><p class="note" style="margin:0">Firmanızın logosu, ekip kıyafetleri, promosyon ve etkinlik ürünleri. Tasarımı stüdyoda kendin hazırlayabilir ya da bize gönderebilirsin; adet ve ürünlere göre teklif veririz.</p><a class="btn" href="studyo.html">Stüdyoda tasarla</a><a class="btn soft" href="#iletisim">Teklif iste</a></div>';
+  else{var L=ttItems().filter(function(x){return x.g===TT.tab;});h+=L.length?'<div class="ttg">'+L.map(ttCard).join('')+'</div>':'<p class="empty">Bu grupta henüz ürün yok.</p>';}
+  return h+'</section>';}
+document.addEventListener('submit',async function(e){if(!e.target||e.target.id!=='ttForm')return;e.preventDefault();var m=document.getElementById('ttMsg'),g=function(i){return (document.getElementById(i)||{}).value||'';};
+  var f=document.getElementById('ttLevha').files[0];if(!f){m.hidden=false;m.textContent='Vergi levhasını ekle.';return;}
+  if(!normPhone(g('ttTel'))){m.hidden=false;m.textContent='Geçerli bir cep telefonu yaz.';return;}
+  var fd=new FormData();fd.append('firma',g('ttFirma'));fd.append('vkn',g('ttVkn'));fd.append('vd',g('ttVd'));fd.append('faaliyet',g('ttFa'));fd.append('yetkili',g('ttYet'));fd.append('tel',normPhone(g('ttTel')));fd.append('il',g('ttIl'));fd.append('adres',g('ttAdr'));fd.append('notu',g('ttNot'));fd.append('kvkk',document.getElementById('ttKvkk').checked?'1':'0');fd.append('levha',f);
+  m.hidden=false;m.textContent='Gönderiliyor…';var b=e.target.querySelector('button[type=submit]');b.disabled=true;
+  try{var tk=await sbToken();var r=await fetch(SB.url+'/functions/v1/toptan-basvuru',{method:'POST',headers:{apikey:SB.key,Authorization:'Bearer '+tk},body:fd});var jj=await r.json().catch(function(){return {};});
+    if(!r.ok){m.textContent=jj.message||'Gönderilemedi, tekrar dene.';b.disabled=false;return;}TT.ap=undefined;toast('Başvurun alındı');ttLoad();}catch(_){m.textContent='Gönderilemedi, tekrar dene.';b.disabled=false;}});
+document.addEventListener('change',function(e){var t=e.target;if(!t||!t.dataset)return;if(t.dataset.ttn!=null){var c=ttCart();if(c[t.dataset.ttn]){c[t.dataset.ttn].not=t.value.slice(0,300);ttSave(c);}}});
+document.addEventListener('click',async function(e){var b=e.target.closest&&e.target.closest('[data-tt]');if(!b)return;var a=b.dataset.tt,k=b.dataset.k;
+  if(a==='tab'){TT.tab=k;var y=window.scrollY;route();window.scrollTo(0,y);return;}
+  if(a==='add'){var inp=document.querySelector('[data-ttq="'+(window.CSS&&CSS.escape?CSS.escape(k):k)+'"]'),q=Math.max(0,Math.min(99999,Math.round(+((inp||{}).value)||0)));var c=ttCart();if(q)c[k]=Object.assign(c[k]||{},{q:q});else delete c[k];ttSave(c);toast(q?'Toptan sepete eklendi':'Sepetten çıkarıldı');var y2=window.scrollY;route();window.scrollTo(0,y2);return;}
+  if(a==='del'){var c2=ttCart();delete c2[k];ttSave(c2);var y3=window.scrollY;route();window.scrollTo(0,y3);return;}
+  if(a==='send'){var ap=TT.ap,c3=ttCart(),L=ttItems(),m=document.getElementById('ttSM');if(!ap||!ttOk())return;b.disabled=true;m.hidden=false;m.textContent='Gönderiliyor…';
+    var items=[],min=+TT.ayar.min||0;Object.keys(c3).forEach(function(kk){var it=L.filter(function(x){return x.k===kk;})[0];if(!it||!(c3[kk].q>0))return;var q=c3[kk].q,u=ttUnit(it.price,q);items.push({id:'toptan',n:'TOPTAN · '+it.n+(c3[kk].not?' · '+c3[kk].not:''),q:q,t:Math.round(u*q*100)/100});});
+    if(!items.length){m.textContent='Sepet boş.';b.disabled=false;return;}
+    var on=(document.getElementById('ttON')||{}).value||'';
+    try{var tk=await sbToken(),h={'Content-Type':'application/json',apikey:SB.key};if(tk)h.Authorization='Bearer '+tk;
+      var r=await fetch(SB.url+'/functions/v1/order-create',{method:'POST',headers:h,body:JSON.stringify({onay:{kvkk:true,sozlesme:true,at:new Date().toISOString()},ad:ap.yetkili||ap.firma,mail:ap.mail,tel:ap.tel,adres:ap.adres,il:ap.il,ilce:'',note:('TOPTAN SİPARİŞ TALEBİ · '+ap.firma+' · VKN '+ap.vkn+' · '+ap.vergi_dairesi+(on?' · '+on:'')).slice(0,500),items:items,ship:0,total:items.reduce(function(s,x){return s+x.t;},0)})});
+      var jj=await r.json().catch(function(){return {};});if(r.ok&&jj.code){ttSave({});m.textContent='Talebin alındı ('+jj.code+'). En kısa sürede seninle iletişime geçeceğiz.';toast('Sipariş talebi gönderildi');}else{m.textContent=jj.message||'Gönderilemedi, tekrar dene.';b.disabled=false;}}catch(_){m.textContent='Gönderilemedi, tekrar dene.';b.disabled=false;}}});
+function cpHTML(x){var im=(x.imgs||[])[0],hg=/hediye|dekor/i.test(x.title||'')?hdGrid():'';var bn=!hg&&x.ban&&x.ban.on?pageBan('sayfa',Object.assign({title:x.title,eyebrow:x.eyebrow},x.ban,{show:true})):'';return '<div class="wrap page cpg">'+(hg?hdHead():(x.eyebrow?'<p class="eyebrow">'+esc(x.eyebrow)+'</p>':'')+'<h1 class="h2">'+esc(x.title||'')+'</h1>')+bn+(hg||(im?'<img class="cpim" src="'+src(im)+'" alt="'+esc(x.title||'')+'">':''))+cpBody(x.body)+(/toptan/i.test(x.title||'')?toptanHTML():'')+'</div>';}
 function socURL(v,base){v=String(v||'').trim();if(!v)return '';if(/^https?:\/\//i.test(v))return v;return base+v.replace(/^@/,'').replace(/^(www\.)?(instagram|tiktok)\.com\/@?/i,'');}
 document.addEventListener('contextmenu',function(e){var t=e.target;if(t&&t.tagName==='IMG'&&!(t.closest&&t.closest('.ad')))e.preventDefault();});
 document.addEventListener('dragstart',function(e){var t=e.target;if(t&&t.tagName==='IMG')e.preventDefault();});

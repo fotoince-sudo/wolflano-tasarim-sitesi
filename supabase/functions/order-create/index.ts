@@ -115,7 +115,7 @@ Deno.serve(async (req) => {
     }
     const rawItems = Array.isArray(body.items) ? body.items.slice(0, 40) : [];
     if (!rawItems.length) return j({ error: 'empty', message: 'Sepet boş.' }, 400);
-    const items = rawItems.map((x: any) => ({ id: s(x.id, 80), n: s(x.n, 200), q: Math.max(1, Math.min(999, Math.round(Number(x.q) || 1))), t: num(x.t), r: roster(x.r) }));
+    const items = rawItems.map((x: any) => ({ id: s(x.id, 80), n: s(x.n, 200), q: Math.max(1, Math.min(99999, Math.round(Number(x.q) || 1))), t: num(x.t), r: roster(x.r) }));
     const ship = num(body.ship);
     const itemsSum = r2(items.reduce((a: number, x: any) => a + x.t, 0));
     const qty = items.reduce((a: number, x: any) => a + x.q, 0);
