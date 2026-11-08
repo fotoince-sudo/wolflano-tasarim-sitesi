@@ -2506,7 +2506,9 @@ function addClip(key){
 }
 /* ===== Zeminler: fotoğraflı şablonda zemini değiştir (fotoğraflar yerinde kalır) ya da zemini görsel olarak ekle ===== */
 var ZEMS=[['yilbasi','Yılbaşı'],['sevgi','Kalpler'],['anne','Çiçekler'],['neon','Neon'],['kamuflaj','Kamuflaj'],['gece','Gece ve dağlar'],['mermer','Mermer'],['suluboya','Suluboya'],['bohem','Bohem'],['gokyuzu','Gökkuşağı'],['balon','Balon'],['uzay','Uzay']];
-function zemUrl(k,th){return 'assets/zemin/'+k+(th?'-k':'')+'.jpg';}
+function zemUrl(k,th,wide){return 'assets/zemin/'+k+(wide?'-kupa':th?'-k':'')+'.jpg';}
+/* Geniş baskı alanı (kupa çevresi gibi) için zeminin geniş sürümü kullanılır; dikey zemin kırpılmaz */
+function zemWide(w,h){return w/h>1.5;}
 function tplFrame(){var L=cur().objs;if(!L.some(function(o){return o.slot;}))return null;return L.filter(function(o){return o.type==='image'&&o.lock&&o.thru;})[0]||null;}
 /* Mankenler (yönetici): sunucudaki manken fotoğrafları; şablon önizlemesi ve ürün görseli doldurmak için */
 var MK=null;
@@ -2521,10 +2523,10 @@ async function mkPick(u){try{var so=selObj(),tg=so&&so.slot?so:emptySlots()[0];
 document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('[data-mk]');if(!b)return;mkPick(b.dataset.mk);});
 function renderZem(){try{renderMk();}catch(_){}var g=$('#zemGrid');if(!g||g.dataset.ok)return;g.dataset.ok=1;g.innerHTML=ZEMS.map(function(z){return '<button data-zem="'+z[0]+'" aria-label="'+z[1]+' zemini"><img alt="" loading="lazy" src="'+zemUrl(z[0],1)+'"><span>'+z[1]+'</span></button>';}).join('');}
 async function zemPick(k){var f=tplFrame();
-  if(!f){var id='a'+(++assetN);assets[id]={url:zemUrl(k),w:2362,h:3307};var A=areaBox(view.side,cur().area),o=newBase('image');o.assetId=id;var asp=2362/3307;
+  if(!f){var A=areaBox(view.side,cur().area),wd=zemWide(A.w,A.h),id='a'+(++assetN);assets[id]={url:zemUrl(k,0,wd),w:2362,h:wd?1063:3307};var o=newBase('image');o.assetId=id;var asp=wd?2362/1063:2362/3307;
     if(A.w/A.h>asp){o.w=A.w;o.h=A.w/asp;}else{o.h=A.h;o.w=A.h*asp;}o.x=A.cx;o.y=A.cy;cur().objs.unshift(o);renderObjects();select(o.id);pushHist();if(innerWidth<700)closeTab();toast('Zemin eklendi. Büyütüp küçültebilir, istediğin yere taşıyabilirsin.');return;}
   bgToast('Zemin değiştiriliyor…');
-  try{var a=assets[f.assetId],W=a.w,H=a.h,bg=await loadImg(zemUrl(k)),c=document.createElement('canvas');c.width=W;c.height=H;var x=c.getContext('2d');
+  try{var a=assets[f.assetId],W=a.w,H=a.h,bg=await loadImg(zemUrl(k,0,zemWide(W,H))),c=document.createElement('canvas');c.width=W;c.height=H;var x=c.getContext('2d');
     var ia=bg.naturalWidth/bg.naturalHeight,ca=W/H,sw,sh,sx,sy;if(ia>ca){sh=bg.naturalHeight;sw=sh*ca;sx=(bg.naturalWidth-sw)/2;sy=0;}else{sw=bg.naturalWidth;sh=sw/ca;sx=0;sy=(bg.naturalHeight-sh)/2;}
     x.drawImage(bg,sx,sy,sw,sh,0,0,W,H);
     var L=cur().objs,slots=L.filter(function(o){return o.slot;}),under=L.indexOf(f)<L.indexOf(slots[0]),kx=W/f.w,ky=H/f.h,l0=f.x-f.w/2,t0=f.y-f.h/2;
