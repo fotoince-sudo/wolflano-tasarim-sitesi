@@ -145,7 +145,7 @@ svg.i{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stro
 .obj svg,.obj img{display:block;width:100%;height:100%;pointer-events:none}
 .obj img{object-fit:contain}
 /* Parçalı armalar: yalnız çizilen yere dokununca seçilir; üst üste binen parçaların her biri ayrı seçilip renklendirilir */
-.obj.phit{pointer-events:none}.obj.thru{pointer-events:none}.thumb-grid.zem button{position:relative}.thumb-grid.zem img{aspect-ratio:5/7;object-fit:cover}.thumb-grid.zem span{position:absolute;left:4px;right:4px;bottom:4px;background:rgba(0,0,0,.55);color:#fff;font-size:10px;border-radius:6px;padding:1px 3px;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.obj.phit svg path{pointer-events:visiblePainted}
+.obj.phit{pointer-events:none}.obj.thru{pointer-events:none}body:not(.wfadm) .admonly{display:none}.thumb-grid.mkg img{aspect-ratio:3/4;object-fit:cover;object-position:top}.thumb-grid.zem button{position:relative}.thumb-grid.zem img{aspect-ratio:5/7;object-fit:cover}.thumb-grid.zem span{position:absolute;left:4px;right:4px;bottom:4px;background:rgba(0,0,0,.55);color:#fff;font-size:10px;border-radius:6px;padding:1px 3px;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.obj.phit svg path{pointer-events:visiblePainted}
 #gridHost{position:absolute;inset:0;pointer-events:none}
 #gridHost svg{position:absolute;left:0;top:0;overflow:visible}
 #gridHost line{stroke:rgba(16,26,20,.07);stroke-width:1;vector-effect:non-scaling-stroke}
@@ -740,6 +740,7 @@ img{-webkit-touch-callout:none;-webkit-user-drag:none}
       <input id="swapIn" type="file" accept="image/*" hidden><input id="slotsIn" type="file" accept="image/*" multiple hidden>
       <p class="note" id="imgNote">PNG, JPG veya WebP yükle. Net baskı için fotoğrafı büyük boyutta yükle. Fotoğrafın arkasındaki duvarı, odayı silmek için fotoğrafı seçip <b>Arka planı sil</b>'e dokun.</p>
       <div class="thumb-grid" id="upGrid"></div>
+      <div class="admonly"><div class="mini-title">Mankenlerimiz <small style="font-weight:500;opacity:.7">(yalnız yönetici)</small></div><p class="note" style="margin:0 0 8px">Fotoğraf yeri seçiliyse ya da boş yer varsa manken oraya oturur; yoksa tasarıma görsel olarak eklenir. Şablon ve ürün görsellerini doldurmak için.</p><div class="thumb-grid mkg" id="mkGrid"><p class="note">Yükleniyor…</p></div></div>
       <div class="mini-title" id="zemT">Zeminler</div>
       <p class="note" style="margin:0 0 8px">Fotoğraflı şablonda dokunduğun zemin, fotoğraflar yerinde kalarak değişir. Şablon yoksa zemin tasarımın arkasına eklenir; büyütüp küçültebilirsin.</p>
       <div class="thumb-grid zem" id="zemGrid"></div>
@@ -2491,7 +2492,18 @@ function addClip(key){
 var ZEMS=[['yilbasi','Yılbaşı'],['sevgi','Kalpler'],['anne','Çiçekler'],['neon','Neon'],['kamuflaj','Kamuflaj'],['gece','Gece ve dağlar'],['mermer','Mermer'],['suluboya','Suluboya'],['bohem','Bohem'],['gokyuzu','Gökkuşağı'],['balon','Balon'],['uzay','Uzay']];
 function zemUrl(k,th){return 'assets/zemin/'+k+(th?'-k':'')+'.jpg';}
 function tplFrame(){var L=cur().objs;if(!L.some(function(o){return o.slot;}))return null;return L.filter(function(o){return o.type==='image'&&o.lock&&o.thru;})[0]||null;}
-function renderZem(){var g=$('#zemGrid');if(!g||g.dataset.ok)return;g.dataset.ok=1;g.innerHTML=ZEMS.map(function(z){return '<button data-zem="'+z[0]+'" aria-label="'+z[1]+' zemini"><img alt="" loading="lazy" src="'+zemUrl(z[0],1)+'"><span>'+z[1]+'</span></button>';}).join('');}
+/* Mankenler (yönetici): sunucudaki manken fotoğrafları; şablon önizlemesi ve ürün görseli doldurmak için */
+var MK=null;
+async function renderMk(){var g=$('#mkGrid');if(!g||!document.body.classList.contains('wfadm')||MK)return;MK=[];
+  try{var tk=sbTok();var r=await fetch(SB.url+'/storage/v1/object/list/site',{method:'POST',headers:{'Content-Type':'application/json',apikey:SB.key,Authorization:'Bearer '+(tk||SB.key)},body:JSON.stringify({prefix:'img',search:'manken-',limit:300,sortBy:{column:'name',order:'asc'}})});
+    var j=r.ok?await r.json():[];MK=j.filter(function(x){return /^manken-/.test(x.name);}).map(function(x){return SB.url+'/storage/v1/object/public/site/img/'+x.name;});}catch(_){MK=[];}
+  g.innerHTML=MK.length?MK.map(function(u){return '<button data-mk="'+u+'" aria-label="Manken"><img alt="" loading="lazy" src="'+u+'"></button>';}).join(''):'<p class="note">Manken fotoğrafı bulunamadı.</p>';}
+async function mkPick(u){try{var so=selObj(),tg=so&&so.slot?so:emptySlots()[0];
+    if(tg){bgToast('Manken yerleştiriliyor…');var bl=await (await fetch(u)).blob();await fillSlot(tg,new File([bl],'manken.jpg',{type:bl.type||'image/jpeg'}));return;}
+    var im=await loadImg(u),id='a'+(++assetN);assets[id]={url:u,w:im.naturalWidth,h:im.naturalHeight};addImageObj(id);if(innerWidth<700)closeTab();}
+  catch(_){toast('Manken fotoğrafı açılamadı.');}}
+document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('[data-mk]');if(!b)return;mkPick(b.dataset.mk);});
+function renderZem(){try{renderMk();}catch(_){}var g=$('#zemGrid');if(!g||g.dataset.ok)return;g.dataset.ok=1;g.innerHTML=ZEMS.map(function(z){return '<button data-zem="'+z[0]+'" aria-label="'+z[1]+' zemini"><img alt="" loading="lazy" src="'+zemUrl(z[0],1)+'"><span>'+z[1]+'</span></button>';}).join('');}
 async function zemPick(k){var f=tplFrame();
   if(!f){var id='a'+(++assetN);assets[id]={url:zemUrl(k),w:2362,h:3307};var A=areaBox(view.side,cur().area),o=newBase('image');o.assetId=id;var asp=2362/3307;
     if(A.w/A.h>asp){o.w=A.w;o.h=A.w/asp;}else{o.h=A.h;o.w=A.h*asp;}o.x=A.cx;o.y=A.cy;cur().objs.unshift(o);renderObjects();select(o.id);pushHist();if(innerWidth<700)closeTab();toast('Zemin eklendi. Büyütüp küçültebilir, istediğin yere taşıyabilirsin.');return;}
