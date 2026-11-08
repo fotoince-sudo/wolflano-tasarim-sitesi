@@ -18,7 +18,21 @@ const srv = http.createServer((q, r) => {
 }).listen(8898);
 
 const esc = (t) => String(t ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-const tpl = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
+import crypto from 'node:crypto';
+let tpl = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
+const tplOrig = tpl;
+// Sitenin büyük kodunu ve stilini ortak dosyalara ayır (her sayfa aynı dosyayı kullanır, tarayıcı önbellekte tutar)
+function split(html) {
+  const big = (re) => { let m, best = null; re.lastIndex = 0; while ((m = re.exec(html))) if (!best || m[1].length > best[1].length) best = m; return best; };
+  const js = big(/<script>([\s\S]*?)<\/script>/g), css = big(/<style>([\s\S]*?)<\/style>/g);
+  if (!js || js[1].length < 100000 || !css) return null;
+  const h = (t) => crypto.createHash('md5').update(t).digest('hex').slice(0, 10);
+  const jf = 'app-' + h(js[1]) + '.js', cf = 'app-' + h(css[1]) + '.css';
+  fs.writeFileSync(path.join(root, jf), js[1]); fs.writeFileSync(path.join(root, cf), css[1]);
+  return html.replace(js[0], () => '<script src="/' + jf + '"></script>').replace(css[0], () => '<link rel="stylesheet" href="/' + cf + '">');
+}
+const sp = split(tpl);
+if (sp) { tpl = sp; fs.writeFileSync(path.join(root, 'index.html'), tpl); }
 let urls = [];
 
 try {
@@ -43,6 +57,7 @@ try {
       // önceden yazılan içerikte form ve videoların otomatik çalışmasını engelle
       const c = main.cloneNode(true);
       c.querySelectorAll('script,video,audio,iframe,canvas,input,textarea,select,form').forEach((x) => x.remove());
+      c.querySelectorAll('img').forEach((x) => { if ((x.getAttribute('src') || '').startsWith('data:') && x.getAttribute('src').length > 3000) x.removeAttribute('src'); });
       return { title: document.title, desc: m('meta[name=description]'), robots: m('meta[name=robots]'), ld: (document.getElementById('ldjson') || {}).textContent || '', main: c.innerHTML, txt: main.innerText.length };
     });
     if (d.txt < 20 || /noindex/.test(d.robots)) continue;
@@ -79,10 +94,20 @@ try {
     }
     urls.push(url);
   }
+  if (sp) { // ayrılmış ana sayfayı dene; sorun varsa eski tek dosya hâline dön
+    const errs = []; const t = await ctx.newPage(); t.on('pageerror', (e) => errs.push(e.message));
+    await t.goto('http://localhost:8898/index.html#hazir', { waitUntil: 'load' }); await t.waitForTimeout(3000);
+    const len = await t.$eval('#main', (e) => e.innerText.length).catch(() => 0);
+    if (errs.length || len < 50) { console.log('Ortak dosya denemesi başarısız, tek dosyaya dönülüyor:', errs.join(' | ')); throw new Error('split'); }
+  }
   await b.close();
   console.log('Arama motoru sayfaları: ' + n + ' sayfa üretildi.');
 } catch (e) {
   console.log('Arama motoru sayfaları üretilemedi (yayın sürüyor):', e.message);
+  fs.writeFileSync(path.join(root, 'index.html'), tplOrig);
+  for (const d of ['urun', 'kategori', 'sayfa']) fs.rmSync(path.join(root, d), { recursive: true, force: true });
+  for (const f of ['hazir-urunler', 'baski-atolyesi', 'kendin-tasarla', 'hakkimizda', 'yorumlar', 'baski-fiyatlari', 'kurdun-izinde', 'iletisim']) fs.rmSync(path.join(root, f + '.html'), { force: true });
+  urls = [];
 }
 srv.close();
 

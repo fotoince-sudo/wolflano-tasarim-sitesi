@@ -34,6 +34,13 @@ jobs:
         run: node .github/dene.mjs
       - name: Arama motoru sayfalarını üret
         run: node .github/onizle.mjs
+      - name: Önceki ortak kod dosyalarını koru
+        # Önbellekteki eski sayfa birkaç dakika eski kod dosyasını isteyebilir; bir önceki yayının dosyaları da kalsın
+        run: |
+          git fetch -q --depth 1 origin yayin || exit 0
+          for f in $(git show FETCH_HEAD:index.html 2>/dev/null | grep -o 'app-[a-f0-9]*\.\(js\|css\)' | sort -u); do
+            [ -f "dist/$f" ] || git show "FETCH_HEAD:$f" > "dist/$f" 2>/dev/null || true
+          done
       - name: yayin dalına koy
         run: |
           cd dist
