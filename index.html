@@ -3267,7 +3267,7 @@ function hdCards(sub){var subN=String(sub||'').toLocaleLowerCase('tr');var L=BLA
 /* Aynı tasarımın farklı renkleri tek kartta: altta renk noktaları, dokununca görsel, fiyat ve sepet o renge geçer.
    Eşleşme: ürün türü + kategori + tasarımdaki görseller/yazılar (konum ve renkler hariç). p.grp yazılırsa o kullanılır. */
 function dKey(p){if(p.grp)return 'g:'+p.grp;var d=p.dsg;if(!d||typeof d!=='object')return 'p:'+p.id;
-  var s=[p.type||'',(p.cat||[]).join(','),(p.sub||[]).join(','),d.cut||''];
+  var s=[p.type||'',(p.cat||[]).join(','),(p.sub||[]).join(','),d.cut||'',/^(kupa-|bmv9)/.test(d.bid||'')?d.bid:''];  /* farklı kupa modeli (kalp kulplu, renkli…) aynı tasarımda olsa da ayrı kart */
   ['front','back','logo'].forEach(function(k){var x=d[k];if(!x||!(x.objs||[]).length)return;s.push(k+':'+(x.area||''));
     (x.objs||[]).forEach(function(o){var A=o.assetId&&d.assets&&d.assets[o.assetId];s.push([o.type||'',(A&&(A.url||A.src))||o.src||o.clip||o.shape||o.k||o.value||o.v||o.text||o.assetId||'',Math.round((+o.w||0)/10)].join('|'));});});
   return s.join('#');}
