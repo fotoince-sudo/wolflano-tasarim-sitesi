@@ -16,6 +16,11 @@ RewriteCond %{HTTPS} off
 RewriteCond %{HTTP:X-Forwarded-Proto} !https
 RewriteCond %{HTTP:CF-Visitor} !"scheme":"https"
 RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [R=301,L]
+# Arama motoru sayfaları: /urun/ornek → /urun/ornek.html (adres çubuğunda .html görünmez)
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_FILENAME}.html -f
+RewriteRule ^(.+?)/?$ $1.html [L]
 
 # Önbellek: görseller uzun, sayfalar kısa
 <IfModule mod_expires.c>

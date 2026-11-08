@@ -2363,6 +2363,22 @@ document.addEventListener('submit',function(e){
 function telNo(t,intl){var d=String(t||'').replace(/\D/g,'');if(d.indexOf('90')===0&&d.length>=12)d=d.slice(2);if(d.charAt(0)==='0')d=d.slice(1);return intl?'90'+d:'+90'+d;}
 
 function seoMeta(sel,attrs,val){var e=document.head.querySelector(sel);if(!e){e=document.createElement('meta');for(var k in attrs)e.setAttribute(k,attrs[k]);document.head.appendChild(e);}e.setAttribute('content',val);}
+/* Arama motoru sayfaları: her ürün, kategori ve ana bölüm için gerçek bir adres (ör. /urun/kurt-sweatshirt-p12).
+   Yayın sırasında .github/onizle.mjs bu adreslerin her biri için içeriği önceden yazılmış bir sayfa üretir;
+   ziyaretçi o adrese gelince site açılır ve doğrudan ilgili bölüme geçer. seoUpdate de kanonik adresi buradan alır. */
+var SEO_SL={hazir:'hazir-urunler',atolye:'baski-atolyesi',tasarla:'kendin-tasarla',hakkimizda:'hakkimizda',yorumlar:'yorumlar',fiyatlar:'baski-fiyatlari',kurdun:'kurdun-izinde',iletisim:'iletisim'};
+function seoSlug(t){return String(t||'').toLocaleLowerCase('tr').replace(/ç/g,'c').replace(/ğ/g,'g').replace(/ı/g,'i').replace(/i̇/g,'i').replace(/ö/g,'o').replace(/ş/g,'s').replace(/ü/g,'u').replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'');}
+function seoPath(h){h=h||'ana';if(h==='ana')return '';
+  if(h.indexOf('urun-')===0){var P=PRODUCTS.filter(function(x){return x.id===h.slice(5);})[0];return P?'urun/'+(seoSlug(P.name)||'urun')+'-'+seoSlug(P.id):null;}
+  if(h.indexOf('kat-')===0){var c=CATS.filter(function(x){return x[0]===h.slice(4);})[0];return c?'kategori/'+(seoSlug(c[1])||seoSlug(c[0])):null;}
+  if(h.indexOf('p-')===0){var x=(D.cpages||[]).filter(function(y){return y.id===h.slice(2)&&y.show!==false;})[0];return x?'sayfa/'+(seoSlug(x.title)||seoSlug(x.id)):null;}
+  return SEO_SL[h]&&VIEWS[h]?SEO_SL[h]:null;}
+window.__wfSeo=function(){var L=[{h:'ana',path:''}];
+  Object.keys(SEO_SL).forEach(function(h){if(VIEWS[h])L.push({h:h,path:SEO_SL[h]});});
+  CATS.forEach(function(c){var p=seoPath('kat-'+c[0]);if(p)L.push({h:'kat-'+c[0],path:p});});
+  (D.cpages||[]).forEach(function(x){var p=seoPath('p-'+x.id);if(p)L.push({h:'p-'+x.id,path:p});});
+  PRODUCTS.forEach(function(P){var p=seoPath('urun-'+P.id);if(p)L.push({h:'urun-'+P.id,path:p,img:(P.imgs||[])[0]||''});});
+  return {ready:ready&&PRODUCTS.length>0,dom:((D.seo||{}).domain||'https://wolflano.com.tr').replace(/\/+$/,''),items:L};};
 function seoUpdate(){
   try{
   var h=(location.hash||'#ana').slice(1)||'ana',S=D.seo||{},dom=(S.domain||'').replace(/\/+$/,''),pg=(S.pages||{})[h]||(S.pages||{}).ana||{},P=null,path,title,desc;
@@ -2374,7 +2390,7 @@ function seoUpdate(){
   else if(P){title=P.name+' | Wolflano';desc=(P.desc&&P.desc.trim())||(P.name+' - premium kalite, İtalyan estetiği, Wolflano karakteri. KDV dahil '+tl(P.price)+'.');path='urun/'+slug(P.name)+'-'+P.id;}
   else{title=pg.t||'Wolflano';desc=pg.d||'';path=SL[h]!==undefined?SL[h]:h;}
   document.title=title;
-  var noidx=/^(odeme|sepet|hesabim|favoriler|yonetim)$/.test(h),url=dom?dom+'/':''; /* site tek sayfa: /urun/... gibi yollar sunucuda yok (404), bu yüzden kanonik adres hep ana sayfa */
+  var noidx=/^(odeme|sepet|hesabim|favoriler|yonetim)$/.test(h),sp=seoPath(h),url=dom?dom+'/'+(sp==null?'':sp):''; /* adresi olmayan bölümlerde kanonik adres ana sayfa */
   seoMeta('meta[name=description]',{name:'description'},desc);
   seoMeta('meta[name=keywords]',{name:'keywords'},S.keywords||'');
   seoMeta('meta[name=robots]',{name:'robots'},noidx?'noindex,nofollow':'index,follow,max-image-preview:large');

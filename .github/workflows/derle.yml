@@ -32,6 +32,8 @@ jobs:
         run: node .github/derle.mjs
       - name: Tarayıcıda dene
         run: node .github/dene.mjs
+      - name: Arama motoru sayfalarını üret
+        run: node .github/onizle.mjs
       - name: yayin dalına koy
         run: |
           cd dist
@@ -50,5 +52,5 @@ jobs:
       - name: Arama motorlarına haber ver (IndexNow, Bing ve Yandex)
         run: |
           sleep 90
-          curl -sS -X POST "https://api.indexnow.org/indexnow" -H "Content-Type: application/json; charset=utf-8" \
-            -d '{"host":"wolflano.com.tr","key":"60862039232c2d46f8f91e2dea87bbe1","keyLocation":"https://wolflano.com.tr/60862039232c2d46f8f91e2dea87bbe1.txt","urlList":["https://wolflano.com.tr/","https://wolflano.com.tr/studyo.html"]}' -o /dev/null -w "IndexNow %{http_code}\n" || true
+          node -e 'const u=JSON.parse(require("fs").readFileSync("indexnow-urls.json","utf8"));process.stdout.write(JSON.stringify({host:"wolflano.com.tr",key:"60862039232c2d46f8f91e2dea87bbe1",keyLocation:"https://wolflano.com.tr/60862039232c2d46f8f91e2dea87bbe1.txt",urlList:u.slice(0,10000)}))' > indexnow.json
+          curl -sS -X POST "https://api.indexnow.org/indexnow" -H "Content-Type: application/json; charset=utf-8" -d @indexnow.json -o /dev/null -w "IndexNow %{http_code}\n" || true
