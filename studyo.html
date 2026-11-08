@@ -831,7 +831,7 @@ img{-webkit-touch-callout:none;-webkit-user-drag:none}
     <h2>Siparişini tamamla</h2>
   </div>
   <div class="o-body">
-    <section><h3>Önizleme</h3><div class="thumbs" id="thumbs"></div></section>
+    <section><h3>Önizleme</h3><div class="thumbs" id="thumbs"></div><div class="btnrow" style="margin-top:10px"><button class="ghost" id="saveDesign" type="button">♥ Tasarımımı kaydet</button></div><p class="note" style="margin:6px 0 0">Hesabına kaydedilir; sonra Favoriler'den açıp tekrar sipariş verebilirsin.</p></section>
     <section id="brandSec" hidden><h3>Wolflano marka işareti</h3><label class="brandopt"><input type="checkbox" id="brandChk" checked><span>Ürünün üstünde küçük Wolflano işareti olsun<small>Kendi logonla çakışmasın istersen kaldırabilirsin. Etiket ve yan dikiş şeridi her üründe kalır.</small></span></label></section>
     <section><h3 id="sizeHead">Beden ve adet</h3><div class="size-grid" id="sizeGrid"></div></section>
     <section id="rosterSec" hidden><h3>İsim ve numara listesi</h3><p class="note" style="margin:0 0 10px">Her ürün için ayrı yaz. Boş bıraktığın ürüne isim veya numara basılmaz.</p><div id="rosterList" class="rs"></div></section>
@@ -4637,6 +4637,27 @@ function hideAdded(){$('#added').hidden=true;}
 /* ---------- Stokta olmayan ürün: tasarım favorilere kaydedilir, üyeye stoğa gelince e-posta gider ---------- */
 function blobToData(b){return new Promise(function(res){var r=new FileReader();r.onload=function(){res(r.result);};r.onerror=function(){res('');};r.readAsDataURL(b);});}
 function sfavGet(){try{return JSON.parse(localStorage.getItem('wf_sfav')||'[]')||[];}catch(_){return [];}}
+/* Kaydedilecek tasarım paketi: tasarım verisi, kullanılan görseller (gömülü) ve küçük önizleme */
+async function buildSaved(bid){
+    var used={},out={};['front','logo','logo2','back'].forEach(function(sd){(SS(sd).objs||[]).forEach(function(o){if(o.type==='image'&&o.assetId)used[o.assetId]=1;});});
+    for(var id in used){var a=assets[id];if(!a)continue;var u=a.url;if(!/^(https?:|data:)/.test(u)){try{u=await blobToData(await (await fetch(u)).blob());}catch(_){u='';}}if(u){out[id]={url:u,w:a.w,h:a.h};if(a.hi)out[id].hi=a.hi;}}
+    var c=await renderPreview(sidesOf()[0],0.35),bg=document.createElement('canvas');bg.width=c.width;bg.height=c.height;var bx=bg.getContext('2d');bx.fillStyle='#eef1ef';bx.fillRect(0,0,bg.width,bg.height);bx.drawImage(c,0,0);
+    return {id:Date.now().toString(36),sig:designSig(),bid:bid,label:productLabel(),thumb:bg.toDataURL('image/jpeg',0.75),ts:Date.now(),
+      data:{v:1,product:state.product,cut:state.cut,bid:state.bid||undefined,tee:state.tee,kulp:kulpHex()||undefined,brand:state.brand!==false,front:JSON.parse(JSON.stringify(state.front)),logo:JSON.parse(JSON.stringify(SS('logo'))),logo2:JSON.parse(JSON.stringify(SS('logo2'))),back:JSON.parse(JSON.stringify(state.back)),assets:out}};}
+function sfavPut(it){var l=sfavGet().filter(function(x){return x.sig!==it.sig;});l.push(it);
+  for(;;){try{localStorage.setItem('wf_sfav',JSON.stringify(l));return true;}catch(_){if(l.length>1)l.shift();else return false;}}}
+/* Hesaba kaydet: üye ise sunucuya (her cihazdan açılır, son açılıştan itibaren 1 yıl saklanır), değilse yalnız bu cihaza */
+async function svUpload(it){var tk=await aiTok();if(!tk)return false;
+  try{var r=await fetch(SBX_URL+'/rest/v1/user_designs?on_conflict=user_id,sig',{method:'POST',headers:{apikey:SBX_KEY,Authorization:'Bearer '+tk,'Content-Type':'application/json',Prefer:'resolution=merge-duplicates,return=minimal'},
+    body:JSON.stringify({id:it.id,sig:it.sig,bid:it.bid||null,label:it.label||null,thumb:it.thumb||null,data:it.data,used_at:new Date().toISOString()})});return r.ok;}catch(_){return false;}}
+async function saveMine(){var b=$('#saveDesign');if(!sidesOf().some(function(sd){return state[sd].objs.length;})){toast('Önce tasarımına bir şey ekle.');return;}
+  if(b){b.disabled=true;b.textContent='Kaydediliyor…';}
+  try{var it=await buildSaved(state.bid||'');var up=await svUpload(it);if(up)it.up=1;var loc=sfavPut(it);
+    if(up)toast('Tasarımın hesabına kaydedildi. Favorilerinden her cihazda açabilirsin.');
+    else if(loc)longToast('Tasarımın bu cihaza kaydedildi. Üye olursan hesabına taşınır, her cihazdan açarsın.');
+    else toast('Tasarım çok büyük, kaydedilemedi.');}catch(_){toast('Kaydedilemedi, tekrar dene.');}
+  if(b){b.disabled=false;b.textContent='♥ Tasarımımı kaydet';}}
+document.addEventListener('click',function(e){if(e.target&&e.target.closest&&e.target.closest('#saveDesign')){e.preventDefault();saveMine();}});
 async function saveSoldDesign(pb){
   var b=$('#addCart');if(b)b.disabled=true;
   try{
@@ -4712,6 +4733,7 @@ function wfStat(k){try{if(localStorage.getItem('wf_nostat')||navigator.webdriver
   [['instagram',/instagram/],['facebook',/facebook|fbclid/],['google',/google/],['whatsapp',/whatsapp|wa\.me/],['tiktok',/tiktok/],['youtube',/youtube|youtu\.be/]].some(function(x){if(x[1].test(t)){src=x[0];return true;}});
   if(src==='direkt'&&r&&!/wolflano/i.test(r))src='diger';
   k.push('v','r:'+src,'d:'+(/Mobi|Android|iPhone|iPad/i.test(u)?'mobil':'masaustu'));}}catch(_){}wfStat(k);})();
+var SBX_URL='https://wgovwmeirlzwalelazfj.supabase.co',SBX_KEY='sb_publishable_PP5xFd7ga61xaDOCHeET_Q_zfMaE_4G';
 function sbTok(){try{var x=JSON.parse(localStorage.getItem('wf_sb')||'null');return x&&x.access&&x.exp>Date.now()?x.access:null;}catch(_){return null;}}
 function telNorm(t){var d=String(t||'').replace(/\D/g,'');if(d.indexOf('90')===0&&d.length===12)d=d.slice(2);if(d.length===10&&d.charAt(0)==='5')d='0'+d;return d;}
 $('#goPay').addEventListener('click',async function(){
@@ -5976,7 +5998,11 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
   /* Koleksiyon ürünü düzenlenirken Bitti yerine Güncelle: doğrudan ürünü güncelleme penceresi açılır */
   document.addEventListener('click',function(e){if(!ADM.edit||!e.target.closest||!e.target.closest('#doneBtn'))return;e.preventDefault();e.stopPropagation();mode='guncelle';openAdm();},true);
   window.wfApplyDesign=applyDesign;
-  try{var fv=new URLSearchParams(location.search).get('fav');if(fv){var fd=sfavGet().filter(function(x){return x.id===fv;})[0];if(fd)setTimeout(function(){try{applyDesign(fd.data,true);toast('Kayıtlı tasarımın açıldı');}catch(_){toast('Tasarım açılamadı');}},600);}}catch(_){}
+  try{var fv=new URLSearchParams(location.search).get('fav');if(fv){var fd=sfavGet().filter(function(x){return x.id===fv;})[0];
+    var openFav=function(d){setTimeout(function(){try{applyDesign(d,true);toast('Kayıtlı tasarımın açıldı');}catch(_){toast('Tasarım açılamadı');}},600);};
+    (async function(){var tk=await aiTok();if(tk){try{var r=await fetch(SBX_URL+'/rest/v1/user_designs?select=data&id=eq.'+encodeURIComponent(fv),{headers:{apikey:SBX_KEY,Authorization:'Bearer '+tk}});var j=r.ok?await r.json():[];
+        if(j[0]&&j[0].data){openFav(j[0].data);fetch(SBX_URL+'/rest/v1/user_designs?id=eq.'+encodeURIComponent(fv),{method:'PATCH',headers:{apikey:SBX_KEY,Authorization:'Bearer '+tk,'Content-Type':'application/json',Prefer:'return=minimal'},body:JSON.stringify({used_at:new Date().toISOString()})}).catch(function(){});return;}}catch(_){}}
+      if(fd)openFav(fd.data);else toast('Kayıtlı tasarım bulunamadı');})();}}catch(_){}
   init();
 })();
 })();

@@ -2650,10 +2650,26 @@ document.addEventListener('click',async function(e){var t=e.target;if(!t.closest
   if(t.closest('[data-waitreg]')){wfWaitPend(WAIT_IT);accMode='register';closeLayer();return;}
   var g=t.closest('[data-waitgo]');if(g){e.preventDefault();g.disabled=true;g.textContent='Kaydediliyor…';var ok=await wfWaitSend(WAIT_IT);closeLayer();toast(ok?'Tamam. Stoğa gelince e-postana haber vereceğiz. Gereksiz (Spam) klasörüne de bak.':'Kaydedilemedi, bağlantını kontrol edip tekrar dene.');}});
 function sfavGet(){try{return JSON.parse(localStorage.getItem('wf_sfav')||'[]')||[];}catch(_){return [];}}
-function sfavHTML(){var l=sfavGet();if(!l.length)return '';
-  return '<h2 class="h2" style="font-size:20px;margin:32px 0 12px">Kayıtlı tasarımlarım</h2><div class="grid">'+l.map(function(sv){var b=(BLANKS||[]).filter(function(x){return x.id===sv.bid;})[0],out=!!(b&&soldOut(b)),u=STUDIO+'?fav='+encodeURIComponent(sv.id);
-    return '<article class="card"><div class="phw"><a class="ph" href="'+u+'" aria-label="Tasarımı aç"><img src="'+esc(sv.thumb||'')+'" alt="" loading="lazy"></a></div><div class="meta"><div class="row"><small>'+esc(sv.label||'Tasarım')+'</small></div><span class="stk'+(out?' out':'')+'">'+(out?'Stokta yok · gelince haber vereceğiz':'Stoğa geldi')+'</span></div><a class="btn sm add" href="'+u+'">'+(out?'Tasarımı aç':'Aç ve sepete ekle')+'</a><button type="button" class="btn soft sm" data-sfavrm="'+esc(sv.id)+'" style="margin-top:6px">Kaldır</button></article>';}).join('')+'</div>';}
-document.addEventListener('click',function(e){var t=e.target;if(!t.closest)return;var r=t.closest('[data-sfavrm]');if(!r)return;var l=sfavGet().filter(function(x){return x.id!==r.dataset.sfavrm;});try{localStorage.setItem('wf_sfav',JSON.stringify(l));}catch(_){}route();});
+/* Kayıtlı tasarımlar: üyenin hesabında (user_designs, son açılıştan itibaren 1 yıl) + bu cihazda kayıtlı olanlar.
+   Üye girişi yapılınca cihazdaki kayıtlar hesaba taşınır. */
+var SV={rows:null,busy:false,uid:''};
+async function svLoad(){if(SV.busy)return;SV.busy=true;try{var tk=await sbToken();if(!tk||!ACCOUNT.user){SV.rows=[];}else{
+  var L=sfavGet(),ch=false;for(var i=0;i<L.length;i++){var it=L[i];if(it.up||!it.data)continue;
+    var r=await sbReq('/rest/v1/user_designs?on_conflict=user_id,sig',{method:'POST',token:tk,prefer:'resolution=merge-duplicates,return=minimal',body:{id:it.id,sig:it.sig,bid:it.bid||null,label:it.label||null,thumb:it.thumb||null,data:it.data}});if(r.ok){it.up=1;ch=true;}}
+  if(ch){try{localStorage.setItem('wf_sfav',JSON.stringify(L));}catch(_){}}
+  var g=await sbReq('/rest/v1/user_designs?select=id,sig,bid,label,thumb,used_at&order=used_at.desc&limit=30',{token:tk});SV.rows=g.ok&&Array.isArray(g.j)?g.j:[];}}catch(_){SV.rows=SV.rows||[];}
+  SV.busy=false;if(cur==='favoriler'){var y=window.scrollY;route();window.scrollTo(0,y);}}
+function sfavHTML(){var uid=ACCOUNT.user?ACCOUNT.user.id:'';if(SV.uid!==uid){SV.uid=uid;SV.rows=null;}if(SV.rows===null&&uid)svLoad();
+  var srv=SV.rows||[],sigs={};srv.forEach(function(x){sigs[x.sig]=1;});
+  var l=srv.map(function(x){return {id:x.id,sig:x.sig,bid:x.bid,label:x.label,thumb:x.thumb,srv:1};}).concat(sfavGet().filter(function(x){return !sigs[x.sig];}));
+  if(!l.length)return '';
+  return '<h2 class="h2" style="font-size:20px;margin:32px 0 6px">Kayıtlı tasarımlarım</h2><p class="note" style="margin:0 0 12px">'+(uid?'Hesabında saklanır; son açılışından itibaren 1 yıl durur.':'Bu cihazda saklanıyor. <a class="lk" href="#hesabim" data-acc="register">Üye ol</a>, tasarımların hesabına taşınsın, her cihazdan aç.')+'</p><div class="grid">'+l.map(function(sv){var b=(BLANKS||[]).filter(function(x){return x.id===sv.bid;})[0],out=!!(b&&soldOut(b)),u=STUDIO+'?fav='+encodeURIComponent(sv.id);
+    return '<article class="card"><div class="phw"><a class="ph" href="'+u+'" aria-label="Tasarımı aç"><img src="'+esc(sv.thumb||'')+'" alt="" loading="lazy"></a></div><div class="meta"><div class="row"><small>'+esc(sv.label||'Tasarım')+'</small></div>'+(out?'<span class="stk out">Stokta yok · gelince haber vereceğiz</span>':'')+'</div><a class="btn sm add" href="'+u+'">'+(out?'Tasarımı aç':'Aç ve sepete ekle')+'</a><button type="button" class="btn soft sm" data-sfavrm="'+esc(sv.id)+'" data-sig="'+esc(sv.sig||'')+'"'+(sv.srv?' data-srv="1"':'')+' style="margin-top:6px">Kaldır</button></article>';}).join('')+'</div>';}
+document.addEventListener('click',async function(e){var t=e.target;if(!t.closest)return;var r=t.closest('[data-sfavrm]');if(!r)return;var id=r.dataset.sfavrm,sig=r.dataset.sig;
+  if(!confirm('Bu kayıtlı tasarım silinsin mi?'))return;
+  var l=sfavGet().filter(function(x){return x.id!==id&&(!sig||x.sig!==sig);});try{localStorage.setItem('wf_sfav',JSON.stringify(l));}catch(_){}
+  if(r.dataset.srv){var tk=await sbToken();if(tk){var d=await sbReq('/rest/v1/user_designs?id=eq.'+encodeURIComponent(id),{method:'DELETE',token:tk});if(!d.ok){toast('Silinemedi');return;}}SV.rows=(SV.rows||[]).filter(function(x){return x.id!==id;});}
+  route();});
 function stockIssue(){for(var k in cart){if(!(cart[k]>0))continue;var p=ALLP.filter(function(x){return x.id===ckId(k);})[0];if(p&&hasStock(p)&&cartQtyOf(p.id)>Math.max(0,+p.stock))return p;}return null;}
 document.addEventListener('click',function(e){var t=e.target;if(!t.closest)return;var so=t.closest('[data-soldout]');if(so){e.preventDefault();e.stopPropagation();var sp=ALLP.filter(function(x){return x.id===so.dataset.soldout;})[0];if(sp)soldOutFlow(sp);else toast(NOSTOCK);return;}var og=t.closest('a[href="#odeme"]');if(og){var si=stockIssue();if(si){e.preventDefault();e.stopPropagation();toast(soldOut(si)?'“'+si.name+'” stokta yok. Sepetinden çıkar.':'“'+si.name+'” için yeterli stok yok. Adedi azalt.');if(location.hash!=='#sepet')location.hash='#sepet';}}},true);
 /* ---------- Bedenler ----------
@@ -2801,7 +2817,7 @@ function acctHome(){
   var u=ACCOUNT.user,p=ACCOUNT.prof||{},f=function(id,l,v,ex){return '<label for="'+id+'">'+l+(ex||'<input id="'+id+'" value="'+esc(v||'')+'">')+'</label>';};
   return '<div class="wrap page acct"><div class="acth"><p class="eyebrow" style="margin:0">Hesabım</p><button class="outsm" type="button" id="outBtn">Çıkış yap</button></div><h1 class="h2">Merhaba'+((p.ad||u.name)?', '+esc((p.ad||u.name).split(' ')[0]):'')+'</h1><p class="lead">'+esc(u.email)+'</p>'+
   '<form class="panel" id="profForm" style="max-width:460px;margin-top:20px">'+f('pAd','Ad soyad',p.ad||u.name)+f('pTel','Cep telefonu',p.tel,'<input id="pTel" type="tel" inputmode="tel" placeholder="05xx xxx xx xx" value="'+esc(p.tel||'')+'">')+f('pAdr','Adres',p.adres)+'<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">'+f('pIl','İl',p.il)+f('pIlce','İlçe',p.ilce)+'</div><label>Doğum günün <small style="font-weight:500;opacity:.7">(isteğe bağlı, o gün sana küçük bir sürprizimiz olsun)</small>'+dgSel('pDg',p.dogum)+'</label><button class="btn" type="submit">Kaydet</button><div class="msg" id="profMsg" hidden></div></form>'+
-  '<div class="acts"><a class="btn soft" href="#siparis">Son siparişim</a><a class="btn soft" href="#favoriler">Favorilerim</a><button class="btn soft" type="button" id="accCart">Sepetim</button></div></div>';
+  '<div class="acts"><a class="btn soft" href="#siparis">Son siparişim</a><a class="btn soft" href="#favoriler">Favorilerim ve tasarımlarım</a><button class="btn soft" type="button" id="accCart">Sepetim</button></div></div>';
 }
 document.addEventListener('submit',async function(e){
   if(!e.target||e.target.id!=='profForm')return;e.preventDefault();var g=function(i){return document.getElementById(i).value.trim();},m=document.getElementById('profMsg');
