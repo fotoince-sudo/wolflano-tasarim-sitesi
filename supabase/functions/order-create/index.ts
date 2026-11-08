@@ -75,12 +75,13 @@ async function orderMails(row: any) {
   const sp = row.special as any, sc = row.school as any;
   const notes = (sp ? `<p style="margin:0 0 10px;color:#6b746e;font-size:13px">Özel indirim belgen kontrol edildikten sonra siparişin hazırlanmaya başlar.</p>` : '') +
     (sc && sc.free ? `<p style="margin:0 0 10px;color:#6b746e;font-size:13px">Okul siparişi: ${sc.free} adet ücretsiz ürün ihtiyaç sahibi öğrenciler için eklenecek.</p>` : '');
+  const legal = `<p style="margin:14px 0 0;color:#6b746e;font-size:12px">Siparişini onaylarken kabul ettiğin <a href="${SITE}#mesafeli">Ön Bilgilendirme Formu ve Mesafeli Satış Sözleşmesi</a>, <a href="${SITE}#iade">Cayma ve İade Koşulları</a> ve <a href="${SITE}#kvkk">KVKK Aydınlatma Metni</a> bu bağlantılarda; bu e-posta sözleşmenin bir örneğidir. Kişiye özel baskılı ürünlerde yasa gereği cayma hakkı yoktur.</p>`;
   const cust = frame({
     title: 'Siparişini aldık',
     pre: `${row.code} numaralı siparişin alındı.`,
     body: `<p style="margin:0 0 12px">Merhaba ${esc(row.ad)},</p><p style="margin:0 0 12px">Wolflano'yu seçtiğin için teşekkürler. <b>${esc(row.code)}</b> numaralı siparişin elimize ulaştı. Siparişler 2-4 iş gününde kargoya verilir; kargoya verildiğinde takip numarasını ayrıca göndereceğiz.</p>${table}${notes}` +
       `<p style="margin:0 0 4px;color:#6b746e;font-size:13px">Teslimat adresi</p><p style="margin:0 0 12px">${esc(row.adres)}${row.ilce || row.il ? '<br>' + esc([row.ilce, row.il].filter(Boolean).join(' / ')) : ''}</p>` +
-      `<p style="margin:0;color:#6b746e;font-size:13px">Sorun olursa bu e-postayı yanıtlaman ya da WhatsApp'tan yazman yeterli.</p>`,
+      `<p style="margin:0;color:#6b746e;font-size:13px">Sorun olursa bu e-postayı yanıtlaman ya da WhatsApp'tan yazman yeterli.</p>` + legal,
     btn: { href: SITE, label: "Wolflano'ya dön" },
   });
   const adm = frame({
@@ -149,6 +150,8 @@ Deno.serve(async (req) => {
       il: s(body.il, 60), ilce: s(body.ilce, 60), items, subtotal, ship, total,
       note: s(body.note, 500) || null, special, school,
       doc_status: special ? 'bekliyor' : null,
+      // KVKK ve sözleşme onayı (ödeme ekranında işaretlenen kutular), zaman ve IP ile
+      onay: { kvkk: !!body.onay?.kvkk, sozlesme: !!body.onay?.sozlesme, izin: !!body.onay?.izin, at: new Date().toISOString(), ip: (req.headers.get('x-forwarded-for') || '').split(',')[0].trim().slice(0, 60) },
     };
     // Çift gönderim: aynı kişi 3 dakika içinde aynı tutarda aynı ürünlerle tekrar gönderirse yeni sipariş açılmaz, ilki döner
     try {
