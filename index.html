@@ -3245,7 +3245,8 @@ function wHead(p){var d=p.dsg||{},pr=d.product,g='',t='';
   return (g?g+' ':'')+t;}
 function wFmt(n){var x=String(n);while(x.length<3)x='0'+x;return 'W'+x;}
 function wFree(list){var u={};(list||[]).forEach(function(p){if(p&&+p.wc)u[+p.wc]=1;});for(var i=1;;i++)if(!u[i])return i;}
-function wAuto(p){return !!p.dsg||/^wolflano\b/i.test(p.name||'')||/\bW\d{3,}$/.test(p.name||'');}
+/* yalnız adı hâlâ kodlu ya da genel olanları düzenle; tasarıma göre verilmiş adlar (ör. "Kızılelma ve Kurt Erkek Tişört – Mavi") korunur */
+function wAuto(p){var n=String(p.name||'').trim();return !n||/^wolflano\b/i.test(n)||/\bW\d{3,}$/.test(n);}
 /* Bütün ürünlere kod ver ve stüdyodan yapılanların adını düzenle; dönen: adı değişen ürün sayısı */
 function wAssign(list){var groups={},order=[];list.forEach(function(p){var k=dKey(p);if(!groups[k]){groups[k]=[];order.push(k);}groups[k].push(p);});
   /* eski ürün önce numara alsın */
