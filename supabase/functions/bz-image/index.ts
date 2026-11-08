@@ -94,6 +94,7 @@ Deno.serve(async (req) => {
     const mug = body.mug === 'wrap' || body.mug === 'logo' ? body.mug : ''; // kupa: çevresini saran baskı ya da tek taraflı logo
     const double = mug === 'wrap' && body.layout === 'double' && typeof body.image === 'string' && !!body.image; // aynı fotoğraf kupanın iki yanında
     const slot = body.slot === true && typeof body.image === 'string' && !!body.image; // şablondaki fotoğraf yeri: fotoğrafın tamamı çizilir (çizgi film şablonu)
+    const grid = slot && body.grid && +body.grid.n > 1 ? { cols: Math.max(1, Math.min(4, +body.grid.cols || 1)), rows: Math.max(1, Math.min(4, +body.grid.rows || 1)), n: Math.min(16, +body.grid.n) } : null; // birden çok fotoğraf tek kolajda
     const full = canvas || slot || (mug === 'wrap' && !double); // kenardan kenara resim
     const transparent = !full && body.transparent !== false;
     const shirt = canvas || mug || slot ? '' : shirtHint(String(body.shirt || '').slice(0, 40), String(body.shirtHex || '').slice(0, 7));
@@ -102,7 +103,7 @@ Deno.serve(async (req) => {
     if (img && img.size > 6_000_000) return j({ error: 'big', message: 'Fotoğraf çok büyük.' }, 400);
 
     if (!isAdm) {
-      const lim = slot ? 12 : 3; // müşteri günlük deneme hakkı; çizgi film şablonunda her fotoğraf ayrı çizildiği için daha yüksek (faaliyete geçince artırılacak)
+      const lim = slot ? 6 : 3; // müşteri günlük deneme hakkı; çizgi film şablonunda her fotoğraf ayrı çizildiği için daha yüksek (faaliyete geçince artırılacak)
       const rr = await rpc('bz_take', { p_uid: uid, p_lim: lim });
       if ((await rr.json()) !== true) {
         return j({ error: 'limit', message: 'Bugünkü tasarım hakkın doldu. Yarın yeniden dene.' }, 429);
@@ -141,7 +142,9 @@ Deno.serve(async (req) => {
       parts.push("If there are people, include EVERY person in the photo, in the same arrangement, and keep each one clearly recognizable: same face shape, eyes, nose, mouth, skin tone, age, expression and head shape. Keep each person's exact hairline and hair amount (if someone is bald, keep them bald; do not add hair or a beard that is not there).");
       parts.push('If there is an animal, keep its species, breed, coat colors and markings exactly. If it is a place or object, keep it recognizable.');
       parts.push('Draw clothing plain and simple; do NOT copy any logo, letters, numbers or print from the clothes or the background of the photo.');
-      parts.push(slot
+      parts.push(grid
+        ? `The attached image is a grid of ${grid.n} separate photos (${grid.cols} columns by ${grid.rows} rows) separated by plain white gutters. Redraw EVERY panel separately in this style, keeping the exact same grid: the same number of panels, the same panel positions and sizes, and the same plain white gutters between them. Each panel keeps its own people, framing and background scene, filling its panel completely. Never merge panels, never move anyone into another panel, no text, no frame.`
+        : slot
         ? 'Composition for a photo frame window: redraw the WHOLE attached photo with the same framing, crop and camera angle, keeping every person, animal and the background scene in place, and fill the entire image edge to edge.'
         : double
         ? 'Composition: a single upright portrait of the subject (people from the chest up, an animal whole or its head) inside an elegant decorative oval or arch frame made of flowers, leaves, small hearts and delicate ornamental flourishes; the frame is part of the artwork. Everything outside the frame is transparent.'
@@ -193,6 +196,7 @@ Deno.serve(async (req) => {
       : 'The mug is white and glossy: use deep, rich colors with strong contrast against white; avoid very pale areas. Keep the artwork compact and centered, readable at a small size of about 8 cm.');
     if (mug === 'wrap' && img && !double) parts.push('Wide panoramic image that uses the whole width from the left edge to the right edge. No outer border, no mug, no mockup, no watermark.');
     else if (mug === 'wrap' && !double) parts.push('Full-bleed panoramic image: the scene fills the entire image edge to edge with a complete background; no empty or transparent areas. No frame, no border, no mug, no mockup, no watermark.');
+    else if (grid) parts.push('Keep the plain white gutters exactly where they are; every panel is fully painted edge to edge inside its own area. No other border, no text, no watermark.');
     else if (slot) parts.push('Full-bleed: the scene and its background fill the entire image edge to edge; no empty, white or transparent areas. No frame, no border, no text, no watermark.');
     else if (canvas) parts.push('Full-bleed painting: the scene fills the entire image edge to edge with a complete background (sky, landscape, sea or interior); no empty, white or transparent areas. Keep important details and any text away from the outer 7% because those parts wrap around the canvas edges. No frame, no border, no wall, no mockup, no watermark.');
     else if (double) parts.push('Transparent background outside the decorative floral frame. No card, no rectangular border, no mockup, no watermark.');

@@ -3121,7 +3121,28 @@ async function fillSlots(files){var E=emptySlots(),f=view.slotFirst;view.slotFir
 function cartoonOffer(){var L=cur().objs.filter(function(o){return o.ais&&!o.phEmpty&&!o.aiOk;});if(!L.length)return;var left=slotEmpty();
   var t=toastEl();t.classList.add('long','tap');t.style.pointerEvents='auto';clearTimeout(toastT);
   t.innerHTML=(left?'Fotoğraflar karikatür görünümüyle yerleşti, '+left+' yer daha boş. ':'Fotoğraflar karikatür görünümüyle yerleşti. ')+'<b style="text-decoration:underline">Wolf gerçek çizgi filme çevirsin</b> (üye girişi gerekir)';t.hidden=false;
-  t.onclick=function(){t.onclick=null;t.hidden=true;L.forEach(function(o){cartoonQ(o);});};toastT=setTimeout(function(){t.hidden=true;t.onclick=null;},10000);}
+  t.onclick=function(){t.onclick=null;t.hidden=true;cartoonAll(L);};toastT=setTimeout(function(){t.hidden=true;t.onclick=null;},10000);}
+/* Masraf: bütün fotoğraflar tek bir kolaj resmine dizilip Wolf'a TEK seferde çizdirilir, sonra parçalara ayrılıp yerlerine konur */
+async function cartoonAll(L){L=L.filter(function(o){return o&&!o.phEmpty&&assets[o.base];});if(!L.length)return;
+  if(L.length===1){cartoonQ(L[0],'cartoon');return;}
+  if(AI_BUSY||fxBusy){toast('Wolf şu an başka bir çizimle meşgul, biraz sonra yeniden dene.');return;}
+  var tk=await aiTok();if(!tk){aiLogin();return;}
+  var n=L.length,cols=n<=3?n:(n===4?2:3),rows=Math.ceil(n/cols),CW=1536,CH=1024,G=28,cw=(CW-G*(cols+1))/cols,ch=(CH-G*(rows+1))/rows;
+  var c=document.createElement('canvas');c.width=CW;c.height=CH;var x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,CW,CH);var R=[];
+  for(var i=0;i<n;i++){var cx=G+(i%cols)*(cw+G),cy=G+Math.floor(i/cols)*(ch+G);R.push([cx,cy,cw,ch]);
+    var im=await loadImg(assets[L[i].base].url),a=im.naturalWidth/im.naturalHeight,k=cw/ch,sw,sh,sx,sy;
+    if(a>k){sh=im.naturalHeight;sw=sh*k;sx=(im.naturalWidth-sw)/2;sy=0;}else{sw=im.naturalWidth;sh=sw/k;sx=0;sy=(im.naturalHeight-sh)/2;}
+    x.drawImage(im,sx,sy,sw,sh,cx,cy,cw,ch);}
+  AI_BUSY=true;aiWait('Wolf '+n+' fotoğrafı birlikte çizgi filme çeviriyor');
+  try{var img=await aiCall({style:'cartoon',orient:'landscape',image:c.toDataURL('image/jpeg',0.9),slot:true,grid:{cols:cols,rows:rows,n:n},transparent:false});
+    if(!img)return;var out=await loadImg(img),sx2=out.naturalWidth/CW,sy2=out.naturalHeight/CH,ok=0;
+    for(var j=0;j<n;j++){var o=L[j];if(!objById(o.id)||o.phEmpty)continue;var r=R[j],ins=6,pc=document.createElement('canvas');
+      pc.width=Math.round((r[2]-2*ins)*sx2);pc.height=Math.round((r[3]-2*ins)*sy2);pc.getContext('2d').drawImage(out,(r[0]+ins)*sx2,(r[1]+ins)*sy2,(r[2]-2*ins)*sx2,(r[3]-2*ins)*sy2,0,0,pc.width,pc.height);
+      var id=await aiAsset(pc.toDataURL('image/jpeg',0.92)),na=assets[id],A=o.w/o.h,asp=na.w/na.h,cr={x:0,y:0,w:1,h:1};if(asp>A){cr.w=A/asp;cr.x=(1-cr.w)/2;}else{cr.h=asp/A;cr.y=(1-cr.h)/2;}
+      var nid=await fxProcess(id,'none',o.edge||'none',0.5,cr,0);o.base=id;o.crop=cr;o.phs='none';o.phe=o.edge||'none';o.assetId=nid;o.aiOk=1;ok++;}
+    renderObjects();pushHist();longToast(ok+' fotoğraf Wolf\'la çizgi filme çevrildi. Beğenmediğin fotoğrafa dokunup Değiştir ile yenisini ekleyebilirsin.');}
+  catch(_){longToast('Wolf şu an çizemedi. Biraz sonra yeniden dene.');}
+  finally{AI_BUSY=false;aiDone();}}
 var CQ=[],CQrun=false;
 function cartoonQ(o,st){if(st)o.aiSt=st;if(CQ.indexOf(o.id)<0)CQ.push(o.id);if(!CQrun)setTimeout(cartoonRun,0);}
 async function cartoonRun(){if(CQrun)return;CQrun=true;var done=0,ok=0;
