@@ -2176,8 +2176,10 @@ var RULER=true;try{RULER=localStorage.getItem('wf_ruler')!=='0';}catch(_){}
 /* Cetvel: sahne koordinatında (1 cm = PPC). Soldaki cetvel yakanın üstünden (0) aşağı, üstteki cetvel ürünün ortasından (0) sağa ve sola ölçer.
    Yeşil bant baskı alanının cetveldeki yeri; kırmızı çizgi seçilen bedenin boyu (ürünün etek ucu). */
 function renderRuler(){
+  /* Cetvel ürünün görünen ölçeğinde: fotoğraf beden tablosuna göre küçültülmüşse (wornK) 1 cm = PPC*wornK; böylece A4 kutusu cetvelde de 21 cm, göğüs eni de tablodaki kadar okunur */
+  var CM=PPC*(wornK()||1);
   var h=$('#rulerHost');if(!h)return;var bt=$('#rulerBtn');if(bt){bt.classList.toggle('on',RULER);bt.setAttribute('aria-pressed',RULER?'true':'false');bt.setAttribute('aria-label',RULER?'Cetveli gizle':'Cetveli göster');}
-  var gh=$('#gridHost');if(gh){if(!RULER||P().draw){gh.innerHTML='';}else{var gy=NECK_Y[face(view.side)]-ndrop(face(view.side)),g='',i;for(i=-30;i<=30;i++){var gx=300+i*5*PPC;g+='<line'+(i%2?' class="g5"':'')+' x1="'+gx+'" x2="'+gx+'" y1="-2000" y2="2600"/>';}for(i=-30;i<=40;i++){var yy=gy+i*5*PPC;g+='<line'+(i%2?' class="g5"':'')+' x1="-2000" x2="2600" y1="'+yy+'" y2="'+yy+'"/>';}gh.innerHTML='<svg width="'+STAGE_W+'" height="'+STAGE_H+'" viewBox="0 0 '+STAGE_W+' '+STAGE_H+'">'+g+'</svg>';}}
+  var gh=$('#gridHost');if(gh){if(!RULER||P().draw){gh.innerHTML='';}else{var gy=NECK_Y[face(view.side)]-ndrop(face(view.side)),g='',i;for(i=-30;i<=30;i++){var gx=300+i*5*CM;g+='<line'+(i%2?' class="g5"':'')+' x1="'+gx+'" x2="'+gx+'" y1="-2000" y2="2600"/>';}for(i=-30;i<=40;i++){var yy=gy+i*5*CM;g+='<line'+(i%2?' class="g5"':'')+' x1="-2000" x2="2600" y1="'+yy+'" y2="'+yy+'"/>';}gh.innerHTML='<svg width="'+STAGE_W+'" height="'+STAGE_H+'" viewBox="0 0 '+STAGE_W+' '+STAGE_H+'">'+g+'</svg>';}}
   if(!RULER||P().draw){h.innerHTML='';return;}
   var A=areaBox(view.side,cur().area);{var rk=wornK(),rO=designOrigin();if(rk<1){var m=function(v,o){return o+(v-o)*rk;};A={l:m(A.l,rO[0]),r:m(A.r,rO[0]),t:m(A.t,rO[1]),b:m(A.b,rO[1]),w:A.w*rk,h:A.h*rk,cx:m(A.cx,rO[0]),cy:m(A.cy,rO[1]),at:A.at};}}
   var ny=NECK_Y[face(view.side)],gt=ny-ndrop(face(view.side)),o='',k,y,x,len,ty=Math.max(0,gt-30);
@@ -2186,15 +2188,15 @@ function renderRuler(){
   /* Sol cetvel: 0 = omuz dikişi (beden tablosundaki boy buradan ölçülür); ekranın görünen sol kenarına yapışır */
   ny=gt;
   o+='<g transform="translate('+vl+' 0)"><rect class="rb" x="0" y="'+ny+'" width="'+RW+'" height="'+(vb2-ny)+'"/><rect class="ra" x="0" y="'+A.t+'" width="'+RW+'" height="'+A.h+'"/>';
-  for(k=0;ny+k*PPC<=vb2;k++){y=ny+k*PPC;len=(k%10===0?.45:(k%5===0?.3:.16))*RW;o+='<line class="rt" x1="'+(RW-len)+'" x2="'+RW+'" y1="'+y+'" y2="'+y+'"/>';if(k%10===0&&k)o+='<text x="'+(3/sc)+'" y="'+(y+3.5/sc)+'">'+k+'</text>';}
+  for(k=0;ny+k*CM<=vb2;k++){y=ny+k*CM;len=(k%10===0?.45:(k%5===0?.3:.16))*RW;o+='<line class="rt" x1="'+(RW-len)+'" x2="'+RW+'" y1="'+y+'" y2="'+y+'"/>';if(k%10===0&&k)o+='<text x="'+(3/sc)+'" y="'+(y+3.5/sc)+'">'+k+'</text>';}
   o+='<text x="2" y="'+(ny-4/sc)+'">0 · omuz</text>';
-  var top=(A.t-ny)/PPC;
+  var top=(A.t-ny)/CM;
   o+='<text x="'+(RW+4/sc)+'" y="'+(A.t+10/sc)+'" style="fill:#30703f">baskı '+String(Math.round(top*10)/10).replace('.',',')+' cm</text>';
-  try{if(phOn()){var d=phDims(state.product,state.cut);if(d){var yb=gt+d[1]*PPC;if(yb<vb2-2)o+='<line class="rg" x1="0" x2="'+(RW*1.6)+'" y1="'+yb+'" y2="'+yb+'"/><text class="rgt" x="'+(RW+4/sc)+'" y="'+(yb-4/sc)+'">'+phSize()+' · boy '+d[1]+' cm</text>';}}}catch(_){}
+  try{if(phOn()){var d=phDims(state.product,state.cut);if(d){var yb=gt+d[1]*CM;if(yb<vb2-2)o+='<line class="rg" x1="0" x2="'+(RW*1.6)+'" y1="'+yb+'" y2="'+yb+'"/><text class="rgt" x="'+(RW+4/sc)+'" y="'+(yb-4/sc)+'">'+phSize()+' · boy '+d[1]+' cm</text>';}}}catch(_){}
   o+='</g>';
   /* Üst cetvel: 0 = ürünün ortası */
   o+='<rect class="rb" x="'+vl+'" y="'+ty+'" width="'+(vr-vl)+'" height="'+RH+'"/><rect class="ra" x="'+A.l+'" y="'+ty+'" width="'+A.w+'" height="'+RH+'"/>';
-  for(k=-90;k<=90;k++){x=300+k*PPC;if(x<vl||x>vr)continue;len=(k%10===0?.42:(k%5===0?.28:.15))*RH;o+='<line class="rt" x1="'+x+'" x2="'+x+'" y1="'+(ty+RH-len)+'" y2="'+(ty+RH)+'"/>';if(k%10===0&&Math.abs(x-vl)>RW*1.4)o+='<text x="'+x+'" y="'+(ty+RH*.5)+'" text-anchor="middle">'+Math.abs(k)+'</text>';}
+  for(k=-90;k<=90;k++){x=300+k*CM;if(x<vl||x>vr)continue;len=(k%10===0?.42:(k%5===0?.28:.15))*RH;o+='<line class="rt" x1="'+x+'" x2="'+x+'" y1="'+(ty+RH-len)+'" y2="'+(ty+RH)+'"/>';if(k%10===0&&Math.abs(x-vl)>RW*1.4)o+='<text x="'+x+'" y="'+(ty+RH*.5)+'" text-anchor="middle">'+Math.abs(k)+'</text>';}
   h.innerHTML='<svg width="'+STAGE_W+'" height="'+STAGE_H+'" viewBox="0 0 '+STAGE_W+' '+STAGE_H+'">'+o+'</svg>';
 }
 /* Ön tasarım alanı, logo varken logonun kapladığı kare çıkarılarak kırpılır (logo öncelikli). */
@@ -2266,7 +2268,12 @@ function wornK(side){try{if(!phOn())return 1;side=face(side||view.side);var co=p
   var u=phSrc(side==='back'?(co.back||co.front):(co.front||co.back)),cal=u&&PH.cal[u],d=phDims(state.product,state.cut);if(!cal||!cal.ready||cal.raw||!d)return 1;
   var bw=cal.cw||cal.bw,k=bw?bw*phSc(cal,d)/PPC/d[0]:0,df=WORN_DEF[state.product]||.75;
   if(!k||k>1.02||(SWEATY[state.product]&&k>.92))k=(state.cut==='cocuk'&&k>.85)?.92:df;
-  return k>.97?1:Math.max(.6,k);}catch(_){return 1;}}
+  /* k: fotoğrafta görünen gövde eni / beden tablosundaki düz en. Giyilmiş üründe ön panel gövdeyi sarar (görünen en ≈ düz en × k),
+     ama baskı ön panelin ortasında ve neredeyse düzdür: düz genişliği w olan baskının görünen eni, yarıçapı R = görünen en / 2 olan
+     silindirde 2R·sin(w/2R) olur. Önceden bütün tasarım k ile küçültülüyordu (A4 ~14 cm görünüyordu); doğrusu A4'te ~0,94. */
+  var R=k*d[0]/2,w=0;try{var ss=face(side)===side?side:'front';w=areaBox(ss,SS(ss).area,isLand(ss)).w/PPC;}catch(_){w=21;}
+  var kc=(w>0&&R>0)?2*R*Math.sin(Math.min(w/(2*R),1.45))/w:1;
+  return kc>.97?1:Math.max(.75,kc);}catch(_){return 1;}}
 function designOrigin(side){side=face(side||view.side);return [300,(P().neck||NECK_Y)[side]+(state.cut==='cocuk'?DROP_CM_COCUK:DROP_CM)*PPC];}
 function layout(){
   var wr=wrap.getBoundingClientRect(),W=wr.width,H=wr.height;
