@@ -137,7 +137,7 @@ svg.i{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stro
 #passClip{pointer-events:none}
 #passLayer{pointer-events:none}#passLayer .obj{pointer-events:none}
 #logoZone{position:absolute;pointer-events:none;border:calc(1.2px*var(--inv)) dashed #2f8f4e;background:rgba(47,143,78,.06)}#logoZone span{position:absolute;left:0;top:100%;margin-top:calc(2px*var(--inv));font:700 calc(9px*var(--inv)) var(--ui);color:#2f8f4e;white-space:nowrap}
-#shadeHost,#shadeHost>div{position:absolute;inset:0;pointer-events:none}#shadeHost svg{display:block}#shadeHost .sh-m{mix-blend-mode:multiply}#shadeHost .sh-s{mix-blend-mode:screen}
+#shadeHost,#shadeHost>div{position:absolute;inset:0;pointer-events:none}#shadeHost svg{display:block}body.drg #shadeHost{visibility:hidden}#shadeHost .sh-m{mix-blend-mode:multiply}#shadeHost .sh-s{mix-blend-mode:screen}
 .obj{position:absolute;left:0;top:0;transform-origin:50% 50%;cursor:grab}
 .obj.text{white-space:pre;line-height:1.1;padding:.08em .16em}
 .obj.text.warp{padding:0;line-height:0}
@@ -2374,7 +2374,7 @@ function overflowOf(o,A){
   return o.x-hw<A.l-1||o.x+hw>A.r+1||o.y-hh<A.t-1||o.y+hh>A.b+1;
 }
 function liveWarn(o){
-  var ov=$('#ovPill');if(!ov||!o)return;
+  var ov=$('#ovPill');if(!ov||!o||(g&&g.moved))return;
   var EB=extBox(view.side),AB=areaBox(view.side,cur().area);if(EB)AB={l:Math.min(AB.l,EB.l),t:Math.min(AB.t,EB.t),r:Math.max(AB.r,EB.r),b:Math.max(AB.b,EB.b),w:0,h:0};if(EB){AB.w=AB.r-AB.l;AB.h=AB.b-AB.t;AB.cx=(AB.l+AB.r)/2;AB.cy=(AB.t+AB.b)/2;}
   ov.hidden=!overflowOf(o,AB);
   if(o.type==='image'){var r=qualityOf(o),q=$('#qPill');if(q){q.hidden=!r;if(r){q.className='pill '+r.cls;q.textContent=r.txt;}}}
@@ -3889,13 +3889,13 @@ function onMove(e){
     o=objById(g.id);if(!o)return;
     var dx=p.x-g.px,dy=p.y-g.py;
     if(!g.moved&&Math.hypot(dx,dy)*view.s<4)return;
-    g.moved=true;
-    o.x=clamp(g.sx+dx,g.box.l,g.box.r);o.y=clamp(g.sy+dy,g.box.t,g.box.b);
-    centerSnap(o);
-    place(els[o.id],o);updateSel();
+    if(!g.moved){g.moved=true;dragOn(o);}
+    /* Hız: parmak saniyede 120 kez hareket bildirebilir; ekran kare başına bir kez güncellenir */
+    g.nx=clamp(g.sx+dx,g.box.l,g.box.r);g.ny=clamp(g.sy+dy,g.box.t,g.box.b);
+    if(!g.raf){var gm=g;gm.raf=requestAnimationFrame(function(){gm.raf=0;moveApply(gm);});}
   }else if(g.kind==='turn'){
     o=objById(g.id);if(!o)return;
-    g.moved=true;
+    if(!g.moved)dragOn(o);g.moved=true;
     if(g.mode==='turn'){                          /* siyah nokta: yalnız döndürür, boy değişmez */
       var r=g.r0+deg(ang(g.cx,g.cy,p.x,p.y)-g.a0),sn=Math.round(r/45)*45;
       if(Math.abs(r-sn)<4)r=sn;                  /* düz ve 45° açılara hafifçe oturur */
@@ -3906,6 +3906,10 @@ function onMove(e){
   }
 }
 /* Ortalama: tasarım baskı alanının yatay/dikey ortasına yaklaşınca oraya oturur, pembe çizgi ortada olduğunu gösterir. */
+function moveApply(gm){var o=objById(gm.id);if(!o||gm.nx==null)return;o.x=gm.nx;o.y=gm.ny;centerSnap(o);place(els[o.id],o);updateSel();}
+/* Sürüklerken: kumaş gölgesi (karışım katmanı) gizlenir, parça kendi katmanına alınır; iPhone'da takılmayı önler */
+function dragOn(o){document.body.classList.add('drg');var e=els[o.id];if(e)e.style.willChange='transform';}
+function dragOff(){document.body.classList.remove('drg');$$('#objLayer .obj').forEach(function(e){if(e.style.willChange)e.style.willChange='';});}
 function centerSnap(o){
   var A=areaBox(view.side,cur().area),t=9/(view.s||1),ab=$('#areaBox'),ic=inkCenter(o),v=Math.abs(ic.x-A.cx)<t,h=Math.abs(ic.y-A.cy)<t;
   if(v)o.x+=A.cx-ic.x;if(h)o.y+=A.cy-ic.y;
@@ -3915,7 +3919,7 @@ function centerSnap(o){
 }
 function centerOff(){var ab=$('#areaBox');if(ab)ab.classList.remove('onV','onH');centerSnap.was=false;}
 function onUp(e){
-  centerOff();
+  centerOff();if(g&&g.raf){cancelAnimationFrame(g.raf);g.raf=0;if(g.kind==='move')moveApply(g);}dragOff();
   var had=!!ptrs[e.pointerId];
   delete ptrs[e.pointerId];
   if(pinch){if(Object.keys(ptrs).length<2)endPinch();try{wrap.releasePointerCapture(e.pointerId);}catch(_){}return;}
