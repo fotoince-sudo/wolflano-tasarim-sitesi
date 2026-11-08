@@ -3084,8 +3084,8 @@ document.addEventListener('load',function(e){var t=e.target;if(t&&t.tagName==='I
    Vergi levhalı firmalar üye olup başvurur (sunucu: toptan-basvuru), yönetici onaylayınca toptan fiyatlar açılır.
    Toptan fiyat = sitedeki perakende fiyat × (1 − kademe indirimi); kademeler ve en az adet yönetimden (toptan_ayar, yalnız onaylı firma ve yönetici okur).
    Toptan sepet bu cihazda tutulur (wf_toptan); "Sipariş talebi gönder" siparişi TOPTAN notuyla yönetime düşürür. */
-var TT={ap:undefined,ayar:null,tab:'b-tee',busy:false,msg:''};
-var TT_CN={'b-tee':'Tişört','kag':'Süblimasyon kağıdı','b-polo':'Polo','b-sweat':'Sweatshirt','b-hood':'Kapüşonlu sweatshirt','b-mug':'Kupa','b-canvas':'Canvas tablo','b-hat':'Şapka','bas':'Wolflano tasarımlı'},TT_CO=['b-tee','kag','b-polo','b-sweat','b-hood','b-mug','b-canvas','b-hat','bas'],TT_CI={'kag':'assets/toptan/sublimasyon-kagit-a4-100.webp'};
+var TT={ap:undefined,ayar:null,tab:'pam',busy:false,msg:''};
+var TT_CN={'pam':'Pamuklu tekstil','sub':'Süblimasyon tekstil','b-tee':'Tişört','kag':'Süblimasyon kağıtlar','b-polo':'Polo','b-sweat':'Sweatshirt','b-hood':'Kapüşonlu sweatshirt','b-mug':'Süblimasyon kupa','b-canvas':'Canvas tablo','b-hat':'Şapka','bas':'Wolflano tasarımlı'},TT_CO=['pam','sub','b-mug','kag','b-tee','b-polo','b-sweat','b-hood','b-mug','b-canvas','b-hat','bas'],TT_CI={'kag':'assets/toptan/sublimasyon-kagit-a4-100.webp'};
 function ttCart(){try{return JSON.parse(localStorage.getItem('wf_toptan')||'{}')||{};}catch(_){return {};}}
 function ttSave(c){try{localStorage.setItem('wf_toptan',JSON.stringify(c));}catch(_){}}
 async function ttLoad(){if(TT.busy)return;TT.busy=true;try{var tk=await sbToken();if(!tk||!ACCOUNT.user){TT.ap=null;}else{
@@ -3099,8 +3099,8 @@ function ttUnitA(ay,it,q){var T=((ay&&ay.tiers)||[]).filter(function(t){return +
 function ttUnit(it,q){return ttUnitA(TT.ayar,it,q);}
 function ttItems(all,ay0){var ay=ay0||TT.ayar||{},hide=all?[]:(ay.hide||TT.gz||[]),L=[];
   /* Toptana özel ürünler (tişörtler, süblimasyon kağıdı): site verisinde D.ttx listesi; fiyatı yönetimdeki "Toptan fiyat" alanından gelir */
-  ((D&&D.ttx)||[]).forEach(function(x){if(!x||!x.id||x.show===false)return;var k='x:'+x.id;if(hide.indexOf(k)>=0)return;L.push({k:k,g:x.g||'tis',ct:x.g==='kag'?'kag':'b-tee',n:x.n||'Ürün',img:x.img||'',price:+x.price||0,cols:(x.sw||[]).length,sw:x.sw||[],d:x.d||'',nt:x.nt||'',min:x.min!=null?+x.min:null});});
-  if(all||ay.blanks!==false)BLANKS.forEach(function(b){if(hide.indexOf('b:'+b.id)>=0)return;var c=(b.colors||[])[0]||{};L.push({k:'b:'+b.id,g:'bos',ct:'b-'+(b.p||b.id),n:b.name||'Ürün',img:c.front||(b.imgs||[])[0]||'',price:+b.price||0,cols:(b.colors||[]).length});});
+  ((D&&D.ttx)||[]).forEach(function(x){if(!x||!x.id||x.show===false)return;var k='x:'+x.id;if(hide.indexOf(k)>=0)return;L.push({k:k,g:x.g||'tis',ct:x.ct||(x.g==='kag'?'kag':/^sb-/.test(x.id)?'sub':'pam'),n:x.n||'Ürün',img:x.img||'',price:+x.price||0,cols:(x.sw||[]).length,sw:x.sw||[],d:x.d||'',nt:x.nt||'',min:x.min!=null?+x.min:null});});
+  if(all||ay.blanks!==false)BLANKS.forEach(function(b){if(hide.indexOf('b:'+b.id)>=0)return;var c=(b.colors||[])[0]||{};L.push({k:'b:'+b.id,g:'bos',ct:/^(tee|polo|sweat|hood|hat)$/.test(b.p||b.id)?'pam':'b-'+(b.p||b.id),n:b.name||'Ürün',img:c.front||(b.imgs||[])[0]||'',price:+b.price||0,cols:(b.colors||[]).length});});
   if(all||ay.products!==false){var seen={};ALLP.forEach(function(p){if(p.show===false||hide.indexOf('p:'+p.name)>=0)return;var k=p.name;if(seen[k]){seen[k].cols++;return;}seen[k]={k:'p:'+p.name,g:'bas',ct:'bas',n:p.name,img:(p.imgs||[])[0]||'',price:+p.price||0,cols:1,pid:p.id};L.push(seen[k]);});}
   return L;}
 function ttCard(it){var ok=ttOk(),c=ttCart()[it.k],q=c?c.q:0,tiers=ttTiers();
