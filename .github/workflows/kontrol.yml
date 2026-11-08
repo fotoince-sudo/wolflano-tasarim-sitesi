@@ -1,0 +1,74 @@
+# Site kontrol robotu: her gece ve her yayından sonra canlı siteyi iPhone ekranında gezer.
+# Hata bulursa rapor e-postayla gelir (kontrol-rapor fonksiyonu). Ekran görüntüleri bu çalışmanın "Artifacts" bölümünde.
+# Kimlik: GitHub'ın imzalı kimlik belgesi (OIDC); gizli anahtar gerekmez.
+name: Site kontrol
+
+on:
+  schedule:
+    - cron: '17 0 * * *'
+  workflow_run:
+    workflows: ['Yayın paketi']
+    types: [completed]
+  workflow_dispatch:
+    inputs:
+      ilk:
+        description: 'Kuruldu e-postası gönder (her şey yolundaysa da)'
+        required: false
+        default: 'hayir'
+
+permissions:
+  contents: read
+  id-token: write
+  actions: read
+
+concurrency:
+  group: kontrol
+  cancel-in-progress: true
+
+jobs:
+  kontrol:
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Robotu hazırla
+        run: |
+          npm init -y >/dev/null
+          npm i playwright@1 >/dev/null
+          npx playwright install --with-deps chromium >/dev/null
+      - name: Yeni yayının sunucuya geçmesini bekle
+        if: github.event_name == 'workflow_run'
+        run: sleep 150
+      - name: Siteyi gez
+        id: gez
+        run: node .github/kontrol.mjs
+      - name: Ekran görüntüleri
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: kontrol-sonuc
+          path: kontrol-sonuc
+          retention-days: 14
+      - name: Rapor gönder
+        if: always() && (steps.gez.outputs.bozuk != '0' || github.event.inputs.ilk == 'evet')
+        env:
+          LINK: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          BOZUK: ${{ steps.gez.outputs.bozuk }}
+        run: |
+          [ -f kontrol-sonuc/ozet.txt ] || echo "Robot siteyi gezemedi (çalışma hatası)." > kontrol-sonuc/ozet.txt
+          if [ "${BOZUK:-1}" = "0" ]; then KONU="Wolflano site kontrolü: her şey yolunda"; GIRIS="Robot siteyi baştan sona gezdi, sorun bulmadı."; else KONU="Wolflano site kontrolü: ${BOZUK:-?} sorun bulundu"; GIRIS="Robot siteyi gezerken sorun buldu. Claude'a bu e-postayı gösterirsen düzeltir. (✓ tamam, ! uyarı, ✗ hata)"; fi
+          python3 - <<'PY'
+          import json,os,urllib.request
+          t=os.environ.get('GIRIS','')+'\n\n'+open('kontrol-sonuc/ozet.txt',encoding='utf-8').read()
+          b=json.dumps({'subject':os.environ['KONU'],'text':t,'link':os.environ['LINK']}).encode()
+          q=urllib.request.Request(os.environ['ACTIONS_ID_TOKEN_REQUEST_URL']+'&audience=wolflano-kontrol',headers={'Authorization':'Bearer '+os.environ['ACTIONS_ID_TOKEN_REQUEST_TOKEN']})
+          tok=json.loads(urllib.request.urlopen(q,timeout=30).read())['value']
+          r=urllib.request.Request('https://wgovwmeirlzwalelazfj.supabase.co/functions/v1/kontrol-rapor',data=b,headers={'Content-Type':'application/json','Authorization':'Bearer '+tok})
+          try: print(urllib.request.urlopen(r,timeout=60).read().decode())
+          except Exception as e: print('rapor gönderilemedi',e)
+          PY
+        shell: bash
