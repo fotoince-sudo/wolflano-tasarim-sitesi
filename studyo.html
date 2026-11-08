@@ -2297,13 +2297,18 @@ function layout(){
     s=Math.max(base,Math.min(base*5.5,Math.min(W/(A.w*1.7),H/(A.h*1.45))));cx=A.cx;cy=A.cy;
   }
   view.bs=s;view.cx=cx;view.cy=cy;
+  /* Yakınlaştırılmışken (iki parmak) panel açılıp kapanınca, seçim çubuğu çıkınca ya da ekran yüksekliği değişince ürün kaymasın:
+     kullanıcı yakınlığı/kaydırmayı değiştirmediyse önceki ekran konumu ve ölçeği aynen korunur */
+  var LT=view.lt,ky=view.side+'|'+cur().area+'|'+state.product+'|'+state.cut+'|'+view.fit;
+  if(LT&&(view.z>1.01||view.uz)&&LT.key===ky&&LT.z===view.z&&LT.px===view.px&&LT.py===view.py){
+    view.z=LT.s/s;view.px=LT.tx-(W/2-cx*LT.s);view.py=LT.ty-(H0/2+oy-cy*LT.s);}
   s=s*view.z;
   view.s=s;var kx=wornK();view.kx=kx;var dO=designOrigin();view.dox=dO[0];view.doy=dO[1];
   document.querySelectorAll('#stage .dwrap').forEach(function(el){el.style.transformOrigin=dO[0]+'px '+dO[1]+'px';el.style.transform=kx<1?'scale('+kx+')':'';el.style.setProperty('--inv',(1/(s*kx)).toFixed(4));});
   if(!view.ready)stage.style.transition='none';
   stage.style.transform='translate('+(W/2-cx*s+view.px)+'px,'+(H0/2+oy-cy*s+view.py)+'px) scale('+s+')';
   stage.style.setProperty('--inv',(1/s).toFixed(4));
-  view.W=W;view.H=H0;view.oy=oy;try{renderRuler();}catch(_){}
+  view.W=W;view.H=H0;view.oy=oy;view.lt={key:ky,z:view.z,px:view.px,py:view.py,s:s,tx:W/2-cx*s+view.px,ty:H0/2+oy-cy*s+view.py};try{renderRuler();}catch(_){}
   if(!view.ready){view.ready=true;requestAnimationFrame(function(){requestAnimationFrame(function(){stage.style.transition='';});});}
 }
 function resetZoom(){view.z=1;view.px=0;view.py=0;}
@@ -3508,7 +3513,7 @@ function chooseProduct(p,c){
   if(state.product==='mug'){var wa=state.cut==='sub'?'mugw':'mug';if(state.front.area!==wa){remap(state.front,areaBox('front',state.front.area),areaBox('front',wa));state.front.area=wa;}if(state.cut==='sub')view.side='front';}
   if(!P().sides[view.side]||(view.side==='logo'&&!hasLogoSide())||(view.side==='logo2'&&!hasLogo2()))view.side='front';
   view.sel=null;closeProdPage();
-  view.fit='shirt';resetZoom();syncFitBtn();
+  view.fit='shirt';resetZoom();view.uz=false;syncFitBtn();
   renderAll();layout();if(ch)pushHist();
   toast((state.product==='canvas'?CUT_NAME[state.cut]:productLabel())+': '+(state.product==='mug'?(state.cut==='sub'?'kupanın çevresini saran 20 × 9 cm süblimasyon baskı.':'kulpun iki yanına (ön ve arka) 8 × 8 cm baskı.'):P().rule));
 }
@@ -3658,10 +3663,10 @@ function startPinch(){
 function movePinch(){
   var P1=pinchState(),W=wrap.clientWidth,H=wrap.clientHeight;
   var z=clamp(pinch.z0*P1.d/pinch.d0,1,5);
-  if(z<=1.02){resetZoom();}
+  if(z<=1.02){resetZoom();view.uz=view.fit==='area';}
   else{
     var s=view.bs*z;
-    view.z=z;
+    view.z=z;view.uz=true;
     view.px=P1.m.x-pinch.lx*s-W/2+view.cx*s;
     view.py=P1.m.y-pinch.ly*s-H/2-(view.oy||0)+view.cy*s;
   }
@@ -3841,7 +3846,8 @@ function openTab(name,focusInput){
   view.tab=name;sheet.hidden=false;
   $$('.panel').forEach(function(p){p.hidden=p.dataset.p!==name;});
   $$('#tabs button').forEach(function(b){b.classList.toggle('on',b.dataset.tab===name);});
-  view.fit='area';resetZoom();syncFitBtn();
+  /* Kullanıcı kendisi yakınlaştırdıysa (iki parmak ya da büyüteç) panel açılınca görünüm değişmez */
+  if(!view.uz){view.fit='area';resetZoom();}syncFitBtn();
   if(name==='tpl'){if(tplLastGroup!==tplGroup())renderTpl();renderTplPreviews();}
   if(name==='opt')renderOpt();
   sheet.classList.toggle('tall',name==='wolf');
@@ -3854,7 +3860,7 @@ function openTab(name,focusInput){
 function closeTab(){
   view.tab=null;sheet.hidden=true;setTimeout(syncOpt,0);
   $$('#tabs button').forEach(function(b){b.classList.remove('on');});
-  view.fit='shirt';resetZoom();syncFitBtn();layout();
+  if(!view.uz){view.fit='shirt';resetZoom();}syncFitBtn();layout();
 }
 /* Hazır yazı stilleri: tek dokunuşla yazı tipi, renk, kontur, görünüm ve kavis. Yazı seçiliyse ona uygulanır, değilse stilli yeni yazı eklenir.
    Koyu renkli üründe siyah yazı beyaza, beyaz yazı siyaha döner ki görünsün. up: büyük harfe çevir */
@@ -4075,7 +4081,7 @@ document.addEventListener('keydown',function(e){if(e.key==='Escape'&&document.bo
 /* Tasarım alanındaki ipucu yazısı yalnız ilk 3 açılışta görünür */
 (function(){try{var n=+(localStorage.getItem('wf_hint_n')||0);localStorage.setItem('wf_hint_n',String(n+1));if(n>=3){var h=$('#hint');if(h)h.hidden=true;}}catch(_){}})();
 $('#rulerBtn').addEventListener('click',function(){RULER=!RULER;try{localStorage.setItem('wf_ruler',RULER?'1':'0');}catch(_){}renderRuler();toast(RULER?'Cetvel açık: yeşil bant baskı alanı, ölçüler cm':'Cetvel gizlendi');});
-$('#fitBtn').addEventListener('click',function(){view.fit=fitNear()?'shirt':'area';resetZoom();syncFitBtn();layout();});
+$('#fitBtn').addEventListener('click',function(){var near=fitNear();view.fit=near?'shirt':'area';resetZoom();view.uz=!near;syncFitBtn();layout();});
 $('#sideF').addEventListener('click',function(){switchSide('front');});
 $('#sideL').addEventListener('click',function(){switchSide('logo');if(!SS('logo').objs.length)toast('Sol göğüs logo · 8 × 8 cm. Ön tasarımla çakışırsa logo önde kalır.');});
 $('#sideL2').addEventListener('click',function(){switchSide('logo2');if(!SS('logo2').objs.length)toast('Sağ göğüs logo · 8 × 8 cm, sol logonun aynası. Türk bayrağı ya da ikinci bir logo için. Ön tasarımla çakışırsa logo önde kalır.');});
@@ -4517,7 +4523,7 @@ $('#orderClose').addEventListener('click',leaveOrder);
 $('#thumbs').addEventListener('click',function(e){
   var f=e.target.closest('figure[data-side]');if(!f)return;
   leaveOrder();closeOrder();
-  view.side=f.dataset.side;view.sel=null;view.grp=false;view.fit='shirt';resetZoom();syncFitBtn();renderAll();
+  view.side=f.dataset.side;view.sel=null;view.grp=false;view.fit='shirt';resetZoom();view.uz=false;syncFitBtn();renderAll();
 });
 $('#rosterList').addEventListener('input',function(e){
   var t=e.target.closest('[data-rk]');if(!t)return;
