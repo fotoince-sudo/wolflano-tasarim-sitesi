@@ -2396,7 +2396,7 @@ function longToast(m){var t=toastEl();t.textContent=m;t.hidden=false;t.classList
 function select(id){
   view.sel=id||null;view.pop=null;view.grp=false;
   buildSel();syncCtx();syncTextInput();
-  var so=selObj();if(so&&so.phEmpty&&!so.lock&&!view.noPick){slotPick(so.id);}
+  var so=selObj();if(so&&so.phEmpty&&!so.lock&&!view.noPick&&!view.inDown){slotPick(so.id);}
 }
 function syncTextInput(){
   var o=selObj(),isT=o&&o.type==='text'&&!o.lock;
@@ -2490,6 +2490,8 @@ function addImageObj(assetId){
   if(hf)toast('Fotoğraf çerçevedeki yerine oturdu. Kaydırıp büyüterek ayarlayabilirsin.');
 }
 function loadFile(file){
+  /* Şablonda boş fotoğraf yeri varsa Görsel'den yüklenen fotoğraf da ilk boş yere kendiliğinden oturur */
+  if(!view.aiNext&&emptySlots().length){fillSlot(emptySlots()[0],file).catch(function(){toast('Bu dosya açılamadı. PNG veya JPG dene.');});try{if(view.tab&&innerWidth<700)closeTab();}catch(_){}return;}
   var url=URL.createObjectURL(file),im=new Image();
   im.onload=function(){
     var id='a'+(++assetN);assets[id]={url:url,w:im.naturalWidth,h:im.naturalHeight,up:true};assetList.push(id);
@@ -3714,7 +3716,7 @@ function onDown(e){
   }
   if(h&&o&&o.slot){if(slotPan(o))g={kind:'zoom',id:o.id,cx:o.x,cy:o.y,d0:Math.max(8,dist(o.x,o.y,p.x,p.y)),c0:JSON.parse(JSON.stringify(o.crop)),moved:false};return;}
   if(sb&&o&&o.slot){slotDown(o,p);return;}
-  if(oEl&&!oEl.closest('#selLayer')){var sid=+oEl.dataset.id,sob=objById(sid);if(sob&&sob.slot){if(view.sel!==sid){select(sid);if(slotPan(sob))slotDown(sob,p);}else slotDown(sob,p);return;}}
+  if(oEl&&!oEl.closest('#selLayer')){var sid=+oEl.dataset.id,sob=objById(sid);if(sob&&sob.slot){if(view.sel!==sid){view.inDown=true;try{select(sid);}finally{view.inDown=false;}if(slotPan(sob)||sob.phEmpty)slotDown(sob,p);}else slotDown(sob,p);return;}}
   if(h&&o&&!o.lock){
     g={kind:'turn',mode:h.dataset.h,id:o.id,cx:o.x,cy:o.y,a0:ang(o.x,o.y,p.x,p.y),r0:o.rot,
        d0:Math.max(8,dist(o.x,o.y,p.x,p.y)),base:{w:o.w,h:o.h,s:o.size||0}};
@@ -3752,7 +3754,8 @@ function inkEnsure(o){if(!o||inkOf(o)||INKQ[o.id]||g)return;INKQ[o.id]=1;inkComp
 function inkCenter(o){var r=inkOf(o);if(!r)return {x:o.x,y:o.y};var a=o.rot*PI/180,c=Math.cos(a),s2=Math.sin(a);return {x:o.x+r.dx*c-r.dy*s2,y:o.y+r.dx*s2+r.dy*c};}
 function moveBounds(o,A){var m=Math.min(o.w,o.h)*0.45;return {l:A.l-m,r:A.r+m,t:A.t-m,b:A.b+m};}
 function slotDown(o,p){
-  if(o.phEmpty){slotPick(o.id);return;}
+  /* Boş fotoğraf yeri: seçme ekranı parmak kalkınca açılır (iPhone, parmak basılırken dosya seçtirmiyor) */
+  if(o.phEmpty){g={kind:'pick',id:o.id,x:p.x,y:p.y,moved:false};return;}
   if(slotPan(o))g={kind:'pan',id:o.id,px:p.x,py:p.y,c0:JSON.parse(JSON.stringify(o.crop)),moved:false};
 }
 function startMove(id,p){
@@ -3831,6 +3834,7 @@ function onUp(e){
   /* Şablon/şekil/görsel paneli açıkken tasarımdaki bir parçaya dokunulursa panel kapanır; tasarım küçülüp kaybolmaz */
   if(tc&&view.tab)setTimeout(closeTab,0);
   if(e.type!=='pointerup'){if(gg.moved){syncCtx();pushHist();}return;}   /* iptal edilen dokunuş */
+  if(k==='pick'){var po=objById(gg.id);if(po&&po.phEmpty)slotPick(po.id);return;}
   if(k==='pan'||k==='zoom'){var so2=objById(gg.id);if(gg.moved&&so2){pushHist();slotBake(so2);}return;}
   if(k==='gmove'||k==='gturn'){if(gg.moved)pushHist();else if(k==='gmove'&&gg.tid)select(gg.tid);return;}
   if(k==='move'){if(gg.moved){pushHist();updateSel();}else tapObject(gg.id);}
