@@ -45,6 +45,19 @@ Cevabını SADECE şu JSON biçiminde ver: {"cevap":"müşteriye mesajın"}`;
 
 // Sitenin her sayfasındaki Aybüke (mode: 'site'): kibar satış danışmanı. Ürün listesi ve güncel fiyatlar istemciden gelir;
 // yalnız o listedeki ürünleri önerir (id ile), stokta olmayanı önermez, fiyat uydurmaz.
+
+/* Fotoğraflı tasarım bilgisi: şablonlar, kolaj, otomatik yerleşim (iki asistan da bilir) */
+const FOTO = `
+FOTOĞRAFLI TASARIM BİLGİSİ (müşteri fotoğraf, kolaj, şablon sorarsa bunlara göre anlat; kısa ve adım adım):
+- Fotoğraflı şablonlar: Stüdyoda alttaki "Şablon" düğmesi. "Özel günler" (Yılbaşı, Sevgililer Günü, Anneler Günü) ile "Erkek", "Kadın", "Çocuk" kategorilerinde fotoğraf yerli hazır tasarımlar var.
+- Kupa (süblimasyon, kupanın çevresi 20 × 9 cm): 3 ve 4 fotoğraflı şablonlar.
+- Tişört ve sweatshirt (A4 ve A3 baskı): tek fotoğraflı (Wolf Baba, Wolf Anne, Wolf Çocuk; fotoğraf 15 × 15 cm), 3, 4 ve 5 fotoğraflı, 5 fotoğraflı kolaj (dikey ve yatay), 6 fotoğraflı (yatay 3 + 3 ya da dikey 2 + 2 + 2).
+- Otomatik yerleşim: Şablonu seçince kaç fotoğraf yeri varsa telefon o kadar fotoğraf seçtirir; müşteri hepsini birlikte seçer, sistem soldan sağa, yukarıdan aşağı kendisi yerleştirir ve pencereye göre ortalar. Az seçerse boş kalan yere dokunup ekler. Fotoğrafı değiştirmek için fotoğrafa dokunup "Değiştir"; kaydırmak için fotoğrafı seçip parmakla kaydırır, köşedeki beyaz kareyle büyütür.
+- Zemin: Şablonun zemini "Zemini değiştir" ile değişir (Görsel sekmesi → Zeminler), fotoğraflar yerinde kalır. "Zemini flulaştır" ile zemin bulanıklaşır. Zeminler şablonsuz tasarımda arka plan olarak da eklenir.
+- Kolaj (Wolf sekmesi → Kolaj): Müşteri fotoğraflarını yükler, "Fotoğrafları tasarla" der, Wolf hepsini otomatik dizer. İki düzen var: "Serbest" (karışık, hafif eğik, albüm gibi) ve "Düzenli" (eşit kutular). En fazla: kupa 7 fotoğraf; tişört, sweatshirt, polo, kapüşonlu 12 fotoğraf; kanvas 35 × 50 için 15; kanvas 50 × 70 için Serbest 30, Düzenli 35 fotoğraf.
+- Çizgi film: "Çizgi Filme Dönüştürme Şablonu" seçilirse fotoğraflar önce karikatür görünümüyle yerleşir; müşteri isterse "Wolf gerçek çizgi filme çevirsin"e dokunur (üye girişi gerekir), Wolf bütün fotoğrafları birlikte çizer. Tek bir fotoğraf için fotoğrafa dokunup "Wolf çizsin · Tarz".
+- Net baskı için fotoğrafların büyük boyutta (telefonun kendi çektiği orijinal hâli) yüklenmesini öner.
+- Cevabın sesli de okunabilir: ürün kodu, simge ve uzun liste yazma; kısa, düz cümleler kur.`;
 const SYS_SITE = `Sen Wolflano'nun sitedeki müşteri danışmanısın. Adın Aybüke: Selçuklu savaşçı ruhlu, cesur, sıcak ve yardımsever bir genç kadın. Kendini tanıtman gerekirse "Ben Aybüke, Wolflano'nun danışmanıyım" de. Amacın müşteriye doğru ürünü bulup satın almasına yardım etmek; iyi bir mağaza danışmanı gibi: ilgili, dürüst, kısa. Israr etme, baskı yapma, abartma.
 
 Wolflano: İzmir'den, sportif-günlük giyim markası. Sözü: "Logoya değil, kumaşa para öde." Kaliteden ödün vermez: tişört en az 240 g, polo en az 280 g, sweatshirt en az 380 g kumaş. Bölümler:
@@ -93,7 +106,7 @@ const SES_TARIF = 'Türkçe konuş, doğal İstanbul Türkçesi telaffuzuyla. Se
   'Samimi ve sakin konuş, sanki karşındaki müşteriye gülümseyerek anlatıyorsun. Ne çok hızlı ne yavaş; cümle aralarında doğal kısa duraklar ver. Robotik ya da reklam spikeri gibi değil, gerçek bir insan gibi.';
 async function ses(req: Request, key: string, body: any): Promise<Response> {
   const ip = (req.headers.get('x-forwarded-for') || req.headers.get('cf-connecting-ip') || 'x').split(',')[0].trim();
-  const text = String(body.text || '').replace(/https?:\/\/\S+/g, '').replace(/[*_#>`]/g, '').replace(/\s+/g, ' ').trim().slice(0, 700);
+  const text = String(body.text || '').replace(/https?:\/\/\S+/g, '').replace(/\b(?=[a-z0-9]*\d)[a-z0-9]{10,}\b/g, '').replace(/₺\s*([\d.,]+)/g, '$1 TL').replace(/([\d.,]+)\s*₺/g, '$1 TL').replace(/[*_#>`|•]/g, '').replace(/\s+/g, ' ').trim().slice(0, 700);
   if (!text) return j({ error: 'empty' }, 400);
   if (!sesAllow(ip)) return j({ error: 'limit' }, 429);
   const model = Deno.env.get('OPENAI_TTS_MODEL') || 'gpt-4o-mini-tts';
@@ -130,8 +143,8 @@ Deno.serve(async (req) => {
     const site = body.mode === 'site';
     const ctx = String(body.context || '').slice(0, site ? 7000 : 600);
     const msgs: unknown[] = [{ role: 'system', content: site
-      ? SYS_SITE + (ctx ? `\n\nGÜNCEL BİLGİ (müşterinin bulunduğu sayfa, ürün listesi "id | ad | fiyat | not", baskı ücretleri):\n${ctx}` : '')
-      : SYS + (ctx ? `\n\nMüşterinin şu anki ekranı ve güncel ücretler: ${ctx}` : '') }];
+      ? SYS_SITE + FOTO + (ctx ? `\n\nGÜNCEL BİLGİ (müşterinin bulunduğu sayfa, ürün listesi "id | ad | fiyat | not", baskı ücretleri):\n${ctx}` : '')
+      : SYS + FOTO + (ctx ? `\n\nMüşterinin şu anki ekranı ve güncel ücretler: ${ctx}` : '') }];
     list.forEach((m) => {
       const t = String(m?.text || '').slice(0, 500).trim();
       if (t) msgs.push({ role: m.role === 'assistant' ? 'assistant' : 'user', content: t });

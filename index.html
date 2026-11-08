@@ -5509,14 +5509,22 @@ var DATA_P=(async function(){
     c.push('Ürünler:\n'+s);return c.join('\n');}
   /* Aybüke'nin sesi: önce yapay zekâ sesi (sunucu: yardim, mode: ses; doğal kadın sesi, ücretli, kuruşlar), olmazsa telefonun en iyi Türkçe sesi.
      iPhone sesin çalmasına yalnız dokunuşla izin verir: her dokunuşta (sor, mikrofon, aç) ses kanalı açık tutulur (aysAc). */
-  var AYS_AC=null,AYS_SRC=null,AYS_SEQ=0;
-  function aysAc(){try{if(!AYS_AC){var C=window.AudioContext||window.webkitAudioContext;if(!C)return;AYS_AC=new C();}if(AYS_AC.state==='suspended')AYS_AC.resume();var b=AYS_AC.createBuffer(1,1,22050),s=AYS_AC.createBufferSource();s.buffer=b;s.connect(AYS_AC.destination);s.start(0);}catch(_){}}
-  function aysStop(){AYS_SEQ++;try{if(AYS_SRC)AYS_SRC.stop();}catch(_){}AYS_SRC=null;try{speechSynthesis.cancel();}catch(_){}}
+  var AYS_AC=null,AYS_SRC=null,AYS_SEQ=0,AYS_EL=null;
+  /* Sesin kendisi bir ses öğesiyle çalınır (iPhone'da WebAudio bazen sesi bozuk/hızlı çalıyordu); ilk dokunuşta kilidi açılır */
+  function aysEl(){if(!AYS_EL){AYS_EL=new Audio();AYS_EL.setAttribute('playsinline','');AYS_EL.preload='auto';}return AYS_EL;}
+  function aysSil(){var n=800,b=new Uint8Array(44+n*2),v=new DataView(b.buffer),w=function(o,t){for(var i=0;i<t.length;i++)b[o+i]=t.charCodeAt(i);};w(0,'RIFF');v.setUint32(4,36+n*2,true);w(8,'WAVEfmt ');v.setUint32(16,16,true);v.setUint16(20,1,true);v.setUint16(22,1,true);v.setUint32(24,8000,true);v.setUint32(28,16000,true);v.setUint16(32,2,true);v.setUint16(34,16,true);w(36,'data');v.setUint32(40,n*2,true);var s='';for(var i=0;i<b.length;i++)s+=String.fromCharCode(b[i]);return 'data:audio/wav;base64,'+btoa(s);}
+  /* Okunacak metin: ürün kodları, simgeler ve emojiler çıkarılır, fiyatlar "TL" ile okunur */
+  function aysTxt(t){return String(t||'').replace(/https?:\/\/\S+/g,'').replace(/\b(?=[a-z0-9]*\d)[a-z0-9]{10,}\b/g,'').replace(/₺\s*([\d.,]+)/g,'$1 TL').replace(/([\d.,]+)\s*₺/g,'$1 TL').replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\uFE0F]/gu,'').replace(/[*_#>`|•·]/g,' ').replace(/\s*\n+\s*/g,'. ').replace(/\s{2,}/g,' ').replace(/\s+([.,!?])/g,'$1').trim();}
+  function aysAc(){try{var e=aysEl();if(!e.dataset.ok){e.src=aysSil();var pp=e.play();if(pp&&pp.then)pp.then(function(){e.pause();e.dataset.ok='1';}).catch(function(){});}}catch(_){}
+    try{if(!AYS_AC){var C=window.AudioContext||window.webkitAudioContext;if(!C)return;AYS_AC=new C();}if(AYS_AC.state==='suspended')AYS_AC.resume();var b=AYS_AC.createBuffer(1,1,22050),s=AYS_AC.createBufferSource();s.buffer=b;s.connect(AYS_AC.destination);s.start(0);}catch(_){}}
+  function aysStop(){AYS_SEQ++;try{if(AYS_EL)AYS_EL.pause();}catch(_){}try{if(AYS_SRC)AYS_SRC.stop();}catch(_){}AYS_SRC=null;try{speechSynthesis.cancel();}catch(_){}}
   function aysVoice(){try{var v=speechSynthesis.getVoices().filter(function(x){return /^tr/i.test(x.lang);});var sc=function(x){var n=x.name||'';return (/premium/i.test(n)?4:0)+(/enhanced|geli[sş]mi[sş]|geli[sş]tirilmi[sş]|natural|neural/i.test(n)?3:0)+(/yelda|female|kad[iı]n|seda|filiz|emel/i.test(n)?1:0);};v.sort(function(a,b){return sc(b)-sc(a);});return v[0]||null;}catch(_){return null;}}
-  function aysLocal(t){try{speechSynthesis.cancel();var v=aysVoice();(String(t).replace(/["“”*]/g,'').replace(/\s*\n+\s*/g,'. ').match(/[^.!?…:]+[.!?…:]*/g)||[]).forEach(function(c){c=c.trim();if(!c)return;var u=new SpeechSynthesisUtterance(c);u.lang='tr-TR';if(v)u.voice=v;u.rate=0.97;u.pitch=1.02;speechSynthesis.speak(u);});}catch(_){}}
-  async function aysSay(t){t=String(t||'').trim();if(!t)return;aysStop();var my=AYS_SEQ;
-    try{if(!AYS_AC)throw 0;var r=await fetch(SB.url+'/functions/v1/yardim',{method:'POST',headers:{'Content-Type':'application/json',apikey:SB.key},body:JSON.stringify({mode:'ses',text:t})});
-      if(!r.ok||!/audio/.test(r.headers.get('content-type')||''))throw 0;var buf=await r.arrayBuffer();if(my!==AYS_SEQ)return;
+  function aysLocal(t){try{speechSynthesis.cancel();var v=aysVoice();(aysTxt(t).replace(/["“”*]/g,'').replace(/\s*\n+\s*/g,'. ').match(/[^.!?…:]+[.!?…:]*/g)||[]).forEach(function(c){c=c.trim();if(!c)return;var u=new SpeechSynthesisUtterance(c);u.lang='tr-TR';if(v)u.voice=v;u.rate=0.97;u.pitch=1.02;speechSynthesis.speak(u);});}catch(_){}}
+  async function aysSay(t){t=aysTxt(t);if(!t)return;aysStop();var my=AYS_SEQ;
+    try{if(!AYS_AC&&!AYS_EL)throw 0;var r=await fetch(SB.url+'/functions/v1/yardim',{method:'POST',headers:{'Content-Type':'application/json',apikey:SB.key},body:JSON.stringify({mode:'ses',text:t})});
+      if(!r.ok||!/audio/.test(r.headers.get('content-type')||''))throw 0;var bl=await r.blob();if(my!==AYS_SEQ)return;
+      var el=AYS_EL;if(el&&el.dataset.ok){try{if(el._u)URL.revokeObjectURL(el._u);el._u=URL.createObjectURL(bl);el.src=el._u;await el.play();return;}catch(_){}}
+      var buf=await bl.arrayBuffer();if(my!==AYS_SEQ)return;
       var ab=await new Promise(function(ok,no){AYS_AC.decodeAudioData(buf,ok,no);});if(my!==AYS_SEQ)return;if(AYS_AC.state==='suspended')await AYS_AC.resume();
       var s=AYS_AC.createBufferSource();s.buffer=ab;s.connect(AYS_AC.destination);s.start(0);AYS_SRC=s;}
     catch(_){if(my===AYS_SEQ)aysLocal(t);}}
