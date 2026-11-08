@@ -2954,7 +2954,7 @@ var MUG_PH={src:'img/kupa-sahne.jpg',W:1122,H:1402,cx:803,R:164,yT:588,ry:26,yB:
 /* Ön görünüm: masadaki fotoğrafın aynadaki hâli (kulp sağda), yeni yapay zekâ ücreti olmadan */
 var MUG_TABLE_R={src:'img/kupa-masa-sag.jpg',W:1122,H:1402,cx:537,R:251,yT:428,ry:28,yB:980,ryB:39,hs:1};
 var MUG_PHS={box:MUG_PH,hand:MUG_HAND,table:MUG_TABLE,tableR:MUG_TABLE_R,
-  kalp:{src:'img/kupa-kalp.jpg',W:750,H:750,cx:328.5,R:176.5,yT:110,ry:19,yB:623,ryB:33,hs:1,own:1},kalpL:{src:'img/kupa-kalp-sol.jpg',W:750,H:750,cx:421.5,R:176.5,yT:110,ry:19,yB:623,ryB:33,hs:-1,own:1},
+  kalp:{src:'img/kupa-kalp.jpg',W:750,H:750,cx:328.5,R:205,yT:133,ry:36,yB:593,ryB:61,hs:1,own:1},kalpL:{src:'img/kupa-kalp-sol.jpg',W:750,H:750,cx:421.5,R:205,yT:133,ry:36,yB:593,ryB:61,hs:-1,own:1},
   panel:{src:'img/kupa-panel.jpg',W:750,H:750,cx:334,R:189,yT:150,ry:8,yB:610,ryB:27,hs:1,own:1},panelL:{src:'img/kupa-panel-sol.jpg',W:750,H:750,cx:416,R:189,yT:150,ry:8,yB:610,ryB:27,hs:-1,own:1}};
 async function mugPhotoScene(side,S,P){P=P||MUG_PH;var im=await loadImg(P.src),k=S/P.W,cw=S,ch=Math.round(P.H*k);
   var c=document.createElement('canvas');c.width=cw;c.height=ch;var x=c.getContext('2d');x.drawImage(im,0,0,cw,ch);
@@ -2967,7 +2967,8 @@ async function mugPhotoScene(side,S,P){P=P||MUG_PH;var im=await loadImg(P.src),k
   var xa=Math.floor((P.cx-P.R)*k),xb=Math.ceil((P.cx+P.R)*k);
   for(var px=xa;px<xb;px++){var dm=((px+.5)/k-P.cx)/P.R;if(Math.abs(dm)>=1)continue;var d0=(px/k-P.cx)/P.R,d1=((px+1)/k-P.cx)/P.R;
     var u0=uAt(d0),u1=uAt(d1),lo=Math.max(0,Math.min(u0,u1)),hi=Math.min(Wcm,Math.max(u0,u1));if(hi<=lo)continue;
-    var yo=P.ry*Math.sqrt(Math.max(0,1-dm*dm));plx.drawImage(fc,lo*kf,0,Math.max(.5,(hi-lo)*kf),fc.height,px,(top0+yo)*k,1,Pcm*pv*k);}
+    /* baskı kupanın gövdesini üst kenardan alt kenara tam sarar (altta beyaz şerit kalmaz) */
+    var sq=Math.sqrt(Math.max(0,1-dm*dm)),yo=P.ry*sq;plx.drawImage(fc,lo*kf,0,Math.max(.5,(hi-lo)*kf),fc.height,px,(P.yT+yo)*k,1,(P.yB-P.yT+(P.ryB-P.ry)*sq+1)*k);}
   /* fotoğraftaki beyaz kupanın ışığı baskıya işlenir: koyu kenarlar koyulaşır, parlak çizgiler parlar */
   var ya=Math.floor((P.yT-P.ry)*k),yb=Math.ceil((P.yB+P.ryB)*k),bw=xb-xa,bh=yb-ya,ph=x.getImageData(xa,ya,bw,bh),pr=plx.getImageData(xa,ya,bw,bh),a=ph.data,q=pr.data,i,L;
   var ref=0,n=0;for(var yy=Math.round(bh*0.35);yy<bh*0.65;yy+=3)for(var xx=Math.round(bw*0.1);xx<bw*0.3;xx+=3){i=(yy*bw+xx)*4;ref+=(a[i]+a[i+1]+a[i+2])/3;n++;}ref=n?Math.max(200,ref/n):240;
@@ -3008,7 +3009,7 @@ async function mugScene(side,hs,S,bx){S=S||1000;var c=document.createElement('ca
     for(var px=Math.floor((cx-R)*sc);px<Math.ceil((cx+R)*sc);px++){var dm=((px+.5)/sc-cx)/R;if(Math.abs(dm)>=1)continue;var d0=(px/sc-cx)/R,d1=((px+1)/sc-cx)/R;
       var u0=uAt(d0),u1=uAt(d1),lo=Math.max(0,Math.min(u0,u1)),hi=Math.min(Wcm,Math.max(u0,u1));if(hi<=lo)continue;
       var yo=ry*Math.sqrt(Math.max(0,1-dm*dm));
-      plx.drawImage(fc,lo*kf,0,Math.max(.5,(hi-lo)*kf),fc.height,px,(top0+yo)*sc,1,Pcm*pc*sc);}
+      plx.drawImage(fc,lo*kf,0,Math.max(.5,(hi-lo)*kf),fc.height,px,(yT+yo)*sc,1,(Hcm*pc+0.5)*sc);}
     x.save();x.setTransform(1,0,0,1,0,0);x.drawImage(pl,0,0);x.restore();}
   /* seramik ışığı: kenarlar koyu, solda parlama */
   x.globalCompositeOperation='multiply';g=x.createLinearGradient(cx-R,0,cx+R,0);
