@@ -3099,6 +3099,7 @@ function phAsset(edge,asp){var key=edge+'|'+asp.toFixed(3);if(PH_CACHE[key]&&ass
   var mk=false;if(isBrush(edge)&&brushOk()){c=brushApply(c,edge);mk=true;}
   var id=PH_CACHE[key]||('ph'+(++assetN));assets[id]={url:c.toDataURL('image/png'),w:W,h:H,bg:true,ph:true,mk:mk};PH_CACHE[key]=id;return id;}
 /* Şablonda boş fotoğraf yerleri: soldan sağa, yukarıdan aşağı sıralı */
+function slotMsg(ne){var cz=emptySlots().some(function(o){return o.ais;});return (ne>1?'Şablon uygulandı. '+ne+' fotoğraf seç; sırayla kendiliğinden yerleşir.':'Şablon uygulandı. Fotoğrafını seç, yerine kendiliğinden oturur.')+(cz?' Wolf her fotoğrafı çizgi filme çevirir.':'');}
 function emptySlots(){return cur().objs.filter(function(o){return o.phEmpty;}).sort(function(a,b){return Math.abs(a.y-b.y)>Math.min(a.h,b.h)*0.5?a.y-b.y:a.x-b.x;});}
 /* Boş yerlere dokununca: birden çok boş yer varsa çoklu seçim açılır, seçilen fotoğraflar sırayla kendiliğinden yerleşir */
 function slotPick(firstId){var E=emptySlots();if(!E.length)return;view.slotFirst=firstId||null;
@@ -3113,6 +3114,29 @@ async function fillSlots(files){var E=emptySlots(),f=view.slotFirst;view.slotFir
   else if(left)longToast(n+' fotoğraf yerleşti. '+left+' fotoğraf yeri daha boş; dokunup ekleyebilirsin.');
   else if(files.length>n)longToast('Fotoğraflar yerleşti. Şablonda '+E.length+' yer olduğu için fazladan seçilenler eklenmedi.');
   else longToast('Fotoğraflar yerleşti. Yerini değiştirmek ya da kırpmak için fotoğrafa dokun.');}
+/* Çizgi film şablonu: fotoğraf yerine oturan her fotoğraf Wolf'la çizgi filme çevrilir (yer işareti: o.ais).
+   Fotoğraf önce olduğu gibi yerleşir, çizim bitince yerine geçer; sırayla tek tek çizilir. */
+var CQ=[],CQrun=false;
+function cartoonQ(o){if(CQ.indexOf(o.id)<0)CQ.push(o.id);if(!CQrun)setTimeout(cartoonRun,0);}
+async function cartoonRun(){if(CQrun)return;CQrun=true;var done=0,ok=0;
+  try{while(CQ.length){var o=objById(CQ.shift());if(!o||o.phEmpty||!o.ais||o.aiOk)continue;
+      while(AI_BUSY||fxBusy)await new Promise(function(r){setTimeout(r,400);});
+      done++;aiWait('Wolf çizgi filme çeviriyor · '+done+' / '+(done+CQ.length));
+      var r=await cartoonSlot(o);if(r===null){CQ=[];break;}if(r)ok++;}}
+  finally{CQrun=false;aiDone();}
+  if(ok){var left=slotEmpty();longToast(left?ok+' fotoğraf çizgi filme çevrildi. '+left+' fotoğraf yeri daha boş; dokunup ekleyebilirsin.':'Fotoğraflar çizgi filme çevrildi. Beğenmediğin fotoğrafa dokunup Değiştir ile yenisini ekleyebilirsin.');}}
+async function cartoonSlot(o){
+  var tk=await aiTok();if(!tk){aiLogin();return null;}
+  AI_BUSY=true;
+  try{var a=assets[o.base];if(!a)return false;var src=await aiPhotoData(o.base);
+    var img=await aiCall({style:o.ais,orient:a.w>a.h*1.15?'landscape':'portrait',image:src,slot:true,transparent:false});
+    if(!img)return null;
+    var id=await aiAsset(img),na=assets[id];if(!objById(o.id)||o.phEmpty)return false;
+    var A=o.w/o.h,asp=na.w/na.h,cr={x:0,y:0,w:1,h:1};if(asp>A){cr.w=A/asp;cr.x=(1-cr.w)/2;}else{cr.h=asp/A;cr.y=(1-cr.h)/2;}
+    var nid=await fxProcess(id,'none',o.edge||'none',0.5,cr,0);
+    o.base=id;o.crop=cr;o.phs='none';o.phe=o.edge||'none';o.assetId=nid;o.aiOk=1;renderObjects();pushHist();return true;}
+  catch(_){return false;}
+  finally{AI_BUSY=false;}}
 function slotEmpty(){var n=0;['front','logo','logo2','back'].forEach(function(sd){((state[sd]&&state[sd].objs)||[]).forEach(function(o){if(o.phEmpty)n++;});});return n;}
 /* Fotoğraf yerine yeni fotoğraf: yer aynı kalır, fotoğraf ortadan kırpılıp yere sığdırılır, kenar tarzı korunur */
 async function fillSlot(o,file,quiet){
@@ -3122,8 +3146,10 @@ async function fillSlot(o,file,quiet){
   if(asp>A){cr.w=A/asp;cr.x=(1-cr.w)/2;}else{cr.h=asp/A;cr.y=(1-cr.h)/2;}
   bgToast('Fotoğraf yerleştiriliyor…');await brushReady();
   var nid=await fxProcess(id,'none',o.edge||'none',0.5,cr,0);
-  o.base=id;o.crop=cr;o.phs='none';o.phe=o.edge||'none';o.phf=0.5;o.assetId=nid;delete o.phEmpty;
-  renderObjects();select(o.id);pushHist();var t=$('#toast');if(t)t.hidden=true;if(quiet)return;
+  o.base=id;o.crop=cr;o.phs='none';o.phe=o.edge||'none';o.phf=0.5;o.assetId=nid;delete o.phEmpty;delete o.aiOk;
+  renderObjects();select(o.id);pushHist();var t=$('#toast');if(t)t.hidden=true;
+  if(o.ais){cartoonQ(o);return;}
+  if(quiet)return;
   var left=slotEmpty();if(left)longToast('Fotoğraf eklendi. Diğer fotoğraf yerine de dokun.');
   else{var q=qualityOf(o);if(q&&q.cls==='low')longToast('Fotoğraf eklendi. Biraz küçük; daha büyük bir sürümünü yüklersen daha net basılır.');else toast('Fotoğraf eklendi. Kırpmak ya da kenarı değiştirmek için fotoğrafa dokun.');}
 }
@@ -3632,7 +3658,7 @@ function applyTemplate(t,silent){
   view.sel=null;view.grp=false;renderAll();pushHist();
   if(!silent&&grpObjs().length>1){view.grp=true;buildSel();syncCtx();}
   if(!silent&&t.items.some(function(it){return it.t==='ph';})){var fs=cur().objs.filter(function(o){return o.phEmpty;})[0];
-    var ne=emptySlots().length;if(fs)slotPick();longToast(ne>1?'Şablon uygulandı. '+ne+' fotoğraf seç; sırayla kendiliğinden yerleşir.':'Şablon uygulandı. Fotoğrafını seç, yerine kendiliğinden oturur.');return;}
+    var ne=emptySlots().length;if(fs)slotPick();longToast(slotMsg(ne));return;}
   if(!silent){if(t.items.some(function(it){return it.fx&&it.fx.rs;}))longToast('Şablon uygulandı. İsim ve numarayı siparişte her kişi için ayrı yazacaksın.');else toast('Şablon uygulandı. Sol üstteki beyaz kareyle hepsini birlikte büyütebilirsin.');}
 }
 
@@ -6011,7 +6037,7 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
     catch(err){toast(err&&err.msg?err.msg:(err&&(err.status===401||err.status===403||err.code==='auth')?'Oturum süresi doldu, yeniden giriş yap.':'Kaydedilemedi, tekrar dene.'));}
     ADM.busy=false;},true);
   document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('[data-adtpl]');if(!b)return;e.preventDefault();e.stopPropagation();
-    var t=ADM.tpls.filter(function(x){return x.id===b.dataset.adtpl;})[0];if(!t)return;applyDesign(t.data,false);closeTab();var ne=emptySlots().length;if(ne){longToast(ne>1?'Şablon uygulandı. '+ne+' fotoğraf seç; sırayla kendiliğinden yerleşir.':'Şablon uygulandı. Fotoğrafını seç, yerine kendiliğinden oturur.');slotPick();}else toast('Şablon uygulandı. Geri almak için ↶');},true);
+    var t=ADM.tpls.filter(function(x){return x.id===b.dataset.adtpl;})[0];if(!t)return;applyDesign(t.data,false);closeTab();var ne=emptySlots().length;if(ne){longToast(slotMsg(ne));slotPick();}else toast('Şablon uygulandı. Geri almak için ↶');},true);
 
   /* ---- Başlangıç ---- */
   async function init(){

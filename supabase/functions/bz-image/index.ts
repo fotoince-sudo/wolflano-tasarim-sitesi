@@ -93,15 +93,16 @@ Deno.serve(async (req) => {
     const canvas = body.canvas === true; // canvas tablo: tam dolu resim, tişört rengi yok
     const mug = body.mug === 'wrap' || body.mug === 'logo' ? body.mug : ''; // kupa: çevresini saran baskı ya da tek taraflı logo
     const double = mug === 'wrap' && body.layout === 'double' && typeof body.image === 'string' && !!body.image; // aynı fotoğraf kupanın iki yanında
-    const full = canvas || (mug === 'wrap' && !double); // kenardan kenara resim
+    const slot = body.slot === true && typeof body.image === 'string' && !!body.image; // şablondaki fotoğraf yeri: fotoğrafın tamamı çizilir (çizgi film şablonu)
+    const full = canvas || slot || (mug === 'wrap' && !double); // kenardan kenara resim
     const transparent = !full && body.transparent !== false;
-    const shirt = canvas || mug ? '' : shirtHint(String(body.shirt || '').slice(0, 40), String(body.shirtHex || '').slice(0, 7));
+    const shirt = canvas || mug || slot ? '' : shirtHint(String(body.shirt || '').slice(0, 40), String(body.shirtHex || '').slice(0, 7));
     const img = typeof body.image === 'string' && body.image ? dataUrlToBlob(body.image) : null;
     if (!idea && !img) return j({ error: 'empty', message: 'Ne tasarlayalım? Bir cümle yaz ya da fotoğraf ekle.' }, 400);
     if (img && img.size > 6_000_000) return j({ error: 'big', message: 'Fotoğraf çok büyük.' }, 400);
 
     if (!isAdm) {
-      const lim = 3; // müşteri günlük deneme hakkı (faaliyete geçince artırılacak)
+      const lim = slot ? 12 : 3; // müşteri günlük deneme hakkı; çizgi film şablonunda her fotoğraf ayrı çizildiği için daha yüksek (faaliyete geçince artırılacak)
       const rr = await rpc('bz_take', { p_uid: uid, p_lim: lim });
       if ((await rr.json()) !== true) {
         return j({ error: 'limit', message: 'Bugünkü tasarım hakkın doldu. Yarın yeniden dene.' }, 429);
@@ -140,7 +141,9 @@ Deno.serve(async (req) => {
       parts.push("If there are people, include EVERY person in the photo, in the same arrangement, and keep each one clearly recognizable: same face shape, eyes, nose, mouth, skin tone, age, expression and head shape. Keep each person's exact hairline and hair amount (if someone is bald, keep them bald; do not add hair or a beard that is not there).");
       parts.push('If there is an animal, keep its species, breed, coat colors and markings exactly. If it is a place or object, keep it recognizable.');
       parts.push('Draw clothing plain and simple; do NOT copy any logo, letters, numbers or print from the clothes or the background of the photo.');
-      parts.push(double
+      parts.push(slot
+        ? 'Composition for a photo frame window: redraw the WHOLE attached photo with the same framing, crop and camera angle, keeping every person, animal and the background scene in place, and fill the entire image edge to edge.'
+        : double
         ? 'Composition: a single upright portrait of the subject (people from the chest up, an animal whole or its head) inside an elegant decorative oval or arch frame made of flowers, leaves, small hearts and delicate ornamental flourishes; the frame is part of the artwork. Everything outside the frame is transparent.'
         : mug === 'wrap'
         ? 'Composition for a mug that is wrapped all around: put the main subject in the center of the wide image, inside an elegant decorative frame of flowers, leaves and ornaments. To the left and right of the frame, fill the space with matching decorations that flow out toward both edges: flowers, leaves, small hearts and delicate ornamental flourishes, balanced and symmetrical, in colors that suit the photo. Use a light, clean background (white or a very soft tint) so it looks elegant on a white mug; the decorations should reach both sides so no side looks bare.'
@@ -190,6 +193,7 @@ Deno.serve(async (req) => {
       : 'The mug is white and glossy: use deep, rich colors with strong contrast against white; avoid very pale areas. Keep the artwork compact and centered, readable at a small size of about 8 cm.');
     if (mug === 'wrap' && img && !double) parts.push('Wide panoramic image that uses the whole width from the left edge to the right edge. No outer border, no mug, no mockup, no watermark.');
     else if (mug === 'wrap' && !double) parts.push('Full-bleed panoramic image: the scene fills the entire image edge to edge with a complete background; no empty or transparent areas. No frame, no border, no mug, no mockup, no watermark.');
+    else if (slot) parts.push('Full-bleed: the scene and its background fill the entire image edge to edge; no empty, white or transparent areas. No frame, no border, no text, no watermark.');
     else if (canvas) parts.push('Full-bleed painting: the scene fills the entire image edge to edge with a complete background (sky, landscape, sea or interior); no empty, white or transparent areas. Keep important details and any text away from the outer 7% because those parts wrap around the canvas edges. No frame, no border, no wall, no mockup, no watermark.');
     else if (double) parts.push('Transparent background outside the decorative floral frame. No card, no rectangular border, no mockup, no watermark.');
     else parts.push(transparent
