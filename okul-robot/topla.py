@@ -2,7 +2,7 @@
 # meb.k12.tr okul siteleri yurtdışı bağlantılarını kabul etmediği için okul sitelerini Wolflano'nun Türkiye'deki sunucusu
 # (wolflano.com.tr/api/okul-iletisim.php) okur; robot sonuçları toplayıp yönetim panelindeki Kasa'ya tek kayıt olarak yazar.
 # Yalnız okulların kendi sitelerinde yayımlanmış bilgi alınır; adres tahmin edilmez, hiçbir okula ileti gönderilmez.
-import csv, io, json, os, sys, time, secrets, urllib.request, concurrent.futures as cf
+import csv, io, json, os, sys, time, secrets, urllib.request, urllib.error, concurrent.futures as cf
 
 API = "https://wolflano.com.tr/api/okul-iletisim.php"
 PROJE = os.environ.get("PROJE", "wgovwmeirlzwalelazfj")
@@ -15,7 +15,7 @@ byweb = {r[2]: r for r in rows}
 
 
 def call(batch):
-    body = json.dumps({"urls": [r[2] for r in batch]}).encode()
+    body = json.dumps({"urls": [r[2] for r in batch], "debug": bool(lim)}).encode()
     for deneme in range(3):
         try:
             req = urllib.request.Request(API, data=body, method="POST", headers={"Content-Type": "application/json", "User-Agent": "Wolflano-okul-robotu/1.0"})
@@ -29,7 +29,11 @@ def call(batch):
 def sql(q):
     req = urllib.request.Request(f"https://api.supabase.com/v1/projects/{PROJE}/database/query", data=json.dumps({"query": q}).encode(),
                                  method="POST", headers={"Authorization": "Bearer " + TOKEN, "Content-Type": "application/json", "User-Agent": "Wolflano-okul-robotu/1.0"})
-    return urllib.request.urlopen(req, timeout=60).read().decode()
+    try:
+        return urllib.request.urlopen(req, timeout=60).read().decode()
+    except urllib.error.HTTPError as e:
+        print("SUPABASE HATA", e.code, e.read().decode()[:500], flush=True)
+        raise
 
 
 batches = [rows[i:i + 12] for i in range(0, len(rows), 12)]
@@ -37,6 +41,8 @@ out = []
 with cf.ThreadPoolExecutor(max_workers=3) as ex:
     for n, res in enumerate(ex.map(call, batches), 1):
         for x in res:
+            if x.get("ornek"):
+                print("ORNEK", x["web"], x["ornek"][:900], flush=True)
             r = byweb.get(x["web"], ["", "", x["web"]])
             out.append([r[0], r[1], x["web"], x["eposta"], x["tum"], x["kaynak"], x["durum"], x["telefon"]])
         if n % 10 == 0:

@@ -40,7 +40,15 @@ function fetch_all(array $list) {
   return $out;
 }
 function to_utf8($s) { return mb_check_encoding($s, 'UTF-8') ? $s : mb_convert_encoding($s, 'UTF-8', 'Windows-1254'); }
+// Cloudflare e-posta koruması: data-cfemail="hex" veya /cdn-cgi/l/email-protection#hex → ilk bayt anahtar, kalanlar XOR
+function cfdecode($hex) {
+  if (!preg_match('/^[0-9a-f]{4,}$/i', $hex)) return '';
+  $k = hexdec(substr($hex, 0, 2)); $o = '';
+  for ($i = 2; $i < strlen($hex); $i += 2) $o .= chr(hexdec(substr($hex, $i, 2)) ^ $k);
+  return $o;
+}
 function mails($t) {
+  if (preg_match_all('/(?:data-cfemail=["\']|email-protection#)([0-9a-fA-F]{4,})/', $t, $cm)) foreach ($cm[1] as $hx) $t .= ' ' . cfdecode($hx) . ' ';
   $t = str_ireplace(['[at]', '(at)', ' at '], '@', html_entity_decode($t, ENT_QUOTES | ENT_HTML5, 'UTF-8'));
   preg_match_all('/[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,}/', $t, $m);
   $r = [];
@@ -89,7 +97,13 @@ foreach ($urls as $i => $u) {
   $okul = array_values(array_filter($all, function ($e) { return substr($e, -10) === 'meb.k12.tr'; }));
   $dig = array_values(array_filter($all, function ($e) { return substr($e, -10) !== 'meb.gov.tr'; }));
   $best = $okul[0] ?? ($dig[0] ?? '');
-  $res[] = ['web' => $u, 'eposta' => $best, 'tum' => implode(';', array_slice($all, 0, 5)), 'kaynak' => $src,
+  $ornek = '';
+  if (!$best && !empty($in['debug']) && $pages) {
+    $tx = strip_tags(end($pages)[1]); $pz = mb_stripos($tx, 'posta'); if ($pz === false) $pz = mb_stripos($tx, 'mail');
+    $ornek = $pz === false ? mb_substr(preg_replace('/\s+/', ' ', $tx), 0, 300) : mb_substr(preg_replace('/\s+/', ' ', mb_substr($tx, max(0, $pz - 150), 400)), 0, 300);
+    $raw = end($pages)[1]; $rp = stripos($raw, 'posta'); $ornek .= ' ||HTML: ' . ($rp === false ? '' : substr($raw, max(0, $rp - 200), 500)) . ' ||SAYFALAR: ' . implode(' , ', array_map(function ($p) { return $p[0]; }, $pages));
+  }
+  $res[] = ['ornek' => $ornek, 'web' => $u, 'eposta' => $best, 'tum' => implode(';', array_slice($all, 0, 5)), 'kaynak' => $src,
     'durum' => !$pages ? 'Site açılmadı (HTTP ' . $h['kod'] . ')' : ($best ? 'Bulundu' : 'E-posta yayımlanmamış'), 'telefon' => implode(';', array_slice($tel, 0, 2))];
 }
 echo json_encode(['sonuc' => $res], JSON_UNESCAPED_UNICODE);
