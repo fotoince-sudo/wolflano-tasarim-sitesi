@@ -101,9 +101,9 @@ foreach ($urls as $i => $u) {
   if (!$best && !empty($in['debug']) && $pages) {
     $tx = strip_tags(end($pages)[1]); $pz = mb_stripos($tx, 'posta'); if ($pz === false) $pz = mb_stripos($tx, 'mail');
     $ornek = $pz === false ? mb_substr(preg_replace('/\s+/', ' ', $tx), 0, 300) : mb_substr(preg_replace('/\s+/', ' ', mb_substr($tx, max(0, $pz - 150), 400)), 0, 300);
-    $raw = implode(' ', array_map(function ($p) { return $p[1]; }, $pages)); $rp = mb_stripos($raw, 'Gönder'); if ($rp !== false) $rp = strlen(mb_substr($raw, 0, $rp)); $ornek .= ' ||HTML: ' . ($rp === false ? '' : substr($raw, max(0, $rp - 400), 600)) . ' ||SAYFALAR: ' . implode(' , ', array_map(function ($p) { return $p[0]; }, $pages));
+    $raw = implode(' ', array_map(function ($p) { return $p[1]; }, $pages)); $rp = mb_stripos($raw, 'Gönder'); if ($rp !== false) $rp = strlen(mb_substr($raw, 0, $rp)); $ornek .= ' ||HTML: ' . ($rp === false ? '' : mb_strcut($raw, max(0, $rp - 400), 600)) . ' ||SAYFALAR: ' . implode(' , ', array_map(function ($p) { return $p[0]; }, $pages));
   }
   $res[] = ['ornek' => $ornek, 'web' => $u, 'eposta' => $best, 'tum' => implode(';', array_slice($all, 0, 5)), 'kaynak' => $src,
     'durum' => !$pages ? 'Site açılmadı (HTTP ' . $h['kod'] . ')' : ($best ? 'Bulundu' : 'E-posta yayımlanmamış'), 'telefon' => implode(';', array_slice($tel, 0, 2))];
 }
-echo json_encode(['sonuc' => $res], JSON_UNESCAPED_UNICODE);
+echo json_encode(['sonuc' => $res], JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_SUBSTITUTE);
