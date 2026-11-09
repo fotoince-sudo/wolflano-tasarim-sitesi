@@ -2090,6 +2090,7 @@ function itKalem(g){g=g||{};var v=function(k,d){return g[k]!=null&&g[k]!==''?g[k
 function itRe(){if(cur==='yonetim'&&A&&A.tab==='ithalat'){var y=window.scrollY;adRender();window.scrollTo(0,y);}}
 function itN(x){var n=parseFloat(String(x==null?'':x).replace(/\s/g,'').replace(',','.'));return isFinite(n)?n:0;}
 function itRate(c){if(!c||c==='TRY')return 1;var f=IT.f||{},m=f.fx&&itN(f.fx[c]);if(m>0)return m;var k=IT.kur&&IT.kur.kurlar&&IT.kur.kurlar[c];return k&&k.satis?k.satis:0;}
+function itVadeli(o){return ['Mal mukabili','Vadeli akreditif','Kabul kredili','Vadeli / kredili'].indexOf(o)>=0;}
 function itDays(d){var t=Date.parse(d);return isFinite(t)?Math.floor((Date.now()-t)/864e5):null;}
 async function itLoad(){if(IT.busy)return;IT.busy=true;IT.err='';
   try{var tk=await sbToken();if(!tk){IT.err='Giriş yapmalısın.';IT.lib=[];IT.calcs=[];IT.offers=[];}
@@ -2109,17 +2110,17 @@ async function itKur(force){if(IT.kurBusy)return;if(IT.kur&&!force)return;IT.kur
   catch(e){IT.kurErr='TCMB kuru alınamadı ('+(e&&e.message||'hata')+'). Kuru elle yazabilirsin.';}
   IT.kurBusy=false;itRe();}
 /* Hesap. Gümrük kıymeti (CIF, TL) = mal + (teslim şekline göre) çıkış masrafları + navlun + sigorta; navlun/sigorta kalemlere mal bedeli payıyla dağıtılır.
-   GV, İGV, ek mali yükümlülük CIF üzerinden; maktu vergi adet başına (fatura dövizi); ÖTV CIF+vergiler üzerinden; KKDF (yalnız vadeli/kredili ödemede) CIF üzerinden.
+   GV, İGV, ek mali yükümlülük CIF üzerinden; maktu vergi adet başına (fatura dövizi); ÖTV CIF+vergiler üzerinden; KKDF (yalnız mal mukabili, vadeli akreditif, kabul kredili) fatura bedeli üzerinden, boşsa %6.
    KDV matrahı = CIF + tüm vergiler + KKDF + damga + liman/ardiye. DDP'de vergileri satıcı öder (0). */
 function itCalc(f){
   var inc=IT_INC[f.inc]||IT_INC.FOB,ddp=!!inc.ddp,kr=itRate(f.cur),nav=inc.nav?itN(f.navlun)*itRate(f.navCur):0,sig=inc.sig?itN(f.sigorta)*kr:0,cik=inc.cik?itN(f.cik)*kr:0;
-  var lim=itN(f.liman),dmg=ddp?0:itN(f.damga),mus=itN(f.musavir),ic=itN(f.ic),dig=itN(f.diger),marj=itN(f.marj),kk=(!ddp&&f.odeme!=='Peşin')?itN(f.kkdf):0;
+  var lim=itN(f.liman),dmg=ddp?0:itN(f.damga),mus=itN(f.musavir),ic=itN(f.ic),dig=itN(f.diger),marj=itN(f.marj),kk=(!ddp&&itVadeli(f.odeme))?(String(f.kkdf||'').trim()===''?6:itN(f.kkdf)):0;
   var K=f.kalem.map(function(k){var mf=itN(k.adet)*itN(k.fiyat),dg=f.dagit==='Adet'?itN(k.adet):f.dagit==='Ağırlık'?itN(k.kg):f.dagit==='Hacim'?itN(k.m3):mf;return {k:k,malF:mf,dg:dg};}),topF=K.reduce(function(s,x){return s+x.malF;},0),topD=K.reduce(function(s,x){return s+x.dg;},0);
   if(!(topD>0)){K.forEach(function(x){x.dg=x.malF;});topD=topF;}
   var T={kr:kr,ok:kr>0,ddp:ddp,malF:topF,mal:0,nav:nav,sig:sig,cik:cik,cif:0,gv:0,igv:0,emy:0,maktu:0,otv:0,kkdf:0,kdv:0,dmg:dmg,lim:lim,mus:mus,musKdv:mus*0.2,ic:ic,dig:dig,rows:[]};
   if(!(kr>0)||!(topF>0))return T;
   K.forEach(function(x){var k=x.k,p=x.dg/topD,adet=itN(k.adet),mal=x.malF*kr,cif=mal+(nav+sig+cik)*p,z=ddp?0:1;
-    var gv=z*cif*itN(k.gv)/100,igv=z*cif*itN(k.igv)/100,emy=z*cif*itN(k.emy)/100,mk=z*adet*itN(k.maktu)*kr,otv=z*(cif+gv+igv+emy+mk)*itN(k.otv)/100,kkdf=cif*kk/100;
+    var gv=z*cif*itN(k.gv)/100,igv=z*cif*itN(k.igv)/100,emy=z*cif*itN(k.emy)/100,mk=z*adet*itN(k.maktu)*kr,otv=z*(cif+gv+igv+emy+mk)*itN(k.otv)/100,kkdf=mal*kk/100;
     var vergi=gv+igv+emy+mk+otv,kdv=z*(cif+vergi+kkdf+(dmg+lim)*p)*itN(k.kdv)/100,mal2=cif+vergi+kkdf+(dmg+lim+mus+ic+dig)*p;
     T.mal+=mal;T.cif+=cif;T.gv+=gv;T.igv+=igv;T.emy+=emy;T.maktu+=mk;T.otv+=otv;T.kkdf+=kkdf;T.kdv+=kdv;
     T.rows.push({ad:k.ad||k.kod||'Kalem',adet:adet,cif:cif,vergi:vergi,kdv:kdv,maliyet:mal2,birim:adet>0?mal2/adet:0,birimKdv:adet>0?(mal2+kdv+mus*0.2*p)/adet:0,oner:adet>0&&marj>0?(mal2/adet)*(1+marj/100):0});});
@@ -2149,8 +2150,8 @@ function itUlkes(v){return IT_ULKE.indexOf(v)<0&&v?[v].concat(IT_ULKE):IT_ULKE;}
 function itLibOpts(sel){return '<option value="">GTİP kütüphanesinden seç…</option>'+(IT.lib||[]).map(function(g){return '<option value="'+esc(g.id)+'"'+(g.id===sel?' selected':'')+'>'+esc((g.kod||'')+' · '+(g.ad||'')+(g.ulke?' ('+g.ulke+')':''))+'</option>';}).join('');}
 function itKurBox(cs){var f=IT.f,kd=IT.kur&&IT.kur.kurlar||{},used={};cs.forEach(function(c){if(c&&c!=='TRY')used[c]=1;});
   return '<div class="aed"><div class="adx-top"><b style="flex:1">Döviz kuru</b><button type="button" class="btn soft sm" data-it="kur"'+(IT.kurBusy?' disabled':'')+'>'+(IT.kurBusy?'Alınıyor…':'TCMB\'den yenile')+'</button></div>'+
-    (IT.kur?'<small class="note" style="margin:0">TCMB '+esc(IT.kur.tarih||'')+' döviz satış kuru. Gümrük, beyannamenin tescil günündeki kuru kullanır.</small>':'')+(IT.kurErr?'<p class="msg" style="margin:0">'+esc(IT.kurErr)+'</p>':'')+
-    '<div class="two">'+Object.keys(used).map(function(c){var k=kd[c];return '<label for="itFx'+c+'">1 '+c+' = ? ₺'+(k?' <small>(TCMB '+n2(k.satis)+')</small>':'')+'<input id="itFx'+c+'" inputmode="decimal" data-itfx="'+c+'" value="'+esc(f.fx[c]||'')+'" placeholder="'+(k?n2(k.satis):'Kuru yaz')+'"></label>';}).join('')+'</div>'+
+    (IT.kur?'<small class="note" style="margin:0">'+esc(IT.kur.kaynak||'TCMB')+' '+esc(IT.kur.tarih||'')+' döviz satış kuru. Gümrük, beyannamenin tescil günündeki TCMB kurunu kullanır.</small>'+(IT.kur.uyari?'<small class="it-w">'+esc(IT.kur.uyari)+'</small>':''):'')+(IT.kurErr?'<p class="msg" style="margin:0">'+esc(IT.kurErr)+'</p>':'')+
+    '<div class="two">'+Object.keys(used).map(function(c){var k=kd[c];return '<label for="itFx'+c+'">1 '+c+' = ? ₺'+(k?' <small>('+esc((IT.kur&&IT.kur.kaynak)||'TCMB')+' '+n2(k.satis)+')</small>':'')+'<input id="itFx'+c+'" inputmode="decimal" data-itfx="'+c+'" value="'+esc(f.fx[c]||'')+'" placeholder="'+(k?n2(k.satis):'Kuru yaz')+'"></label>';}).join('')+'</div>'+
     (Object.keys(used).length?'<small class="note" style="margin:0">Boş bırakırsan TCMB kuru kullanılır; yazarsan senin kurun geçerli olur.</small>':'')+'</div>';}
 function itView(){if(IT.lib===null&&!IT.busy)itLoad();if(!IT.kur&&!IT.kurBusy&&!IT.kurErr)setTimeout(function(){itKur();},0);if(!IT.f)IT.f=itBlank();
   var nO=(IT.offers||[]).length,h='<div class="alist"><p class="note" style="margin:0">Yurtdışından alacağın malın kapına kadar maliyeti, tedarikçi teklifleri ve ülke karşılaştırması. Kur TCMB\'den otomatik gelir.</p>'+
@@ -2164,9 +2165,9 @@ function itView(){if(IT.lib===null&&!IT.busy)itLoad();if(!IT.kur&&!IT.kurBusy&&!
   h+=itKurBox([f.cur,inc.nav?f.navCur:'']);
   h+='<div class="aed"><b>Alım</b><div class="two">'+itIn('Hesap adı','ad',f.ad,'Örn. A4 kâğıt Endonezya',null,'t')+itIn('Tarih','tarih',f.tarih,'',null,'d')+'</div>'+
     '<div class="two">'+itSel('Menşe ülke','ulke',itUlkes(f.ulke),f.ulke)+itSel('Fatura para birimi','cur',curs,f.cur)+'</div>'+
-    '<div class="two">'+itSel('Teslim şekli','inc',Object.keys(IT_INC),f.inc)+itSel('Ödeme','odeme',['Peşin','Vadeli / kredili'],f.odeme)+'</div>'+
+    '<div class="two">'+itSel('Teslim şekli','inc',Object.keys(IT_INC),f.inc)+itSel('Ödeme şekli','odeme',IT_ODEME.indexOf(f.odeme)<0?[f.odeme].concat(IT_ODEME):IT_ODEME,f.odeme)+'</div>'+
     '<small class="note" style="margin:0">'+esc(f.inc)+': '+esc(inc.t)+'.</small>'+
-    (f.odeme!=='Peşin'&&!inc.ddp?'<div class="two">'+itIn('KKDF %','kkdf',f.kkdf,'Örn. 6')+'<small class="note" style="align-self:end;margin:0">Vadeli/kredili ithalatta uygulanır; güncel oranı müşavirine teyit ettir.</small></div>':'')+'</div>';
+    (itVadeli(f.odeme)&&!inc.ddp?'<div class="two">'+itIn('KKDF %','kkdf',f.kkdf,'6')+'<small class="note" style="align-self:end;margin:0">Mal mukabili, vadeli akreditif ve kabul kredili ödemede fatura bedeli üzerinden alınır (boş = %6). Bedel beyanname tescilinden önce ödenirse çıkmaz.</small></div>':'')+'</div>';
   h+='<div class="aed"><b>Ürünler</b>';
   f.kalem.forEach(function(k,i){h+='<div class="it-k"><div class="adx-top"><b style="flex:1">'+(i+1)+'. ürün</b>'+(f.kalem.length>1?'<button type="button" class="btn soft sm adx-del" data-it="kdel" data-i="'+i+'">Kaldır</button>':'')+'</div>'+
       '<label for="itL'+i+'">GTİP<select id="itL'+i+'" data-itlib="'+i+'">'+itLibOpts(k.lib)+'</select></label>'+
@@ -2181,7 +2182,7 @@ function itView(){if(IT.lib===null&&!IT.busy)itLoad();if(!IT.kur&&!IT.kurBusy&&!
     (inc.cik?'<div class="two">'+itIn('Çıkış ülkesi yükleme ve iç nakliye ('+esc(f.cur)+')','cik',f.cik,'0')+'<span></span></div>':'')+
     (inc.nav?'<div class="two">'+itIn('Uluslararası navlun','navlun',f.navlun,'Örn. 1800')+itSel('Navlun para birimi','navCur',curs,f.navCur)+'</div>':'<small class="note" style="margin:0">Navlun '+esc(f.inc)+' fiyatına dahil, ayrıca eklenmez.</small>')+
     (inc.sig?'<div class="two">'+itIn('Sigorta ('+esc(f.cur)+')','sigorta',f.sigorta,'0')+'<span></span></div>':'')+
-    '<div class="two">'+itIn('Liman, terminal, ardiye (₺)','liman',f.liman,'0')+(inc.ddp?'<span></span>':itIn('Damga vergisi ve harçlar (₺)','damga',f.damga,'0'))+'</div>'+
+    '<div class="two">'+itIn('Liman, terminal, ardiye (₺, tescile kadar)','liman',f.liman,'0')+(inc.ddp?'<span></span>':itIn('Damga vergisi ve harçlar (₺)','damga',f.damga,'0'))+'</div>'+
     '<div class="two">'+itIn('Gümrük müşaviri (₺, KDV hariç)','musavir',f.musavir,'0')+itIn('Türkiye iç nakliye (₺)','ic',f.ic,'0')+'</div>'+
     '<div class="two">'+itIn('Diğer giderler (₺)','diger',f.diger,'0')+itIn('Hedef kâr %','marj',f.marj,'Örn. 40')+'</div>'+
     '<small class="note" style="margin:0">Türkiye sınırına kadarki masraflar gümrük kıymetine (CIF) girer. Türkiye içindeki nakliye ve diğer giderler vergiye girmez, yalnız maliyete eklenir.</small></div>';
@@ -2210,7 +2211,8 @@ function itLibView(){var g=IT.ge,h='',yil=new Date().getFullYear();
 function itLogView(){var L=IT.log||[];if(!L.length)return '<p class="note">Henüz değişiklik yok.</p>';
   var A2={ekle:'Eklendi',degistir:'Değiştirildi',sil:'Silindi'};
   return '<div class="aed"><b>Değişiklik geçmişi</b>'+L.map(function(x){var d=x.new_data||x.old_data||{},o=x.old_data||{},n=x.new_data||{},ch=[];
-    if(x.action==='degistir')Object.keys(Object.assign({},o,n)).forEach(function(k){if(k[0]!=='_'&&JSON.stringify(o[k])!==JSON.stringify(n[k]))ch.push(k+': '+(o[k]==null||o[k]===''?'—':o[k])+' → '+(n[k]==null||n[k]===''?'—':n[k]));});
+    var LB={kod:'GTİP',ad:'ürün',ulke:'ülke',gv:'GV %',igv:'İGV %',emy:'EMY %',maktu:'maktu',otv:'ÖTV %',kdv:'KDV %',yururluk:'yürürlük',kaynak:'kaynak',not:'not',tedarikci:'tedarikçi',urun:'ürün',fiyat:'fiyat',cur:'döviz',inc:'teslim',liman:'liman',gecerlilik:'geçerlilik',guncelleme:'güncelleme',odeme:'ödeme',dogrulama:'doğrulama',kontrol:'kontroller',navlun:'navlun',sigorta:'sigorta',moq:'asgari sipariş'},sv=function(v){return v==null||v===''?'—':typeof v==='object'?(Object.keys(v).filter(function(q){return v[q];}).length+' işaretli'):v;};
+    if(x.action==='degistir')Object.keys(Object.assign({},o,n)).forEach(function(k){if(k[0]!=='_'&&k!=='lib'&&JSON.stringify(o[k])!==JSON.stringify(n[k]))ch.push((LB[k]||k)+': '+sv(o[k])+' → '+sv(n[k]));});
     return '<div class="it-l"><span>'+esc(new Date(x.at).toLocaleString('tr-TR',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}))+' · '+(x.kind==='gtip'?'GTİP ':'Teklif ')+esc(d.kod||d.tedarikci||'')+' '+esc(d.ad||d.urun||'')+(ch.length?'<br><small>'+esc(ch.slice(0,6).join(' · '))+'</small>':'')+'</span><b>'+(A2[x.action]||x.action)+'</b></div>';}).join('')+'</div>';}
 /* ---- Teklifler ---- */
 function itTIn(lbl,key,val,ph,typ){var id='itT'+key;return '<label for="'+id+'">'+lbl+'<input id="'+id+'" '+(typ==='t'?'':typ==='d'?'type="date" ':'inputmode="decimal" ')+'data-itt="'+key+'" value="'+esc(val==null?'':String(val))+'" placeholder="'+esc(ph||'')+'"></label>';}
@@ -2248,7 +2250,7 @@ function itOfferForm(t,miktar,ortak){var g=(IT.lib||[]).filter(function(x){retur
   f.ad=(t.urun||'Teklif')+' · '+(t.tedarikci||'')+' ('+(t.ulke||'')+')';f.ulke=t.ulke||'Diğer';f.cur=t.cur||'USD';f.navCur=f.cur;f.inc=t.inc||'FOB';f.fx=JSON.parse(JSON.stringify((IT.f&&IT.f.fx)||{}));
   var k=itKalem(g);k.ad=t.urun||k.ad;k.adet=String(miktar||t.moq||'');k.fiyat=String(t.fiyat||'');f.kalem=[k];
   var q=itN(k.adet),val=q*itN(t.fiyat);f.navlun=itN(t.navlun)?String(itN(t.navlun)*q):'';f.sigorta=itN(t.sigorta)?String(val*itN(t.sigorta)/100):'';
-  f.odeme=(!t.odeme||t.odeme==='Peşin'||t.odeme==='Akreditif (görüldüğünde)')?'Peşin':'Vadeli / kredili';f.kkdf=f.odeme==='Peşin'?'':'6';f.musavir=ortak.musavir||'';f.liman=ortak.liman||'';f.ic=ortak.ic||'';return f;}
+  f.odeme=t.odeme||'Peşin';f.kkdf='';f.musavir=ortak.musavir||'';f.liman=ortak.liman||'';f.ic=ortak.ic||'';return f;}
 function itCmpView(){var c=IT.cmp,O=IT.offers||[],h='',today=accTodayStr();if(IT.offers===null)return '<p class="note">Yükleniyor…</p>';
   var urunler={};O.forEach(function(x){if(x.urun)urunler[x.urun]=1;});var U=Object.keys(urunler).sort();if(!c.urun&&U.length)c.urun=U[0];
   if(!U.length)return '<p class="note">Karşılaştırma için önce Teklifler bölümüne aynı ürün için farklı ülkelerden teklif ekle.</p>';
