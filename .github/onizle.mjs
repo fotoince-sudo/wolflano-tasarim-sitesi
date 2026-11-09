@@ -94,6 +94,26 @@ try {
     }
     urls.push(url);
   }
+  // Ürünün adı değişince eski adresi (urun/eski-ad-KOD) yeni adrese kalıcı yönlendir; Google 404 görmesin
+  const ht = path.join(root, '.htaccess');
+  if (fs.existsSync(ht)) {
+    const rx = (t) => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const R = ['# Eski / değişmiş adresler (yayında otomatik yazılır)',
+      'RewriteCond %{THE_REQUEST} \\s/index\\.html[\\s?]',
+      'RewriteRule ^ / [R=301,L]',
+      'RewriteCond %{THE_REQUEST} \\s/(?!studyo\\.html|google[0-9a-f]+\\.html)([^?\\s]+?)\\.html[\\s?]',
+      'RewriteRule ^ /%1 [R=301,L]',
+      'RewriteRule ^(shop|magaza|urunler)/?$ /hazir-urunler [R=301,L]',
+      'RewriteRule ^(product|product-category|urun-kategori|kategori-urun)/ /hazir-urunler [R=301,L]',
+      'RewriteRule ^(cart|sepet|checkout|odeme|my-account|hesabim)/?$ / [R=301,L]'];
+    for (const it of items) {
+      const m = /^urun\/(.+)-([a-z0-9]+)$/.exec(it.path || '');
+      if (m) R.push(`RewriteRule ^urun/(?!${rx(m[1])}-${m[2]}$)[^/]*-${m[2]}/?$ /${it.path} [R=301,L]`);
+    }
+    let t = fs.readFileSync(ht, 'utf8');
+    const k = '# Arama motoru sayfaları:';
+    if (t.includes(k)) { t = t.replace(k, () => R.join('\n') + '\n' + k); fs.writeFileSync(ht, t); console.log('Yönlendirme: ' + (R.length - 8) + ' ürün adresi'); }
+  }
   if (sp) { // ayrılmış ana sayfayı dene; sorun varsa eski tek dosya hâline dön
     const errs = []; const t = await ctx.newPage(); t.on('pageerror', (e) => errs.push(e.message));
     await t.goto('http://localhost:8898/index.html#hazir', { waitUntil: 'load' }); await t.waitForTimeout(3000);
