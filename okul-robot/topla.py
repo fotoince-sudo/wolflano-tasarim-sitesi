@@ -42,7 +42,7 @@ with cf.ThreadPoolExecutor(max_workers=3) as ex:
     for n, res in enumerate(ex.map(call, batches), 1):
         for x in res:
             if x.get("ornek"):
-                print("ORNEK", x["web"], x["ornek"][:900], flush=True)
+                print("ORNEK", x["web"], x["ornek"][:2500], flush=True)
             r = byweb.get(x["web"], ["", "", x["web"]])
             out.append([r[0], r[1], x["web"], x["eposta"], x["tum"], x["kaynak"], x["durum"], x["telefon"]])
         if n % 10 == 0:
