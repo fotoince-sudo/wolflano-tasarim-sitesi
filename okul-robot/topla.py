@@ -9,7 +9,7 @@ TEL = re.compile(r"\(?0?\s?\(?232\)?[\s\-.]?\d{3}[\s\-.]?\d{2}[\s\-.]?\d{2}")
 
 def get(u, retry=True):
     try:
-        r = urllib.request.urlopen(urllib.request.Request(u, headers=UA), timeout=20)
+        r = urllib.request.urlopen(urllib.request.Request(u, headers=UA), timeout=10)
         b = r.read(800000)
         cs = r.headers.get_content_charset() or "utf-8"
         return r.geturl(), b.decode(cs, "replace")
@@ -62,14 +62,18 @@ def one(row):
 
 
 rows = list(csv.reader(open(sys.argv[1], encoding="utf-8")))[1:]
-out = []
-with cf.ThreadPoolExecutor(max_workers=8) as ex:
-    for i, r in enumerate(ex.map(one, rows)):
-        out.append(r)
-        if i % 100 == 0:
-            print(i, "/", len(rows), flush=True)
-with open(sys.argv[2], "w", newline="", encoding="utf-8") as f:
-    w = csv.writer(f)
-    w.writerow(["no", "ad", "web", "eposta", "tum_epostalar", "kaynak_sayfa", "durum", "telefon_sitede"])
-    w.writerows(out)
-print("bitti", sum(1 for r in out if r[3]), "e-posta /", len(out))
+lim = int(sys.argv[3]) if len(sys.argv) > 3 and sys.argv[3] else 0
+if lim:
+    rows = rows[:lim]
+# Sonuç her okuldan sonra dosyaya yazılır: iş yarıda kesilse de bulunanlar kaybolmaz
+f = open(sys.argv[2], "w", newline="", encoding="utf-8")
+w = csv.writer(f)
+w.writerow(["no", "ad", "web", "eposta", "tum_epostalar", "kaynak_sayfa", "durum", "telefon_sitede"])
+n = bul = 0
+with cf.ThreadPoolExecutor(max_workers=24) as ex:
+    for r in ex.map(one, rows):
+        w.writerow(r); f.flush(); n += 1; bul += 1 if r[3] else 0
+        if n % 50 == 0:
+            print(n, "/", len(rows), "e-posta:", bul, flush=True)
+f.close()
+print("bitti", bul, "e-posta /", n)

@@ -3,19 +3,25 @@
 name: Okul iletişim
 on:
   workflow_dispatch:
+    inputs:
+      adet:
+        description: 'Kaç okul (boş = hepsi)'
+        required: false
+        default: ''
 permissions:
   contents: read
 jobs:
   topla:
     runs-on: ubuntu-latest
-    timeout-minutes: 120
+    timeout-minutes: 300
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - run: python3 okul-robot/topla.py okul-robot/okullar.csv sonuc.csv
+      - run: timeout 270m python3 okul-robot/topla.py okul-robot/okullar.csv sonuc.csv "${{ inputs.adet }}" || true
       - uses: actions/upload-artifact@v4
+        if: always()
         with:
           name: okul-iletisim
           path: sonuc.csv
