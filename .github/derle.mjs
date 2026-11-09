@@ -4,7 +4,7 @@ import { minify } from 'html-minifier-terser';
 import fs from 'node:fs';
 import path from 'node:path';
 
-const SKIP = new Set(['.git', '.github', 'supabase', 'node_modules', 'dist', 'README.md', 'wrangler.jsonc', '.assetsignore', 'package.json', 'package-lock.json']);
+const SKIP = new Set(['.git', '.github', 'supabase', 'okul-robot', 'node_modules', 'dist', 'README.md', 'wrangler.jsonc', '.assetsignore', 'package.json', 'package-lock.json']);
 const out = 'dist';
 fs.rmSync(out, { recursive: true, force: true });
 fs.mkdirSync(out);

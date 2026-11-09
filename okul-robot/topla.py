@@ -1,79 +1,59 @@
-# Okulların kendi resmî sitelerinden (meb.k12.tr) yayımlanmış kurumsal e-posta ve telefonları toplar.
-# Yalnız okulun kendi sitesinde yazan bilgi alınır; hiçbir adres tahmin edilmez, hiçbir okula ileti gönderilmez.
-import csv, re, sys, concurrent.futures as cf, urllib.request, urllib.parse, html
+# Okul iletişim robotu (GitHub Actions'ta çalışır).
+# meb.k12.tr okul siteleri yurtdışı bağlantılarını kabul etmediği için okul sitelerini Wolflano'nun Türkiye'deki sunucusu
+# (wolflano.com.tr/api/okul-iletisim.php) okur; robot sonuçları toplayıp yönetim panelindeki Kasa'ya tek kayıt olarak yazar.
+# Yalnız okulların kendi sitelerinde yayımlanmış bilgi alınır; adres tahmin edilmez, hiçbir okula ileti gönderilmez.
+import csv, io, json, os, sys, time, secrets, urllib.request, concurrent.futures as cf
 
-UA = {"User-Agent": "Mozilla/5.0 (compatible; Wolflano-okul-rehberi/1.0)"}
-EM = re.compile(r"[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,}")
-TEL = re.compile(r"\(?0?\s?\(?232\)?[\s\-.]?\d{3}[\s\-.]?\d{2}[\s\-.]?\d{2}")
-
-
-def get(u, retry=True):
-    try:
-        r = urllib.request.urlopen(urllib.request.Request(u, headers=UA), timeout=10)
-        b = r.read(800000)
-        cs = r.headers.get_content_charset() or "utf-8"
-        return r.geturl(), b.decode(cs, "replace")
-    except Exception:
-        # Sertifikası sorunlu okul sitelerinde düz http adresi denenir (doğrulama kapatılmaz)
-        if retry and u.startswith("https://"):
-            return get("http://" + u[8:], False)
-        return None, ""
-
-
-def mails(t):
-    t = html.unescape(t).replace("[at]", "@").replace("(at)", "@")
-    out = []
-    for e in EM.findall(t):
-        e = e.strip(".").lower()
-        if e.endswith((".png", ".jpg", ".gif", ".webp", ".svg")) or "example" in e or "sentry" in e:
-            continue
-        if e not in out:
-            out.append(e)
-    return out
-
-
-def one(row):
-    no, ad, web = row
-    base, home = get(web)
-    if not base:
-        return [no, ad, web, "", "", "", "Site açılmadı", ""]
-    pages = [(base, home)]
-    links = re.findall(r'href=["\']([^"\']*(?:iletisim|iletişim|contact)[^"\']*)["\']', home, re.I)
-    for u in ["tema/iletisim.php"] + links[:3]:
-        full = urllib.parse.urljoin(base, u)
-        if full not in [p[0] for p in pages]:
-            fu, tx = get(full)
-            if tx:
-                pages.append((fu, tx))
-    allm, src, tels = [], "", []
-    for u, tx in pages:
-        for e in mails(tx):
-            if e not in allm:
-                allm.append(e)
-                src = src or u
-        for t in TEL.findall(html.unescape(tx)):
-            t = re.sub(r"\D", "", t)[-10:]
-            if len(t) == 10 and t not in tels:
-                tels.append(t)
-    okul = [e for e in allm if e.endswith("meb.k12.tr")]
-    diger = [e for e in allm if not e.endswith("meb.gov.tr")]
-    best = (okul or diger or [""])[0]
-    return [no, ad, web, best, ";".join(allm[:5]), src, "Bulundu" if best else "E-posta yayımlanmamış", ";".join(tels[:2])]
-
-
+API = "https://wolflano.com.tr/api/okul-iletisim.php"
+PROJE = os.environ.get("PROJE", "wgovwmeirlzwalelazfj")
+TOKEN = os.environ.get("SUPABASE_ACCESS_TOKEN", "")
 rows = list(csv.reader(open(sys.argv[1], encoding="utf-8")))[1:]
-lim = int(sys.argv[3]) if len(sys.argv) > 3 and sys.argv[3] else 0
+lim = int(sys.argv[2]) if len(sys.argv) > 2 and sys.argv[2] else 0
 if lim:
     rows = rows[:lim]
-# Sonuç her okuldan sonra dosyaya yazılır: iş yarıda kesilse de bulunanlar kaybolmaz
-f = open(sys.argv[2], "w", newline="", encoding="utf-8")
-w = csv.writer(f)
-w.writerow(["no", "ad", "web", "eposta", "tum_epostalar", "kaynak_sayfa", "durum", "telefon_sitede"])
-n = bul = 0
-with cf.ThreadPoolExecutor(max_workers=24) as ex:
-    for r in ex.map(one, rows):
-        w.writerow(r); f.flush(); n += 1; bul += 1 if r[3] else 0
-        if n % 50 == 0:
-            print(n, "/", len(rows), "e-posta:", bul, flush=True)
-f.close()
-print("bitti", bul, "e-posta /", n)
+byweb = {r[2]: r for r in rows}
+
+
+def call(batch):
+    body = json.dumps({"urls": [r[2] for r in batch]}).encode()
+    for deneme in range(3):
+        try:
+            req = urllib.request.Request(API, data=body, method="POST", headers={"Content-Type": "application/json", "User-Agent": "Wolflano-okul-robotu/1.0"})
+            return json.loads(urllib.request.urlopen(req, timeout=100).read().decode())["sonuc"]
+        except Exception as e:
+            print("tekrar", deneme, e, flush=True)
+            time.sleep(10 * (deneme + 1))
+    return [{"web": r[2], "eposta": "", "tum": "", "kaynak": "", "durum": "Sunucu yanıt vermedi", "telefon": ""} for r in batch]
+
+
+def sql(q):
+    req = urllib.request.Request(f"https://api.supabase.com/v1/projects/{PROJE}/database/query", data=json.dumps({"query": q}).encode(),
+                                 method="POST", headers={"Authorization": "Bearer " + TOKEN, "Content-Type": "application/json", "User-Agent": "Wolflano-okul-robotu/1.0"})
+    return urllib.request.urlopen(req, timeout=60).read().decode()
+
+
+batches = [rows[i:i + 12] for i in range(0, len(rows), 12)]
+out = []
+with cf.ThreadPoolExecutor(max_workers=3) as ex:
+    for n, res in enumerate(ex.map(call, batches), 1):
+        for x in res:
+            r = byweb.get(x["web"], ["", "", x["web"]])
+            out.append([r[0], r[1], x["web"], x["eposta"], x["tum"], x["kaynak"], x["durum"], x["telefon"]])
+        if n % 10 == 0:
+            print(n * 12, "/", len(rows), "e-posta:", sum(1 for o in out if o[3]), flush=True)
+
+bul = sum(1 for o in out if o[3])
+acil = sum(1 for o in out if o[6].startswith("Site açılmadı") or o[6] == "Sunucu yanıt vermedi")
+print("bitti", bul, "e-posta /", len(out), "| açılmayan site:", acil, flush=True)
+buf = io.StringIO()
+w = csv.writer(buf, delimiter=";")
+w.writerow(["kayit_no", "kurum", "web", "eposta", "tum_epostalar", "kaynak_sayfa", "durum", "telefon_sitede"])
+w.writerows(sorted(out, key=lambda o: int(o[0] or 0)))
+tag = "x" + secrets.token_hex(6)
+title = "Okul iletişim sonuçları"
+note = f"{time.strftime('%Y-%m-%d %H:%M')} UTC · {len(out)} okul · {bul} e-posta bulundu · {acil} site açılmadı\n\n" + buf.getvalue()
+if not TOKEN:
+    print(note[:2000]); sys.exit(0)
+q = (f"delete from public.wf_kasa where title = ${tag}${title}${tag}$ and folder = 'Diğer';"
+     f"insert into public.wf_kasa(folder, title, note, created_by) values ('Diğer', ${tag}${title}${tag}$, ${tag}${note}${tag}$, 'okul-robotu');")
+print(sql(q)[:200])
