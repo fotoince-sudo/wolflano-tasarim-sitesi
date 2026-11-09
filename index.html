@@ -938,6 +938,7 @@ p,li,.lead{text-wrap:pretty}
 .ttt{display:grid!important;grid-template-columns:1fr 1fr;gap:8px;overflow:visible!important}.ttt button{width:100%;padding:10px 8px!important;white-space:nowrap;justify-content:center;text-align:center}.ttg{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px}.ttc{display:flex;flex-direction:column;gap:6px;background:var(--panel,#fff);border:1px solid #0001;border-radius:14px;padding:10px}.ttc img{width:100%;aspect-ratio:1;object-fit:contain;border-radius:10px;background:linear-gradient(#dee0dd,#c4c7c3)}.ttcat{display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:10px}.ttcat button{display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px;border:1.5px solid #0001;border-radius:14px;background:var(--panel,#fff);cursor:pointer;font:inherit;color:inherit}.ttcat button.on{border-color:var(--green);box-shadow:0 0 0 2px var(--green) inset}.ttcat img{width:100%;aspect-ratio:1;object-fit:contain;border-radius:10px;background:linear-gradient(#dee0dd,#c4c7c3)}.ttcat b{font-size:13px;line-height:1.25;text-align:center}.ttcat small{font-size:11px;color:#6b746e}.ttsw{display:flex;flex-wrap:wrap;gap:4px}.ttsw i{width:16px;height:16px;border-radius:50%;border:1px solid #0002;display:inline-block}.ttc .ttd{color:#4d5651;font-size:12px;line-height:1.35}.ttc b{font-size:14px;line-height:1.3}.ttc small{color:#6b746e;font-size:12px}
 .ttp{display:grid;gap:3px;font-size:13px}.ttp span{display:flex;justify-content:space-between;gap:6px;font-weight:700}.ttp small{font-weight:500}.ttq{display:flex;gap:6px}.ttq{flex-wrap:wrap}.ttq input{width:72px;min-width:64px;flex:1 1 64px;padding-left:8px;padding-right:4px}.ttq .btn{flex:1 1 auto;justify-content:center}.ttl{display:grid;gap:4px;border-bottom:1px solid #0001;padding-bottom:8px}.ttl .lk{justify-self:start;background:none;border:0;color:#c42f36;padding:0;font-size:13px}
 .kchips{display:flex;gap:8px;overflow-x:auto;padding:8px 0 14px;scrollbar-width:none}.kchips::-webkit-scrollbar{display:none}.kchips a{flex:none;padding:8px 14px;border-radius:999px;border:1px solid var(--line);background:var(--card);font-size:14px;font-weight:600;color:var(--ink);text-decoration:none;white-space:nowrap}.kchips a.on{background:var(--green);border-color:var(--green);color:#fff}
+.it-l{display:flex;justify-content:space-between;gap:10px;padding:5px 0;border-bottom:1px dashed var(--line);font-size:14px}.it-l span{color:var(--muted,#5b6660)}.it-l b{text-align:right;white-space:nowrap}.it-l.it-s b{color:var(--ink)}.it-l.it-t{border-bottom:0;border-top:2px solid var(--ink);margin-top:4px;padding-top:8px;font-size:16px}.it-rows{display:grid;gap:8px;margin-top:10px}.it-r{border:1px solid var(--line);border-radius:12px;padding:10px;display:grid;gap:2px}.it-r small{color:var(--muted,#5b6660)}.it-k{border:1px solid var(--line);border-radius:12px;padding:12px;display:grid;gap:10px}
 </style>
 
 <header class="top"><div class="wrap">
@@ -2073,6 +2074,157 @@ document.addEventListener('click',async function(e){var b=e.target.closest&&e.ta
   else if(a==='del'){if(KS.del!==id){KS.del=id;ksRe();return;}var y=(KS.rows||[]).filter(function(r){return r.id===id;})[0],tk3=await sbToken();if(!tk3||!y)return;
     if(y.file_path){try{await fetch(SB.url+'/storage/v1/object/kasa',{method:'DELETE',headers:{apikey:SB.key,Authorization:'Bearer '+tk3,'Content-Type':'application/json'},body:JSON.stringify({prefixes:[y.file_path]})});}catch(_){}}
     var rd=await sbReq('/rest/v1/wf_kasa?id=eq.'+id,{method:'DELETE',token:tk3,prefer:'return=minimal'});if(rd.ok){KS.rows=KS.rows.filter(function(r){return r.id!==id;});toast('Silindi');}else toast('Silinemedi');KS.del=null;ksRe();}
+});
+/* ---------- İthalat hesaplayıcı: yurtdışından alınan malın kapıya kadar maliyeti (gümrük vergisi, ilave GV, ÖTV, KDV, masraflar).
+   Kur: TCMB döviz satış kuru ("kur" sunucu fonksiyonu). Oranlar: GTİP kütüphanesi (Ticaret Bakanlığı TARA'dan bakılıp bir kez girilir).
+   Kayıtlar wf_ithalat tablosunda (yalnız yönetici ve yetkililer). Hesap muhasebeye tek gider kaydı olarak işlenebilir. ---------- */
+var IT={lib:null,calcs:null,busy:false,err:'',kur:null,kurErr:'',kurBusy:false,v:'hesap',ge:null,del:null,id:null,f:null};
+var IT_CUR=['USD','EUR','CNY','GBP','TRY'],IT_ULKE=['Çin','AB (A.TR belgeli)','Türkiye dışı diğer','Bangladeş','Pakistan','Hindistan','Vietnam','Mısır','Özbekistan','ABD','İngiltere'];
+function itBlank(){return {ad:'',ulke:'Çin',cur:'USD',fx:{},kalem:[itKalem()],navlun:'',navCur:'USD',sigorta:'',liman:'',damga:'',musavir:'',ic:'',marj:'',tarih:accTodayStr()};}
+function itKalem(g){g=g||{};return {lib:g.id||'',kod:g.kod||'',ad:g.ad||'',adet:'',fiyat:'',gv:g.gv!=null?g.gv:'',igv:g.igv!=null?g.igv:'',otv:g.otv!=null?g.otv:'',kdv:g.kdv!=null?g.kdv:'10'};}
+function itRe(){if(cur==='yonetim'&&A&&A.tab==='ithalat'){var y=window.scrollY;adRender();window.scrollTo(0,y);}}
+function itN(x){var n=parseFloat(String(x==null?'':x).replace(/\s/g,'').replace(',','.'));return isFinite(n)?n:0;}
+function itRate(c){if(!c||c==='TRY')return 1;var f=IT.f||{},m=f.fx&&itN(f.fx[c]);if(m>0)return m;var k=IT.kur&&IT.kur.kurlar&&IT.kur.kurlar[c];return k&&k.satis?k.satis:0;}
+async function itLoad(){if(IT.busy)return;IT.busy=true;IT.err='';
+  try{var tk=await sbToken();if(!tk){IT.err='Giriş yapmalısın.';IT.lib=[];IT.calcs=[];}
+    else{var r=await sbReq('/rest/v1/wf_ithalat?select=*&order=created_at.desc&limit=1000',{token:tk});
+      if(!r.ok){IT.err=r.status===404?'İthalat tablosu henüz kurulmamış (veritabanı güncellemesi bekleniyor). Hesaplama çalışır ama kayıt yapılamaz.':'Kayıtlar okunamadı.';IT.lib=[];IT.calcs=[];}
+      else{var all=r.j||[];IT.lib=all.filter(function(x){return x.kind==='gtip';}).map(function(x){var d=x.data||{};d.id=x.id;return d;}).sort(function(a,b){return String(a.kod).localeCompare(String(b.kod));});
+        IT.calcs=all.filter(function(x){return x.kind==='hesap';}).map(function(x){return {id:x.id,at:x.created_at,d:x.data||{}};});}}}
+  catch(_){IT.err='Bağlantı kurulamadı.';IT.lib=[];IT.calcs=[];}
+  IT.busy=false;itRe();}
+async function itKur(force){if(IT.kurBusy)return;if(IT.kur&&!force)return;IT.kurBusy=true;IT.kurErr='';itRe();
+  try{var tk=await sbToken();if(!tk)throw new Error('giriş');
+    var r=await fetch(SB.url+'/functions/v1/kur',{method:'POST',headers:{'Content-Type':'application/json',apikey:SB.key,Authorization:'Bearer '+tk},body:'{}'});
+    var j=await r.json().catch(function(){return {};});if(!r.ok||!j.kurlar)throw new Error(j.message||('HTTP '+r.status));IT.kur=j;}
+  catch(e){IT.kurErr='TCMB kuru alınamadı ('+(e&&e.message||'hata')+'). Kuru elle yazabilirsin.';}
+  IT.kurBusy=false;itRe();}
+/* Hesap: navlun ve sigorta kalemlere mal bedeli payına göre dağıtılır. Gümrük kıymeti (CIF) = mal + navlun + sigorta (TL).
+   GV ve ilave GV CIF üzerinden; ÖTV (varsa) CIF+GV+İGV üzerinden; KDV matrahı = CIF + tüm vergiler + damga + liman/ardiye masrafları. */
+function itCalc(f){
+  var kr=itRate(f.cur),nav=itN(f.navlun)*itRate(f.navCur),sig=itN(f.sigorta)*kr,lim=itN(f.liman),dmg=itN(f.damga),mus=itN(f.musavir),ic=itN(f.ic),marj=itN(f.marj);
+  var K=f.kalem.map(function(k){return {k:k,malF:itN(k.adet)*itN(k.fiyat)};}),topF=K.reduce(function(s,x){return s+x.malF;},0);
+  var T={kr:kr,ok:kr>0,malF:topF,mal:0,nav:nav,sig:sig,cif:0,gv:0,igv:0,otv:0,kdv:0,dmg:dmg,lim:lim,mus:mus,musKdv:mus*0.2,ic:ic,rows:[]};
+  if(!(kr>0)||!(topF>0))return T;
+  K.forEach(function(x){var k=x.k,p=x.malF/topF,mal=x.malF*kr,cif=mal+(nav+sig)*p,gv=cif*itN(k.gv)/100,igv=cif*itN(k.igv)/100,otv=(cif+gv+igv)*itN(k.otv)/100;
+    var kdv=(cif+gv+igv+otv+(dmg+lim)*p)*itN(k.kdv)/100,mal2=cif+gv+igv+otv+(dmg+lim+mus+ic)*p,adet=itN(k.adet);
+    T.mal+=mal;T.cif+=cif;T.gv+=gv;T.igv+=igv;T.otv+=otv;T.kdv+=kdv;
+    T.rows.push({ad:k.ad||k.kod||'Kalem',adet:adet,cif:cif,vergi:gv+igv+otv,kdv:kdv,maliyet:mal2,birim:adet>0?mal2/adet:0,birimKdv:adet>0?(mal2+kdv+mus*0.2*p)/adet:0,oner:adet>0&&marj>0?(mal2/adet)*(1+marj/100):0});});
+  T.vergi=T.gv+T.igv+T.otv;T.odeme=T.cif+T.vergi+dmg+lim+T.kdv+mus*1.2+ic;T.maliyet=T.odeme-T.kdv-T.musKdv;
+  return T;}
+function itRes(){var f=IT.f,T=itCalc(f),c=f.cur;
+  if(!T.ok)return '<p class="msg">'+esc(c)+' kuru yok. TCMB kurunu al ya da kuru elle yaz.</p>';
+  if(!(T.malF>0))return '<p class="note">Kaleme adet ve birim fiyat yazınca sonuç burada çıkar.</p>';
+  var L=function(a,b,s){return '<div class="it-l'+(s?' '+s:'')+'"><span>'+a+'</span><b>'+b+'</b></div>';};
+  var h=L('Mal bedeli',n2(T.malF)+' '+esc(c)+' → '+tl2(T.mal))+(T.nav?L('Navlun',tl2(T.nav)):'')+(T.sig?L('Sigorta',tl2(T.sig)):'')+
+    L('Gümrük kıymeti (CIF)',tl2(T.cif),'it-s')+L('Gümrük vergisi',tl2(T.gv))+(T.igv?L('İlave gümrük vergisi',tl2(T.igv)):'')+(T.otv?L('ÖTV',tl2(T.otv)):'')+
+    (T.dmg?L('Damga vergisi / harçlar',tl2(T.dmg)):'')+(T.lim?L('Liman, ardiye, antrepo',tl2(T.lim)):'')+L('İthalat KDV',tl2(T.kdv))+
+    (T.mus?L('Gümrük müşaviri (+%20 KDV)',tl2(T.mus*1.2)):'')+(T.ic?L('Yurt içi nakliye',tl2(T.ic)):'')+
+    L('Toplam ödenecek',tl2(T.odeme),'it-t')+L('Gerçek maliyet (KDV indirilirse)',tl2(T.maliyet),'it-s');
+  h+='<div class="it-rows">'+T.rows.map(function(r){return '<div class="it-r"><b>'+esc(r.ad)+'</b><small>'+(r.adet?r.adet+' adet · ':'')+'vergiler '+tl2(r.vergi)+'</small>'+
+    (r.adet?'<div class="it-l"><span>Adet başı maliyet</span><b>'+tl2(r.birim)+'</b></div><div class="it-l"><span>Adet başı (KDV dahil, indirilemezse)</span><b>'+tl2(r.birimKdv)+'</b></div>':'')+
+    (r.oner?'<div class="it-l it-s"><span>Önerilen satış (KDV hariç, %'+n2(itN(f.marj))+' kâr)</span><b>'+tl2(r.oner)+'</b></div>':'')+'</div>';}).join('')+'</div>';
+  h+='<p class="note" style="margin:6px 0 0">KDV, vergi kaydın açıldıktan sonra indirilebilir; o zamana kadar gerçek maliyete eklenir. Bu bir tahmindir, kesin tutarı gümrük beyannamesi belirler.</p>';
+  return h;}
+function itIn(lbl,key,val,ph,idx,typ){var id='itF'+(idx==null?'':idx+'_')+key;return '<label for="'+id+'">'+lbl+'<input id="'+id+'" '+(typ==='t'?'':'inputmode="decimal" ')+'data-itv="'+key+'"'+(idx!=null?' data-i="'+idx+'"':'')+' value="'+esc(val==null?'':String(val))+'" placeholder="'+esc(ph||'')+'"></label>';}
+function itSel(lbl,key,list,val){var id='itS'+key;return '<label for="'+id+'">'+lbl+'<select id="'+id+'" data-itv="'+key+'" data-re="1">'+list.map(function(x){return '<option'+(x===val?' selected':'')+'>'+esc(x)+'</option>';}).join('')+'</select></label>';}
+function itCurs(){var s={};IT_CUR.forEach(function(c){s[c]=1;});if(IT.kur&&IT.kur.kurlar)Object.keys(IT.kur.kurlar).forEach(function(c){s[c]=1;});var l=Object.keys(s);return IT_CUR.concat(l.filter(function(c){return IT_CUR.indexOf(c)<0;}).sort());}
+function itView(){if(IT.lib===null&&!IT.busy)itLoad();if(!IT.kur&&!IT.kurBusy&&!IT.kurErr)setTimeout(function(){itKur();},0);if(!IT.f)IT.f=itBlank();
+  var h='<div class="alist"><p class="note" style="margin:0">Yurtdışından alacağın malın kapına kadar toplam maliyeti: gümrük vergisi, ilave gümrük vergisi, KDV ve masraflar. Kur TCMB döviz satış kurundan otomatik gelir.</p>'+
+    '<div class="adx-f">'+[['hesap','Hesapla'],['gtip','GTİP oranları'+(IT.lib?' <small>'+IT.lib.length+'</small>':'')],['kayit','Kayıtlı hesaplar'+(IT.calcs?' <small>'+IT.calcs.length+'</small>':'')]].map(function(t){return '<button type="button" data-it="v" data-v="'+t[0]+'"'+(IT.v===t[0]?' class="on"':'')+'>'+t[1]+'</button>';}).join('')+'</div>';
+  if(IT.err)h+='<p class="msg">'+esc(IT.err)+'</p>';
+  if(IT.v==='gtip')return h+itLibView()+'</div>';
+  if(IT.v==='kayit')return h+itListView()+'</div>';
+  var f=IT.f,curs=itCurs();
+  /* kur kutusu */
+  var kd=IT.kur&&IT.kur.kurlar||{},used={};used[f.cur]=1;used[f.navCur]=1;delete used.TRY;
+  h+='<div class="aed"><div class="adx-top"><b style="flex:1">Döviz kuru</b><button type="button" class="btn soft sm" data-it="kur"'+(IT.kurBusy?' disabled':'')+'>'+(IT.kurBusy?'Alınıyor…':'TCMB\'den yenile')+'</button></div>'+
+    (IT.kur?'<small class="note" style="margin:0">TCMB '+esc(IT.kur.tarih||'')+' döviz satış kuru. Gümrük, beyannamenin tescil günündeki kuru kullanır.</small>':'')+(IT.kurErr?'<p class="msg" style="margin:0">'+esc(IT.kurErr)+'</p>':'')+
+    '<div class="two">'+Object.keys(used).map(function(c){var k=kd[c];return '<label for="itFx'+c+'">1 '+c+' = ? ₺'+(k?' <small>(TCMB '+n2(k.satis)+')</small>':'')+'<input id="itFx'+c+'" inputmode="decimal" data-itfx="'+c+'" value="'+esc(f.fx[c]||'')+'" placeholder="'+(k?n2(k.satis):'Kuru yaz')+'"></label>';}).join('')+'</div>'+
+    (Object.keys(used).length?'<small class="note" style="margin:0">Boş bırakırsan TCMB kuru kullanılır; yazarsan senin kurun geçerli olur.</small>':'')+'</div>';
+  /* genel */
+  h+='<div class="aed"><b>Alım</b><div class="two">'+itIn('Hesap adı','ad',f.ad,'Örn. Çin tişört partisi Kasım',null,'t')+itIn('Tarih','tarih',f.tarih,'',null,'t')+'</div><div class="two">'+itSel('Menşe ülke','ulke',IT_ULKE.indexOf(f.ulke)<0?[f.ulke].concat(IT_ULKE):IT_ULKE,f.ulke)+itSel('Fatura para birimi','cur',curs,f.cur)+'</div></div>';
+  /* kalemler */
+  h+='<div class="aed"><b>Ürünler</b>';
+  f.kalem.forEach(function(k,i){var opts='<option value="">GTİP kütüphanesinden seç…</option>'+(IT.lib||[]).map(function(g){return '<option value="'+esc(g.id)+'"'+(g.id===k.lib?' selected':'')+'>'+esc((g.kod||'')+' · '+(g.ad||'')+(g.ulke?' ('+g.ulke+')':''))+'</option>';}).join('');
+    h+='<div class="it-k"><div class="adx-top"><b style="flex:1">'+(i+1)+'. ürün</b>'+(f.kalem.length>1?'<button type="button" class="btn soft sm adx-del" data-it="kdel" data-i="'+i+'">Kaldır</button>':'')+'</div>'+
+      '<label for="itL'+i+'">GTİP<select id="itL'+i+'" data-itlib="'+i+'">'+opts+'</select></label>'+
+      '<div class="two">'+itIn('Ürün adı','ad',k.ad,'Örn. Pamuklu tişört',i,'t')+itIn('GTİP kodu','kod',k.kod,'6109.10.00.00.11',i,'t')+'</div>'+
+      '<div class="two">'+itIn('Adet','adet',k.adet,'500',i)+itIn('Birim fiyat ('+esc(f.cur)+')','fiyat',k.fiyat,'2,40',i)+'</div>'+
+      '<div class="two">'+itIn('Gümrük vergisi %','gv',k.gv,'0',i)+itIn('İlave gümrük vergisi %','igv',k.igv,'0',i)+'</div>'+
+      '<div class="two">'+itIn('ÖTV %','otv',k.otv,'0',i)+itIn('KDV %','kdv',k.kdv,'10',i)+'</div></div>';});
+  h+='<div><button type="button" class="btn soft sm" data-it="kadd">+ Ürün ekle</button></div></div>';
+  /* masraflar */
+  h+='<div class="aed"><b>Kargo ve masraflar</b><div class="two">'+itIn('Navlun (kargo bedeli)','navlun',f.navlun,'Örn. 320')+itSel('Navlun para birimi','navCur',curs,f.navCur)+'</div>'+
+    '<div class="two">'+itIn('Sigorta ('+esc(f.cur)+')','sigorta',f.sigorta,'0')+itIn('Liman, ardiye, antrepo (₺)','liman',f.liman,'0')+'</div>'+
+    '<div class="two">'+itIn('Damga vergisi ve harçlar (₺)','damga',f.damga,'0')+itIn('Gümrük müşaviri (₺, KDV hariç)','musavir',f.musavir,'0')+'</div>'+
+    '<div class="two">'+itIn('Yurt içi nakliye (₺)','ic',f.ic,'0')+itIn('Hedef kâr %','marj',f.marj,'Örn. 60')+'</div>'+
+    '<small class="note" style="margin:0">Navlun ve sigorta gümrük kıymetine (CIF) girer. Mal Türkiye\'ye girdikten sonraki yurt içi nakliye vergiye girmez, yalnız maliyete eklenir.</small></div>';
+  h+='<div class="aed"><b>Sonuç</b><div id="itRes">'+itRes()+'</div><div class="adx-a" style="display:flex;gap:8px;flex-wrap:wrap"><button type="button" class="btn sm" data-it="save">'+(IT.id?'Kaydı güncelle':'Hesabı kaydet')+'</button><button type="button" class="btn soft sm" data-it="acc">Muhasebeye gider olarak işle</button><button type="button" class="btn soft sm" data-it="new">Yeni hesap</button></div></div>';
+  return h+'</div>';}
+function itLibView(){var g=IT.ge,h='';
+  h+='<div class="aed"><p class="note" style="margin:0">Sık getirdiğin ürünlerin GTİP kodunu ve menşe ülkeye göre vergi oranlarını burada bir kez kaydet. Oranları Ticaret Bakanlığı\'nın resmi Tarife Arama Motoru\'ndan (TARA) bak; her yıl başında İthalat Rejimi Kararı ile değişebilir, yıl başında kontrol et.</p>'+
+    '<div style="display:flex;gap:8px;flex-wrap:wrap"><a class="btn soft sm" href="https://uygulama.gtb.gov.tr/Tara/" target="_blank" rel="noopener">TARA\'yı aç</a><button type="button" class="btn sm" data-it="gnew">'+(g?'Vazgeç':'+ GTİP ekle')+'</button></div></div>';
+  if(g){h+='<div class="aed"><b>'+(g.id?'GTİP düzenle':'Yeni GTİP')+'</b><div class="two">'+itGIn('GTİP kodu','kod',g.kod,'6109.10.00.00.11','t')+itGIn('Ürün','ad',g.ad,'Pamuklu tişört (örme)','t')+'</div>'+
+    '<div class="two"><label for="itGu">Menşe ülke<select id="itGu" data-itg="ulke">'+['Hepsi'].concat(IT_ULKE).map(function(x){return '<option'+(x===(g.ulke||'Hepsi')?' selected':'')+'>'+esc(x)+'</option>';}).join('')+'</select></label>'+itGIn('Gümrük vergisi %','gv',g.gv,'0')+'</div>'+
+    '<div class="two">'+itGIn('İlave gümrük vergisi %','igv',g.igv,'0')+itGIn('ÖTV %','otv',g.otv,'0')+'</div><div class="two">'+itGIn('KDV %','kdv',g.kdv,'10')+itGIn('Not','not',g.not,'Kaynak, tarih, belge şartı…','t')+'</div>'+
+    '<div><button type="button" class="btn sm" data-it="gsave">Kaydet</button></div></div>';}
+  var L=IT.lib||[];if(IT.lib===null)return h+'<p class="note">Yükleniyor…</p>';
+  if(!L.length)h+='<p class="note">Henüz GTİP eklenmedi. Wolflano için önce tişört, polo, sweatshirt, şapka ve kupa kodlarını eklemen yeterli.</p>';
+  L.forEach(function(x){h+='<div class="adx-c ksc"><div class="adx-b"><div class="adx-t"><b>'+esc(x.kod||'Kodsuz')+'</b><span class="adx-k">'+esc(x.ulke||'Hepsi')+'</span></div><small class="note" style="margin:0">'+esc(x.ad||'')+' · GV %'+n2(itN(x.gv))+(itN(x.igv)?' · İGV %'+n2(itN(x.igv)):'')+(itN(x.otv)?' · ÖTV %'+n2(itN(x.otv)):'')+' · KDV %'+n2(itN(x.kdv))+'</small>'+(x.not?'<p class="ksn">'+esc(x.not)+'</p>':'')+
+    '<div class="adx-a"><button type="button" class="btn soft sm" data-it="gedit" data-id="'+esc(x.id)+'">Düzenle</button><button type="button" class="btn soft sm adx-del" data-it="gdel" data-id="'+esc(x.id)+'">'+(IT.del===x.id?'Silmeyi onayla':'Sil')+'</button></div></div></div>';});
+  return h;}
+function itGIn(lbl,key,val,ph,typ){var id='itG'+key;return '<label for="'+id+'">'+lbl+'<input id="'+id+'" '+(typ==='t'?'':'inputmode="decimal" ')+'data-itg="'+key+'" value="'+esc(val==null?'':String(val))+'" placeholder="'+esc(ph||'')+'"></label>';}
+function itListView(){var L=IT.calcs||[],h='';if(IT.calcs===null)return '<p class="note">Yükleniyor…</p>';
+  if(!L.length)return '<p class="note">Kayıtlı hesap yok. Hesapla sekmesinde "Hesabı kaydet" ile saklayabilirsin.</p>';
+  L.forEach(function(x){var d=x.d,s=d.sonuc||{};h+='<div class="adx-c ksc"><div class="adx-b"><div class="adx-t"><b>'+esc((d.f&&d.f.ad)||'Adsız hesap')+'</b><span class="adx-k">'+esc((d.f&&d.f.ulke)||'')+'</span></div>'+
+    '<small class="note" style="margin:0">'+esc((d.f&&d.f.tarih)||'')+' · '+n2(s.malF||0)+' '+esc((d.f&&d.f.cur)||'')+' @ '+n2(s.kr||0)+' ₺ · toplam '+tl2(s.odeme||0)+' · maliyet '+tl2(s.maliyet||0)+(d.muhasebe?' · muhasebeye işlendi':'')+'</small>'+
+    '<div class="adx-a"><button type="button" class="btn sm" data-it="open" data-id="'+esc(x.id)+'">Aç</button><button type="button" class="btn soft sm adx-del" data-it="cdel" data-id="'+esc(x.id)+'">'+(IT.del===x.id?'Silmeyi onayla':'Sil')+'</button></div></div></div>';});
+  return h;}
+function itSnap(){var f=IT.f,T=itCalc(f),fx={};[f.cur,f.navCur].forEach(function(c){fx[c]=itRate(c);});
+  return {f:JSON.parse(JSON.stringify(f)),kurlar:fx,kurTarih:IT.kur&&IT.kur.tarih||'',sonuc:{kr:T.kr,malF:T.malF,mal:T.mal,cif:T.cif,vergi:T.vergi||0,kdv:T.kdv,odeme:T.odeme||0,maliyet:T.maliyet||0,rows:T.rows}};}
+document.addEventListener('input',function(e){var t=e.target;if(!t||!t.dataset||!IT.f)return;
+  if(t.dataset.itv&&!t.dataset.re){var i=t.dataset.i;if(i!=null)IT.f.kalem[+i][t.dataset.itv]=t.value;else IT.f[t.dataset.itv]=t.value;var r=document.getElementById('itRes');if(r)r.innerHTML=itRes();}
+  else if(t.dataset.itfx){IT.f.fx[t.dataset.itfx]=t.value;var r2=document.getElementById('itRes');if(r2)r2.innerHTML=itRes();}
+  else if(t.dataset.itg&&IT.ge){IT.ge[t.dataset.itg]=t.value;}});
+document.addEventListener('change',function(e){var t=e.target;if(!t||!t.dataset)return;
+  if(t.dataset.itv&&t.dataset.re&&IT.f){IT.f[t.dataset.itv]=t.value;itRe();}
+  else if(t.dataset.itg&&IT.ge){IT.ge[t.dataset.itg]=t.value;}
+  else if(t.dataset.itlib!=null&&IT.f){var i=+t.dataset.itlib,g=(IT.lib||[]).filter(function(x){return x.id===t.value;})[0],k=IT.f.kalem[i];
+    if(g){var nk=itKalem(g);nk.adet=k.adet;nk.fiyat=k.fiyat;IT.f.kalem[i]=nk;}else k.lib='';itRe();}});
+async function itDb(method,q,body){var tk=await sbToken();if(!tk)throw new Error('giriş');var r=await sbReq('/rest/v1/wf_ithalat'+(q||''),{method:method,token:tk,body:body,prefer:'return=representation'});if(!r.ok)throw new Error(r.status===404?'tablo':'kayit');return r.j;}
+document.addEventListener('click',async function(e){var b=e.target.closest&&e.target.closest('[data-it]');if(!b)return;var a=b.dataset.it,id=b.dataset.id,f=IT.f;
+  if(a==='v'){IT.v=b.dataset.v;IT.del=null;itRe();}
+  else if(a==='kur'){itKur(true);}
+  else if(a==='kadd'){f.kalem.push(itKalem());itRe();}
+  else if(a==='kdel'){f.kalem.splice(+b.dataset.i,1);itRe();}
+  else if(a==='new'){IT.f=itBlank();IT.id=null;itRe();window.scrollTo(0,0);}
+  else if(a==='save'){var s=itSnap();if(!(s.sonuc.malF>0)){toast('Önce adet ve fiyat yaz');return;}if(!s.f.ad.trim()){s.f.ad=(s.f.kalem[0].ad||'İthalat')+' · '+s.f.tarih;f.ad=s.f.ad;}
+    var old=IT.id&&(IT.calcs||[]).filter(function(x){return x.id===IT.id;})[0];if(old&&old.d.muhasebe)s.muhasebe=old.d.muhasebe;
+    try{if(old){await itDb('PATCH','?id=eq.'+IT.id,{data:s,updated_at:new Date().toISOString()});old.d=s;}else{var j=await itDb('POST','',{kind:'hesap',data:s});var row=j&&j[0];if(row){IT.id=row.id;(IT.calcs||(IT.calcs=[])).unshift({id:row.id,at:row.created_at,d:s});}}toast('Hesap kaydedildi');}
+    catch(x){toast(x.message==='tablo'?'Kayıt tablosu henüz kurulmamış':'Kaydedilemedi');}itRe();}
+  else if(a==='acc'){var s2=itSnap(),S=s2.sonuc;if(!(S.odeme>0)){toast('Önce hesabı tamamla');return;}
+    var cc=IT.id&&(IT.calcs||[]).filter(function(x){return x.id===IT.id;})[0];if(cc&&cc.d.muhasebe&&!confirm('Bu hesap daha önce muhasebeye işlendi. Yeniden işlensin mi?'))return;
+    if(!confirm('Toplam '+tl2(S.odeme)+' (içinde '+tl2(S.kdv+itN(s2.f.musavir)*0.2)+' KDV) muhasebeye gider olarak işlensin mi?'))return;
+    var kdvT=S.kdv+itN(s2.f.musavir)*0.2,net=S.odeme-kdvT,vat=net>0?Math.round(kdvT/net*10000)/100:0;
+    var r={type:'gider',date:s2.f.tarih||accTodayStr(),cat:'Ürün / hammadde alımı',desc:'İthalat: '+(s2.f.ad||'')+' — '+n2(S.malF)+' '+s2.f.cur+' × '+n2(S.kr)+' ₺ ('+s2.f.ulke+')',amount:Math.round(S.odeme*100)/100,vat:vat,method:'Havale / EFT',ts:Date.now(),
+      doviz:{cur:s2.f.cur,tutar:Math.round(S.malF*100)/100,kur:S.kr,kurTarih:s2.kurTarih},ithalat:{id:IT.id||'',cif:Math.round(S.cif*100)/100,vergi:Math.round(S.vergi*100)/100,kdv:Math.round(kdvT*100)/100}};
+    try{await SBDB.collection('muhasebe').add(r);toast('Muhasebeye işlendi');
+      if(cc){cc.d.muhasebe={at:Date.now(),tutar:r.amount};try{await itDb('PATCH','?id=eq.'+cc.id,{data:cc.d});}catch(_){}}itRe();}
+    catch(_){toast('Muhasebeye işlenemedi');}}
+  else if(a==='open'){var o=(IT.calcs||[]).filter(function(x){return x.id===id;})[0];if(!o)return;var nf=Object.assign(itBlank(),JSON.parse(JSON.stringify(o.d.f||{})));nf.fx=nf.fx||{};
+    /* kayıttaki kur korunur: kullanıcı kuru boş bıraktıysa o günkü kur elle yazılmış sayılır */
+    Object.keys(o.d.kurlar||{}).forEach(function(c){if(c!=='TRY'&&!itN(nf.fx[c]))nf.fx[c]=String(o.d.kurlar[c]).replace('.',',');});
+    IT.f=nf;IT.id=o.id;IT.v='hesap';itRe();window.scrollTo(0,0);toast('Kayıttaki kurla açıldı');}
+  else if(a==='cdel'||a==='gdel'){if(IT.del!==id){IT.del=id;itRe();return;}
+    try{await itDb('DELETE','?id=eq.'+id);if(a==='cdel'){IT.calcs=IT.calcs.filter(function(x){return x.id!==id;});if(IT.id===id)IT.id=null;}else IT.lib=IT.lib.filter(function(x){return x.id!==id;});toast('Silindi');}catch(_){toast('Silinemedi');}IT.del=null;itRe();}
+  else if(a==='gnew'){IT.ge=IT.ge?null:{kod:'',ad:'',ulke:'Çin',gv:'',igv:'',otv:'',kdv:'10',not:''};itRe();}
+  else if(a==='gedit'){var g=(IT.lib||[]).filter(function(x){return x.id===id;})[0];if(g){IT.ge=JSON.parse(JSON.stringify(g));itRe();window.scrollTo(0,0);}}
+  else if(a==='gsave'){var ge=IT.ge;if(!ge||!String(ge.kod||'').trim()){toast('GTİP kodunu yaz');return;}var gid=ge.id,data=JSON.parse(JSON.stringify(ge));delete data.id;
+    try{if(gid){await itDb('PATCH','?id=eq.'+gid,{data:data,updated_at:new Date().toISOString()});IT.lib=IT.lib.map(function(x){if(x.id===gid){data.id=gid;return data;}return x;});}
+      else{var j2=await itDb('POST','',{kind:'gtip',data:data});var rw=j2&&j2[0];if(rw){data.id=rw.id;IT.lib.push(data);}}
+      IT.lib.sort(function(p,q){return String(p.kod).localeCompare(String(q.kod));});IT.ge=null;toast('GTİP kaydedildi');}
+    catch(x){toast(x.message==='tablo'?'Kayıt tablosu henüz kurulmamış':'Kaydedilemedi');}itRe();}
 });
 async function adxLoad(){
   if(ADX.busy)return;ADX.busy=true;ADX.err='';
@@ -4549,7 +4701,7 @@ var PN_GROUPS=[
   ['Ürünler',[['urun','Koleksiyon ürünleri','M8 3l-5 3 2 5 3-1v11h8V10l3 1 2-5-5-3c-1 2-2 3-4 3S9 5 8 3z'],['kategori','Kategoriler','M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z'],['baski','Baskıya uygun ürünler','M6 9V3h12v6M6 18H4v-7h16v7h-2M7 14h10v7H7z'],['fiyat','Fiyatlandırma','M20 12l-8 8-9-9V3h8zM7.5 7.5h.01'],['sartname','Teknik şartname','M6 3h9l4 4v14H6zM14 3v5h5M9 12h7M9 16h7']]],
   ['Tasarım',[['udepo','Ürün deposu','M3 8l9-5 9 5v10l-9 5-9-5zM8 6l9 5M12 13v10M7 15l3 1.5'],['admtas','Admin tasarımları','M12 3l7 3v5c0 4.5-3 8.3-7 10-4-1.7-7-5.5-7-10V6z'],['manken','Manken stüdyosu','M12 3a3 3 0 1 0 0 6 3 3 0 0 0 0-6zM8 21v-7l-3-3 4-2h6l4 2-3 3v7z'],['tasarim','Müşteri tasarımları','M4 20l4-1 11-11-3-3L5 16zM14 6l3 3'],['studyo','Tasarım stüdyosu ayarları','M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8zM12 2v3M12 19v3M2 12h3M19 12h3']]],
   ['Site',[['metin','Sayfa metinleri','M5 6V4h14v2M12 4v16M9 20h6'],['sayfa','Sayfalar','M6 3h9l4 4v14H6zM14 3v5h5'],['site','Site ve iletişim','M3 12a9 9 0 1 0 18 0 9 9 0 0 0-18 0M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18'],['seo','Google (SEO)','M11 4a7 7 0 1 0 0 14 7 7 0 0 0 0-14zM21 21l-5-5']]],
-  ['Şirket',[['kasa','Kasa','M4 7h16v13H4zM9 7V4h6v3M4 12h16M11 12v3h2v-3']]],
+  ['Şirket',[['ithalat','İthalat hesaplayıcı','M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18M16 16l4 4'],['kasa','Kasa','M4 7h16v13H4zM9 7V4h6v3M4 12h16M11 12v3h2v-3']]],
   ['Diğer',[['kanal','Satış kanalları','M4 12h16M14 6l6 6-6 6'],['tedarik','Tedarikçiler','M3 7h11v10H3zM14 10h4l3 3v4h-7M7 20a2 2 0 1 0 0-.01M17 20a2 2 0 1 0 0-.01'],['yetki','Yetkililer','M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM2 21c0-4 3-6 7-6s7 2 7 6M17 11h6M20 8v6'],['yedek','Yedek','M4 4h16v6H4zM4 14h16v6H4zM8 7h.01M8 17h.01']]]
 ];
 function pnTitle(t){var r='';PN_GROUPS.forEach(function(g){g[1].forEach(function(x){if(x[0]===t)r=x[1];});});return r||({qp:'Ürün'})[t]||'';}
@@ -4683,7 +4835,7 @@ function adminView(){
   if(!admOk())return admGate();
   try{localStorage.setItem('wf_nostat','1');}catch(_){}
   if(!A)A=newA();
-  var tabs=[['crm','Siparişler ve müşteriler'],['ziyaret','Ziyaretçiler'],['yorum','Yorumlar'],['admtas','Admin tasarımları'],['manken','Manken stüdyosu'],['udepo','Ürün deposu'],['depo','Depo ve gönderim'],['metin','Sayfa metinleri'],['sayfa','Sayfalar'],['urun','Koleksiyon'],['kategori','Kategoriler'],['baski','Baskıya uygun'],['sartname','Teknik şartname'],['studyo','Tasarım stüdyosu'],['fiyat','Fiyatlandırma'],['kanal','Satış kanalları'],['tedarik','Tedarikçiler'],['site','Site ve iletişim'],['muhasebe','Muhasebe'],['tasarim','Müşteri tasarımları'],['seo','SEO'],['yedek','Yedek']];if(sbOwner()&&!ART)tabs.push(['yetki','Yetkililer']);if(sbOwner()&&!ART)tabs.push(['kasa','Kasa']);
+  var tabs=[['crm','Siparişler ve müşteriler'],['ziyaret','Ziyaretçiler'],['yorum','Yorumlar'],['admtas','Admin tasarımları'],['manken','Manken stüdyosu'],['udepo','Ürün deposu'],['depo','Depo ve gönderim'],['metin','Sayfa metinleri'],['sayfa','Sayfalar'],['urun','Koleksiyon'],['kategori','Kategoriler'],['baski','Baskıya uygun'],['sartname','Teknik şartname'],['studyo','Tasarım stüdyosu'],['fiyat','Fiyatlandırma'],['kanal','Satış kanalları'],['tedarik','Tedarikçiler'],['site','Site ve iletişim'],['muhasebe','Muhasebe'],['ithalat','İthalat hesaplayıcı'],['tasarim','Müşteri tasarımları'],['seo','SEO'],['yedek','Yedek']];if(sbOwner()&&!ART)tabs.push(['yetki','Yetkililer']);if(sbOwner()&&!ART)tabs.push(['kasa','Kasa']);
   if(A.tab==='qp'&&!QP)A.tab='urun';
   if(A.tab!=='home'&&A.tab!=='qp'&&!tabs.some(function(t){return t[0]===A.tab;}))A.tab='home';
   var h=pnHead(tabs);
@@ -4739,7 +4891,7 @@ function adminView(){
   }else if(A.tab==='crm'){h+=crmView().replace(/^<div class="wrap page( crm)?"><p class="eyebrow">Wolflano<\/p><h1 class="h2">Yönetim<\/h1>/,'<div class="crm">');
   }else if(A.tab==='kategori'){h+=catAdmin(d);
   }else if(A.tab==='studyo'){h+=studioAdmin(d);
-  }else if(A.tab==='ziyaret'){h+=vsView();}else if(A.tab==='yorum'){h+=raView();}else if(A.tab==='kasa'){h+=ksView();}else if(A.tab==='admtas'){h+=adxView();}else if(A.tab==='manken'){h+=mnView();}else if(A.tab==='udepo'){h+=udView();}else if(A.tab==='yetki'){h+=adxStaff();}else if(A.tab==='tasarim'){h+=dsAdmin();}else if(A.tab==='muhasebe'){h+=accView();}else if(A.tab==='seo'){h+=seoAdmin();}else if(A.tab==='tedarik'){
+  }else if(A.tab==='ziyaret'){h+=vsView();}else if(A.tab==='yorum'){h+=raView();}else if(A.tab==='kasa'){h+=ksView();}else if(A.tab==='ithalat'){h+=itView();}else if(A.tab==='admtas'){h+=adxView();}else if(A.tab==='manken'){h+=mnView();}else if(A.tab==='udepo'){h+=udView();}else if(A.tab==='yetki'){h+=adxStaff();}else if(A.tab==='tasarim'){h+=dsAdmin();}else if(A.tab==='muhasebe'){h+=accView();}else if(A.tab==='seo'){h+=seoAdmin();}else if(A.tab==='tedarik'){
     d.suppliers=d.suppliers||[];
     h+='<div class="alist"><p class="note" style="margin:0">Yerli ve yabancı tedarikçileri burada tanımla. Anlaşma sonrası her tedarikçi için bir bağlantı (API, XML, CSV) kurulur, katalog, stok ve sipariş otomatik akar. Bağlantı gelene kadar tedarikçinin stok dosyasını aşağıya yapıştırıp stok ve maliyeti güncelleyebilirsin.</p>';
     d.suppliers.forEach(function(s,i){
