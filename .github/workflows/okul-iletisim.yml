@@ -1,0 +1,22 @@
+# Okul iletişim robotu: okul-robot/okullar.csv'deki okulların kendi sitelerinden yayımlanmış e-posta/telefonu toplar.
+# Yalnız elle çalışır (Actions → Okul iletişim → Run workflow). Hiçbir okula ileti göndermez. Sonuç "okul-iletisim" çıktısı olarak iner.
+name: Okul iletişim
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  topla:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python3 okul-robot/topla.py okul-robot/okullar.csv sonuc.csv
+      - uses: actions/upload-artifact@v4
+        with:
+          name: okul-iletisim
+          path: sonuc.csv
+          retention-days: 7
