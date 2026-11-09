@@ -1021,7 +1021,7 @@ var DEF={v:1,
   'Adet indirimi: 10 adet ve üzeri %5, 25 adet ve üzeri %10, 50 adet ve üzeri %15.',
   'Gösterilen fiyatlar örnektir, geçerli fiyatlar sipariş sırasında netleşir.'],
  contact:{tel:'+90 530 764 17 17',whatsapp:'+90 530 764 17 17',mail:'info@wolflano.com.tr',adres:'İzmir, Türkiye',instagram:''},
- ship:{fee:89,free:1500},
+ ship:{fee:120,free:2500},
  suppliers:[],
  brand:{slogan:'Premium kalite. İtalyan estetiği. Wolflano karakteri.',readyText:'Hazır giyim koleksiyonumuz, İtalyan estetiğinden ilham alan ve Wolflano kurt karakteriyle tasarlanan premium ürünlerden oluşur. Kalitemiz, dünyanın tanınmış markalarıyla yarışacak düzeydedir. Bu kaliteyi ulaşılabilir fiyatlarla sunabilmek için üretimi, işçilik maliyetinin en uygun olduğu birkaç ülkede yaptırıyoruz. Tasarımlar, kalite standartları ve baskılar ise tamamen bize aittir.',printTitle:'Baskı kalitemiz',printLead:'Baskıda insan sağlığını ve ürünün ömrünü ön planda tutarız.',printItems:['Sağlığa uygun | İnsan sağlığına zarar vermeyen, belgeli boyalar ve makineler kullanırız.','Yıllarca solmaz | Renkler yıllar geçse de canlı kalır.','Yıkamada bozulmaz | Tekrarlanan yıkamalarda çatlama, bozulma ve solma yapmaz.','Nefes alır | Baskı, kumaşın hava almasını engellemez.','Elle hissedilmez | Dokunduğunda bile baskı olduğu anlaşılmaz, kumaşla bütünleşir.'],docs:''},
  channels:{trendyol:{on:false,markup:0},n11:{on:false,markup:0},hepsiburada:{on:false,markup:0},ciceksepeti:{on:false,markup:0},amazon:{on:false,markup:0}},
@@ -3284,7 +3284,7 @@ function wHead(p){var d=p.dsg||{},pr=d.product,g='',t='';
 function wFmt(n){var x=String(n);while(x.length<3)x='0'+x;return 'W'+x;}
 function wFree(list){var u={};(list||[]).forEach(function(p){if(p&&+p.wc)u[+p.wc]=1;});for(var i=1;;i++)if(!u[i])return i;}
 /* yalnız adı hâlâ kodlu ya da genel olanları düzenle; tasarıma göre verilmiş adlar (ör. "Kızılelma ve Kurt Erkek Tişört – Mavi") korunur */
-function wAuto(p){var n=String(p.name||'').trim();return !n||/^wolflano\b/i.test(n)||/\bW\d{3,}$/.test(n);}
+function wAuto(p){var n=String(p.name||'').trim();return !n||/^wolflano$/i.test(n)||/\bW\d{3,}$/.test(n);}  /* "Wolflano Logolu Polo" gibi tasarım adları korunur */
 /* Bütün ürünlere kod ver ve stüdyodan yapılanların adını düzenle; dönen: adı değişen ürün sayısı */
 function wAssign(list){var groups={},order=[];list.forEach(function(p){var k=dKey(p);if(!groups[k]){groups[k]=[];order.push(k);}groups[k].push(p);});
   /* eski ürün önce numara alsın */

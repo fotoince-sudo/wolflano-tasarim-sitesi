@@ -1921,7 +1921,7 @@ function teeNear(hex){var on=OLD_TONE[String(hex||'').toLowerCase()];if(on){var 
   var a=rgb(hex),best=TEES[0][1],bd=1e9;if(!a)return best;
   TEES.forEach(function(t){var b=rgb(t[1]);if(!b)return;var d=Math.sqrt(Math.pow(a[0]-b[0],2)+Math.pow(a[1]-b[1],2)+Math.pow(a[2]-b[2],2));if(d<bd){bd=d;best=t[1];}});
   return best;} /* eskiden 60'tan uzak tonlar (ör. eski lacivert #1c2a4b) ilk renge, beyaza düşüyordu */
-window.phSite=function(d){PH.site=d;PH.media=d.media||'';PH.teesBase=TEES.slice();try{siteTiers();}catch(_){}
+window.phSite=function(d){PH.site=d;PH.media=d.media||'';try{if(d.ship&&+d.ship.fee>=0)SHIP={fee:+d.ship.fee||0,free:+d.ship.free||0};}catch(_){}PH.teesBase=TEES.slice();try{siteTiers();}catch(_){}
   try{var q=new URLSearchParams(location.search),rn=q.get('renk'),bd=q.get('beden');if(bd)PH.want=bd;
     phApplyColors();if(rn!=null){var cs=phColors(phBlank(state.product,state.cut)),c=(/^\d+$/.test(rn)?cs[+rn]:null)||cs.filter(function(x){return x.name===rn||String(x.hex).toLowerCase()===String(rn).toLowerCase();})[0];if(c)state.tee=c.hex;}}catch(_){}
   try{renderAll();}catch(_){}
@@ -4761,7 +4761,7 @@ function syncCartUI(){
 }
 /* ÖDEME ALTYAPISI: sağlayıcı (iyzico, PayTR vb.) bağlanınca pay doldurulur. pay(order) güvenli ödeme sayfasının adresini döndürür. */
 var PAYMENT={provider:null,pay:function(order){return Promise.resolve({ok:false,reason:'not_connected'});}};
-var SHIP={fee:89,free:1500};  /* örnek kargo: 1.500 ₺ ve üzeri ücretsiz */
+var SHIP={fee:120,free:2500};  /* sitenin kargo ayarı yüklenince ondan alınır */
 /* KARGO ENTEGRASYONU: anlaşmalı firma (Yurtiçi, MNG, Aras, PTT, Sürat vb.) bağlanınca provider ve quote doldurulur.
    quote({il,ilce,subtotal,items}) -> Promise<{fee,days,carrier}> : adrese göre kargo ücreti ve süresi döndürür.
    Gönderi kaydı (etiket, takip no) ödeme onayından sonra sunucu tarafında oluşturulur, sipariş verisi order.shipping içinde gider. */
