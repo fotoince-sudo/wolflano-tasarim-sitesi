@@ -3272,9 +3272,11 @@ async function fillSlot(o,file,quiet){
     }catch(_){}
     cr=petCrop(im.naturalWidth,im.naturalHeight,A,subject);
   }
-  var st0=o.ais?'cartoon':'none',nid=await fxProcess(id,st0,o.edge||'none',0.5,cr,0);
+  // Preserve the cutout's own edge so the soft frame does not fade the portrait.
+  var edge=o.pet&&subject?'none':o.edge||'none',soft=o.pet?0.16:0.5;
+  var st0=o.ais?'cartoon':'none',nid=await fxProcess(id,st0,edge,soft,cr,0);
   if(o.pet&&objById(o.id)!==o)return;
-  o.base=id;o.crop=cr;o.phs=st0;o.phe=o.edge||'none';o.phf=0.5;o.assetId=nid;delete o.phEmpty;delete o.aiOk;
+  o.base=id;o.crop=cr;o.phs=st0;o.phe=edge;o.phf=soft;o.assetId=nid;delete o.phEmpty;delete o.aiOk;
   renderObjects();select(o.id);pushHist();var t=$('#toast');if(t)t.hidden=true;
   if(quiet)return;
   if(o.pet){longToast(subject?'Portre otomatik yerleştirildi. Konumu ve alttaki ismi düzenleyebilirsin.':'Portre ortalandı. Gerekirse fotoğrafa dokunup kadrajı düzelt.');return;}
