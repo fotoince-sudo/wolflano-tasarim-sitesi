@@ -2,8 +2,7 @@ const fs = require('node:fs');
 const assert = require('node:assert/strict');
 const html = fs.readFileSync('studyo.html','utf8');
 function check(label,fn){fn();console.log('PASS:',label)}
-check('locked template frame is included in group delete',()=>assert.match(html,/hasSlots&&q\.type==='image'&&q\.thru/));
-check('unrelated locked objects remain',()=>assert.match(html,/q\.lock&&\!\(hasSlots&&q\.type==='image'&&q\.thru\)/));
+check('group delete clears every layer on current face',()=>assert.match(html,/if\(c==='gdel'\)[\s\S]{0,250}cur\(\)\.objs=\[\]/));
 check('product change prompts only across product groups',()=>assert.match(html,/state\.product!==p&&oldGroup!==newGroup/));
 check('saved design load bypasses transfer prompt',()=>assert.match(html,/chooseProduct\(d\.product,cs\.indexOf\(d\.cut\)>=0\?d\.cut:cs\[0\],true\)/));
 check('product switch can start with blank objects',()=>assert.match(html,/if\(state\[k\]\)state\[k\]\.objs=\[\]/));
