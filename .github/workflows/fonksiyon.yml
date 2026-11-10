@@ -25,7 +25,8 @@ jobs:
     env:
       SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
       PROJE: wgovwmeirlzwalelazfj
-      # Giriş kontrolünü kendisi yapan (ya da herkese açık) fonksiyonlar: canlıdaki ayarla aynı kalmalı
+      # Giriş kontrolünü kendisi yapan (ya da herkese açık) fonksiyonlar.
+      # stok-haber/dogum-gunu: POST + WF_JOB_TOKEN zorunlu; public/anon anahtar yetki vermez.
       ACIK: 'order-create stok-haber dogum-gunu yardim baski-dosya sepet kontrol-rapor'
     steps:
       - uses: actions/checkout@v4

@@ -1,3 +1,4 @@
+import { jobAllowed } from "../_shared/request-security.ts";
 // Doğum günü maili: her sabah (cron 09:05 TR) bugün doğum günü olan üyelere ve CRM müşterilerine kutlama maili gönderir.
 // Her kişiye yılda bir kez (dogum_yil). Tekrar çağrılsa da aynı kişiye ikinci kez gitmez.
 import { createClient } from "npm:@supabase/supabase-js@2";
@@ -5,9 +6,11 @@ import { sendMail, frame, esc, SITE, smtpReady } from "../_shared/posta.ts";
 
 const j = (o: unknown, s = 200) => new Response(JSON.stringify(o), { status: s, headers: { "Content-Type": "application/json" } });
 
-Deno.serve(async () => {
+Deno.serve(async (req) => {
+  if (req.method !== "POST") return j({ error: "method" }, 405);
+  if (!await jobAllowed(req, Deno.env.get("WF_JOB_TOKEN"))) return j({ error: "yetki" }, 403);
   if (!smtpReady()) return j({ ok: false, reason: "SMTP ayarları eksik" }, 503);
-  const sb = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
+  const sb = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!, { auth: { persistSession: false, autoRefreshToken: false } });
   const ymd = new Date().toLocaleDateString("en-CA", { timeZone: "Europe/Istanbul" }); // YYYY-MM-DD
   const year = +ymd.slice(0, 4), today = ymd.slice(5);
   const leap = (year % 4 === 0 && year % 100 !== 0) || year % 400 === 0;
@@ -37,7 +40,7 @@ Deno.serve(async () => {
     try {
       const { data: u } = await sb.auth.admin.getUserById(p.id);
       const em = u?.user?.email; if (!em) continue;
-      await send(em, p.ad || u.user.user_metadata?.name || "");
+      await send(em, p.ad || u.user?.user_metadata?.name || "");
       await sb.from("profiles").update({ dogum_yil: year }).eq("id", p.id);
       await sb.from("crm_customers").update({ dogum_yil: year }).ilike("email", em);
     } catch (e) { errs.push(String((e as any)?.message || e).slice(0, 120)); }
