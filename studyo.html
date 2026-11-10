@@ -3619,7 +3619,11 @@ function setLand(v){
 function doProduct(p){
   if(state.product===p)return;
   if(tplGroup(state.product)!==tplGroup(p))['front','back','logo','logo2'].forEach(function(s){
-    if(state[s])state[s].objs=state[s].objs.filter(function(o){return !o.tplGroups||o.tplGroups.indexOf(tplGroup(p))>=0;});
+    if(state[s])state[s].objs=state[s].objs.filter(function(o){
+      if(o.tplGroups)return o.tplGroups.indexOf(tplGroup(p))>=0;
+      var a=o.type==='image'&&assets[o.assetId];
+      return !(a&&a.tpl);
+    });
   });
   var olds={},sides=['front','back'];
   sides.forEach(function(s){olds[s]={box:areaBox(s,state[s].area),land:isLand(s)};});
