@@ -3637,11 +3637,11 @@ function askSize(){
 }
 function ensureSizes(){var l=sizeList(),tot=l.reduce(function(a,s){return a+(state.sizes[s]||0);},0);if(!tot)state.sizes[l[1]||l[0]]=1;}
 /* Ürün sayfasından seçim: ürün ve kesim uygulanır, sayfa kapanır, ürün yakınlaştırılmadan bütün olarak gösterilir. */
-function chooseProduct(p,c){
+function chooseProduct(p,c,skipTransferPrompt){
   var ch=state.product!==p||state.cut!==c;
   /* Farklı ürün grupları arasında tasarımı onaysız taşıma. */
   var oldGroup=tplGroup(),newGroup=tplGroup(p);
-  if(state.product!==p&&oldGroup!==newGroup&&['front','back','logo','logo2'].some(function(k){return state[k]&&state[k].objs&&state[k].objs.length;})){
+  if(!skipTransferPrompt&&state.product!==p&&oldGroup!==newGroup&&['front','back','logo','logo2'].some(function(k){return state[k]&&state[k].objs&&state[k].objs.length;})){
     var carry=window.confirm('Mevcut tasarımı yeni ürüne taşımak ister misiniz?\n\nTamam: Tasarımı taşı\nİptal: Yeni üründe temiz başla (geri alabilirsiniz)');
     if(!carry){['front','back','logo','logo2'].forEach(function(k){if(state[k])state[k].objs=[];});view.sel=null;view.grp=false;}
   }
@@ -5385,7 +5385,7 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
       C.objs=C.objs.filter(function(o){return o.lock&&!o.thru;}).concat(objs);
       view.sel=null;view.grp=false;renderAll();layout();pushHist();return;
     }
-    if(full&&PRODUCTS[d.product]){var cs=PRODUCTS[d.product].cuts;state.bid=d.bid||'';state.kulp=d.kulp||'';chooseProduct(d.product,cs.indexOf(d.cut)>=0?d.cut:cs[0]);if(d.tee){state.tee=d.tee;try{if(PH.site)phApplyColors();}catch(_){}}state.brand=d.brand!==false;}
+    if(full&&PRODUCTS[d.product]){var cs=PRODUCTS[d.product].cuts;state.bid=d.bid||'';state.kulp=d.kulp||'';chooseProduct(d.product,cs.indexOf(d.cut)>=0?d.cut:cs[0],true);if(d.tee){state.tee=d.tee;try{if(PH.site)phApplyColors();}catch(_){}}state.brand=d.brand!==false;}
     SS('logo').objs=[];SS('logo2').objs=[];
     /* Eski kayıtlar: önde logo alanı seçilmişse, logo katmanı olan üründe logoya taşınır */
     if(d.front&&d.front.area==='logo'&&!d.logo&&hasLogoSide()){d=Object.assign({},d,{logo:d.front,front:{area:P().sides.front[0],land:false,objs:[]}});}
