@@ -36,6 +36,7 @@ jobs:
             const page=await context.newPage();
             page.on('pageerror',e=>console.log('Browser error:',e.message));
             await page.addInitScript(()=>{
+              localStorage.setItem('wf_studio_guide','1');
               window.claude={use:async()=>({save:async({data})=>{window.printProbe=Array.from(new Uint8Array(await data.slice(0,64).arrayBuffer()));}})};
             });
             for(const [title,file,name,newName] of [['Ege Esintisi','/tmp/wf-cat.jpg','Misket','Boncuk'],['Adaçayı Bahçesi','/tmp/wf-dog.jpg','Tarçın','Badem']]){
