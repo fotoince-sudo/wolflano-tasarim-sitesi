@@ -36,11 +36,13 @@ jobs:
             const page=await context.newPage();
             page.on('pageerror',e=>console.log('Browser error:',e.message));
             await page.addInitScript(()=>{
+              localStorage.clear();
               localStorage.setItem('wf_studio_guide','1');
               window.claude={use:async()=>({save:async({data})=>{window.printProbe=Array.from(new Uint8Array(await data.slice(0,64).arrayBuffer()));}})};
             });
             for(const [title,file,name,newName] of [['Ege Esintisi','/tmp/wf-cat.jpg','Misket','Boncuk'],['Adaçayı Bahçesi','/tmp/wf-dog.jpg','Tarçın','Badem']]){
-              await page.goto('http://127.0.0.1:8877/studyo.html');
+              await page.goto('http://127.0.0.1:8877/studyo.html?urun=mug&kesim=sub');
+              await page.locator('#optBtn').waitFor();
               await page.evaluate(()=>{
                 patiTest.chooseProduct('mug','sub');
                 patiTest.openTab('tpl');
@@ -48,7 +50,9 @@ jobs:
                 patiTest.renderTplPreviews();
               });
               console.log('Categories:',await page.locator('#tplCats').innerText());
-              await page.locator('#tplGrid .tpl > span').filter({hasText:title}).click();
+              const card=page.locator('#tplGrid .tpl > span').filter({hasText:title});
+              if(!await card.isVisible())await page.locator('#tabs [data-tab="tpl"]').click();
+              await card.click();
               await page.locator('#swapIn').setInputFiles(file);
               await page.waitForFunction(()=>document.querySelectorAll('.obj').length>=5);
               await page.waitForFunction(()=>/Portre (otomatik yerleştirildi|ortalandı)/.test(document.querySelector('#toast')?.textContent||''),null,{timeout:90000});
