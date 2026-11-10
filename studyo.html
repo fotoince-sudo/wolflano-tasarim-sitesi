@@ -4336,7 +4336,7 @@ function ctxClick(e){
   if(c==='gdone'){select(null);return;}
   if(c==='gzin'||c==='gzout'){grpScale(c==='gzin'?1.05:1/1.05);return;}
   if(c==='gcolor'){view.gdel=false;showPop('fill');syncCtx();return;}
-  if(c==='gdel'){if(!view.gdel){view.gdel=true;syncCtx();return;}var hasSlots=cur().objs.some(function(q){return q.slot;});var keep=cur().objs.filter(function(q){return q.lock&&!(hasSlots&&q.type==='image'&&q.thru);});cur().objs=keep;select(null);renderAll();pushHist();toast('Tasarım silindi. Geri almak için ↶');return;}
+  if(c==='gdel'){if(!view.gdel){view.gdel=true;syncCtx();return;}/* Tümünü seç > Sil: çerçeve, fotoğraf, zemin ve kilitli şablon katmanları dahil etkin baskı yüzünü tamamen temizle. */cur().objs=[];select(null);renderAll();pushHist();toast('Tasarım silindi. Geri almak için ↶');return;}
   if(c!=='gdel')view.gdel=false;
   if(c==='gcenter'){var GX=grpBox(),GA=areaBox(view.side,cur().area);if(GX){var ddx=GA.cx-GX.cx,ddy=GA.cy-GX.cy;grpObjs().forEach(function(q){q.x+=ddx;q.y+=ddy;place(els[q.id],q);});updateSel();var ab2=$('#areaBox');ab2.classList.add('onV','onH');setTimeout(centerOff,900);pushHist();toast('Tasarım baskı alanına ortalandı');}return;}
   if(view.grp)return;
