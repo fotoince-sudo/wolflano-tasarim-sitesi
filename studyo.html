@@ -1589,6 +1589,7 @@ TPLS.forEach(function(t){t.c0=t.c;}); /* asıl kategori: yönetim panelinde ad d
 /* ---------- Durum ve geçmiş ---------- */
 var state={product:'tee',cut:'erkek',tee:'#f6f6f4',sizes:{M:1},front:{area:'a4',land:false,objs:[]},logo:{area:'logo',land:false,objs:[]},logo2:{area:'logo2',land:false,objs:[]},back:{area:'a4',land:false,objs:[]}};
 var view={side:'front',sel:null,fit:'shirt',z:1,px:0,py:0,bs:1,cx:0,cy:0,tab:null,font:'Anton',nextId:1,clipCat:'Kurtlar',tplCat:'Tümü',pop:null,s:1};
+var productDrafts={}; /* Ürünler arası tasarım taşımadan oturum içinde ayrı ayrı sakla */
 var assets={},assetList=[],assetN=0;
 var hist=[],hpos=-1;
 var els={};
@@ -3639,13 +3640,21 @@ function ensureSizes(){var l=sizeList(),tot=l.reduce(function(a,s){return a+(sta
 /* Ürün sayfasından seçim: ürün ve kesim uygulanır, sayfa kapanır, ürün yakınlaştırılmadan bütün olarak gösterilir. */
 function chooseProduct(p,c,skipTransferPrompt){
   var ch=state.product!==p||state.cut!==c;
-  /* Farklı ürün grupları arasında tasarımı onaysız taşıma. */
-  var oldGroup=tplGroup(),newGroup=tplGroup(p);
-  if(!skipTransferPrompt&&state.product!==p&&oldGroup!==newGroup&&['front','back','logo','logo2'].some(function(k){return state[k]&&state[k].objs&&state[k].objs.length;})){
-    var carry=window.confirm('Mevcut tasarımı yeni ürüne taşımak ister misiniz?\n\nTamam: Tasarımı taşı\nİptal: Yeni üründe temiz başla (geri alabilirsiniz)');
-    if(!carry){['front','back','logo','logo2'].forEach(function(k){if(state[k])state[k].objs=[];});view.sel=null;view.grp=false;}
+  /* Her ürünün tasarımı bağımsızdır; farklı ürüne nesne aktarılmaz. */
+  if(state.product!==p){
+    var oldProduct=state.product,keys=['front','back','logo','logo2'];
+    if(!skipTransferPrompt){
+      productDrafts[oldProduct]={};
+      keys.forEach(function(k){productDrafts[oldProduct][k]=JSON.parse(JSON.stringify(state[k]));});
+    }
+    state.product=p;
+    var saved=!skipTransferPrompt&&productDrafts[p];
+    keys.forEach(function(k){
+      var area=(PRODUCTS[p].sides[k]||[])[0]||((k==='front'||k==='back')?'a4':k);
+      state[k]=saved&&saved[k]?JSON.parse(JSON.stringify(saved[k])):{area:area,land:false,objs:[]};
+    });
+    view.sel=null;view.grp=false;
   }
-  if(state.product!==p)doProduct(p);
   if(state.cut!==c){var oldL=sizeList();state.cut=c;var nl=sizeList();Object.keys(state.sizes).forEach(function(z){if(nl.indexOf(z)<0)delete state.sizes[z];});}
   try{if(PH.site)phApplyColors();}catch(_){}
   ensureSizes();
