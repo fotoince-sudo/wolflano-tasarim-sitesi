@@ -4823,12 +4823,123 @@ function vidEd(path,p){
    Ana ekran: bölümler gruplu kutular hâlinde. Bir bölüm açıkken üstte yalnız "← Panel" ve başlık görünür.
    Hızlı ürün: önce fotoğraf, sonra ad, fiyat, kategori, renk, beden. Tek düğmeyle kaydedip yayınlar.
    Nadiren gereken alanlar (SKU, barkod, tedarikçi, kanallar, video…) ürünün "Tüm ayarlar" ekranında kalır. */
+
+function agendaView(){
+  setTimeout(agendaLoad,0);
+  return '<section class="aed"><p class="note">İş sırası ve talimatlar yalnız site sahibine görünür. Önizlemeyi incele, onayla, sonra Tamamlandı olarak kaydet.</p><button class="btn sm" type="button" data-agenda-new>+ Yeni iş</button><p id="agendaMessage" role="status"></p><div id="agendaList"></div><div id="agendaEdit"></div></section>';
+}
+const agendaSections=['Wolflano sitesi','Kendin Tasarla motoru','Baskı hazırlığı','Tedarik araştırmaları'];
+const agendaStatuses=['Bekliyor','Devam Ediyor','Kontrol Bekliyor','Tamamlandı'];
+const agendaRoles=['Patron','Müdür','Codex','Copilot'];
+let agendaRows=[];
+async function agendaRequest(path,options){
+  if(!sbOwner()||ART)throw Error('Bu bölüm site sahibine özeldir.');
+  const token=await sbToken();
+  if(!token)throw Error('Oturumu yenilemek için tekrar giriş yap.');
+  const r=await sbReq('/rest/v1/wf_agenda'+path,{...options,token});
+  if(!r.ok)throw Error('Ajandaya erişilemedi. Oturumunu ve bağlantıyı kontrol et.');
+  return r.j;
+}
+async function agendaLoad(){
+  const list=$('#agendaList');
+  if(!list||!sbOwner())return;
+  const msg=$('#agendaMessage');
+  msg.textContent='Yükleniyor…';
+  try{
+    const rows=await agendaRequest('?select=*&order=position.asc,created_at.asc');
+    if(!list.isConnected)return;
+    agendaRows=rows;
+    msg.textContent=rows.length?'':'Henüz iş yok.';
+    list.innerHTML=rows.map(r=>'<article class="aed"><b>'+esc(r.position+' · '+r.title)+'</b><p class="note">'+esc([r.section,r.assignee,r.priority,r.status].join(' · '))+'</p><button class="btn soft sm" type="button" data-agenda-edit="'+esc(r.id)+'">Ayrıntılar</button></article>').join('');
+  }catch(e){if(list.isConnected)msg.textContent=e.message;}
+}
+function agendaUrl(v){
+  try{return new URL(v).protocol==='https:';}catch(_){return false;}
+}
+function agendaForm(r){
+  const box=$('#agendaEdit');
+  if(!box||!sbOwner())return;
+  r=r||{};
+  const val=k=>esc(r[k]==null?'':String(r[k]));
+  const opts=(arr,k)=>arr.map(x=>'<option'+(x===r[k]?' selected':'')+'>'+esc(x)+'</option>').join('');
+  box.innerHTML='<form id="agendaForm" class="aed"><b>'+ (r.id?'İşi düzenle':'Yeni iş')+'</b>'+
+    '<label>İş adı<input name="title" maxlength="160" required value="'+val('title')+'"></label>'+
+    '<div class="two"><label>Sıra<input name="position" type="number" min="1" max="9999" required value="'+(r.position||((agendaRows.at(-1)?.position||0)+1))+'"></label>'+
+    '<label>Bölüm<select name="section">'+opts(agendaSections,'section')+'</select></label>'+
+    '<label>Sorumlu<select name="assignee">'+opts(agendaRoles,'assignee')+'</select></label>'+
+    '<label>Öncelik<select name="priority">'+opts(['Yüksek','Orta','Düşük'],'priority')+'</select></label>'+
+    '<label>Durum<select name="status">'+opts(agendaStatuses,'status')+'</select></label>'+
+    '<label>Son kontrol tarihi<input name="checked_on" type="date" value="'+val('checked_on')+'"></label></div>'+
+    '<label>Talimat ve notlar<textarea name="notes" maxlength="8000">'+val('notes')+'</textarea></label>'+
+    '<label>Bağlantılar<textarea name="links" maxlength="3000">'+val('links')+'</textarea></label>'+
+    '<label>Kullanıcı kararı gereken konu<textarea name="decision" maxlength="2000">'+val('decision')+'</textarea></label>'+
+    '<label>Önizleme adresi<input name="preview_url" type="url" maxlength="2000" value="'+val('preview_url')+'"></label>'+
+    '<a id="agendaPreview" target="_blank" rel="noopener noreferrer" hidden>Önizlemeyi aç ↗</a>'+
+    '<label><input type="checkbox" name="seen"> Önizlemeyi inceledim</label>'+
+    '<label><input type="checkbox" name="approved"> Bu önizlemeyi onaylıyorum</label>'+
+    '<button class="btn sm">İşi kaydet</button> <button class="btn soft sm" type="button" id="agendaCopy">Ajan için talimatı kopyala</button>'+
+    '<p id="agendaFeedback" role="status"></p></form>';
+  const form=$('#agendaForm'), f=form.elements, link=$('#agendaPreview'), msg=$('#agendaFeedback');
+  let opened=r.approved?r.preview_url:'';
+  f.seen.checked=f.approved.checked=!!r.approved;
+  function sync(){
+    const url=f.preview_url.value.trim();
+    link.hidden=!agendaUrl(url);
+    if(!link.hidden)link.href=url;
+    f.seen.disabled=link.hidden||opened!==url;
+    if(f.seen.disabled)f.seen.checked=false;
+    f.approved.disabled=!f.seen.checked;
+    if(f.approved.disabled)f.approved.checked=false;
+    f.status.options[3].disabled=!f.approved.checked;
+    if(!f.approved.checked&&f.status.value==='Tamamlandı')f.status.value='Kontrol Bekliyor';
+  }
+  link.onclick=()=>{opened=f.preview_url.value.trim();sync();};
+  f.preview_url.oninput=()=>{opened='';sync();};
+  f.seen.onchange=f.approved.onchange=sync;
+  $('#agendaCopy').onclick=async()=>{
+    const fields=['title','position','section','assignee','priority','status','checked_on','notes','links','decision','preview_url'];
+    const names=['İş','Sıra','Bölüm','Sorumlu','Öncelik','Durum','Son kontrol','Talimat','Bağlantılar','Patron kararı','Önizleme'];
+    try{
+      await navigator.clipboard.writeText(fields.map((k,i)=>names[i]+': '+f[k].value).join('\n')+'\nYalnız bu görev üzerinde çalış. Sonucu ilgili PR’a yaz ve Patron onayı için bekle.');
+      msg.textContent='Talimat kopyalandı.';
+    }catch(_){msg.textContent='Kopyalanamadı. Talimatı metin alanından seçebilirsin.';}
+  };
+  form.onsubmit=async e=>{
+    e.preventDefault();
+    sync();
+    const data=Object.fromEntries(new FormData(form));
+    delete data.seen;
+    data.title=data.title.trim();
+    data.preview_url=data.preview_url.trim();
+    if(!data.title||(data.preview_url&&!agendaUrl(data.preview_url))){msg.textContent='İş adı ve geçerli bir HTTPS önizleme adresi gir.';return;}
+    data.position=Number(data.position);
+    data.checked_on=data.checked_on||null;
+    data.approved=f.approved.checked;
+    data.revision=(r.revision||0)+1;
+    const submit=form.querySelector('button[type=submit],button:not([type])');
+    submit.disabled=true;
+    try{
+      const saved=await agendaRequest(r.id?'?id=eq.'+encodeURIComponent(r.id)+'&revision=eq.'+r.revision:'',{method:r.id?'PATCH':'POST',prefer:'return=representation',body:data});
+      if(!saved.length){msg.textContent='Bu iş başka bir oturumda güncellendi. Listeyi yeniden aç.';return;}
+      if(box.isConnected){box.replaceChildren();await agendaLoad();}
+    }catch(e){msg.textContent=e.message;}finally{submit.disabled=false;}
+  };
+  sync();
+  box.scrollIntoView({block:'nearest'});
+  f.title.focus();
+}
+document.addEventListener('click',e=>{
+  const b=e.target.closest?.('[data-agenda-new],[data-agenda-edit]');
+  if(!b||!sbOwner()||ART)return;
+  agendaForm(agendaRows.find(r=>r.id===b.dataset.agendaEdit));
+});
+
 var PN_GROUPS=[
   ['Satış',[['crm','Siparişler ve müşteriler','M4 6h16l-2 9H7L5 3H2M9 20a1 1 0 1 0 0-.01M18 20a1 1 0 1 0 0-.01'],['ziyaret','Ziyaretçiler','M3 20h18M6 16v-5M11 16V7M16 16v-8M21 16V4'],['yorum','Yorumlar','M4 5h16v11H9l-5 4zM8 9h8M8 12h5'],['depo','Depo ve gönderim','M3 8l9-5 9 5v10l-9 5-9-5zM3 8l9 5 9-5M12 13v10'],['muhasebe','Muhasebe','M5 3h14v18H5zM8 7h8M8 11h8M8 15h5']]],
   ['Ürünler',[['urun','Koleksiyon ürünleri','M8 3l-5 3 2 5 3-1v11h8V10l3 1 2-5-5-3c-1 2-2 3-4 3S9 5 8 3z'],['kategori','Kategoriler','M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z'],['baski','Baskıya uygun ürünler','M6 9V3h12v6M6 18H4v-7h16v7h-2M7 14h10v7H7z'],['fiyat','Fiyatlandırma','M20 12l-8 8-9-9V3h8zM7.5 7.5h.01'],['sartname','Teknik şartname','M6 3h9l4 4v14H6zM14 3v5h5M9 12h7M9 16h7']]],
   ['Tasarım',[['udepo','Ürün deposu','M3 8l9-5 9 5v10l-9 5-9-5zM8 6l9 5M12 13v10M7 15l3 1.5'],['admtas','Admin tasarımları','M12 3l7 3v5c0 4.5-3 8.3-7 10-4-1.7-7-5.5-7-10V6z'],['manken','Manken stüdyosu','M12 3a3 3 0 1 0 0 6 3 3 0 0 0 0-6zM8 21v-7l-3-3 4-2h6l4 2-3 3v7z'],['tasarim','Müşteri tasarımları','M4 20l4-1 11-11-3-3L5 16zM14 6l3 3'],['studyo','Tasarım stüdyosu ayarları','M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8zM12 2v3M12 19v3M2 12h3M19 12h3']]],
   ['Site',[['metin','Sayfa metinleri','M5 6V4h14v2M12 4v16M9 20h6'],['sayfa','Sayfalar','M6 3h9l4 4v14H6zM14 3v5h5'],['site','Site ve iletişim','M3 12a9 9 0 1 0 18 0 9 9 0 0 0-18 0M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18'],['seo','Google (SEO)','M11 4a7 7 0 1 0 0 14 7 7 0 0 0 0-14zM21 21l-5-5']]],
-  ['Şirket',[['ithalat','İthalat hesaplayıcı','M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18M16 16l4 4'],['kasa','Kasa','M4 7h16v13H4zM9 7V4h6v3M4 12h16M11 12v3h2v-3']]],
+  ['Şirket',[['ajanda','Ortak iş ajandası','M4 5h16v15H4zM8 3v4M16 3v4M8 11h8M8 15h8'],['ithalat','İthalat hesaplayıcı','M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18M16 16l4 4'],['kasa','Kasa','M4 7h16v13H4zM9 7V4h6v3M4 12h16M11 12v3h2v-3']]],
   ['Diğer',[['kanal','Satış kanalları','M4 12h16M14 6l6 6-6 6'],['tedarik','Tedarikçiler','M3 7h11v10H3zM14 10h4l3 3v4h-7M7 20a2 2 0 1 0 0-.01M17 20a2 2 0 1 0 0-.01'],['yetki','Yetkililer','M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM2 21c0-4 3-6 7-6s7 2 7 6M17 11h6M20 8v6'],['yedek','Yedek','M4 4h16v6H4zM4 14h16v6H4zM8 7h.01M8 17h.01']]]
 ];
 function pnTitle(t){var r='';PN_GROUPS.forEach(function(g){g[1].forEach(function(x){if(x[0]===t)r=x[1];});});return r||({qp:'Ürün'})[t]||'';}
@@ -4963,11 +5074,13 @@ function adminView(){
   try{localStorage.setItem('wf_nostat','1');}catch(_){}
   if(!A)A=newA();
   var tabs=[['crm','Siparişler ve müşteriler'],['ziyaret','Ziyaretçiler'],['yorum','Yorumlar'],['admtas','Admin tasarımları'],['manken','Manken stüdyosu'],['udepo','Ürün deposu'],['depo','Depo ve gönderim'],['metin','Sayfa metinleri'],['sayfa','Sayfalar'],['urun','Koleksiyon'],['kategori','Kategoriler'],['baski','Baskıya uygun'],['sartname','Teknik şartname'],['studyo','Tasarım stüdyosu'],['fiyat','Fiyatlandırma'],['kanal','Satış kanalları'],['tedarik','Tedarikçiler'],['site','Site ve iletişim'],['muhasebe','Muhasebe'],['ithalat','İthalat hesaplayıcı'],['tasarim','Müşteri tasarımları'],['seo','SEO'],['yedek','Yedek']];if(sbOwner()&&!ART)tabs.push(['yetki','Yetkililer']);if(sbOwner()&&!ART)tabs.push(['kasa','Kasa']);
+  if(sbOwner()&&!ART)tabs.push(['ajanda','Ortak iş ajandası']);
   if(A.tab==='qp'&&!QP)A.tab='urun';
   if(A.tab!=='home'&&A.tab!=='qp'&&!tabs.some(function(t){return t[0]===A.tab;}))A.tab='home';
   var h=pnHead(tabs);
   if(A.tab==='home')return h+pnHome(tabs)+'</div>';
   if(A.tab==='qp')return h+qpView()+'</div>';
+  if(A.tab==='ajanda')return h+agendaView()+'</div>';
   var d=A.draft;
   if(A.tab==='urun'){pNums(d.products);
     h+='<div class="aed" style="margin-bottom:10px"><b>Ürün adları ve tasarım kodları</b><p class="note" style="margin:0">Stüdyodan yapılan ürünler "Kadın Tişört W001" biçiminde adlanır: önce kimin için ve ne olduğu, sonra tasarım kodu. Aynı tasarımın renkleri aynı kodu taşır; silinen tasarımın numarasını sonraki yeni tasarım alır. Eski adları bu düzene çevirmek için dokun, sonra Kaydet\'e bas.</p><div><button class="btn soft sm" data-wcode="1">Adları ve kodları düzenle</button></div></div>';
