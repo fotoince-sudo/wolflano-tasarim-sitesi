@@ -34,15 +34,25 @@ jobs:
             const context=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true});
             await context.route('**/*supabase.co/**',r=>r.fulfill({status:200,contentType:'application/json',body:'[]'}));
             const page=await context.newPage();
+            page.on('pageerror',e=>console.log('Browser error:',e.message));
+            await page.addInitScript(()=>{
+              window.claude={use:async()=>({save:async({data})=>{window.printProbe=Array.from(new Uint8Array(await data.slice(0,64).arrayBuffer()));}})};
+            });
             for(const [title,file,name,newName] of [['Ege Esintisi','/tmp/wf-cat.jpg','Misket','Boncuk'],['Adaçayı Bahçesi','/tmp/wf-dog.jpg','Tarçın','Badem']]){
-              await page.goto('http://127.0.0.1:8877/studyo.html?urun=mug&kesim=sub&sablon=Pati%20Portresi');
+              await page.goto('http://127.0.0.1:8877/studyo.html');
+              await page.locator('#tabs [data-tab="tee"]').click();
+              await page.getByRole('tab',{name:'Kupa',exact:true}).click();
+              await page.getByRole('button',{name:'Süblimasyon kupa',exact:true}).click();
+              await page.locator('#tabs [data-tab="tpl"]').click();
+              console.log('Categories:',await page.locator('#tplCats').innerText());
+              await page.getByRole('button',{name:'Pati Portresi',exact:true}).click();
               await page.getByRole('button',{name:title,exact:true}).click();
               await page.locator('#swapIn').setInputFiles(file);
               await page.waitForFunction(()=>document.querySelectorAll('.obj').length>=5);
               await page.waitForFunction(()=>/Portre (otomatik yerleştirildi|ortalandı)/.test(document.querySelector('#toast')?.textContent||''),null,{timeout:90000});
               const status=await page.locator('#toast').textContent();
               assert.match(status,/Portre (otomatik yerleştirildi|ortalandı)/);
-              const textNodes=page.locator('.obj.text');
+              const textNodes=page.locator('#objLayer .obj.text');
               assert.equal(await textNodes.count(),3);
               assert.equal(await textNodes.locator('xpath=self::*[contains(concat(" ", normalize-space(@class), " "), " thru ")]').count(),2);
               const nameNode=textNodes.filter({hasText:name});
@@ -52,7 +62,16 @@ jobs:
               assert.equal(await field.isEnabled(),true);
               await field.fill(newName);
               assert.equal(await textNodes.filter({hasText:newName}).count(),1);
-              console.log(title + ': ' + status);
+              await page.locator('#doneBtn').click();
+              await page.locator('#files [data-f="print"][data-s="front"]').click();
+              await page.waitForFunction(()=>!!window.printProbe);
+              const png=Buffer.from(await page.evaluate(()=>window.printProbe));
+              assert.equal(png.toString('hex',0,8),'89504e470d0a1a0a');
+              assert.equal(png.readUInt32BE(16),2362);
+              assert.equal(png.readUInt32BE(20),1063);
+              assert.equal(png.toString('ascii',37,41),'pHYs');
+              assert.equal(png.readUInt32BE(41),11811);
+              console.log(title + ': ' + status + ' / 2362 x 1063 PNG @ 300 DPI');
             }
           } finally { await browser.close(); await new Promise(resolve=>server.close(resolve)); }
           JS
