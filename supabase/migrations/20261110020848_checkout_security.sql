@@ -10,6 +10,9 @@ end $$;
 alter table public.carts add column if not exists owner_key text;
 -- Email is contact information, not a cart identifier. RESTRICT deliberately fails if referenced.
 alter table public.carts drop constraint if exists carts_pkey;
+-- A stable identity also covers pre-migration carts whose owner_key is NULL.
+alter table public.carts add column if not exists id uuid not null default gen_random_uuid();
+alter table public.carts add primary key (id);
 create unique index if not exists carts_owner_key_idx on public.carts(owner_key);
 create index if not exists carts_mail_idx on public.carts(mail);
 alter table public.carts add constraint carts_owner_key_format

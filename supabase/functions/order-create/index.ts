@@ -16,6 +16,15 @@ const j = (o: unknown, s = 200) =>
 const s = (v: unknown, n: number) => String(v ?? '').slice(0, n).trim();
 const r2 = (x: number) => Math.round(x * 100) / 100;
 
+// Postgres JSONB can return object keys in a different order. Preserve array order.
+function stableJson(value: unknown) {
+  return JSON.stringify(value, (_key, item) =>
+    item && typeof item === 'object' && !Array.isArray(item)
+      ? Object.fromEntries(Object.keys(item).sort().map((key) => [key, item[key]]))
+      : item
+  );
+}
+
 // Özel indirimler: süresiz, kampanya/adet indiriminden SONRA ayrıca uygulanır. Oranlar sunucuda sabit, istemciden gelen oran kullanılmaz.
 const SPECIAL: Record<string, { label: string; rate: number }> = {
   sehit: { label: 'Şehit yakını (birinci derece)', rate: 0.20 },
@@ -60,25 +69,26 @@ const roster = (v: unknown) =>
 
 /* ---- Sipariş e-postaları: müşteriye özet, Wolflano'ya (info@) bildirim. Hata olursa sipariş etkilenmez. ---- */
 function itemRows(items: any[]) {
-  return items.map((x) => `<tr><td style="padding:8px 0;border-bottom:1px solid #eef1ee">${esc(x.n)}<br><span style="color:#6b746e;font-size:13px">${x.q} adet</span></td><td align="right" style="padding:8px 0;border-bottom:1px solid #eef1ee;white-space:nowrap">${tl(x.t)}</td></tr>`).join('');
+  return items.map((x) => `<tr><td style="padding:8px 0;border-bottom:1px solid #eef1ee">${esc(x.n)}${x.itemNote ? "<br>" + esc(x.itemNote) : ""}<br><span style="color:#6b746e;font-size:13px">${x.q} adet</span></td><td align="right" style="padding:8px 0;border-bottom:1px solid #eef1ee;white-space:nowrap">${x.pricePending ? "Fiyat belirlenecek" : tl(x.t)}</td></tr>`).join('');
 }
 function totalsRows(row: any) {
-  const sp = row.special as any;
+  const sp = row.special as any, pricePending = row.items.some((x: any) => x.pricePending);
   return (sp ? `<tr><td style="padding:6px 0">Özel indirim (${esc(sp.label)})</td><td align="right">−${tl(sp.discount)}</td></tr>` : '') +
     `<tr><td style="padding:6px 0">Kargo</td><td align="right">${row.ship ? tl(row.ship) : 'Ücretsiz'}</td></tr>` +
-    `<tr><td style="padding:8px 0;font-weight:bold;font-size:16px">Toplam</td><td align="right" style="font-weight:bold;font-size:16px">${tl(row.total)}</td></tr>`;
+    `<tr><td style="padding:8px 0;font-weight:bold;font-size:16px">Toplam</td><td align="right" style="font-weight:bold;font-size:16px"> ${pricePending ? (row.total ? tl(row.total) + ' + fiyatı belirlenecek kalemler' : 'Fiyat belirlenecek') : tl(row.total)}</td></tr>`;
 }
 async function orderMails(row: any) {
   if (!smtpReady()) return;
   const table = `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:14px 0;font-size:14px">${itemRows(row.items)}${totalsRows(row)}</table>`;
   const sp = row.special as any, sc = row.school as any;
+  const wholesale = row.onay?.delivery === 'toptan';
   const notes = (sp ? `<p style="margin:0 0 10px;color:#6b746e;font-size:13px">Özel indirim belgen kontrol edildikten sonra siparişin hazırlanmaya başlar.</p>` : '') +
     (sc && sc.free ? `<p style="margin:0 0 10px;color:#6b746e;font-size:13px">Okul siparişi: ${sc.free} adet ücretsiz ürün ihtiyaç sahibi öğrenciler için eklenecek.</p>` : '');
   const legal = `<p style="margin:14px 0 0;color:#6b746e;font-size:12px">Siparişini onaylarken kabul ettiğin <a href="${SITE}#mesafeli">Ön Bilgilendirme Formu ve Mesafeli Satış Sözleşmesi</a>, <a href="${SITE}#iade">Cayma ve İade Koşulları</a> ve <a href="${SITE}#kvkk">KVKK Aydınlatma Metni</a> bu bağlantılarda; bu e-posta sözleşmenin bir örneğidir. Kişiye özel baskılı ürünlerde yasa gereği cayma hakkı yoktur.</p>`;
   const cust = frame({
-    title: 'Siparişini aldık',
+    title: wholesale ? 'Toptan sipariş talebini aldık' : 'Siparişini aldık',
     pre: `${row.code} numaralı siparişin alındı.`,
-    body: `<p style="margin:0 0 12px">Merhaba ${esc(row.ad)},</p><p style="margin:0 0 12px">Wolflano'yu seçtiğin için teşekkürler. <b>${esc(row.code)}</b> numaralı siparişin elimize ulaştı. Siparişler 2-4 iş gününde kargoya verilir; kargoya verildiğinde takip numarasını ayrıca göndereceğiz.</p>${table}${notes}` +
+    body: `<p style="margin:0 0 12px">Merhaba ${esc(row.ad)},</p><p style="margin:0 0 12px">Wolflano'yu seçtiğin için teşekkürler. <b>${esc(row.code)}</b> numaralı siparişin elimize ulaştı. ${wholesale ? 'Toptan sipariş talebin için seninle iletişime geçeceğiz.' : 'Siparişler 2-4 iş gününde kargoya verilir; kargoya verildiğinde takip numarasını ayrıca göndereceğiz.'}</p>${table}${notes}` +
       `<p style="margin:0 0 4px;color:#6b746e;font-size:13px">Teslimat adresi</p><p style="margin:0 0 12px">${esc(row.adres)}${row.ilce || row.il ? '<br>' + esc([row.ilce, row.il].filter(Boolean).join(' / ')) : ''}</p>` +
       `<p style="margin:0;color:#6b746e;font-size:13px">Sorun olursa bu e-postayı yanıtlaman ya da WhatsApp'tan yazman yeterli.</p>` + legal,
     btn: { href: SITE, label: "Wolflano'ya dön" },
@@ -142,6 +152,9 @@ Deno.serve(async (req) => {
     }
     const priced = quoteItems(catalog, body.items, wholesale);
     const items = priced.items.map((x: any) => ({ ...x, r: roster(x.r) }));
+    if (priced.pricePending && body.wholesaleRequest !== true) {
+      throw new CheckoutError('Fiyatı belirlenecek ürünler için toptan sipariş talebi gönder.', 409);
+    }
     const itemsSum = priced.sum, qty = priced.qty;
     const ship = shipping(catalog, itemsSum, body.delivery, priced.wholesale);
 
@@ -165,8 +178,15 @@ Deno.serve(async (req) => {
     const subtotal = r2(itemsSum - (special ? (special.discount as number) : 0));
     const total = r2(subtotal + ship);
     // Reject a stale quote before any write; don't silently charge a different amount.
-    if (typeof body.total !== 'number' || !Number.isFinite(body.total) || Math.abs(body.total - total) > 0.01) {
-      return j({ error: 'price_changed', message: 'Fiyatlar güncellendi; sepetini yenileyip tekrar onayla.', total }, 409);
+    if (typeof body.total !== 'number' || !Number.isFinite(body.total) || r2(body.total) !== total) {
+      return j({
+        error: 'price_changed',
+        message: 'Fiyatlar güncellendi; yeni tutarı onayla.',
+        total,
+        ship,
+        discount: special?.discount,
+        items: items.map((item, i) => ({ id: item.id, n: item.n, q: item.q, t: item.t, unit: priced.studioUnits[i] })),
+      }, 409);
     }
 
     const row: Record<string, unknown> = {
@@ -182,9 +202,9 @@ Deno.serve(async (req) => {
       const since = new Date(Date.now() - 180e3).toISOString();
       const dr = await fetch(`${SB_URL}/rest/v1/orders?select=code,items,adres,il,ilce,special,onay&checkout_owner=eq.${encodeURIComponent(owner)}&mail=eq.${encodeURIComponent(mail)}&total=eq.${total}&created_at=gte.${since}&order=created_at.desc&limit=5`, { headers: { apikey: SRK, Authorization: `Bearer ${SRK}` } });
       if (dr.ok) {
-        const sig = JSON.stringify(items);
-        const hit = ((await dr.json()) as any[]).find((o) => JSON.stringify(o.items || []) === sig && o.adres === adres && o.il === row.il && o.ilce === row.ilce && JSON.stringify(o.special) === JSON.stringify(special) && o.onay?.delivery === (row.onay as any).delivery);
-        if (hit) return j({ ok: true, code: hit.code, items, subtotal, ship, total, up: await baskiSig(String(hit.code)), dup: true });
+        const sig = stableJson(items);
+        const hit = ((await dr.json()) as any[]).find((o) => stableJson(o.items || []) === sig && o.adres === adres && o.il === row.il && o.ilce === row.ilce && stableJson(o.special) === stableJson(special) && o.onay?.delivery === (row.onay as any).delivery);
+        if (hit) return j({ ok: true, code: hit.code, items, subtotal, ship, total, special, studioUnits: priced.studioUnits, up: await baskiSig(String(hit.code)), dup: true });
       }
     } catch { /* kontrol edilemezse normal devam */ }
     for (let i = 0; i < 3; i++) {
@@ -209,7 +229,7 @@ Deno.serve(async (req) => {
         try { (globalThis as any).EdgeRuntime?.waitUntil(p); } catch { /* yoksa sorun değil */ }
         // bekleyen sepet: sipariş verdi
         try { await fetch(`${SB_URL}/rest/v1/carts?owner_key=eq.${encodeURIComponent(owner)}`, { method: 'PATCH', headers: { apikey: SRK, Authorization: `Bearer ${SRK}`, 'Content-Type': 'application/json', Prefer: 'return=minimal' }, body: JSON.stringify({ status: 'sipariş verdi', updated_at: new Date().toISOString() }) }); } catch { /* yoksa sorun değil */ }
-        return j({ ok: true, code: row.code, items, subtotal, ship, total, up: await baskiSig(String(row.code)) });
+        return j({ ok: true, code: row.code, items, subtotal, ship, total, special, studioUnits: priced.studioUnits, up: await baskiSig(String(row.code)) });
       }
       const t = await r.text();
       if (/duplicate|unique/i.test(t)) { row.code = makeCode(); continue; }

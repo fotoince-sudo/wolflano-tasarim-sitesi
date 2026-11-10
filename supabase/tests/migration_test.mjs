@@ -29,8 +29,13 @@ try{
  // Same-email browser sessions coexist, and an upsert can only match its owner key.
  await db.query("insert into carts(mail,owner_key) values($1,$2),($1,$3)",['legacy@example.invalid','g:'+'a'.repeat(64),'g:'+'b'.repeat(64)]);
  await db.query("insert into carts(mail,owner_key,status) values($1,$2,'boş') on conflict(owner_key) do update set status=excluded.status",['legacy@example.invalid','g:'+'a'.repeat(64)]);
- const rows=(await db.query('select owner_key,status from carts order by owner_key nulls first')).rows;
+ const rows=(await db.query('select id,owner_key,status from carts order by owner_key nulls first')).rows;
  assert.equal(rows.length,3);assert.equal(rows[0].status,'bekliyor');assert.equal(rows[1].status,'boş');assert.equal(rows[2].status,'bekliyor');
+ assert.equal(new Set(rows.map((row)=>row.id)).size,3);
+ await db.query("update carts set status='kapatıldı' where id=$1 and status='bekliyor'",[rows[0].id]);
+ const closed=(await db.query("select id from carts where status='kapatıldı'")).rows;
+ assert.deepEqual(closed,[{id:rows[0].id}]); // The legacy cart is addressed independently by its id.
+
  await assert.rejects(db.query("insert into carts(mail,owner_key) values('x','victim@example.invalid')"));
  assert.equal((await db.query("select has_function_privilege('anon','wf_jobs_private.wf_run_job(text)','execute') as ok")).rows[0].ok,false);
  assert.equal((await db.query("select has_function_privilege('authenticated','wf_jobs_private.wf_run_job(text)','execute') as ok")).rows[0].ok,false);

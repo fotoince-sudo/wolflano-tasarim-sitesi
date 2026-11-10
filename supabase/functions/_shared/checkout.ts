@@ -53,7 +53,10 @@ function fee(d: Row, b: Row, area: string) {
 function readyPrice(d: Row, p: Row) {
   if (!p.pc) return vat(d, amount(p.price), "ready");
   // Match pcCalc/pcApply: collection pc totals are net, then ready VAT applies once.
-  const pc = p.pc, b = find(d.blanks, pc.b), pf = d.pf || {};
+  const pc = p.pc, pf = d.pf || {};
+  // The collection item is for sale even when its blank is hidden from the studio.
+  const b = (d.blanks || []).find((b: Row) => b.id === pc.b);
+  if (!b) throw new CheckoutError("Ürünün fiyat referansı bulunamadı.", 503);
   const rawFee = (area: string) => {
     const key = ["logo", "logo2"].includes(area)
       ? "logo"
@@ -257,14 +260,16 @@ function wholesale(d: Row, x: Row, ay: Row | null) {
       ? amount(custom) * (1 - percent / 100) / (1 - first / 100)
       : base * (1 - percent / 100),
   );
-  return { p, q, t: money(unit * q), key };
+  return { p, q, t: money(unit * q), key, pricePending: unit === 0 && base === 0 && !(custom > 0) };
 }
 export function quoteItems(d: Row, input: unknown, ay: Row | null = null) {
   if (!Array.isArray(input) || !input.length || input.length > 40) {
     throw new CheckoutError("Sepet 1–40 kalem içermeli.");
   }
   const demands = new Map<Row, number>();
-  const items = input.map((x) => {
+  const studioUnits: Record<number, number> = {};
+  let pricePending = false;
+  const items = input.map((x, i) => {
     if (!x || typeof x.id !== "string") {
       throw new CheckoutError("Geçersiz ürün.");
     }
@@ -273,7 +278,10 @@ export function quoteItems(d: Row, input: unknown, ay: Row | null = null) {
       const v = studio(d, x);
       p = v.b;
       t = v.t;
-      name = "Tasarım: " + p.name;
+      studioUnits[i] = v.unit;
+      const sizeLabel = Object.entries(v.sizes).filter(([, n]) => Number(n) > 0)
+        .map(([size, n]) => `${size} × ${n}`).join(", ");
+      name = "Tasarım: " + p.name + " (" + sizeLabel + ")";
       extra = {
         design: {
           bid: p.id,
@@ -289,7 +297,9 @@ export function quoteItems(d: Row, input: unknown, ay: Row | null = null) {
       p = v.p;
       t = v.t;
       name = "TOPTAN · " + (p.name || p.n);
-      extra = { key: v.key };
+      pricePending ||= v.pricePending;
+      const itemNote = typeof x.itemNote === "string" ? x.itemNote.trim().slice(0, 300) : "";
+      extra = { key: v.key, ...(itemNote ? { itemNote } : {}), ...(v.pricePending ? { pricePending: true } : {}) };
     } else {
       const [id, size, ...rest] = x.id.split("~");
       if (rest.length) throw new CheckoutError("Geçersiz ürün kodu.");
@@ -301,7 +311,7 @@ export function quoteItems(d: Row, input: unknown, ay: Row | null = null) {
       t = money(readyPrice(d, p) * q);
       name = p.name + (size ? " · Beden: " + size : "");
     }
-    if (!(t > 0) || t >= 10_000_000) {
+    if ((t <= 0 && !extra.pricePending) || t >= 10_000_000) {
       throw new CheckoutError("Ürün fiyatı geçersiz.", 409);
     }
     demands.set(p, (demands.get(p) || 0) + q);
@@ -317,6 +327,8 @@ export function quoteItems(d: Row, input: unknown, ay: Row | null = null) {
   }
   return {
     items,
+    studioUnits,
+    pricePending,
     sum,
     qty: items.reduce((n, x) => n + x.q, 0),
     wholesale: items.every((x) => x.id === "toptan"),

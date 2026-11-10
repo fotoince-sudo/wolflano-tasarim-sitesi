@@ -522,3 +522,84 @@ Deno.test("actual wholesale handler uses verified approval and private pricing s
     equal(saved.user_id, "11111111-1111-4111-8111-111111111111");
   });
 });
+
+Deno.test("hidden studio blank is still a valid price reference for a visible collection item", () => {
+  const d = fixture();
+  d.products[0].pc = { b: "tee", f: "a4" };
+  d.blanks[0].show = false;
+  equal(quoteItems(d, [{ id: "p1~M", q: 1 }]).sum, 360);
+  rejects(() => quoteItems(d, [studio()]), 409);
+});
+
+Deno.test("studio requote gives the current unit price and labels nonempty sizes", async () => {
+  const item = studio();
+  item.design.sizes = { S: 3, M: 7 };
+  await withFetch((u) => {
+    assert(u.includes("site_content"));
+    return json([{ data: fixture() }]);
+  }, async () => {
+    const r = await handlers["order-create"](post({ ...base(), items: [item] }));
+    equal(r.status, 409);
+    const data = await r.json();
+    equal(data.items, [{
+      id: "tasarim", n: "Tasarım: Erkek tişört (S × 3, M × 7)",
+      q: 10, t: 3876, unit: 408,
+    }]);
+    equal(data.total, 3876);
+  });
+});
+
+Deno.test("zero-price wholesale is an approved-firm request with a bounded note", async () => {
+  const d = fixture();
+  d.ttx[0].price = 0;
+  const items = [{ id: "toptan", key: "x:paper", q: 10, n: "forged", itemNote: "M".repeat(500) }];
+  let saved: any;
+  await withFetch((u, i) => {
+    if (u.endsWith("/auth/v1/user")) return json({ id: "verified-id" });
+    if (u.includes("site_content")) return json([{ data: d }]);
+    if (u.includes("toptan_basvuru")) return json([{ status: "onaylandı" }]);
+    if (u.includes("toptan_ayar")) return json([{ data: { min: 10, tiers: [[10, 20]] } }]);
+    if (u.includes("/orders?")) return json([]);
+    if (i.method === "POST" && u.endsWith("/orders")) saved = JSON.parse(i.body as string);
+    return json(null, 201);
+  }, async () => {
+    const body = { ...base(), items, total: 0 };
+    equal((await handlers["order-create"](post(body, undefined, "valid"))).status, 409);
+    equal(saved, undefined);
+    equal((await handlers["order-create"](post({ ...body, wholesaleRequest: true }, undefined, "valid"))).status, 200);
+    equal(saved.onay.delivery, "toptan");
+    equal(saved.items[0], {
+      id: "toptan", n: "TOPTAN · Kağıt", q: 10, t: 0, key: "x:paper",
+      itemNote: "M".repeat(300), pricePending: true,
+    });
+  });
+});
+
+Deno.test("duplicate studio order matches nested JSONB despite object key ordering", async () => {
+  const item = studio();
+  const b = { ...base(), items: [item], total: 3876 };
+  const quoted = quoteItems(fixture(), [item]);
+  const reverseKeys = (value: any): any => {
+    if (Array.isArray(value)) return value.map(reverseKeys);
+    return value && typeof value === "object"
+      ? Object.fromEntries(Object.entries(value).reverse().map(([key, entry]) => [key, reverseKeys(entry)]))
+      : value;
+  };
+  let inserts = 0;
+  await withFetch((u) => {
+    if (u.includes("site_content")) return json([{ data: fixture() }]);
+    if (u.includes("/orders?")) return json([{
+      code: "WLF-OLD", items: reverseKeys(quoted.items), adres: b.adres,
+      il: b.il, ilce: b.ilce, special: null, onay: { delivery: b.delivery },
+    }]);
+    inserts++;
+    return json(null, 201);
+  }, async () => {
+    const r = await handlers["order-create"](post(b));
+    equal(r.status, 200);
+    const result = await r.json();
+    equal(result.code, "WLF-OLD");
+    equal(result.dup, true);
+    equal(inserts, 0);
+  });
+});
