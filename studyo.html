@@ -4128,6 +4128,8 @@ function renderTpl(){
   TPLS.forEach(function(t){if(tplFits(t,g)){has[t.c]=1;dirs[tplOrientation(t)]=1;measures[tplAreaName(t)]=1;}});
   if(window.TPL_EXTRA_CATS)window.TPL_EXTRA_CATS(g).forEach(function(c){has[c]=1;});
   if(view.tplCat!=='Tümü'&&!has[view.tplCat])view.tplCat='Tümü';
+  if(view.tplDir!=='Tümü'&&!dirs[view.tplDir])view.tplDir='Tümü';
+  if(view.tplArea!=='Tümü'&&!measures[view.tplArea])view.tplArea='Tümü';
   TPL_CATS.forEach(function(c){if(c!=='Tümü'&&!has[c])return;cc+='<button data-tc="'+c+'"'+(c===view.tplCat&&!q?' class="on"':'')+'>'+c+'</button>';});
   cc+='<div class="tpl-filter-label">Baskı yönü</div>';['Tümü','dikey','yatay','serbest'].forEach(function(v){if(v!=='Tümü'&&!dirs[v])return;cc+='<button data-td="'+v+'"'+(view.tplDir===v?' class="on"':'')+'>'+ (v==='Tümü'?'Tüm yönler':v==='serbest'?'Serbest':v==='dikey'?'Dikey':'Yatay')+'</button>';});
   cc+='<div class="tpl-filter-label">Baskı ölçüsü</div>';['Tümü'].concat(Object.keys(measures)).forEach(function(v){cc+='<button data-ta="'+v+'"'+(view.tplArea===v?' class="on"':'')+'>'+(v==='Tümü'?'Tüm ölçüler':v)+'</button>';});
@@ -4350,7 +4352,7 @@ $('#swapIn').addEventListener('change',function(e){var file=e.target.files[0];e.
   im.onerror=function(){toast('Bu dosya açılamadı. PNG veya JPG dene.');};im.src=url;});
 $('#fileIn').addEventListener('change',function(e){var f=e.target.files[0];if(f)loadFile(f);e.target.value='';});
 $('#upGrid').addEventListener('click',function(e){var b=e.target.closest('[data-asset]');if(b)addImageObj(b.dataset.asset);});
-$('#tplCats').addEventListener('click',function(e){var b=e.target.closest('[data-tc]');if(!b)return;view.tplCat=b.dataset.tc;$('#tplQ').value='';renderTpl();renderTplPreviews();$('#tplGrid').scrollLeft=0;});
+$('#tplCats').addEventListener('click',function(e){var b=e.target.closest('[data-tc],[data-td],[data-ta]');if(!b)return;if(b.dataset.tc)view.tplCat=b.dataset.tc;if(b.dataset.td)view.tplDir=b.dataset.td;if(b.dataset.ta)view.tplArea=b.dataset.ta;$('#tplQ').value='';renderTpl();renderTplPreviews();$('#tplGrid').scrollLeft=0;});
 $('#tplQ').addEventListener('input',function(){renderTpl();renderTplPreviews();});
 $('#tplQ').addEventListener('keydown',function(e){if(e.key==='Enter')this.blur();});
 $('#tplQx').addEventListener('click',function(){$('#tplQ').value='';renderTpl();renderTplPreviews();});
