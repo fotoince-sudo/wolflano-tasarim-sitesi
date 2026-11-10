@@ -1868,7 +1868,7 @@ function baskiPanel(hp){try{[].slice.call(document.querySelectorAll('button')).f
     ss.map(function(x){return '<button type="button" class="ghost" data-bk="'+x+'" style="margin:0 6px 6px 0">'+(SIDE_NAME[x]||x)+' · '+cmText(state[x].area,isLand(x))+'</button>';}).join('')+'<button type="button" class="ghost" data-bkx style="margin:0 0 6px">Kapat</button>';
   document.body.appendChild(w);
   w.addEventListener('click',async function(e){var b=e.target.closest('[data-bk]');if(e.target.closest('[data-bkx]')){w.remove();return;}if(!b)return;b.disabled=true;var o=b.textContent;b.textContent='Hazırlanıyor…';
-    try{var r=await renderPrint(b.dataset.bk);await saveCanvas(r.canvas,('wolflano-'+(hp.name||'urun')+'-'+(colorNameOf(state.tee)||'')+'-'+b.dataset.bk+'-'+r.dpi+'dpi').replace(/[^\wığüşöçİĞÜŞÖÇ-]+/g,'-')+'.png');}catch(_){toast('Dosya hazırlanamadı');}b.disabled=false;b.textContent=o;});}
+    try{var r=await renderPrintFile(b.dataset.bk);await saveCanvas(r.blob,('wolflano-'+(hp.name||'urun')+'-'+(colorNameOf(state.tee)||'')+'-'+b.dataset.bk+'-'+r.dpi+'dpi').replace(/[^\wığüşöçİĞÜŞÖÇ-]+/g,'-')+'.png');}catch(_){toast('Dosya hazırlanamadı');}b.disabled=false;b.textContent=o;});}
 function mugSVG(side,tee,thumb){
   /* Klasik seramik kupa: 8 cm çap, 10 cm boy (1 cm = 6,6 px). Ön yüzde kulp sağda, arka yüzde solda. */
   var vb=thumb?'252 254 108 100':'0 0 600 640',mir=side==='back'?' transform="translate(592.8 0) scale(-1 1)"':'';
@@ -4369,7 +4369,7 @@ if(document.fonts){
 /* Uzak (https) görseller CORS ile yüklenir; yoksa tuval "kirlenir" ve ürün/şablon kaydı sessizce başarısız olur */
 function loadImg(src){return new Promise(function(res,rej){var im=new Image();if(/^https?:/i.test(String(src)))im.crossOrigin='anonymous';im.onload=function(){res(im);};im.onerror=function(){rej(new Error('img'));};im.src=src;});}
 function svgUrl(s){return 'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(s);}
-async function drawObj(c,o,S,ox,oy,hi){
+async function drawObj(c,o,S,ox,oy,hi,imageCache){
   c.save();
   c.translate((o.x-ox)*S,(o.y-oy)*S);c.rotate(o.rot*PI/180);
   if(o.type==='text'&&o.sy&&o.sy!==1)c.scale(1,o.sy);
@@ -4398,7 +4398,10 @@ async function drawObj(c,o,S,ox,oy,hi){
     var im=await loadImg(svgUrl(svg));c.drawImage(im,-o.w*S/2,-o.h*S/2,o.w*S,o.h*S);
   }else if(o.type==='image'&&assets[o.assetId]){
     /* Baskı dosyasında hazır şablonun tam boy (A3 300 dpi) dosyası kullanılır; ekrandaki önizleme (1600 px) baskıda, özellikle büyük canvasta pikselleşiyordu */
-    var AS=assets[o.assetId],im2=null;if(hi&&AS.hi){try{im2=await loadImg(AS.hi);}catch(_){im2=null;}}if(!im2)im2=await loadImg(AS.url);
+    var AS=assets[o.assetId],im2=null;
+    var get=function(u){if(!imageCache)return loadImg(u);if(!imageCache.has(u))imageCache.set(u,loadImg(u));return imageCache.get(u);};
+    if(hi&&AS.hi){try{im2=await get(AS.hi);}catch(e){if(imageCache)throw e;}}
+    if(!im2)im2=await get(AS.url);
     var rx=-o.w*S/2,ry=-o.h*S/2,rw=o.w*S,rh=o.h*S,rr=(o.br||0)*S;
     function rp(ix){var r=Math.max(0,rr-ix);c.beginPath();if(c.roundRect)c.roundRect(rx+ix,ry+ix,rw-2*ix,rh-2*ix,r);else c.rect(rx+ix,ry+ix,rw-2*ix,rh-2*ix);}
     if(o.bw){c.save();c.shadowColor='rgba(40,30,20,.28)';c.shadowBlur=o.bw*2.6*S;c.shadowOffsetY=o.bw*0.9*S;c.fillStyle=o.bc||'#161616';rp(0);c.fill();c.restore();}
@@ -4512,8 +4515,7 @@ function mnCompose(img,maskImg,area,hex,layers,tol){
   var cov=0;for(i=0;i<N;i+=11)cov+=M[i];
   return {canvas:c,cover:cov*11/N};
 }
-/* Baskı çözünürlüğü: 300 dpi; telefon tarayıcısının tuval sınırı (~16 milyon piksel) aşılmasın diye büyük alanda düşer.
-   Eskiden uzun kenar 3508 px ile sınırlıydı: A3 212 dpi, canvas 50 × 70 yalnız ~115 dpi çıkıyordu. Şimdi A3 ~290, canvas 35 × 50 ~200, 50 × 70 ~150 dpi. */
+/* Manken ve ortam önizlemelerinin tuval boyutu mobil tarayıcıya göre sınırlanır. */
 function printDpi(cm){return Math.max(72,Math.min(300,Math.sqrt(15.5e6/Math.max(1,cm[0]*cm[1]))*2.54));}
 async function renderPrint(side){
   var E0=extBox(side);if(E0){var A0=areaBox(side,state[side].area),U={l:Math.min(A0.l,E0.l),t:Math.min(A0.t,E0.t),r:Math.max(A0.r,E0.r),b:Math.max(A0.b,E0.b)};
@@ -4530,12 +4532,61 @@ async function renderPrint(side){
   if(side==='front')logoHoles(A).forEach(function(L){x.clearRect((L.l-A.l)*S,(L.t-A.t)*S,L.w*S,L.h*S);});
   return {canvas:c,dpi:Math.round(dpi)};
 }
+/* Baskı çıktısı 300 DPI. Telefonda tam boy tuval yerine en çok 128 satır çizilir. */
+async function renderPrintFile(side){
+  var key=state[side].area,A=areaBox(side,key),E=extBox(side),B=A;
+  if(E)B={l:Math.min(A.l,E.l),t:Math.min(A.t,E.t),r:Math.max(A.r,E.r),b:Math.max(A.b,E.b)};
+  var dpi=300,S=dpi/2.54/PPC,w=Math.round((B.r-B.l)*S),h=Math.round((B.b-B.t)*S);
+  var clip=E?new Path2D(areaPathD(side,S,B.l,B.t)):null;
+  var holes=!E&&side==='front'?logoHoles(A):[],objs=state[side].objs.slice(),images=new Map();
+  var c=document.createElement('canvas'),stride=w*4+1,y=0;
+  c.width=w;c.height=Math.min(128,h);
+  var x=c.getContext('2d',{willReadFrequently:true});
+  try{
+    var stream=new ReadableStream({async pull(controller){
+      if(y>=h){controller.close();return;}
+      var rows=Math.min(c.height,h-y);
+      x.clearRect(0,0,w,c.height);
+      x.save();
+      try{
+        x.translate(0,-y);
+        if(clip)x.clip(clip);
+        for(var o of objs)await drawObj(x,o,S,B.l,B.t,true,images);
+        for(var L of holes)x.clearRect((L.l-B.l)*S,(L.t-B.t)*S,L.w*S,L.h*S);
+      }finally{x.restore();}
+      var pixels=x.getImageData(0,0,w,rows).data,filtered=new Uint8Array(stride*rows);
+      for(var i=0;i<rows;i++)filtered.set(pixels.subarray(i*w*4,(i+1)*w*4),i*stride+1);
+      y+=rows;controller.enqueue(filtered);
+    }});
+    var packed=new Uint8Array(await new Response(stream.pipeThrough(new CompressionStream('deflate'))).arrayBuffer());
+    var header=new Uint8Array(13),hv=new DataView(header.buffer);
+    hv.setUint32(0,w);hv.setUint32(4,h);header[8]=8;header[9]=6;
+    var density=new Uint8Array(9),dv=new DataView(density.buffer),ppm=Math.round(dpi/0.0254);
+    dv.setUint32(0,ppm);dv.setUint32(4,ppm);density[8]=1;
+    var png=[new Uint8Array([137,80,78,71,13,10,26,10])];
+    pngChunk(png,'IHDR',header);pngChunk(png,'pHYs',density);
+    pngChunk(png,'IDAT',packed);pngChunk(png,'IEND',new Uint8Array(0));
+    return {blob:new Blob(png,{type:'image/png'}),dpi:dpi};
+  }finally{c.width=c.height=1;}
+}
+var pngCrc=Uint32Array.from({length:256},function(_,n){
+  for(var i=0;i<8;i++)n=(n>>>1)^((n&1)?0xedb88320:0);
+  return n;
+});
+function pngChunk(parts,type,data){
+  var head=new Uint8Array(8),tail=new Uint8Array(4),crc=0xffffffff;
+  new DataView(head.buffer).setUint32(0,data.length);
+  for(var i=0;i<4;i++){head[4+i]=type.charCodeAt(i);crc=pngCrc[(crc^head[4+i])&255]^(crc>>>8);}
+  for(var i=0;i<data.length;i++)crc=pngCrc[(crc^data[i])&255]^(crc>>>8);
+  new DataView(tail.buffer).setUint32(0,crc^0xffffffff);
+  parts.push(head,data,tail);
+}
 var dl=null;
 (async function(){try{dl=(window.claude&&window.claude.use)?await window.claude.use('downloads'):null;}catch(_){dl=null;}if(!$('#order').hidden)renderFiles();})();
 async function saveCanvas(c,name){
-  if(!dl){try{var b0=await new Promise(function(r){c.toBlob(r,'image/png');});var u0=URL.createObjectURL(b0),a0=document.createElement('a');a0.href=u0;a0.download=name;document.body.appendChild(a0);a0.click();a0.remove();setTimeout(function(){URL.revokeObjectURL(u0);},4000);toast('Dosya indirildi');}catch(_){toast('Dosya indirilemedi');}return;}
+  if(!dl){try{var b0=c instanceof Blob?c:await new Promise(function(r){c.toBlob(r,'image/png');});var u0=URL.createObjectURL(b0),a0=document.createElement('a');a0.href=u0;a0.download=name;document.body.appendChild(a0);a0.click();a0.remove();setTimeout(function(){URL.revokeObjectURL(u0);},4000);toast('Dosya indirildi');}catch(_){toast('Dosya indirilemedi');}return;}
   try{
-    var blob=await new Promise(function(r){c.toBlob(r,'image/png');});
+    var blob=c instanceof Blob?c:await new Promise(function(r){c.toBlob(r,'image/png');});
     await dl.save({filename:name,data:blob});toast('Dosya kaydedildi');
   }catch(err){
     if(err&&err.code==='declined')toast('Kaydetme iptal edildi');
@@ -4688,7 +4739,7 @@ $('#files').addEventListener('click',async function(e){
   var s=b.dataset.s;b.disabled=true;
   try{
     var fn={front:'on',logo:'logo',logo2:'logo-sag',back:'arka'}[s]||s;
-    if(b.dataset.f==='print'){var r=await renderPrint(s);await saveCanvas(r.canvas,'wolflano-baski-'+fn+'-'+r.dpi+'dpi.png');}
+    if(b.dataset.f==='print'){var r=await renderPrintFile(s);await saveCanvas(r.blob,'wolflano-baski-'+fn+'-'+r.dpi+'dpi.png');}
     else{var c=await renderPreview(s,2);await saveCanvas(c,'wolflano-onizleme-'+fn+'.png');}
   }catch(_){toast('Dosya hazırlanamadı');}
   b.disabled=false;
@@ -4767,13 +4818,13 @@ async function addToCart(silent){
     var bg=document.createElement('canvas');bg.width=c.width;bg.height=c.height;var bx=bg.getContext('2d');bx.fillStyle='#eef1ef';bx.fillRect(0,0,bg.width,bg.height);bx.drawImage(c,0,0);
     var views=[];try{var sd=sidesOf();for(var vi=0;vi<sd.length;vi++){var sdn=sd[vi];if(vi>0&&!(state[sdn]&&state[sdn].objs&&state[sdn].objs.length))continue;var vc=await renderPreview(sdn,1.2);var vb=document.createElement('canvas');vb.width=vc.width;vb.height=vc.height;var vx=vb.getContext('2d');vx.fillStyle='#eef1ef';vx.fillRect(0,0,vb.width,vb.height);vx.drawImage(vc,0,0);views.push({n:SIDE_NAME[sdn]||sdn,src:vb.toDataURL('image/jpeg',0.82)});}}catch(_){views=[];}
     /* Baskı dosyaları (300 dpi PNG): sepete eklenirken hazırlanır, sipariş verilince Wolflano'ya gönderilir (Yönetim → Siparişler → Baskı dosyaları) */
-    var prints=[];try{var sdp=sidesOf().filter(function(x){return state[x]&&state[x].objs&&state[x].objs.length;});for(var pi=0;pi<sdp.length;pi++){var sx=sdp[pi],pr=await renderPrint(sx),pbl=await new Promise(function(r){pr.canvas.toBlob(r,'image/png');});
-      if(pbl)prints.push({side:sx,blob:pbl,meta:{yuz:SIDE_NAME[sx]||sx,alan:areaTitle(sx),cm:cmText(state[sx].area,isLand(sx)),dpi:pr.dpi,renkler:usedColors().map(colLabel).join(', ')}});}}catch(_){}
+    var prints=[];try{var sdp=sidesOf().filter(function(x){return state[x]&&state[x].objs&&state[x].objs.length;});for(var pi=0;pi<sdp.length;pi++){var sx=sdp[pi],pr=await renderPrintFile(sx),pbl=pr.blob;
+      if(pbl)prints.push({side:sx,blob:pbl,meta:{yuz:SIDE_NAME[sx]||sx,alan:areaTitle(sx),cm:cmText(state[sx].area,isLand(sx)),dpi:pr.dpi,renkler:usedColors().map(colLabel).join(', ')}});}}catch(_){throw new Error('print');}
     var szs=need?JSON.parse(JSON.stringify(state.sizes)):{};if(!need){var sl0=sizeList()||[];if(sl0.length===1)szs[sl0[0]]=1;else{var cz0=curSize();if(cz0)szs[cz0]=1;}}
-    var pk=[];try{for(var pq=0;pq<prints.length;pq++){await bkPut(sig+'|'+prints[pq].side,prints[pq].blob);pk.push({side:prints[pq].side,meta:prints[pq].meta});}}catch(_){pk=[];}
+    var pk=[];try{for(var pq=0;pq<prints.length;pq++){await bkPut(sig+'|'+prints[pq].side,prints[pq].blob);pk.push({side:prints[pq].side,meta:prints[pq].meta});}}catch(_){throw new Error('print');}
     cartItems.push({sig:sig,pk:pk,tee:state.tee,thumb:bg.toDataURL('image/jpeg',0.8),views:views,label:productLabel(),cut:state.cut,unit:p.unit,szList:sizeList(),sizes:szs,lines:designLines(),roster:rosterRows()});wfStat(['e:stud-sepet']);
     ok=true;
-  }catch(_){toast('Sepete eklenemedi');}
+  }catch(e){toast(e&&e.message==='print'?'300 DPI baskı dosyası hazırlanamadı. Tekrar dene.':'Sepete eklenemedi');}
   b.disabled=false;renderCart();
   if(ok&&silent!==true)showAdded(false);
   return ok;
@@ -5512,7 +5563,7 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
     var ss=sidesWith();if(!ss.length)throw {msg:'Önce bir tasarım yap.'};
     var q=0;Object.keys(sizes).forEach(function(k){q+=+sizes[k]||0;});if(!q)throw {msg:'Baskı için beden ve adet seç.'};
     var s=sess(),uid=s&&s.user&&s.user.id;if(!uid)throw {code:'auth'};
-    var files=[];for(var i=0;i<ss.length;i++){var pr=await renderPrint(ss[i]),p=uid+'/tas/baski-'+rnd()+'-'+ss[i]+'.png';await upload('designs',p,await canvasBlob(pr.canvas,'image/png'));
+    var files=[];for(var i=0;i<ss.length;i++){var pr=await renderPrintFile(ss[i]),p=uid+'/tas/baski-'+rnd()+'-'+ss[i]+'.png';await upload('designs',p,pr.blob);
       files.push({side:ss[i],path:p,dpi:pr.dpi,area:areaTitle(ss[i]),cm:cmText(state[ss[i]].area,isLand(ss[i]))});}
     var data=await collect(),th=await thumb();
     await insertRow({title:title,kind:'baski',status:'baskıda',product:state.product,cut:state.cut,color:state.tee,qty:q,sizes:sizes,data:data,thumb:th,files:files,by_wolf:!!byWolf,note:designLines().join(' · ')});
