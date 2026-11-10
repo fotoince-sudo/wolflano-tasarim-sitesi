@@ -1589,6 +1589,23 @@ TPLS.push(
   {c:'Kurt geziyor',n:'Akdeniz Yolcusu · Kupa',p:'kupa',box:[2362,1063],items:[{t:'img',u:'sablon/web/kupa-antalya.webp?v=2',hi:'https://raw.githubusercontent.com/fotoince-sudo/wolflano-tasarim-sitesi/baski/baski/kupa-antalya.png?v=2',aw:1600,ah:720,w:2362,h:1063,dx:0,dy:0}]},
   {c:'Kurt geziyor',n:'Akdeniz Yolcusu · Kanvas',p:['canvas'],box:[3508,4961],items:[{t:'img',u:'sablon/web/antalya-dikey.webp',hi:'https://raw.githubusercontent.com/fotoince-sudo/wolflano-tasarim-sitesi/baski/baski/antalya-dikey.png',aw:1131,ah:1600,w:3508,h:4961,dx:0,dy:0}]}
 );
+/* Aynı Antalya kurduyla kısa hikâyeler; her ürün ailesi için baskıya uygun ayrı düzen */
+function wolfStoryTemplates(title,story){
+  var vertical={t:'img',u:'sablon/web/antalya-dikey.webp',hi:'https://raw.githubusercontent.com/fotoince-sudo/wolflano-tasarim-sitesi/baski/baski/antalya-dikey.png',aw:1131,ah:1600,w:3508,h:4961,dx:0,dy:0};
+  var mug={t:'img',u:'sablon/web/kupa-antalya.webp?v=2',hi:'https://raw.githubusercontent.com/fotoince-sudo/wolflano-tasarim-sitesi/baski/baski/kupa-antalya.png?v=2',aw:1600,ah:720,w:2362,h:1063,dx:0,dy:0};
+  var verticalText=[TX(title.toLocaleUpperCase('tr'),'Cinzel','#ffffff',230,-1960,0),TX(story,'Dancing Script','#ffffff',180,-1640,0)];
+  var mugText=[TX(title.toLocaleUpperCase('tr'),'Cinzel','#1c243a',104,-300,560),TX(story,'Dancing Script','#1c243a',84,-175,560)];
+  return [
+    {c:'Kurt geziyor',n:title+' · Tişört',p:'giyim',product:'tee',yon:'dikey',box:[3508,4961],items:[vertical].concat(verticalText)},
+    {c:'Kurt geziyor',n:title+' · Kupa',p:'kupa',box:[2362,1063],items:[mug].concat(mugText)},
+    {c:'Kurt geziyor',n:title+' · Kanvas',p:['canvas'],box:[3508,4961],items:[vertical].concat(verticalText)}
+  ];
+}
+[
+  ['Yolun Çağrısı','Her iz, yeni bir hikâye.'],
+  ['Ufka Doğru','Özgürlük, yola çıkınca başlar.'],
+  ['Akdeniz’in İzinde','Bir kıyı, bin anı.']
+].forEach(function(s){TPLS.push.apply(TPLS,wolfStoryTemplates(s[0],s[1]));});
 TPLS.forEach(function(t){t.c0=t.c;}); /* asıl kategori: yönetim panelinde ad değişse de ürün süzmesi bozulmasın */
 
 /* ---------- Durum ve geçmiş ---------- */
