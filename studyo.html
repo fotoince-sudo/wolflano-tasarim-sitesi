@@ -3026,10 +3026,10 @@ document.addEventListener('click',function(e){var b=e.target.closest&&e.target.c
    2) Yapay zekâ yüklenemezse: kenarlardan başlayıp düz renkli arka planı silen hızlı yöntem. */
 var bgBusy=false,bgLib=null;
 var BG_LIB='https://cdn.jsdelivr.net/npm/@imgly/background-removal@1.7.0/+esm';
-async function aiRemoveBg(url){
+async function aiRemoveBg(url,quiet){
   if(!bgLib){var m=await import(BG_LIB);bgLib=m.removeBackground||(m.default&&m.default.removeBackground)||m.default;}
   var blob=await (await fetch(url)).blob();
-  return await bgLib(blob,{model:'isnet_quint8',output:{format:'image/png',quality:1},progress:function(k,c,t){if(t&&/fetch/.test(k))bgToast('Yapay zekâ hazırlanıyor… %'+Math.round(c/t*100));}});
+  return await bgLib(blob,{model:'isnet_quint8',output:{format:'image/png',quality:1},progress:function(k,c,t){if(!quiet&&t&&/fetch/.test(k))bgToast('Yapay zekâ hazırlanıyor… %'+Math.round(c/t*100));}});
 }
 function bgToast(m){var t=$('#toast');t.classList.remove('long');t.textContent=m;t.hidden=false;clearTimeout(toastT);}
 async function simpleRemoveBg(url){
@@ -3261,7 +3261,9 @@ async function fillSlot(o,file,quiet){
   var subject=null;
   if(o.pet){
     try{
-      var cut=await aiRemoveBg(url),cutUrl=URL.createObjectURL(cut),fg=await loadImg(cutUrl);
+      var timer,cut;try{cut=await Promise.race([aiRemoveBg(url,true),new Promise(function(resolve){timer=setTimeout(resolve,15000);})]);}finally{clearTimeout(timer);}
+      if(!cut)throw new Error('background timeout');
+      var cutUrl=URL.createObjectURL(cut),fg=await loadImg(cutUrl);
       if(fg.naturalWidth===im.naturalWidth&&fg.naturalHeight===im.naturalHeight){
         subject=petForegroundBox(fg);
         if(subject){id='a'+(++assetN);assets[id]={url:cutUrl,w:fg.naturalWidth,h:fg.naturalHeight,up:true,nobg:true};}
@@ -3270,7 +3272,6 @@ async function fillSlot(o,file,quiet){
     }catch(_){}
     cr=petCrop(im.naturalWidth,im.naturalHeight,A,subject);
   }
-  await brushReady();
   var st0=o.ais?'cartoon':'none',nid=await fxProcess(id,st0,o.edge||'none',0.5,cr,0);
   if(o.pet&&objById(o.id)!==o)return;
   o.base=id;o.crop=cr;o.phs=st0;o.phe=o.edge||'none';o.phf=0.5;o.assetId=nid;delete o.phEmpty;delete o.aiOk;
