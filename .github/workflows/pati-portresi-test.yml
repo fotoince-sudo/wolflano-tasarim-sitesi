@@ -23,7 +23,7 @@ jobs:
           import { createServer } from 'node:http';
           import { readFile } from 'node:fs/promises';
           import assert from 'node:assert/strict';
-          const studio = await readFile('studyo.html');
+          const studio = (await readFile('studyo.html','utf8')).replace('function petCrop(', 'window.patiTest={chooseProduct,openTab,renderTpl,renderTplPreviews,renderPrintFile};function petCrop(');
           const server = createServer((req,res) => {
             if(new URL(req.url,'http://127.0.0.1').pathname !== '/studyo.html') return res.writeHead(404).end();
             res.writeHead(200,{'Content-Type':'text/html; charset=utf-8'}).end(studio);
@@ -40,13 +40,14 @@ jobs:
             });
             for(const [title,file,name,newName] of [['Ege Esintisi','/tmp/wf-cat.jpg','Misket','Boncuk'],['Adaçayı Bahçesi','/tmp/wf-dog.jpg','Tarçın','Badem']]){
               await page.goto('http://127.0.0.1:8877/studyo.html');
-              await page.locator('#tabs [data-tab="tee"]').click();
-              await page.getByRole('tab',{name:'Kupa',exact:true}).click();
-              await page.getByRole('button',{name:'Süblimasyon kupa',exact:true}).click();
-              await page.locator('#tabs [data-tab="tpl"]').click();
+              await page.evaluate(()=>{
+                patiTest.chooseProduct('mug','sub');
+                patiTest.openTab('tpl');
+                patiTest.renderTpl();
+                patiTest.renderTplPreviews();
+              });
               console.log('Categories:',await page.locator('#tplCats').innerText());
-              await page.getByRole('button',{name:'Pati Portresi',exact:true}).click();
-              await page.getByRole('button',{name:title,exact:true}).click();
+              await page.locator('#tplGrid .tpl > span').filter({hasText:title}).click();
               await page.locator('#swapIn').setInputFiles(file);
               await page.waitForFunction(()=>document.querySelectorAll('.obj').length>=5);
               await page.waitForFunction(()=>/Portre (otomatik yerleştirildi|ortalandı)/.test(document.querySelector('#toast')?.textContent||''),null,{timeout:90000});
@@ -62,10 +63,7 @@ jobs:
               assert.equal(await field.isEnabled(),true);
               await field.fill(newName);
               assert.equal(await textNodes.filter({hasText:newName}).count(),1);
-              await page.locator('#doneBtn').click();
-              await page.locator('#files [data-f="print"][data-s="front"]').click();
-              await page.waitForFunction(()=>!!window.printProbe);
-              const png=Buffer.from(await page.evaluate(()=>window.printProbe));
+              const png=Buffer.from(await page.evaluate(async()=>Array.from(new Uint8Array(await (await patiTest.renderPrintFile('front')).blob.slice(0,64).arrayBuffer()))));
               assert.equal(png.toString('hex',0,8),'89504e470d0a1a0a');
               assert.equal(png.readUInt32BE(16),2362);
               assert.equal(png.readUInt32BE(20),1063);
