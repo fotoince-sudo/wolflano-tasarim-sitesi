@@ -1,3 +1,4 @@
+import { jobAllowed } from "../_shared/request-security.ts";
 // Stoğa gelince haber ver: bekleyen kayıtların ürünü stoğa girdiyse üyeye e-posta gönderir.
 // Ürünler kaydedilince (site_content güncellenince) ve saatte bir kendiliğinden çalışır.
 // Gerekli gizli ayarlar: SMTP_HOST, SMTP_USER (info@wolflano.com.tr), SMTP_PASS. İsteğe bağlı: SMTP_PORT (varsayılan 465).
@@ -9,8 +10,10 @@ const j = (o: unknown, s = 200) => new Response(JSON.stringify(o), { status: s, 
 const esc = (s: string) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]!));
 const inStock = (p: any) => p && p.show !== false && !(p.stock !== null && p.stock !== undefined && p.stock !== "" && +p.stock <= 0);
 
-Deno.serve(async () => {
-  const sb = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
+Deno.serve(async (req) => {
+  if (req.method !== "POST") return j({ error: "method" }, 405);
+  if (!await jobAllowed(req, Deno.env.get("WF_JOB_TOKEN"))) return j({ error: "yetki" }, 403);
+  const sb = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!, { auth: { persistSession: false, autoRefreshToken: false } });
   const { data: rows } = await sb.from("stok_haber").select("*").is("notified_at", null).limit(300);
   if (!rows || !rows.length) return j({ ok: true, sent: 0 });
   const { data: sc } = await sb.from("site_content").select("data").eq("id", "main").single();

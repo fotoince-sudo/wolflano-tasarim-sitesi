@@ -5,7 +5,7 @@ import nodemailer from "npm:nodemailer@6.9.14";
 export const SITE = "https://wolflano.com.tr/";
 export const GREEN = "#3f8f55";
 export const esc = (s: unknown) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]!));
-export const tl = (n: unknown) => "₺" + (Math.round((+n || 0) * 100) / 100).toLocaleString("tr-TR", { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+export const tl = (n: unknown) => "₺" + (Math.round((Number(n) || 0) * 100) / 100).toLocaleString("tr-TR", { minimumFractionDigits: 0, maximumFractionDigits: 2 });
 
 export function smtpReady() {
   return !!(Deno.env.get("SMTP_HOST") && Deno.env.get("SMTP_USER") && Deno.env.get("SMTP_PASS"));
