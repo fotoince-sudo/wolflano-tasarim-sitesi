@@ -2047,7 +2047,7 @@ var ADX_KIND={taslak:'Taslak',sablon:'Şablon',urun:'Ürün',baski:'Baskı'};
 var ADX_ST=['baskıda','basıldı','kargoda','teslim edildi'];
 function adxRefresh(){if(cur==='yonetim'&&A&&(A.tab==='admtas'||A.tab==='yetki')){var y=window.scrollY;adRender();window.scrollTo(0,y);}}
 /* ---------- Kasa: şirket evrakı, şartnameler, strateji notları. Yalnız site sahibi görür (wf_kasa tablosu + gizli "kasa" dosya alanı) ---------- */
-var KS={rows:null,busy:false,err:'',f:'Hepsi',urls:{},del:null,form:false,up:false,fv:{folder:'Şartnameler',title:'',note:''}},KS_FOLDERS=['Şablon Deposu','Şartnameler','Strateji','Şirket evrakı','Sözleşmeler','Faturalar','Diğer'];
+var KS={rows:null,busy:false,err:'',f:'Hepsi',urls:{},del:null,form:false,up:false,fv:{folder:'Şartnameler',title:'',note:''}},KS_FOLDERS=['Şartnameler','Strateji','Şirket evrakı','Sözleşmeler','Faturalar','Diğer'],KS_TEMPLATE_FOLDERS=['Kupa','Kanvas','Tişört'];
 function ksRe(){if(cur==='yonetim'&&A&&A.tab==='kasa'){var y=window.scrollY;adRender();window.scrollTo(0,y);}}
 async function ksLoad(){if(KS.busy)return;KS.busy=true;KS.err='';
   try{var tk=await sbToken();if(!tk){KS.err='Kasa için site sahibi hesabıyla giriş yapmalısın.';KS.rows=[];}
@@ -2055,23 +2055,29 @@ async function ksLoad(){if(KS.busy)return;KS.busy=true;KS.err='';
   catch(_){KS.err='Bağlantı kurulamadı.';KS.rows=[];}
   KS.busy=false;ksRe();}
 function ksSize(n){n=+n||0;return n>1048576?(n/1048576).toFixed(1)+' MB':n>1024?Math.round(n/1024)+' KB':n?n+' B':'';}
+function ksIsTemplateFolder(folder){return KS_TEMPLATE_FOLDERS.indexOf(folder)>=0;}
+function ksInFolder(row,folder){return folder==='Hepsi'?!ksIsTemplateFolder(row.folder):row.folder===folder;}
 function ksTemplateLink(row){
-  if(row.folder!=='Şablon Deposu'||row.file_path)return '';
+  if(!ksIsTemplateFolder(row.folder)||row.file_path)return '';
   var links=String(row.note||'').split('\n');
   return links.find(function(l){return /^https:\/\/chatgpt\.com\/library\?file_id=libfile_[a-f0-9]+&account_id=personal$/.test(l);})||'';
 }
 function ksView(){if(KS.rows===null&&!KS.busy)ksLoad();
   var h='<div class="alist"><div class="adx-top"><p class="note" style="margin:0;flex:1">Şartnameler, strateji kararları ve şirket evrakı. Yalnız sen görürsün; site ziyaretçileri ve yetkililer göremez.</p><button type="button" class="btn sm" data-ks="form">'+(KS.form?'Vazgeç':'+ Yeni ekle')+'</button><button type="button" class="btn soft sm" data-ks="reload">Yenile</button></div>';
-  if(KS.form){var fv=KS.fv;h+='<div class="aed"><b>Kasaya ekle</b><div class="two"><label for="ksF">Klasör<select id="ksF" data-ksv="folder">'+KS_FOLDERS.map(function(f){return '<option'+(f===fv.folder?' selected':'')+'>'+f+'</option>';}).join('')+'</select></label><label for="ksT">Başlık<input id="ksT" data-ksv="title" value="'+esc(fv.title)+'" placeholder="Örn. Vergi levhası 2026"></label></div>'+
+  if(KS.form){var fv=KS.fv;h+='<div class="aed"><b>Kasaya ekle</b><div class="two"><label for="ksF">Klasör<select id="ksF" data-ksv="folder">'+KS_FOLDERS.concat(KS_TEMPLATE_FOLDERS).map(function(f){return '<option'+(f===fv.folder?' selected':'')+'>'+f+'</option>';}).join('')+'</select></label><label for="ksT">Başlık<input id="ksT" data-ksv="title" value="'+esc(fv.title)+'" placeholder="Örn. Vergi levhası 2026"></label></div>'+
     '<label for="ksN">Not (isteğe bağlı)<textarea id="ksN" data-ksv="note" style="min-height:90px" placeholder="Karar, açıklama, hatırlatma…">'+esc(fv.note)+'</textarea></label>'+
     '<label for="ksFile">Dosya (isteğe bağlı: PDF, fotoğraf, Word, Excel, ZIP; en fazla 25 MB)<input id="ksFile" type="file" accept="application/pdf,image/*,.doc,.docx,.xls,.xlsx,.txt,.zip,application/zip"></label>'+
     '<div><button type="button" class="btn" data-ks="save"'+(KS.up?' disabled':'')+'>'+(KS.up?'Kaydediliyor…':'Kasaya kaydet')+'</button></div></div>';}
   var all=KS.rows||[];
-  h+='<div class="adx-f">'+['Hepsi'].concat(KS_FOLDERS).map(function(f){var n=all.filter(function(r){return f==='Hepsi'||r.folder===f;}).length+((f==='Hepsi'||f==='Şartnameler')?1:0);return '<button type="button" data-ks="f" data-v="'+esc(f)+'"'+(KS.f===f?' class="on"':'')+'>'+f+' <small>'+n+'</small></button>';}).join('')+'</div>';
+  h+='<div class="adx-f">'+['Hepsi'].concat(KS_FOLDERS).map(function(f){var n=all.filter(function(r){return ksInFolder(r,f);}).length+((f==='Hepsi'||f==='Şartnameler')?1:0);return '<button type="button" data-ks="f" data-v="'+esc(f)+'"'+(KS.f===f?' class="on"':'')+'>'+f+' <small>'+n+'</small></button>';}).join('')+'</div>';
+  h+='<p class="note" style="margin:0"><b>Şablon Deposu</b></p><div class="adx-f">'+KS_TEMPLATE_FOLDERS.map(function(f){
+    var n=all.filter(function(r){return ksInFolder(r,f);}).length;
+    return '<button type="button" data-ks="f" data-v="'+esc(f)+'"'+(KS.f===f?' class="on"':'')+'>'+esc(f)+' <small>'+n+'</small></button>';
+  }).join('')+'</div>';
   if(KS.f==='Hepsi'||KS.f==='Şartnameler')h+='<div class="adx-c ksc"><div class="adx-b"><div class="adx-t"><b>Güncel teknik şartname</b><span class="adx-k">Şartnameler</span></div><small class="note" style="margin:0">Panelden düzenlenen canlı şartname; her zaman en son hali.</small><div class="adx-a"><button type="button" class="btn soft sm" data-ks="spec">Aç</button><button type="button" class="btn sm" data-ks="specpdf">PDF / Yazdır</button></div></div></div>';
   if(KS.rows===null)return h+'<p class="note">Yükleniyor…</p></div>';
   if(KS.err)h+='<p class="msg">'+esc(KS.err)+'</p>';
-  var L=all.filter(function(r){return KS.f==='Hepsi'||r.folder===KS.f;});
+  var L=all.filter(function(r){return ksInFolder(r,KS.f);});
   if(!L.length&&!KS.err&&KS.f!=='Hepsi'&&KS.f!=='Şartnameler')h+='<p class="note">Bu klasör boş.</p>';
   L.forEach(function(x){var link=ksTemplateLink(x),note=link?String(x.note).split('\n').filter(function(l){return l!==link;}).join('\n'):x.note;h+='<div class="adx-c ksc"><div class="adx-b"><div class="adx-t"><b>'+esc(x.title||'Adsız')+'</b><span class="adx-k">'+esc(x.folder)+'</span></div>'+
     '<small class="note" style="margin:0">'+esc(new Date(x.created_at).toLocaleDateString('tr-TR',{day:'numeric',month:'long',year:'numeric'}))+(x.file_name?' · '+esc(x.file_name)+(x.size?' ('+ksSize(x.size)+')':''):'')+'</small>'+
@@ -2081,7 +2087,7 @@ function ksView(){if(KS.rows===null&&!KS.busy)ksLoad();
 document.addEventListener('input',function(e){var t=e.target;if(t&&t.dataset&&t.dataset.ksv)KS.fv[t.dataset.ksv]=t.value;});
 document.addEventListener('change',function(e){var t=e.target;if(t&&t.dataset&&t.dataset.ksv)KS.fv[t.dataset.ksv]=t.value;});
 document.addEventListener('click',async function(e){var b=e.target.closest&&e.target.closest('[data-ks]');if(!b)return;var a=b.dataset.ks,id=b.dataset.id;
-  if(a==='form'){KS.form=!KS.form;ksRe();}
+  if(a==='form'){KS.form=!KS.form;if(KS.form&&KS.f!=='Hepsi')KS.fv.folder=KS.f;ksRe();}
   else if(a==='reload'){KS.rows=null;ksRe();}
   else if(a==='f'){KS.f=b.dataset.v;KS.del=null;ksRe();}
   else if(a==='spec'){A.tab='sartname';adRender();window.scrollTo(0,0);}
