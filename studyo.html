@@ -1585,6 +1585,12 @@ var TPLS=[
 ];
 TPLS.forEach(function(t){t.c0=t.c;}); /* asıl kategori: yönetim panelinde ad değişse de ürün süzmesi bozulmasın */
 
+/* Kurt Geziyor örnek serisi: aynı Antalya kurdu, ürüne uygun baskı dosyaları ve düzenlenebilir başlık */
+TPLS.push(
+  {c:'Kurt geziyor',n:'Akdeniz Yolcusu · Tişört',p:'giyim',product:'tee',yon:'dikey',box:[3508,4961],items:[{t:'img',u:'sablon/web/antalya-dikey.webp',hi:'https://raw.githubusercontent.com/fotoince-sudo/wolflano-tasarim-sitesi/baski/baski/antalya-dikey.png',aw:1131,ah:1600,w:3508,h:4961,dx:0,dy:0},TX('AKDENİZ YOLCUSU','Cinzel','ink',220,-1800)]},
+  {c:'Kurt geziyor',n:'Akdeniz Yolcusu · Kupa',p:'kupa',box:[2362,1063],items:[{t:'img',u:'sablon/web/kupa-antalya.webp?v=2',hi:'https://raw.githubusercontent.com/fotoince-sudo/wolflano-tasarim-sitesi/baski/baski/kupa-antalya.png?v=2',aw:1600,ah:720,w:2362,h:1063,dx:0,dy:0},TX('AKDENİZ YOLCUSU','Cinzel','ink',82,-300)]},
+  {c:'Kurt geziyor',n:'Akdeniz Yolcusu · Kanvas',p:['canvas'],box:[3508,4961],items:[{t:'img',u:'sablon/web/antalya-dikey.webp',hi:'https://raw.githubusercontent.com/fotoince-sudo/wolflano-tasarim-sitesi/baski/baski/antalya-dikey.png',aw:1131,ah:1600,w:3508,h:4961,dx:0,dy:0},TX('AKDENİZ YOLCUSU','Cinzel','ink',220,-1800)]}
+);
 
 /* ---------- Durum ve geçmiş ---------- */
 var state={product:'tee',cut:'erkek',tee:'#f6f6f4',sizes:{M:1},front:{area:'a4',land:false,objs:[]},logo:{area:'logo',land:false,objs:[]},logo2:{area:'logo2',land:false,objs:[]},back:{area:'a4',land:false,objs:[]}};
