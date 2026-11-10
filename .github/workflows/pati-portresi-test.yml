@@ -1,0 +1,87 @@
+name: Pati Portresi mobil doğrulama
+on:
+  push:
+    branches: [studio/pati-portresi]
+permissions:
+  contents: read
+jobs:
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install --no-save playwright@1.48.2 && npx playwright install --with-deps chromium
+      - name: Fotoğraf yuvası ve düzenlenebilir isim
+        run: |
+          curl --fail --silent --show-error --retry 2 -A 'Wolflano template test (wolflano.com.tr)' https://upload.wikimedia.org/wikipedia/commons/a/a3/Cat_face.jpg -o /tmp/wf-cat.jpg
+          curl --fail --silent --show-error --retry 2 -A 'Wolflano template test (wolflano.com.tr)' https://upload.wikimedia.org/wikipedia/commons/c/c2/Golden-retriever-dog.jpg -o /tmp/wf-dog.jpg
+          node --input-type=module <<'JS'
+          import { chromium } from 'playwright';
+          import { createServer } from 'node:http';
+          import { mkdir, readFile, writeFile } from 'node:fs/promises';
+          import assert from 'node:assert/strict';
+          const studio = (await readFile('studyo.html','utf8')).replace('function petCrop(', 'window.patiTest={chooseProduct,openTab,renderTpl,renderTplPreviews,renderPrintFile};function petCrop(');
+          const server = createServer((req,res) => {
+            if(new URL(req.url,'http://127.0.0.1').pathname !== '/studyo.html') return res.writeHead(404).end();
+            res.writeHead(200,{'Content-Type':'text/html; charset=utf-8'}).end(studio);
+          });
+          await new Promise(resolve=>server.listen(8877,'127.0.0.1',resolve));
+          await mkdir('pati-preview', {recursive:true});
+          const browser=await chromium.launch();
+          try {
+            const context=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true});
+            await context.route('**/*supabase.co/**',r=>r.fulfill({status:200,contentType:'application/json',body:'[]'}));
+            const page=await context.newPage();
+            page.on('pageerror',e=>console.log('Browser error:',e.message));
+            await page.addInitScript(()=>{
+              localStorage.clear();
+              localStorage.setItem('wf_studio_guide','1');
+              window.claude={use:async()=>({save:async({data})=>{window.printProbe=Array.from(new Uint8Array(await data.slice(0,64).arrayBuffer()));}})};
+            });
+            for(const [title,file,name,newName] of [['Ege Esintisi','/tmp/wf-cat.jpg','Misket','Boncuk'],['Adaçayı Bahçesi','/tmp/wf-dog.jpg','Tarçın','Badem'],['Kum ve Işık','/tmp/wf-cat.jpg','Zeytin','Pamuk']]){
+              await page.goto('http://127.0.0.1:8877/studyo.html?urun=mug&kesim=sub');
+              await page.locator('#optBtn').waitFor();
+              await page.evaluate(()=>{
+                patiTest.chooseProduct('mug','sub');
+                patiTest.openTab('tpl');
+                patiTest.renderTpl();
+                patiTest.renderTplPreviews();
+              });
+              console.log('Categories:',await page.locator('#tplCats').innerText());
+              const card=page.locator('#tplGrid .tpl > span').filter({hasText:title});
+              if(!await card.isVisible())await page.locator('#tabs [data-tab="tpl"]').click();
+              await card.click();
+              await page.locator('#swapIn').setInputFiles(file);
+              await page.waitForFunction(()=>document.querySelectorAll('.obj').length>=5);
+              await page.waitForFunction(()=>/Portre (otomatik yerleştirildi|ortalandı)/.test(document.querySelector('#toast')?.textContent||''),null,{timeout:90000});
+              const status=await page.locator('#toast').textContent();
+              assert.match(status,/Portre (otomatik yerleştirildi|ortalandı)/);
+              const textNodes=page.locator('#objLayer .obj.text');
+              assert.equal(await textNodes.count(),3);
+              assert.equal(await textNodes.locator('xpath=self::*[contains(concat(" ", normalize-space(@class), " "), " thru ")]').count(),2);
+              const nameNode=textNodes.filter({hasText:name});
+              await nameNode.click();
+              await page.locator('[data-tab="text"]').click();
+              const field=page.locator('#textIn');
+              assert.equal(await field.isEnabled(),true);
+              await field.fill(newName);
+              assert.equal(await textNodes.filter({hasText:newName}).count(),1);
+              const png=Buffer.from(await page.evaluate(async()=>Array.from(new Uint8Array(await (await patiTest.renderPrintFile('front')).blob.arrayBuffer()))));
+              assert.equal(png.toString('hex',0,8),'89504e470d0a1a0a');
+              assert.equal(png.readUInt32BE(16),2362);
+              assert.equal(png.readUInt32BE(20),1063);
+              assert.equal(png.toString('ascii',37,41),'pHYs');
+              assert.equal(png.readUInt32BE(41),11811);
+              await writeFile(`pati-preview/${title}.png`, png);
+              console.log(title + ': ' + status + ' / 2362 x 1063 PNG @ 300 DPI');
+            }
+          } finally { await browser.close(); await new Promise(resolve=>server.close(resolve)); }
+          JS
+      - uses: actions/upload-artifact@v4
+        with:
+          name: pati-portresi-baski-onizlemeleri
+          path: pati-preview/*.png
+          if-no-files-found: error
