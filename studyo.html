@@ -791,7 +791,8 @@ img{-webkit-touch-callout:none;-webkit-user-drag:none}
     </div>
     <div class="panel" data-p="tpl" hidden>
       <label class="search" for="tplQ"><svg class="i" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6"/><path d="M20 20l-4.2-4.2"/></svg><input id="tplQ" type="search" placeholder="Şablon ara: kurt, anne, spor, İzmir…" autocomplete="off" enterkeyhint="search"><button type="button" id="tplQx" aria-label="Aramayı temizle" hidden>×</button></label>
-      <div class="chips scroll" id="tplCats"></div>
+      <div id="tplFilters" class="chips scroll" aria-label="Baskı yönü ve ölçüsü filtreleri"></div>
+      <div class="chips scroll" id="tplCats" aria-label="Şablon konu kategorileri"></div>
       <p class="note" id="tplEmpty" hidden>Bu aramayla eşleşen şablon yok. Başka bir kelime dene.</p>
       <div class="tpl-grid" id="tplGrid"></div>
     </div>
@@ -4130,9 +4131,12 @@ function renderTpl(){
   if(view.tplCat!=='Tümü'&&!has[view.tplCat])view.tplCat='Tümü';
   if(view.tplDir!=='Tümü'&&!dirs[view.tplDir])view.tplDir='Tümü';
   if(view.tplArea!=='Tümü'&&!measures[view.tplArea])view.tplArea='Tümü';
+  var fc='<span class="tpl-filter-label">Baskı yönü</span>';
+  ['Tümü','dikey','yatay','serbest'].forEach(function(v){if(v!=='Tümü'&&!dirs[v])return;fc+='<button data-td="'+v+'"'+(view.tplDir===v?' class="on"':'')+'>'+ (v==='Tümü'?'Tümü':v==='serbest'?'Serbest':v==='dikey'?'Dikey':'Yatay')+'</button>';});
+  fc+='<span class="tpl-filter-label">Baskı ölçüsü</span>';
+  ['Tümü'].concat(Object.keys(measures)).forEach(function(v){fc+='<button data-ta="'+v+'"'+(view.tplArea===v?' class="on"':'')+'>'+(v==='Tümü'?'Tüm ölçüler':v)+'</button>';});
+  $('#tplFilters').innerHTML=fc;
   TPL_CATS.forEach(function(c){if(c!=='Tümü'&&!has[c])return;cc+='<button data-tc="'+c+'"'+(c===view.tplCat&&!q?' class="on"':'')+'>'+c+'</button>';});
-  cc+='<div class="tpl-filter-label">Baskı yönü</div>';['Tümü','dikey','yatay','serbest'].forEach(function(v){if(v!=='Tümü'&&!dirs[v])return;cc+='<button data-td="'+v+'"'+(view.tplDir===v?' class="on"':'')+'>'+ (v==='Tümü'?'Tüm yönler':v==='serbest'?'Serbest':v==='dikey'?'Dikey':'Yatay')+'</button>';});
-  cc+='<div class="tpl-filter-label">Baskı ölçüsü</div>';['Tümü'].concat(Object.keys(measures)).forEach(function(v){cc+='<button data-ta="'+v+'"'+(view.tplArea===v?' class="on"':'')+'>'+(v==='Tümü'?'Tüm ölçüler':v)+'</button>';});
   $('#tplCats').innerHTML=cc;
   TPLS.forEach(function(t,i){if(!tplFits(t,g))return;if(view.tplDir&&view.tplDir!=='Tümü'&&tplOrientation(t)!==view.tplDir)return;if(view.tplArea&&view.tplArea!=='Tümü'&&tplAreaName(t)!==view.tplArea)return;if(q){if(!tplMatch(t,q))return;}else if(view.tplCat!=='Tümü'&&t.c!==view.tplCat)return;n++;h+='<button class="tpl" data-tpl="'+i+'"><div class="prev"><div class="in"></div></div><span>'+t.n+'</span></button>';});
   $('#tplGrid').innerHTML=h;tplLastGroup=g;var em=$('#tplEmpty');em.textContent=q?'Bu aramayla eşleşen şablon yok. Başka bir kelime dene.':'Bu ürünün ('+TPL_GROUP_NAME[g]+') baskı ölçüsüne özel şablonlar hazırlanıyor, çok yakında burada.';em.hidden=n>0;$('#tplQx').hidden=!q;
@@ -4352,6 +4356,7 @@ $('#swapIn').addEventListener('change',function(e){var file=e.target.files[0];e.
   im.onerror=function(){toast('Bu dosya açılamadı. PNG veya JPG dene.');};im.src=url;});
 $('#fileIn').addEventListener('change',function(e){var f=e.target.files[0];if(f)loadFile(f);e.target.value='';});
 $('#upGrid').addEventListener('click',function(e){var b=e.target.closest('[data-asset]');if(b)addImageObj(b.dataset.asset);});
+$('#tplFilters').addEventListener('click',function(e){var b=e.target.closest('[data-td],[data-ta]');if(!b)return;if(b.dataset.td)view.tplDir=b.dataset.td;if(b.dataset.ta)view.tplArea=b.dataset.ta;renderTpl();renderTplPreviews();});
 $('#tplCats').addEventListener('click',function(e){var b=e.target.closest('[data-tc],[data-td],[data-ta]');if(!b)return;if(b.dataset.tc)view.tplCat=b.dataset.tc;if(b.dataset.td)view.tplDir=b.dataset.td;if(b.dataset.ta)view.tplArea=b.dataset.ta;$('#tplQ').value='';renderTpl();renderTplPreviews();$('#tplGrid').scrollLeft=0;});
 $('#tplQ').addEventListener('input',function(){renderTpl();renderTplPreviews();});
 $('#tplQ').addEventListener('keydown',function(e){if(e.key==='Enter')this.blur();});
