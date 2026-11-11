@@ -43,7 +43,7 @@ const c=document.createElement('canvas');c.width=1200;c.height=600;const ctx=c.g
 T.deleteSel();if(!T.cur().objs.find(o=>o.oilSlot)?.phEmpty)throw Error('Delete must reset the photo slot');
 T.view.tplCat='Yağlı boya';T.renderTpl();T.renderTplPreviews();if(document.querySelectorAll('#tplGrid .tpl').length!==20)throw Error('Mobile gallery incomplete');
 T.chooseProduct('tee','erkek',true);if(T.cur().objs.some(o=>o.oilBg||o.oilSlot))throw Error('Mug art leaked to clothing');
-for(const p of ['tee','sweat','hood','zip','polo','hat','canvas']){T.chooseProduct(p,p==='canvas'?'c3550':p==='hat'?'regular':'erkek',true);T.view.tplCat='Zemin';T.view.tplDir='Tümü';T.renderTpl();if(!document.querySelector('[data-tc=Zemin]'))throw Error(p+': Zemin category missing');if(document.querySelectorAll('#tplGrid [data-tpl]').length)throw Error(p+': mug backgrounds leaked');}
+for(const p of ['tee','sweat','hood','zip','polo','hat','canvas']){T.chooseProduct(p,p==='canvas'?'c3550':p==='hat'?'std':'erkek',true);T.view.tplCat='Zemin';T.view.tplDir='Tümü';T.renderTpl();if(!document.querySelector('[data-tc=Zemin]'))throw Error(p+': Zemin category missing');if(document.querySelectorAll('#tplGrid [data-tpl]').length)throw Error(p+': mug backgrounds leaked');}
 });
 assert.deepEqual(errors,[]);console.log('PASS: 20 oil artworks, 5 backgrounds, upload, 20 automatic placements, fixed geometry, photo retention, export, mobile gallery and product isolation');
 }finally{await browser.close();await new Promise(resolve=>server.close(resolve));}
