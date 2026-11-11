@@ -679,6 +679,7 @@ img{-webkit-touch-callout:none;-webkit-user-drag:none}
   <div class="ctxwrap" id="ctx" hidden>
     <div class="pop" id="colorPop" hidden></div>
     <div class="ctxbar" id="ctxBar">
+      <button data-c="zem" id="zemBtn" hidden><svg class="i" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M3 15l5-5 4 4 3-3 6 6"/></svg><span>Zemin ekle</span></button>
       <button data-c="fx" data-t="image" class="aibtn" id="fxBtn"><svg class="i" viewBox="0 0 24 24"><path d="M12 3l1.8 4.2L18 9l-4.2 1.8L12 15l-1.8-4.2L6 9l4.2-1.8z"/><path d="M19 15l.8 1.7 1.7.8-1.7.8-.8 1.7-.8-1.7-1.7-.8 1.7-.8z"/></svg>Wolf çizsin · Tarz</button>
       <button data-c="color" data-t="text clip"><i class="dot" id="ctxDot"></i>Renk</button>
       <button data-c="zout" data-t="text clip image" class="zbtn" aria-label="Küçült (%5)">−</button>
@@ -707,7 +708,6 @@ img{-webkit-touch-callout:none;-webkit-user-drag:none}
       <span class="pill gsel" data-g="1">Tüm tasarım seçili</span>
       <button data-c="all" data-i="1"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" stroke-dasharray="3 2.4"/><rect x="8" y="8" width="8" height="8" rx="1"/></svg>Tümünü seç</button>
       <span class="pill gsel" data-i="1">ya da bir parçaya dokun</span>
-      <button data-c="zem" data-i="1" id="zemBtn" hidden><svg class="i" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M3 15l5-5 4 4 3-3 6 6"/></svg>Zemini değiştir</button>
       <button data-c="gdone" data-g="1"><svg class="i" viewBox="0 0 24 24"><path d="M5 12l5 5L20 7"/></svg>Bitti</button>
     </div>
   </div>
@@ -2385,7 +2385,7 @@ function qualityOf(o){
   if(ppi>=75)return null;
   return {ppi:ppi,cls:'low',txt:'Fotoğraf küçük'};
 }
-function syncCtx(){syncCtx0();var zb=$('#zemBtn'),f=tplFrame();if(zb){if(!f)zb.hidden=true;else if(f.oilBg){zb.hidden=false;ctx.hidden=false;}}try{zemSync();}catch(_){}var sb=$('#stageBar');if(sb){var was=sb.hidden;sb.hidden=ctx.hidden||!$$('#stageBar button').some(function(b){return !b.hidden;});if(was!==sb.hidden&&!(view.g||view.drag))requestAnimationFrame(layout);}}
+function syncCtx(){syncCtx0();var zb=$('#zemBtn');if(zb){var layers=cur().objs;zb.hidden=!layers.length;if(!zb.hidden){ctx.hidden=false;zb.querySelector('span').textContent=tplFrame()||layers.some(function(o){return o.zem;})?'Zemini değiştir':'Zemin ekle';}}try{zemSync();}catch(_){}var sb=$('#stageBar');if(sb){var was=sb.hidden;sb.hidden=ctx.hidden||!$$('#stageBar button').some(function(b){return !b.hidden;});if(was!==sb.hidden&&!(view.g||view.drag))requestAnimationFrame(layout);}}
 /* Alt panel, seçim çubuğu ya da tarayıcı çubuğu açılıp kapanınca tasarım alanı yeniden sığdırılır (görsel kaybolmasın) */
 (function(){if(!window.ResizeObserver)return;var t=0,lw=0,lh=0;new ResizeObserver(function(en){var r=en[0].contentRect;if(Math.abs(r.width-lw)<1&&Math.abs(r.height-lh)<1)return;lw=r.width;lh=r.height;cancelAnimationFrame(t);t=requestAnimationFrame(function(){try{layout();}catch(_){}});}).observe(wrap);})();
 function syncCtx0(){
