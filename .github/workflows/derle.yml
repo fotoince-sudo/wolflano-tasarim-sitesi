@@ -30,7 +30,8 @@ jobs:
         run: |
           npm init -y >/dev/null
           npm i --no-audit --no-fund html-minifier-terser@7 playwright@1.48.2
-          npx playwright install --with-deps chromium
+          npx playwright install chromium
+          node -e 'require("playwright").chromium.launch().then(browser => browser.close()).catch(error => { console.error(error); process.exitCode = 1; })' || npx playwright install-deps chromium
       - name: Küçült
         run: node .github/derle.mjs
       - name: Tarayıcıda dene
