@@ -2092,7 +2092,7 @@ function updateEl(el,o){
   else if(o.type==='image'&&slotLive(o)){slotRender(el,o);}
   else if(o.type==='image'&&assets[o.assetId]){if(el.dataset.slot){delete el.dataset.slot;el.dataset.asset='';}if(el.dataset.asset!==o.assetId){el.dataset.asset=o.assetId;el.innerHTML='';var im=new Image();im.draggable=false;im.alt='';im.src=assets[o.assetId].url;el.appendChild(im);}
     /* Kolaj fotoğrafı: beyaz, köşeleri hafif yuvarlak çerçeve ve yumuşak gölge (baskıda da aynı çizilir) */
-    var fi=el.firstElementChild;if(fi){fi.style.boxSizing='border-box';fi.style.border=o.bw?o.bw+'px solid '+(o.bc||'#161616'):'';fi.style.boxShadow=o.bw?'0 '+(o.bw*0.9)+'px '+(o.bw*2.6)+'px rgba(40,30,20,.28)':'';fi.style.borderRadius=o.br?o.br+'px':'';el.style.borderRadius=o.br?o.br+'px':'';}}
+    var fi=el.firstElementChild;if(fi){fi.style.objectFit=o.fitPrintArea?'fill':'';fi.style.boxSizing='border-box';fi.style.border=o.bw?o.bw+'px solid '+(o.bc||'#161616'):'';fi.style.boxShadow=o.bw?'0 '+(o.bw*0.9)+'px '+(o.bw*2.6)+'px rgba(40,30,20,.28)':'';fi.style.borderRadius=o.br?o.br+'px':'';el.style.borderRadius=o.br?o.br+'px':'';}}
   place(el,o);
 }
 /* Fotoğraf yeri (şablon çerçevesi): çerçeve sabit durur, fotoğraf çerçevenin altında kaydırılır ve büyütülür.
@@ -2459,7 +2459,7 @@ var ZEMS=[['yilbasi','Yılbaşı'],['sevgi','Kalpler'],['anne','Çiçekler'],['n
 function zemUrl(k,th,wide){return 'assets/zemin/'+k+(wide?'-kupa':th?'-k':'')+'.jpg';}
 /* Geniş baskı alanı (kupa çevresi gibi) için zeminin geniş sürümü kullanılır; dikey zemin kırpılmaz */
 function zemWide(w,h){return w/h>1.5;}
-function tplFrame(){var L=cur().objs;if(!L.some(function(o){return o.slot;}))return null;return L.filter(function(o){return o.type==='image'&&o.lock&&o.thru;})[0]||null;}
+function tplFrame(){var L=cur().objs;return L.find(function(o){return o.oilBg;})||(L.some(function(o){return o.slot;})?L.find(function(o){return o.type==='image'&&o.lock&&o.thru;}):null)||null;}
 /* Mankenler (yönetici): sunucudaki manken fotoğrafları; şablon önizlemesi ve ürün görseli doldurmak için */
 var MK=null;
 async function renderMk(){var g=$('#mkGrid');if(!g||MK)return;MK=[];
@@ -2514,9 +2514,10 @@ function replaceZemLayer(asset,frame){
   var A=areaBox(view.side,cur().area),L=cur().objs,previous=frame||L.find(function(o){return o.zem;});
   var o=previous||newBase('image'),scale=Math.max(A.w/asset.w,A.h/asset.h),id='a'+(++assetN);
   assets[id]=asset;
-  o.assetId=id;o.zem=1;o.w=asset.w*scale;o.h=asset.h*scale;o.x=A.cx;o.y=A.cy;o.rot=0;
+  o.fitPrintArea=cur().area==='mugw';
+  o.assetId=id;o.zem=1;o.w=o.fitPrintArea?A.w:asset.w*scale;o.h=o.fitPrintArea?A.h:asset.h*scale;o.x=A.cx;o.y=A.cy;o.rot=0;
   delete o.zb;delete o.zorig;
-  cur().objs=[o].concat(L.filter(function(item){return !item.zem&&item!==o;}));
+  cur().objs=[o].concat(L.filter(function(item){return item!==previous&&(o.fitPrintArea||!item.zem);}));
   renderObjects();
   if(previous&&view.sel===o.id)select(o.id);
   pushHist();if(innerWidth<700)closeTab();toast('Zemin değişti. Tasarımın yerinde.');
@@ -3663,7 +3664,7 @@ function ensureSizes(){var l=sizeList(),tot=l.reduce(function(a,s){return a+(sta
 /* Ürün sayfasından seçim: ürün ve kesim uygulanır, sayfa kapanır, ürün yakınlaştırılmadan bütün olarak gösterilir. */
 
 /* Shared one-photo art layouts. Product-scoped backgrounds never cross products. */
-var OIL_ART=[{"id":"kizil-guller","name":"Kızıl güller","background":true,"rect":[0.32,0.24,0.34,0.5],"w":1774,"h":887},{"id":"mavi-cicekler","name":"Mavi çiçekler","background":true,"rect":[0.34,0.22,0.32,0.56],"w":1774,"h":887},{"id":"aycicekleri","name":"Ayçiçekleri","background":true,"rect":[0.34,0.2,0.32,0.5],"w":1774,"h":887},{"id":"gunbatimi-ask","name":"Gün batımında aşk","background":false,"rect":[0.42,0.25,0.3,0.52],"w":1774,"h":887},{"id":"romantik-kalpler","name":"Romantik kalpler","background":true,"rect":[0.29,0.23,0.3,0.52],"w":1774,"h":887},{"id":"ramazan","name":"Ramazan Bayramı","background":false,"rect":[0.34,0.2,0.32,0.6],"w":1774,"h":887},{"id":"kurban","name":"Kurban Bayramı","background":false,"rect":[0.34,0.2,0.32,0.6],"w":1774,"h":887},{"id":"23-nisan","name":"23 Nisan","background":false,"rect":[0.34,0.2,0.32,0.6],"w":1774,"h":887},{"id":"19-mayis","name":"19 Mayıs","background":false,"rect":[0.35,0.2,0.3,0.6],"w":1774,"h":887},{"id":"30-agustos","name":"30 Ağustos","background":false,"rect":[0.34,0.2,0.32,0.6],"w":1774,"h":887},{"id":"29-ekim","name":"29 Ekim","background":false,"rect":[0.34,0.24,0.32,0.5],"w":1774,"h":887},{"id":"kediler","name":"Kediler","background":false,"rect":[0.35,0.18,0.3,0.64],"w":1774,"h":887},{"id":"kopekler","name":"Köpekler","background":false,"rect":[0.35,0.18,0.3,0.64],"w":1774,"h":887},{"id":"atlar","name":"Atlar","background":false,"rect":[0.35,0.18,0.3,0.64],"w":1774,"h":887},{"id":"kurtlar","name":"Kurtlar","background":false,"rect":[0.35,0.18,0.3,0.64],"w":1774,"h":887},{"id":"kuslar","name":"Kuşlar","background":false,"rect":[0.35,0.18,0.3,0.64],"w":1774,"h":887},{"id":"kelebekler","name":"Kelebekler ve lavanta","background":true,"rect":[0.35,0.18,0.3,0.64],"w":1774,"h":887},{"id":"tavsanlar","name":"Tavşanlar","background":false,"rect":[0.35,0.18,0.3,0.64],"w":1774,"h":887},{"id":"yunuslar","name":"Yunuslar","background":false,"rect":[0.35,0.18,0.3,0.64],"w":1774,"h":887},{"id":"aslanlar","name":"Aslanlar","background":false,"rect":[0.35,0.18,0.3,0.64],"w":1774,"h":887}],oilApplying=false,oilRequest=0;
+var OIL_ART=[{"id":"kizil-guller","name":"Kızıl güller","background":true,"rect":[0.32,0.24,0.34,0.5],"w":1774,"h":887},{"id":"mavi-cicekler","name":"Mavi çiçekler","background":true,"rect":[0.34,0.22,0.32,0.56],"w":1774,"h":887},{"id":"aycicekleri","name":"Ayçiçekleri","background":true,"rect":[0.34,0.2,0.32,0.5],"w":1774,"h":887},{"id":"gunbatimi-ask","name":"Gün batımında aşk","background":false,"rect":[0.42,0.25,0.3,0.52],"w":1774,"h":887},{"id":"romantik-kalpler","name":"Romantik kalpler","background":true,"rect":[0.29,0.23,0.3,0.52],"w":1774,"h":887},{"id":"ramazan","name":"Ramazan Bayramı","background":false,"rect":[0.34,0.2,0.32,0.6],"w":1774,"h":887},{"id":"kurban","name":"Kurban Bayramı","background":false,"rect":[0.34,0.2,0.32,0.6],"w":1774,"h":887},{"id":"23-nisan","name":"23 Nisan","background":false,"rect":[0.34,0.2,0.32,0.6],"w":1774,"h":887},{"id":"19-mayis","name":"19 Mayıs","background":false,"rect":[0.35,0.2,0.3,0.6],"w":1774,"h":887},{"id":"30-agustos","name":"30 Ağustos","background":false,"rect":[0.34,0.2,0.32,0.6],"w":1774,"h":887},{"id":"29-ekim","name":"29 Ekim","background":false,"rect":[0.34,0.24,0.32,0.5],"w":1774,"h":887},{"id":"kediler","name":"Kediler","background":false,"rect":[0.35,0.18,0.3,0.64],"w":1774,"h":887},{"id":"kopekler","name":"Köpekler","background":false,"rect":[0.35,0.18,0.3,0.64],"w":1774,"h":887},{"id":"atlar","name":"Atlar","background":false,"rect":[0.35,0.18,0.3,0.64],"w":1774,"h":887},{"id":"kurtlar","name":"Kurtlar","background":false,"rect":[0.35,0.18,0.3,0.64],"w":1774,"h":887},{"id":"kuslar","name":"Kuşlar","background":false,"rect":[0.35,0.18,0.3,0.64],"w":1774,"h":887},{"id":"kelebekler","name":"Kelebekler ve lavanta","background":true,"rect":[0.35,0.18,0.3,0.64],"w":1774,"h":887},{"id":"tavsanlar","name":"Tavşanlar","background":false,"rect":[0.35,0.18,0.3,0.64],"w":1774,"h":887},{"id":"yunuslar","name":"Yunuslar","background":false,"rect":[0.35,0.18,0.3,0.64],"w":1774,"h":887},{"id":"aslanlar","name":"Aslanlar","background":false,"rect":[0.35,0.18,0.3,0.64],"w":1774,"h":887}];
 OIL_ART.forEach(function(z){
   var W=20,H=10,r=z.rect,u='assets/yagliboya/'+z.id+'.webp';
   var bg={t:'img',u:u,aw:z.w,ah:z.h,w:W,h:H,dx:0,dy:0,fillArea:true,oilBg:1,zem:1};
@@ -3672,24 +3673,30 @@ OIL_ART.forEach(function(z){
 });
 async function applyOilTemplate(t,silent){
   if(!tplFits(t))return;
-  var request=++oilRequest,prior=cur().objs.find(function(o){return o.oilSlot&&!o.phEmpty&&o.base;});
+  selectArea(t.area,false);
+  var side=cur(),A=areaBox(view.side,side.area),prior=side.objs.find(function(o){return o.oilSlot&&!o.phEmpty;});
   var restoreSelection=prior&&view.sel===prior.id;
-  var saved=prior?{base:prior.base}:null;
-  cur().objs=cur().objs.filter(function(o){return !o.oilBg&&!o.oilSlot;});
-  oilApplying=true;
-  try{applyTemplate(t,true);}finally{oilApplying=false;}
-  var slot=cur().objs.find(function(o){return o.oilSlot;});
-  if(saved&&slot&&assets[saved.base]){
-    var a=assets[saved.base],asp=a.w/a.h,ratio=slot.w/slot.h,cr={x:0,y:0,w:1,h:1};
-    if(asp>ratio){cr.w=ratio/asp;cr.x=(1-cr.w)/2;}else{cr.h=asp/ratio;cr.y=(1-cr.h)/2;}
-    var image=await fxProcess(saved.base,'none',slot.edge||'none',.5,cr,0);
-    if(request!==oilRequest||cur().objs.indexOf(slot)<0)return;
-    slot.base=saved.base;slot.crop=cr;slot.phs='none';slot.phe=slot.edge||'none';slot.assetId=image;delete slot.phEmpty;
-    renderObjects();pushHist();
+  var layers=tplObjects(t,A,1,autoInk()),slot=layers[1];
+  if(prior){
+    slot.assetId=prior.assetId;
+    slot.base=prior.base;
+    delete slot.phEmpty;
   }
-  view.grp=false;
-  if(restoreSelection&&slot){view.noPick=true;try{select(slot.id);}finally{view.noPick=false;}}
+  side.objs=layers.concat(side.objs.filter(function(o){return !o.zem&&!o.oilBg&&!o.oilSlot;}));
+  if(!silent&&view.tab==='tpl'&&innerWidth<700)closeTab();
+  view.grp=false;view.sel=null;renderAll();pushHist();
+  if(restoreSelection){view.noPick=true;try{select(slot.id);}finally{view.noPick=false;}}
   if(!silent)toast('Tasarım yerleşti. Fotoğraf ekleyebilir veya yalnız yazı kullanabilirsin.');
+  var base=prior&&prior.base,a=assets[base];
+  if(!a)return;
+  var asp=a.w/a.h,ratio=slot.w/slot.h,cr={x:0,y:0,w:1,h:1},initialAsset=slot.assetId;
+  if(asp>ratio){cr.w=ratio/asp;cr.x=(1-cr.w)/2;}else{cr.h=asp/ratio;cr.y=(1-cr.h)/2;}
+  try{
+    var image=await fxProcess(base,'none',slot.edge||'none',.5,cr,0);
+    if(cur()!==side||side.objs.indexOf(slot)<0||slot.assetId!==initialAsset)return;
+    slot.base=base;slot.crop=cr;slot.phs='none';slot.phe=slot.edge||'none';slot.assetId=image;
+    renderObjects();pushHist();
+  }catch(_){/* The existing photo remains visible if its new crop cannot be generated. */}
 }
 
 function chooseProduct(p,c,skipTransferPrompt){
@@ -3792,6 +3799,11 @@ function tplObjects(t,A,sc,ink){
     }
     else if(it.t==='ph'){o.type='image';o.slot=1;o.phEmpty=1;o.edge=it.e;o.phe='none';o.w=it.w*sc;o.h=it.h*sc;o.assetId=phAsset(it.e,it.w/it.h);}
     else{o.type='clip';o.key=it.k;o.color=col;o.w=it.w*sc;o.h=it.w*sc*clipAsp(it.k);}
+    if(t.oil){
+      var box=tplBox(t),sx=A.w===undefined?sc:A.w/box[0],sy=A.h===undefined?sc:A.h/box[1];
+      o.x=A.cx+it.dx*sx;o.y=A.cy+it.dy*sy;o.w=it.w*sx;o.h=it.h*sy;
+      if(it.oilBg)o.fitPrintArea=true;
+    }
     if(it.zem)o.zem=1;
     if(it.oilBg){o.lock=true;o.thru=1;o.oilBg=1;}
     if(it.oilSlot)o.oilSlot=1;
@@ -3811,7 +3823,7 @@ function renderWolf(){
 }
 function applyTemplate(t,silent){
   if(t.oilZem)return zemPick('oil:'+t.oilZem);
-  if(t.oil&&!oilApplying)return applyOilTemplate(t,silent);
+  if(t.oil)return applyOilTemplate(t,silent);
   if(t.area){
     if(!tplFits(t))return;
     selectArea(t.area,t.yon==='yatay');
