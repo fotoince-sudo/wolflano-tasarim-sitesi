@@ -3823,7 +3823,8 @@ function tplAsset(it){var id='tpl-'+it.u;if(!assets[id])assets[id]={url:it.u,w:i
 var MUSIC_INKS=[['white','Beyaz'],['ivory','Fildişi'],['charcoal','Antrasit'],['red','Kırmızı'],['pink','Pembe']];
 function musicArtworkAsset(instrument,color){
   var id='music-'+instrument+'-'+color;
-  if(!assets[id])assets[id]={url:'assets/music-templates/'+instrument+'-'+color+'.webp',w:1536,h:1024,tpl:true};
+  var large=instrument==='ud-buyuk';
+  if(!assets[id])assets[id]={url:'assets/music-templates/'+instrument+'-'+color+'.webp',w:large?1254:1536,h:large?1254:1024,tpl:true};
   return id;
 }
 function musicArtwork(){
@@ -3848,15 +3849,16 @@ $('#musicInk').addEventListener('change',function(e){changeMusicInk(e.target.val
 [
   {id:'baglama',name:'Bağlamanın Sesi',frame:[540,337,361,388,27]},
   {id:'ud',name:'Udun Sesi',frame:[475,297,431,501,39]},
+  {id:'ud-buyuk',name:'Udun Sesi · Büyük',box:[1254,1254],frame:[255,389,532,574,53]},
   {id:'gitar',name:'Gitarın Sesi',frame:[474,340,440,424,40]}
 ].forEach(function(instrument){
-  var f=instrument.frame;
+  var f=instrument.frame,box=instrument.box||[1536,1024];
   TPLS.push({
     n:instrument.name,c:TPL_CAT_MUSIC,p:'giyim',product:'tee',area:'a4',yon:'dikey',
-    box:[1536,1024],
+    box:box,
     items:[
-      {t:'ph',e:'none',w:f[2],h:f[3],dx:f[0]+f[2]/2-768,dy:f[1]+f[3]/2-512,musicRadius:f[4]},
-      {t:'img',w:1536,h:1024,dx:0,dy:0,musicInstrument:instrument.id}
+      {t:'ph',e:'none',w:f[2],h:f[3],dx:f[0]+f[2]/2-box[0]/2,dy:f[1]+f[3]/2-box[1]/2,musicRadius:f[4]},
+      {t:'img',w:box[0],h:box[1],dx:0,dy:0,musicInstrument:instrument.id}
     ]
   });
 });
