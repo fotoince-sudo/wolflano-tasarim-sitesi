@@ -2510,12 +2510,31 @@ async function zemSave(cat){var o=selObj(),a=o&&o.type==='image'&&assets[(o.base
   catch(_){toast('Zemin kaydedilemedi.');}}
 document.addEventListener('click',async function(e){var d=e.target.closest&&e.target.closest('[data-zdel]');if(d){e.stopPropagation();e.preventDefault();var W=window.WFA;if(!W)return;try{await W.rq('/rest/v1/admin_designs?id=eq.'+d.dataset.zdel,{method:'PATCH',body:{published:false},prefer:'return=minimal'});ZCUS=ZCUS.filter(function(z){return z.id!==d.dataset.zdel;});renderZem(true);toast('Zemin kaldırıldı');}catch(_){toast('Kaldırılamadı');}return;}
   var s2=e.target.closest&&e.target.closest('[data-zsave]');if(s2)zemSave(s2.dataset.zsave);},true);
+function replaceZemLayer(asset,frame){
+  var A=areaBox(view.side,cur().area),L=cur().objs,previous=frame||L.find(function(o){return o.zem;});
+  var o=previous||newBase('image'),scale=Math.max(A.w/asset.w,A.h/asset.h),id='a'+(++assetN);
+  assets[id]=asset;
+  o.assetId=id;o.zem=1;o.w=asset.w*scale;o.h=asset.h*scale;o.x=A.cx;o.y=A.cy;o.rot=0;
+  delete o.zb;delete o.zorig;
+  cur().objs=[o].concat(L.filter(function(item){return !item.zem&&item!==o;}));
+  renderObjects();
+  if(previous&&view.sel===o.id)select(o.id);
+  pushHist();if(innerWidth<700)closeTab();toast('Zemin değişti. Tasarımın yerinde.');
+}
 async function zemPick(k){
-  if(k.indexOf('oil:')===0){var ot=TPLS.find(function(t){return t.oil===k.slice(4);});if(ot)return applyOilTemplate(ot,true);return;}var f=tplFrame(),cz=k.indexOf('z:')===0?ZCUS.filter(function(z){return 'z:'+z.id===k;})[0]:null;
-  if(!f){var A=areaBox(view.side,cur().area),wd=zemWide(A.w,A.h),id='a'+(++assetN);assets[id]=cz?{url:cz.data.url,w:cz.data.w,h:cz.data.h}:{url:zemUrl(k,0,wd),w:2362,h:wd?1063:3307};var o=newBase('image');o.assetId=id;o.zem=1;var asp=assets[id].w/assets[id].h;
-    if(A.w/A.h>asp){o.w=A.w;o.h=A.w/asp;}else{o.h=A.h;o.w=A.h*asp;}o.x=A.cx;o.y=A.cy;cur().objs.unshift(o);renderObjects();select(o.id);pushHist();if(innerWidth<700)closeTab();toast('Zemin eklendi. Büyütüp küçültebilir, istediğin yere taşıyabilirsin.');return;}
+  var oil=k.indexOf('oil:')===0;
+  var ot=oil?TPLS.find(function(t){return t.oil===k.slice(4)&&tplFits(t);}):null;
+  if(oil&&!ot)return;
+  var f=tplFrame(),cz=k.indexOf('z:')===0?ZCUS.find(function(z){return 'z:'+z.id===k;}):null;
+  var it=ot&&ot.items[0];
+  var custom=it?{url:it.u,w:it.aw,h:it.ah}:cz&&{url:cz.data.url,w:cz.data.w,h:cz.data.h};
+  if(!f||f.oilBg){
+    var A=areaBox(view.side,cur().area),wd=zemWide(A.w,A.h);
+    replaceZemLayer(custom||{url:zemUrl(k,0,wd),w:2362,h:wd?1063:3307},f);
+    return;
+  }
   bgToast('Zemin değiştiriliyor…');
-  try{var a=assets[f.assetId],W=a.w,H=a.h,bg=await loadImg(cz?cz.data.url:zemUrl(k,0,zemWide(W,H))),c=document.createElement('canvas');c.width=W;c.height=H;var x=c.getContext('2d');
+  try{var a=assets[f.assetId],W=a.w,H=a.h,bg=await loadImg(custom?custom.url:zemUrl(k,0,zemWide(W,H))),c=document.createElement('canvas');c.width=W;c.height=H;var x=c.getContext('2d');
     var ia=bg.naturalWidth/bg.naturalHeight,ca=W/H,sw,sh,sx,sy;if(ia>ca){sh=bg.naturalHeight;sw=sh*ca;sx=(bg.naturalWidth-sw)/2;sy=0;}else{sw=bg.naturalWidth;sh=sw/ca;sx=0;sy=(bg.naturalHeight-sh)/2;}
     x.drawImage(bg,sx,sy,sw,sh,0,0,W,H);
     var L=cur().objs,slots=L.filter(function(o){return o.slot;}),under=L.indexOf(f)<L.indexOf(slots[0]),kx=W/f.w,ky=H/f.h,l0=f.x-f.w/2,t0=f.y-f.h/2;
@@ -3649,7 +3668,7 @@ OIL_ART.forEach(function(z){
   var W=20,H=10,r=z.rect,u='assets/yagliboya/'+z.id+'.webp';
   var bg={t:'img',u:u,aw:z.w,ah:z.h,w:W,h:H,dx:0,dy:0,fillArea:true,oilBg:1,zem:1};
   TPLS.push({n:z.name+' · Tek fotoğraf',c:'Yağlı boya',p:'kupa',product:'mug',cut:'sub',area:'mugw',box:[W,H],yon:'yatay',oil:z.id,items:[bg,{t:'ph',e:'none',w:r[2]*W,h:r[3]*H,dx:(r[0]+r[2]/2-.5)*W,dy:(r[1]+r[3]/2-.5)*H,oilSlot:1}]});
-  if(z.background)TPLS.push({n:z.name+' · Zemin',c:'Zemin',p:'kupa',product:'mug',cut:'sub',area:'mugw',box:[W,H],yon:'yatay',items:[{t:'img',u:u,aw:z.w,ah:z.h,w:W,h:H,dx:0,dy:0,fillArea:true,zem:1}]});
+  if(z.background)TPLS.push({n:z.name+' · Zemin',c:'Zemin',p:'kupa',product:'mug',cut:'sub',area:'mugw',box:[W,H],yon:'yatay',oilZem:z.id,items:[{t:'img',u:u,aw:z.w,ah:z.h,w:W,h:H,dx:0,dy:0,fillArea:true,zem:1}]});
 });
 async function applyOilTemplate(t,silent){
   if(!tplFits(t))return;
@@ -3791,6 +3810,7 @@ function renderWolf(){
   $$('#wfGrid .wcard').forEach(function(b){var inn=$('.in',b);tplObjects(TPLS[+b.dataset.tpl],{cx:REF_W/2,cy:98},1,ink).forEach(function(o){inn.appendChild(makeEl(o));});});
 }
 function applyTemplate(t,silent){
+  if(t.oilZem)return zemPick('oil:'+t.oilZem);
   if(t.oil&&!oilApplying)return applyOilTemplate(t,silent);
   if(t.area){
     if(!tplFits(t))return;
