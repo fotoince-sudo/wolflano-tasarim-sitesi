@@ -2464,7 +2464,10 @@ var ZEMS=[['yilbasi','Yılbaşı'],['sevgi','Kalpler'],['anne','Çiçekler'],['n
 function zemUrl(k,th,wide){return 'assets/zemin/'+k+(wide?'-kupa':th?'-k':'')+'.jpg';}
 /* Geniş baskı alanı (kupa çevresi gibi) için zeminin geniş sürümü kullanılır; dikey zemin kırpılmaz */
 function zemWide(w,h){return w/h>1.5;}
-function tplFrame(){var L=cur().objs;return L.find(function(o){return o.oilBg||o.teePhotoBg;})||(L.some(function(o){return o.slot;})?L.find(function(o){return o.type==='image'&&o.lock&&o.thru;}):null)||null;}
+function legacyTplFrame(L){
+  return L.some(function(o){return o.slot;})?L.find(function(o){return o.type==='image'&&o.lock&&o.thru&&!o.oilBg&&!o.teePhotoBg;}):null;
+}
+function tplFrame(){var L=cur().objs;return L.find(function(o){return o.oilBg||o.teePhotoBg;})||legacyTplFrame(L)||null;}
 /* Mankenler (yönetici): sunucudaki manken fotoğrafları; şablon önizlemesi ve ürün görseli doldurmak için */
 var MK=null;
 async function renderMk(){var g=$('#mkGrid');if(!g||MK)return;MK=[];
@@ -2523,14 +2526,14 @@ function fitMugBackdrop(){
   var A=areaBox(view.side,cur().area);
   bg.fitPrintArea=true;bg.x=A.cx;bg.y=A.cy;bg.w=A.w;bg.h=A.h;bg.rot=0;
 }
-function replaceZemLayer(asset,frame){
+function replaceZemLayer(asset,frame,coveredFrame){
   var A=areaBox(view.side,cur().area),L=cur().objs,previous=frame||L.find(function(o){return o.zem;});
   var o=previous||newBase('image'),scale=Math.max(A.w/asset.w,A.h/asset.h),id='a'+(++assetN);
   assets[id]=asset;
-  o.fitPrintArea=cur().area==='mugw'||!!(o.teePhotoBg||asset.teePhotoBg);if(asset.teePhotoBg)o.teePhotoBg=true;
+  o.fitPrintArea=cur().area==='mugw'||!!(o.teePhotoBg||asset.teePhotoBg);if(asset.teePhotoBg){o.teePhotoBg=true;o.lock=true;o.thru=1;}
   o.assetId=id;o.zem=1;o.w=o.fitPrintArea?A.w:asset.w*scale;o.h=o.fitPrintArea?A.h:asset.h*scale;o.x=A.cx;o.y=A.cy;o.rot=0;
   delete o.zb;delete o.zorig;
-  cur().objs=[o].concat(L.filter(function(item){return item!==previous&&(o.fitPrintArea||!item.zem);}));
+  cur().objs=[o].concat(L.filter(function(item){return item!==previous&&item!==coveredFrame&&(o.fitPrintArea||!item.zem);}));
   renderObjects();
   if(previous&&view.sel===o.id)select(o.id);
   pushHist();if(innerWidth<700)closeTab();toast('Zemin değişti. Tasarımın yerinde.');
@@ -2539,10 +2542,9 @@ async function zemPick(k){
   if(k.indexOf('tee:')===0){
     var theme=TEE_PHOTO_ART.find(function(z){return z.id===k.slice(4);});
     if(theme&&state.product==='tee'&&cur().area==='a4'&&!isLand(view.side)){
-      var layer=cur().objs.find(function(o){return o.teePhotoBg||o.zem;});
-      var asset=teePhotoAsset(theme);
-      if(layer)layer.teePhotoBg=true;
-      replaceZemLayer(asset,layer);
+      var L=cur().objs,legacy=legacyTplFrame(L);
+      var layer=L.find(function(o){return o.teePhotoBg||o.zem;})||legacy;
+      replaceZemLayer(teePhotoAsset(theme),layer,legacy);
     }
     return;
   }
