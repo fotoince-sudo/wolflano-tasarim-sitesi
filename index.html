@@ -3385,12 +3385,14 @@ function cpBody(t){var h='',ul=false,para=[];function flush(){if(para.length){h+
 /* Hediye & Dekor sayfası: kupa ve canvas, Baskı Atölyesi'ndeki gibi kart olarak (fotoğraf, isim, fiyat, renk, "Tasarla"); varsa hazır baskılı ürünler de yanında */
 function hdGrid(){/* Baskısız kupa/canvas burada gösterilmez; onların yeri Baskı Atölyesi → Ürün seç */var bl=[];
   var hc=(D.cats||[]).filter(function(c){return /hediye|dekor/i.test(c.name||'');})[0],rd=hc?PRODUCTS.filter(function(p){return (p.cat||[]).indexOf(hc.id)>=0;}):[];
-  if(!bl.length&&!rd.length)return '';
+  var mugPilot=new URLSearchParams(location.search).get('prova')==='kupa';
+  if(!bl.length&&!rd.length&&!mugPilot)return '';
   /* İki ayrı kategori: Kupa ve Canvas Tablo; her kart kendi türüyle işaretlenir, sekme yalnız o türü gösterir */
   /* Kupa iki kategori: Süblimasyon kupa (çevresini saran baskı) ve Logo baskılı kupa (kulpun iki yanına 8 × 8 cm) */
   function pk(p){if(ptOf(p)==='canvas')return 'canvas';var c=p.dsg&&p.dsg.cut;return c==='std'?'logo':'sub';}
   function bk(b){var t=b.p||b.id;if(t==='canvas')return 'canvas';return b.cut==='sub'?'sub':'logo';}
   var it=grpP(rd).map(function(p){return [pk(p),card(p)];}).concat(bl.map(function(b){var k=bk(b),bb=k==='logo'&&/^kupa$/i.test(String(b.name||'').trim())?Object.assign({},b,{name:'Logo baskılı kupa'}):b;return [k,tsCard(bb)];}));
+  if(mugPilot)it.unshift(['sub','<article class="card"><div class="phw"><a class="ph" href="studyo.html?prova=kupa"><img src="assets/yagliboya/mavi-cicekler.webp" alt="Mavi Çiçekler kupa baskı tasarımı"></a></div><div style="padding:16px"><h3>Mavi Çiçekler · Fotoğraflı kupa</h3><p>Fotoğrafını yükle. Kupada nasıl durduğunu gör, beğenirsen sipariş ver.</p><a class="btn" href="studyo.html?prova=kupa">Fotoğrafını ekle</a></div></article>']);
   var n={sub:0,logo:0,canvas:0};it.forEach(function(x){n[x[0]]++;});var tab=n[HDTAB]?HDTAB:(n.sub?'sub':(n.logo?'logo':'canvas'));
   var tb=[['sub','Süblimasyon Kupa',IC_HD.kupa],['logo','Logo Baskılı Kupa',IC_HD.logo],['canvas','Canvas Tablo',IC_HD.canvas]].filter(function(x){return n[x[0]];});
   return '<div class="hdtabs" role="tablist">'+tb.map(function(x){return '<button type="button" role="tab" data-hdtab="'+x[0]+'" aria-selected="'+(x[0]===tab)+'"'+(x[0]===tab?' class="on"':'')+'>'+x[2]+'<span>'+x[1]+'</span></button>';}).join('')+'</div>'+
