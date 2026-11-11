@@ -844,7 +844,7 @@ img{-webkit-touch-callout:none;-webkit-user-drag:none}
     <h2>Siparişini tamamla</h2>
   </div>
   <div class="o-body">
-    <section><h3>Önizleme</h3><div class="thumbs" id="thumbs"></div><div id="quickMugActions" hidden><button type="button" class="ghost" id="quickMugReplace">Fotoğrafı değiştir</button><button type="button" class="ghost" id="quickMugBack">Şablonlara dön</button></div><div class="btnrow" style="margin-top:10px"><button class="ghost" id="saveDesign" type="button">♥ Tasarımımı kaydet</button></div><p class="note" style="margin:6px 0 0">Hesabına kaydedilir; sonra Favoriler'den açıp tekrar sipariş verebilirsin.</p></section>
+    <section><h3>Önizleme</h3><div class="thumbs" id="thumbs"></div><div id="quickMugActions" hidden><button type="button" class="ghost" id="quickMugReplace">Fotoğrafı değiştir</button><button type="button" class="ghost" id="quickMugBack">Ürünlere dön</button></div><div class="btnrow" style="margin-top:10px"><button class="ghost" id="saveDesign" type="button">♥ Tasarımımı kaydet</button></div><p class="note" style="margin:6px 0 0">Hesabına kaydedilir; sonra Favoriler'den açıp tekrar sipariş verebilirsin.</p></section>
     <section id="brandSec" hidden><h3>Wolflano marka işareti</h3><label class="brandopt"><input type="checkbox" id="brandChk" checked><span>Ürünün üstünde küçük Wolflano işareti olsun<small>Kendi logonla çakışmasın istersen kaldırabilirsin. Etiket ve yan dikiş şeridi her üründe kalır.</small></span></label></section>
     <section><h3 id="sizeHead">Beden ve adet</h3><div class="size-grid" id="sizeGrid"></div></section>
     <section id="rosterSec" hidden><h3>İsim ve numara listesi</h3><p class="note" style="margin:0 0 10px">Her ürün için ayrı yaz. Boş bıraktığın ürüne isim veya numara basılmaz.</p><div id="rosterList" class="rs"></div></section>
@@ -6618,10 +6618,10 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
 #quickMugActions[hidden]{display:none}
 </style>
 <dialog id="quickMug" aria-labelledby="quickMugTitle">
-  <h2 id="quickMugTitle">Şablon seç</h2>
-  <p>Beğendiğin tasarımı seç. Fotoğrafını yükle. Gerisi bizde.</p>
+  <h2 id="quickMugTitle">Fotoğrafını yükle</h2>
+  <p>Fotoğrafın Mavi Çiçekler tasarımına otomatik yerleşir.</p>
   <img src="assets/yagliboya/mavi-cicekler.webp" alt="Mavi çiçekli fotoğraf şablonu">
-  <button type="button" class="primary" id="quickMugNext">Mavi çiçekler</button>
+  <button type="button" class="primary" id="quickMugNext">Fotoğraf yükle</button>
   <p id="quickMugStatus" role="status" hidden></p>
 </dialog>
 <input id="quickMugFile" type="file" accept="image/*" hidden>
@@ -6637,31 +6637,8 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
   const add=document.getElementById('addCart');
   const template=TPLS.find(t=>t.oil==='mavi-cicekler');
   if(!template)return;
-  let step='template', slot=null, busy=false;
-  function showStep(value){
-    step=value;
-    title.textContent=value==='template'?'Şablon seç':value==='product'?'Ürünü seç':'Fotoğrafını yükle';
-    next.textContent=value==='template'?'Mavi çiçekler':value==='product'?'Beyaz fotoğraflı kupa':'Fotoğraf yükle';
-    status.hidden=true;
-    if(!dialog.open)dialog.showModal();
-  }
-  next.addEventListener('click',async function(){
-    if(step==='template'){showStep('product');return;}
-    if(step==='photo'){fileInput.click();return;}
-    if(busy)return;
-    if(slot&&!slot.phEmpty){dialog.close();await openOrder();return;}
-    busy=true;
-    next.disabled=true;
-    try{
-      chooseProduct('mug','sub',true);
-      switchSide('front');
-      await applyTemplate(template,true);
-      slot=state.front.objs.find(o=>o.oilSlot);
-      if(!slot)throw Error('photo slot');
-      showStep('photo');
-    }catch(_){status.hidden=false;status.textContent='Şablon açılamadı. Tekrar dene.';}
-    finally{busy=false;next.disabled=false;}
-  });
+  let slot=null, busy=false;
+  next.addEventListener('click',function(){if(slot&&!busy)fileInput.click();});
   fileInput.addEventListener('change',async function(){
     const file=fileInput.files[0];
     fileInput.value='';
@@ -6679,7 +6656,7 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
       await openOrder();
       add.textContent='Onayla ve sepete ekle';
     }catch(_){
-      if(!dialog.open)showStep('photo');
+      if(!dialog.open)dialog.showModal();
       status.hidden=false;
       status.textContent='Fotoğraf açılamadı. JPG veya PNG ile tekrar dene.';
     }finally{busy=false;next.disabled=false;add.disabled=false;}
@@ -6688,10 +6665,20 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
     if(!busy)fileInput.click();
   };
   document.getElementById('quickMugBack').onclick=function(){
-    if(!busy){leaveOrder();closeOrder();showStep('template');}
+    if(!busy)location.href='index.html?prova=kupa#hediye';
   };
   dialog.addEventListener('cancel',e=>{if(busy)e.preventDefault();});
-  showStep('template');
+  dialog.showModal();
+  next.disabled=true;
+  Promise.resolve().then(function(){
+    chooseProduct('mug','sub',true);
+    switchSide('front');
+    return applyTemplate(template,true);
+  }).then(function(){
+    slot=state.front.objs.find(o=>o.oilSlot);
+    if(!slot)throw Error('photo slot');
+    next.disabled=false;
+  }).catch(function(){status.hidden=false;status.textContent='Ürün açılamadı. Sayfayı yenileyip tekrar dene.';});
 })();
 </script>
 </body></html>
