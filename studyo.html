@@ -4,7 +4,8 @@
 /* Yardım düğmesi: "?" yerine Aybüke'nin profil resmi (dikkat çeker, ne olduğu anlaşılır) */
 .ib.ayb-btn,.top-actions .ib.ayb-btn{padding:0;overflow:visible;border:0;background:none;border-radius:50%}
 .ib.ayb-btn img{width:34px;height:34px;border-radius:50%;object-fit:cover;display:block;border:2px solid #7fd6b4;box-shadow:0 0 0 2px #fff,0 2px 6px rgba(0,0,0,.18)}
-</style></head><body>
+</style><style>#musicInkControl{display:inline-flex;align-items:center;gap:6px;white-space:nowrap;font-weight:650}#musicInkControl[hidden]{display:none}#musicInk{font:inherit;color:inherit;padding:8px;border:1px solid #aeb9b7;border-radius:8px;background:#fff}</style>
+</head><body>
 <title>Online Tişört Tasarım Stüdyosu · Kendin Tasarla | Wolflano</title>
 <meta name="description" content="Ücretsiz online tasarım stüdyosu: tişört, sweatshirt, kapüşonlu, polo, şapka, kupa ve kanvas tabloyu kendin tasarla. Yazı, fotoğraf ve hazır tasarımlar ekle; gördüğün gibi basıp Türkiye'nin her yerine gönderelim.">
 <link rel="canonical" href="https://wolflano.com.tr/studyo.html">
@@ -680,6 +681,7 @@ img{-webkit-touch-callout:none;-webkit-user-drag:none}
     <div class="pop" id="colorPop" hidden></div>
     <div class="ctxbar" id="ctxBar">
       <button data-c="zem" id="zemBtn" hidden><svg class="i" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M3 15l5-5 4 4 3-3 6 6"/></svg><span>Zemin ekle</span></button>
+      <label id="musicInkControl" hidden>Şablon rengi <select id="musicInk" aria-label="Şablon rengi"></select></label>
       <button type="button" data-c="tee-text-top" hidden>Üst yazı</button>
       <button type="button" data-c="tee-text-bottom" hidden>Alt yazı</button>
       <button type="button" data-c="tee-text-left" hidden>Sol yazı</button>
@@ -2390,7 +2392,7 @@ function qualityOf(o){
   if(ppi>=75)return null;
   return {ppi:ppi,cls:'low',txt:'Fotoğraf küçük'};
 }
-function syncCtx(){syncCtx0();var teeText=state.product==='tee'&&cur().area==='a4'&&!isLand(view.side)&&cur().objs.some(function(o){return o.teePhoto;});$$('#ctxBar [data-c^="tee-text-"]').forEach(function(b){b.hidden=!teeText;});var zb=$('#zemBtn');if(zb){var layers=cur().objs;zb.hidden=!layers.length;if(!zb.hidden){ctx.hidden=false;zb.querySelector('span').textContent=tplFrame()||layers.some(function(o){return o.zem;})?'Zemini değiştir':'Zemin ekle';}}try{zemSync();}catch(_){}var sb=$('#stageBar');if(sb){var was=sb.hidden;sb.hidden=ctx.hidden||!$$('#stageBar button').some(function(b){return !b.hidden;});if(was!==sb.hidden&&!(view.g||view.drag))requestAnimationFrame(layout);}}
+function syncCtx(){syncCtx0();syncMusicInk();var teeText=state.product==='tee'&&cur().area==='a4'&&!isLand(view.side)&&cur().objs.some(function(o){return o.teePhoto;});$$('#ctxBar [data-c^="tee-text-"]').forEach(function(b){b.hidden=!teeText;});var zb=$('#zemBtn');if(zb){var layers=cur().objs;zb.hidden=!layers.length;if(!zb.hidden){ctx.hidden=false;zb.querySelector('span').textContent=tplFrame()||layers.some(function(o){return o.zem;})?'Zemini değiştir':'Zemin ekle';}}try{zemSync();}catch(_){}var sb=$('#stageBar');if(sb){var was=sb.hidden;sb.hidden=ctx.hidden||!$$('#stageBar button').some(function(b){return !b.hidden;});if(was!==sb.hidden&&!(view.g||view.drag))requestAnimationFrame(layout);}}
 /* Alt panel, seçim çubuğu ya da tarayıcı çubuğu açılıp kapanınca tasarım alanı yeniden sığdırılır (görsel kaybolmasın) */
 (function(){if(!window.ResizeObserver)return;var t=0,lw=0,lh=0;new ResizeObserver(function(en){var r=en[0].contentRect;if(Math.abs(r.width-lw)<1&&Math.abs(r.height-lh)<1)return;lw=r.width;lh=r.height;cancelAnimationFrame(t);t=requestAnimationFrame(function(){try{layout();}catch(_){}});}).observe(wrap);})();
 function syncCtx0(){
@@ -3818,13 +3820,48 @@ function renderProdPage(){
 }
 /* Hazır görsel şablon (Canva'da üretilip A3 300 dpi'a hazırlanmış şehir tasarımları): ekranda sablon/web önizlemesi, baskıda baski dalındaki tam boy dosya (hi) */
 function tplAsset(it){var id='tpl-'+it.u;if(!assets[id])assets[id]={url:it.u,w:it.aw,h:it.ah,tpl:true,hi:it.hi||''};return id;}
+var MUSIC_INKS=[['white','Beyaz'],['ivory','Fildişi'],['charcoal','Antrasit'],['red','Kırmızı'],['pink','Pembe']];
+function musicArtworkAsset(color){
+  var id='music-baglama-'+color;
+  if(!assets[id])assets[id]={url:'assets/music-templates/baglama-'+color+'.webp',w:1536,h:1024,tpl:true};
+  return id;
+}
+function musicArtwork(){
+  return cur().objs.find(function(o){return o.musicInk;});
+}
+function syncMusicInk(){
+  var layer=musicArtwork(),control=$('#musicInkControl');
+  control.hidden=!layer;
+  if(layer){$('#musicInk').value=layer.musicInk;ctx.hidden=false;}
+}
+function changeMusicInk(color){
+  var layer=musicArtwork();
+  if(!layer||layer.musicInk===color||!MUSIC_INKS.some(function(entry){return entry[0]===color;}))return;
+  layer.assetId=musicArtworkAsset(color);
+  layer.musicInk=color;
+  renderObjects();syncCtx();pushHist();
+}
+$('#musicInk').innerHTML=MUSIC_INKS.map(function(entry){
+  return '<option value="'+entry[0]+'">'+entry[1]+'</option>';
+}).join('');
+$('#musicInk').addEventListener('change',function(e){changeMusicInk(e.target.value);});
+TPLS.push({
+  n:'Bağlamanın Sesi',c:TPL_CAT_MUSIC,p:'giyim',product:'tee',area:'a4',yon:'dikey',
+  box:[1536,1024],
+  items:[
+    {t:'ph',e:'none',w:361,h:388,dx:-47.5,dy:19,musicPhoto:true},
+    {t:'img',w:1536,h:1024,dx:0,dy:0,musicArtwork:true}
+  ]
+});
 function tplObjects(t,A,sc,ink){
   return t.items.map(function(it){
     var col=it.c==='ink'?ink:it.c==='inkinv'?(lum(ink)>0.5?'#111111':'#ffffff'):it.c,o={id:view.nextId++,x:A.cx+it.dx*sc,y:A.cy+it.dy*sc,rot:it.r||0,w:10,h:10};
     if(it.t==='text'){o.type='text';o.value=it.v;o.font=it.f;o.color=col;o.stroke=null;o.size=it.z*sc;if(it.fx){if(it.fx.w){o.warp=it.fx.w;o.wamt=it.fx.a||50;}if(it.fx.l)o.look=it.fx.l;if(it.fx.rs)o.roster=it.fx.rs;}}
     else if(it.t==='img'){
       var imageScale=it.fillArea?Math.max(A.w/it.w,A.h/it.h):sc;
-      o.type='image';o.w=it.w*imageScale;o.h=it.h*imageScale;o.assetId=tplAsset(it);
+      o.type='image';o.w=it.w*imageScale;o.h=it.h*imageScale;
+      if(it.musicArtwork){o.musicInk=lum(state.tee)>0.5?'charcoal':'white';o.assetId=musicArtworkAsset(o.musicInk);o.lock=true;o.thru=1;}
+      else o.assetId=tplAsset(it);
     }
     else if(it.t==='ph'){o.type='image';o.slot=1;o.phEmpty=1;o.edge=it.e;o.phe='none';o.w=it.w*sc;o.h=it.h*sc;o.assetId=phAsset(it.e,it.w/it.h);}
     else{o.type='clip';o.key=it.k;o.color=col;o.w=it.w*sc;o.h=it.w*sc*clipAsp(it.k);}
@@ -3835,6 +3872,7 @@ function tplObjects(t,A,sc,ink){
     }
     if(t.teePhoto&&it.t==='img'){o.fitPrintArea=true;o.teePhotoBg=true;o.lock=true;o.thru=1;}
     if(t.teePhoto&&it.t==='ph'){o.teePhoto=true;o.bw=2*sc;o.br=3*sc;o.bc='#ffffff';}
+    if(it.musicPhoto)o.br=27*sc;
     if(it.zem)o.zem=1;
     if(it.oilBg){o.lock=true;o.thru=1;o.oilBg=1;}
     if(it.oilSlot)o.oilSlot=1;
