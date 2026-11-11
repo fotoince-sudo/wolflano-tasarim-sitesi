@@ -4129,12 +4129,10 @@ function renderTpl(){
   TPLS.forEach(function(t){if(tplFits(t,g)){has[t.c]=1;dirs[tplOrientation(t)]=1;measures[tplAreaName(t)]=1;}});
   if(window.TPL_EXTRA_CATS)window.TPL_EXTRA_CATS(g).forEach(function(c){has[c]=1;});
   if(view.tplCat!=='Tümü'&&!has[view.tplCat])view.tplCat='Tümü';
-  if(view.tplDir!=='Tümü'&&!dirs[view.tplDir])view.tplDir='Tümü';
+  if(view.tplDir!=='Tümü'&&view.tplDir!=='dikey'&&view.tplDir!=='yatay')view.tplDir='Tümü';
   if(view.tplArea!=='Tümü'&&!measures[view.tplArea])view.tplArea='Tümü';
-  var fc='<span class="tpl-filter-label">Baskı yönü</span>';
-  ['Tümü','dikey','yatay','serbest'].forEach(function(v){if(v!=='Tümü'&&!dirs[v])return;fc+='<button data-td="'+v+'"'+(view.tplDir===v?' class="on"':'')+'>'+ (v==='Tümü'?'Tümü':v==='serbest'?'Serbest':v==='dikey'?'Dikey':'Yatay')+'</button>';});
-  fc+='<span class="tpl-filter-label">Baskı ölçüsü</span>';
-  ['Tümü'].concat(Object.keys(measures)).forEach(function(v){fc+='<button data-ta="'+v+'"'+(view.tplArea===v?' class="on"':'')+'>'+(v==='Tümü'?'Tüm ölçüler':v)+'</button>';});
+  var fc='';
+  ['dikey','yatay'].forEach(function(v){fc+='<button data-td="'+v+'"'+(view.tplDir===v?' class="on"':'')+' aria-pressed="'+(view.tplDir===v?'true':'false')+'">'+(v==='dikey'?'Dikey':'Yatay')+'</button>';});
   $('#tplFilters').innerHTML=fc;
   TPL_CATS.forEach(function(c){if(c!=='Tümü'&&!has[c])return;cc+='<button data-tc="'+c+'"'+(c===view.tplCat&&!q?' class="on"':'')+'>'+c+'</button>';});
   $('#tplCats').innerHTML=cc;
@@ -4356,7 +4354,7 @@ $('#swapIn').addEventListener('change',function(e){var file=e.target.files[0];e.
   im.onerror=function(){toast('Bu dosya açılamadı. PNG veya JPG dene.');};im.src=url;});
 $('#fileIn').addEventListener('change',function(e){var f=e.target.files[0];if(f)loadFile(f);e.target.value='';});
 $('#upGrid').addEventListener('click',function(e){var b=e.target.closest('[data-asset]');if(b)addImageObj(b.dataset.asset);});
-$('#tplFilters').addEventListener('click',function(e){var b=e.target.closest('[data-td],[data-ta]');if(!b)return;if(b.dataset.td)view.tplDir=b.dataset.td;if(b.dataset.ta)view.tplArea=b.dataset.ta;renderTpl();renderTplPreviews();});
+$('#tplFilters').addEventListener('click',function(e){var b=e.target.closest('[data-td]');if(!b)return;view.tplDir=view.tplDir===b.dataset.td?'Tümü':b.dataset.td;renderTpl();renderTplPreviews();});
 $('#tplCats').addEventListener('click',function(e){var b=e.target.closest('[data-tc],[data-td],[data-ta]');if(!b)return;if(b.dataset.tc)view.tplCat=b.dataset.tc;if(b.dataset.td)view.tplDir=b.dataset.td;if(b.dataset.ta)view.tplArea=b.dataset.ta;$('#tplQ').value='';renderTpl();renderTplPreviews();$('#tplGrid').scrollLeft=0;});
 $('#tplQ').addEventListener('input',function(){renderTpl();renderTplPreviews();});
 $('#tplQ').addEventListener('keydown',function(e){if(e.key==='Enter')this.blur();});
