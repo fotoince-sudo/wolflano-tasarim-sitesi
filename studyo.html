@@ -3821,9 +3821,9 @@ function renderProdPage(){
 /* Hazır görsel şablon (Canva'da üretilip A3 300 dpi'a hazırlanmış şehir tasarımları): ekranda sablon/web önizlemesi, baskıda baski dalındaki tam boy dosya (hi) */
 function tplAsset(it){var id='tpl-'+it.u;if(!assets[id])assets[id]={url:it.u,w:it.aw,h:it.ah,tpl:true,hi:it.hi||''};return id;}
 var MUSIC_INKS=[['white','Beyaz'],['ivory','Fildişi'],['charcoal','Antrasit'],['red','Kırmızı'],['pink','Pembe']];
-function musicArtworkAsset(color){
-  var id='music-baglama-'+color;
-  if(!assets[id])assets[id]={url:'assets/music-templates/baglama-'+color+'.webp',w:1536,h:1024,tpl:true};
+function musicArtworkAsset(instrument,color){
+  var id='music-'+instrument+'-'+color;
+  if(!assets[id])assets[id]={url:'assets/music-templates/'+instrument+'-'+color+'.webp',w:1536,h:1024,tpl:true};
   return id;
 }
 function musicArtwork(){
@@ -3837,7 +3837,7 @@ function syncMusicInk(){
 function changeMusicInk(color){
   var layer=musicArtwork();
   if(!layer||layer.musicInk===color||!MUSIC_INKS.some(function(entry){return entry[0]===color;}))return;
-  layer.assetId=musicArtworkAsset(color);
+  layer.assetId=musicArtworkAsset(layer.musicInstrument||'baglama',color);
   layer.musicInk=color;
   renderObjects();syncCtx();pushHist();
 }
@@ -3845,13 +3845,20 @@ $('#musicInk').innerHTML=MUSIC_INKS.map(function(entry){
   return '<option value="'+entry[0]+'">'+entry[1]+'</option>';
 }).join('');
 $('#musicInk').addEventListener('change',function(e){changeMusicInk(e.target.value);});
-TPLS.push({
-  n:'Bağlamanın Sesi',c:TPL_CAT_MUSIC,p:'giyim',product:'tee',area:'a4',yon:'dikey',
-  box:[1536,1024],
-  items:[
-    {t:'ph',e:'none',w:361,h:388,dx:-47.5,dy:19,musicPhoto:true},
-    {t:'img',w:1536,h:1024,dx:0,dy:0,musicArtwork:true}
-  ]
+[
+  {id:'baglama',name:'Bağlamanın Sesi',frame:[540,337,361,388,27]},
+  {id:'ud',name:'Udun Sesi',frame:[475,297,431,501,39]},
+  {id:'gitar',name:'Gitarın Sesi',frame:[474,340,440,424,40]}
+].forEach(function(instrument){
+  var f=instrument.frame;
+  TPLS.push({
+    n:instrument.name,c:TPL_CAT_MUSIC,p:'giyim',product:'tee',area:'a4',yon:'dikey',
+    box:[1536,1024],
+    items:[
+      {t:'ph',e:'none',w:f[2],h:f[3],dx:f[0]+f[2]/2-768,dy:f[1]+f[3]/2-512,musicRadius:f[4]},
+      {t:'img',w:1536,h:1024,dx:0,dy:0,musicInstrument:instrument.id}
+    ]
+  });
 });
 function tplObjects(t,A,sc,ink){
   return t.items.map(function(it){
@@ -3860,7 +3867,7 @@ function tplObjects(t,A,sc,ink){
     else if(it.t==='img'){
       var imageScale=it.fillArea?Math.max(A.w/it.w,A.h/it.h):sc;
       o.type='image';o.w=it.w*imageScale;o.h=it.h*imageScale;
-      if(it.musicArtwork){o.musicInk=lum(state.tee)>0.5?'charcoal':'white';o.assetId=musicArtworkAsset(o.musicInk);o.lock=true;o.thru=1;}
+      if(it.musicInstrument){o.musicInstrument=it.musicInstrument;o.musicInk=lum(state.tee)>0.5?'charcoal':'white';o.assetId=musicArtworkAsset(o.musicInstrument,o.musicInk);o.lock=true;o.thru=1;}
       else o.assetId=tplAsset(it);
     }
     else if(it.t==='ph'){o.type='image';o.slot=1;o.phEmpty=1;o.edge=it.e;o.phe='none';o.w=it.w*sc;o.h=it.h*sc;o.assetId=phAsset(it.e,it.w/it.h);}
@@ -3872,7 +3879,7 @@ function tplObjects(t,A,sc,ink){
     }
     if(t.teePhoto&&it.t==='img'){o.fitPrintArea=true;o.teePhotoBg=true;o.lock=true;o.thru=1;}
     if(t.teePhoto&&it.t==='ph'){o.teePhoto=true;o.bw=2*sc;o.br=3*sc;o.bc='#ffffff';}
-    if(it.musicPhoto)o.br=27*sc;
+    if(it.musicRadius)o.br=it.musicRadius*sc;
     if(it.zem)o.zem=1;
     if(it.oilBg){o.lock=true;o.thru=1;o.oilBg=1;}
     if(it.oilSlot)o.oilSlot=1;
