@@ -3647,9 +3647,9 @@ function ensureSizes(){var l=sizeList(),tot=l.reduce(function(a,s){return a+(sta
 var OIL_ART=[{"id":"kizil-guller","name":"Kızıl güller","background":true,"rect":[0.32,0.24,0.34,0.5],"w":1774,"h":887},{"id":"mavi-cicekler","name":"Mavi çiçekler","background":true,"rect":[0.34,0.22,0.32,0.56],"w":1774,"h":887},{"id":"aycicekleri","name":"Ayçiçekleri","background":true,"rect":[0.34,0.2,0.32,0.5],"w":1774,"h":887},{"id":"gunbatimi-ask","name":"Gün batımında aşk","background":false,"rect":[0.42,0.25,0.3,0.52],"w":1774,"h":887},{"id":"romantik-kalpler","name":"Romantik kalpler","background":true,"rect":[0.29,0.23,0.3,0.52],"w":1774,"h":887},{"id":"ramazan","name":"Ramazan Bayramı","background":false,"rect":[0.34,0.2,0.32,0.6],"w":1774,"h":887},{"id":"kurban","name":"Kurban Bayramı","background":false,"rect":[0.34,0.2,0.32,0.6],"w":1774,"h":887},{"id":"23-nisan","name":"23 Nisan","background":false,"rect":[0.34,0.2,0.32,0.6],"w":1774,"h":887},{"id":"19-mayis","name":"19 Mayıs","background":false,"rect":[0.35,0.2,0.3,0.6],"w":1774,"h":887},{"id":"30-agustos","name":"30 Ağustos","background":false,"rect":[0.34,0.2,0.32,0.6],"w":1774,"h":887},{"id":"29-ekim","name":"29 Ekim","background":false,"rect":[0.34,0.24,0.32,0.5],"w":1774,"h":887},{"id":"kediler","name":"Kediler","background":false,"rect":[0.35,0.18,0.3,0.64],"w":1774,"h":887},{"id":"kopekler","name":"Köpekler","background":false,"rect":[0.35,0.18,0.3,0.64],"w":1774,"h":887},{"id":"atlar","name":"Atlar","background":false,"rect":[0.35,0.18,0.3,0.64],"w":1774,"h":887},{"id":"kurtlar","name":"Kurtlar","background":false,"rect":[0.35,0.18,0.3,0.64],"w":1774,"h":887},{"id":"kuslar","name":"Kuşlar","background":false,"rect":[0.35,0.18,0.3,0.64],"w":1774,"h":887},{"id":"kelebekler","name":"Kelebekler ve lavanta","background":true,"rect":[0.35,0.18,0.3,0.64],"w":1774,"h":887},{"id":"tavsanlar","name":"Tavşanlar","background":false,"rect":[0.35,0.18,0.3,0.64],"w":1774,"h":887},{"id":"yunuslar","name":"Yunuslar","background":false,"rect":[0.35,0.18,0.3,0.64],"w":1774,"h":887},{"id":"aslanlar","name":"Aslanlar","background":false,"rect":[0.35,0.18,0.3,0.64],"w":1774,"h":887}],oilApplying=false,oilRequest=0;
 OIL_ART.forEach(function(z){
   var W=20,H=10,r=z.rect,u='assets/yagliboya/'+z.id+'.webp';
-  var bg={t:'img',u:u,aw:z.w,ah:z.h,w:W,h:H,dx:0,dy:0,oilBg:1,zem:1};
+  var bg={t:'img',u:u,aw:z.w,ah:z.h,w:W,h:H,dx:0,dy:0,fillArea:true,oilBg:1,zem:1};
   TPLS.push({n:z.name+' · Tek fotoğraf',c:'Yağlı boya',p:'kupa',product:'mug',cut:'sub',area:'mugw',box:[W,H],yon:'yatay',oil:z.id,items:[bg,{t:'ph',e:'none',w:r[2]*W,h:r[3]*H,dx:(r[0]+r[2]/2-.5)*W,dy:(r[1]+r[3]/2-.5)*H,oilSlot:1}]});
-  if(z.background)TPLS.push({n:z.name+' · Zemin',c:'Zemin',p:'kupa',product:'mug',cut:'sub',area:'mugw',box:[W,H],yon:'yatay',items:[{t:'img',u:u,aw:z.w,ah:z.h,w:W,h:H,dx:0,dy:0,zem:1}]});
+  if(z.background)TPLS.push({n:z.name+' · Zemin',c:'Zemin',p:'kupa',product:'mug',cut:'sub',area:'mugw',box:[W,H],yon:'yatay',items:[{t:'img',u:u,aw:z.w,ah:z.h,w:W,h:H,dx:0,dy:0,fillArea:true,zem:1}]});
 });
 async function applyOilTemplate(t,silent){
   if(!tplFits(t))return;
@@ -3767,7 +3767,10 @@ function tplObjects(t,A,sc,ink){
   return t.items.map(function(it){
     var col=it.c==='ink'?ink:it.c==='inkinv'?(lum(ink)>0.5?'#111111':'#ffffff'):it.c,o={id:view.nextId++,x:A.cx+it.dx*sc,y:A.cy+it.dy*sc,rot:it.r||0,w:10,h:10};
     if(it.t==='text'){o.type='text';o.value=it.v;o.font=it.f;o.color=col;o.stroke=null;o.size=it.z*sc;if(it.fx){if(it.fx.w){o.warp=it.fx.w;o.wamt=it.fx.a||50;}if(it.fx.l)o.look=it.fx.l;if(it.fx.rs)o.roster=it.fx.rs;}}
-    else if(it.t==='img'){o.type='image';o.w=it.w*sc;o.h=it.h*sc;o.assetId=tplAsset(it);}
+    else if(it.t==='img'){
+      var imageScale=it.fillArea?Math.max(A.w/it.w,A.h/it.h):sc;
+      o.type='image';o.w=it.w*imageScale;o.h=it.h*imageScale;o.assetId=tplAsset(it);
+    }
     else if(it.t==='ph'){o.type='image';o.slot=1;o.phEmpty=1;o.edge=it.e;o.phe='none';o.w=it.w*sc;o.h=it.h*sc;o.assetId=phAsset(it.e,it.w/it.h);}
     else{o.type='clip';o.key=it.k;o.color=col;o.w=it.w*sc;o.h=it.w*sc*clipAsp(it.k);}
     if(it.zem)o.zem=1;
