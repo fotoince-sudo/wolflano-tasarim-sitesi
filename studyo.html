@@ -3654,6 +3654,7 @@ OIL_ART.forEach(function(z){
 async function applyOilTemplate(t,silent){
   if(!tplFits(t))return;
   var request=++oilRequest,prior=cur().objs.find(function(o){return o.oilSlot&&!o.phEmpty&&o.base;});
+  var restoreSelection=prior&&view.sel===prior.id;
   var saved=prior?{base:prior.base}:null;
   cur().objs=cur().objs.filter(function(o){return !o.oilBg&&!o.oilSlot;});
   oilApplying=true;
@@ -3668,6 +3669,7 @@ async function applyOilTemplate(t,silent){
     renderObjects();pushHist();
   }
   view.grp=false;
+  if(restoreSelection&&slot){view.noPick=true;try{select(slot.id);}finally{view.noPick=false;}}
   if(!silent)toast('Tasarım yerleşti. Fotoğraf ekleyebilir veya yalnız yazı kullanabilirsin.');
 }
 
