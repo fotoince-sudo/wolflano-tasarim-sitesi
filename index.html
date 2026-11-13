@@ -1063,7 +1063,7 @@ function clone(o){return JSON.parse(JSON.stringify(o));}
 /* Koleksiyon görselleri taş grisi zemine taşındı: zemin/index.json eski görselin yerine yenisini söyler */
 var ZEM={};
 function src(s){if(!s)return PH;if(pend[s])return pend[s].url;if(ZEM[s])return ZEM[s];if(D&&D.media==='sb'&&(s.indexOf('img/')===0||s.indexOf('vid/')===0))return SB.url+'/storage/v1/object/public/site/'+s;if(s.indexOf('builtin:')===0)return BUILTIN[s.slice(8)]||PH;return s;}
-function IMG(p){return src(p.imgs&&p.imgs[0]);}
+function IMG(p){var image=p.imgs&&p.imgs[0];return CATALOG_BACKUP&&/^img\//.test(image||'')?PH:src(image);}
 var ALLP=[];
 
 var accNext='';
@@ -5781,6 +5781,7 @@ async function addImages(path,files){
   dirty();adRender();
 }
 async function adSaveSB(){
+  if(CATALOG_BACKUP){toast('Güncel mağaza verisine erişilemiyor. Bağlantı gelince sayfayı yenileyip tekrar deneyin.');return;}
   var t=await sbToken();if(!t||!sbAdmin()){A.msg='Oturum süresi doldu, yeniden giriş yap.';toast(A.msg);adRender();return;}
   var d=A.draft,used=usedTokens(d),k,wasSB=D.media==='sb';
   var sb=$('.sbar .btn:not(.soft)');if(sb){sb.disabled=true;sb.textContent='Kaydediliyor…';}
@@ -5926,14 +5927,15 @@ document.addEventListener('input',function(e){if(e.target.id==='cQ')calc();});
 window.addEventListener('hashchange',route);
 document.addEventListener('keydown',function(e){if(e.key==='Escape')closeLayer();});
 /* Ürün verisi sunucudan gelmeden sepetteki Koleksiyon ürünleri silinmesin */
-var DLOADED=false;
-route();syncCart();
+var DLOADED=false,CATALOG_BACKUP=false;
+D.products=[];applyData();route();syncCart();
 var DATA_P=(async function(){
   var j=null;
   try{var r=await fetch(SB.url+'/rest/v1/site_content?select=data&id=eq.main',{headers:{apikey:SB.key},cache:'no-store'});if(r.ok){var a=await r.json();if(a&&a[0]&&a[0].data)j=a[0].data;}}catch(_){}
+  if(!j){try{var backup=await fetch('magaza-katalog-yedek.json');if(backup.ok){var data=await backup.json();if(data.v===1&&Array.isArray(data.products)){j=data;CATALOG_BACKUP=true;}}}catch(_){}}
   if(!j){try{var r2=await fetch('data.json',{cache:'no-store'});if(r2.ok)j=await r2.json();}catch(_){}}
   try{var rz=await fetch('zemin/index.json?v='+Math.floor(Date.now()/600000));if(rz.ok){var zm=await rz.json();for(var zk in zm)if(zm[zk])ZEM[zk]=zm[zk];}}catch(_){}
-  if(j&&j.v===1){try{cutMerge(j,await loadMan());}catch(_){}D=Object.assign(clone(DEF),j);applyData();SAVEDTOK=usedTokens(D);DLOADED=true;if(cur!=='yonetim')route();}
+  if(j&&j.v===1){try{cutMerge(j,await loadMan());}catch(_){}D=Object.assign(clone(DEF),j);applyData();SAVEDTOK=usedTokens(D);DLOADED=!CATALOG_BACKUP;if(cur!=='yonetim')route();}
 /* AYBÜKE (sitenin her sayfasında): sağ alttaki yuvarlak resim; müşteriye ürün bulmada yardım edip satışa yönlendirir.
    Cevabı sunucudaki yardım asistanı (yardim, mode: site) verir; ürün listesi ve fiyatlar buradan gider, önerilen ürünler kart olarak gösterilir.
    Ses: telefonun/tarayıcının kendi ses tanıması ve okuması (ücretsiz). Konuşma yalnız bu sekmede tutulur. Yönetimde görünmez. */
