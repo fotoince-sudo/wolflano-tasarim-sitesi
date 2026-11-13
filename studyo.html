@@ -6816,7 +6816,7 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
     mode='help';
     var welcome='';try{if(sessionStorage.getItem('wf_ayb_hi')!=='1'){sessionStorage.setItem('wf_ayb_hi','1');welcome='Wolflano’ya hoş geldiniz! Ben Aybüke. ';}}catch(_){}
     el.innerHTML='<div class="gd-card gd-help"><div class="gd-top"><h2 id="gdTitle">Nasıl kullanılır?</h2><button type="button" class="ib" data-gd="skip" aria-label="Kapat"><svg class="i" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>'+
-      '<div class="gd-ask"><div class="gd-ah"><img src="'+AYB+'" alt="" width="44" height="44"><span><b>Aybüke\'ye sor</b><small>'+welcome+'Ne hazırlayalım? Örneğin, babamın arabasıyla bir kupa yap.</small></span></div><div class="gd-msgs" id="gdMsgs">'+askHtml()+'</div><div id="gdDesign"><label id="gdUploadLabel" hidden>Araç fotoğrafınızı yükleyin <input id="gdPhoto" type="file" accept="image/*"></label><div id="gdMugViews" aria-label="Kupada sağ ve sol görünüm" style="display:flex"></div><img id="gdPreview" hidden alt="Kupanın iki yüzünün baskı önizlemesi" style="width:100%;max-height:180px;object-fit:contain"></div>'+
+      '<div class="gd-ask"><div class="gd-ah"><img src="'+AYB+'" alt="" width="44" height="44"><span><b>Aybüke\'ye sor</b><small>'+welcome+'Ne hazırlayalım? Örneğin, babamın arabasıyla bir kupa yap.</small></span></div><div class="gd-msgs" id="gdMsgs">'+askHtml()+'</div><div id="gdDesign"><label id="gdUploadLabel" hidden>Araç fotoğrafınızı seçin <input id="gdPhoto" type="file" accept="image/*"></label><div id="gdMugViews" aria-label="Kupada sağ ve sol görünüm" style="display:flex"></div><img id="gdPreview" hidden alt="Kupanın iki yüzünün baskı önizlemesi" style="width:100%;max-height:180px;object-fit:contain"></div>'+
       '<form class="gd-in" id="gdAskF">'+(SR?'<button type="button" class="gd-mic'+(micOn?' on':'')+'" data-gd="mic" aria-label="Aybüke ile konuş"><svg class="i" viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></button>':'')+'<input id="gdAsk" maxlength="400" placeholder="'+(micOn?'Dinliyorum…':'Örn. Logoyu sağ göğse nasıl koyarım?')+'" autocomplete="off" enterkeyhint="send"><button type="submit" class="primary" aria-label="Gönder">Sor</button></form>'+
       (TTS?'<label class="gd-tts"><input type="checkbox" data-gdtts="1"'+(ttsOn?' checked':'')+'> Aybüke cevapları sesli okusun</label>':'')+'</div>'+
       '<ol class="gd-list">'+GD.map(function(d,k){return '<li><span class="n">'+(k+1)+'</span><span><b>'+d.t+'</b>'+d.p+'</span></li>';}).join('')+'</ol>'+
@@ -6900,7 +6900,7 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
       if(!tpl)return 'Çift yüzlü tasarım için 20 × 9 santimetre baskı alanı olan süblimasyon kupa gerekiyor.';
       applyTemplate(tpl,true);ayApproval=null;
       await showAybukeDesign();
-      return ayFaces().some(function(o){return o.phEmpty;})?'Kupa şablonunu hazırladım. Araç fotoğrafınızı yükleyin, iki yüze ben yerleştireyim.':'Zemini güncelledim. Yeni baskı önizlemesi hazır.';
+      return ayFaces().some(function(o){return o.phEmpty;})?'Kupa şablonunu hazırladım. Hazır olduğunuzda aracınızın fotoğrafını yükleyebilir misiniz? Fotoğrafı kupanın iki yüzüne ben yerleştireyim.':'Zemini güncelledim. Yeni baskı önizlemesi hazır.';
     }
     if(photos.length&&/\b(gramaj|murekkep|boya|sagliga|sertifika|kalite)/.test(q)){
       return 'Bu kupa için süblimasyon baskı kullanıyoruz. Mürekkebin sağlık uygunluğu belgesine ilişkin doğrulanmış bilgi şu anda ürün kartında yok.';
@@ -6925,7 +6925,7 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
       ayApproval=null;await showAybukeDesign();return 'Yazı tipini '+font[0]+' yaptım.';
     }
     if(/^(onizlemeyi goster|bu hali (guzel|tamam)|tasarimi onayliyorum|sepete ekle)$/.test(q)){
-      if(photos.some(function(o){return o.phEmpty;}))return 'Önce araç fotoğrafınızı yükleyin. İki yüzü de hazırlayayım.';
+      if(photos.some(function(o){return o.phEmpty;}))return 'Kupanın iki yüzünü hazırlayabilmem için aracınızın fotoğrafını paylaşabilir misiniz?';
       var sig=designSig(),price=priceInfo().unit;
       if(q==='sepete ekle'&&ayApproval&&ayApproval.sig===sig&&ayApproval.price===price){
         ayApproval=null;
@@ -6950,7 +6950,7 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
       if(!placed||!ayFaces().includes(slot)||slot.phEmpty)throw Error('photo');
       ayApproval=null;await showAybukeDesign();
       ayFinish('Fotoğrafı kupanın iki yüzüne yerleştirdim. İsterseniz üstüne bir isim yazabilir veya zemini değiştirebilirim.');
-    }catch(_){ayFinish('Fotoğrafı hazırlayamadım. Aracın tamamının net göründüğü bir fotoğraf deneyebilirsiniz.');}
+    }catch(_){ayFinish('Bu fotoğrafı hazırlayamadım. Elinizde aracınızın tamamının net göründüğü başka bir fotoğraf varsa paylaşabilir misiniz?');}
   });
   async function askSend(t){t=String(t||'').trim();if(!t||askBusy)return;ASK.push({role:'user',text:t});ASK=ASK.slice(-16);askBusy=true;askPaint();
     var a='';
