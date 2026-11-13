@@ -52,7 +52,9 @@ await page.evaluate(async()=>{
   const templates=T.TPLS.filter(t=>t.teePhoto);
   if(templates.length!==18)throw Error('Expected 18 A4 T-shirt photo templates');
   T.view.tplCat='Fotoğraflı tişört';T.view.tplDir='dikey';T.renderTpl();T.renderTplPreviews();
-  if(document.querySelectorAll('#tplGrid [data-tpl]:not([hidden])').length!==18)throw Error('Photo templates missing in Dikey');
+  const visible=[...document.querySelectorAll('#tplGrid [data-tpl]:not([hidden])')].map(card=>T.TPLS[Number(card.dataset.tpl)]);
+  if(templates.some(t=>!visible.includes(t)))throw Error('Photo templates missing in Dikey');
+  if(visible.some(t=>!t||!(t.teePhoto||t.petPhoto||t.vehiclePhoto)||t.yon!=='dikey'))throw Error('Unexpected template in Dikey');
   for(const tpl of templates){
     await T.applyTemplate(tpl,true);
     const bg=T.cur().objs.find(o=>o.teePhotoBg),slots=T.cur().objs.filter(o=>o.teePhoto),area=T.areaBox('front','a4');
