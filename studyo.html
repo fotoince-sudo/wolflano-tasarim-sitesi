@@ -4393,11 +4393,13 @@ function tplAreaName(t){
   return 'GENEL';
 }
 var tplLastGroup='';
+function escapeTplCategory(c){return c.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');}
 function renderTpl(){
   ['Zemin','Yağlı boya','Fotoğraflı tişört'].forEach(function(c){if(TPL_CATS.indexOf(c)<0)TPL_CATS.push(c);});
   var h='',cc='',q=normTR(($('#tplQ')&&$('#tplQ').value||'').trim()),n=0,g=tplGroup(),has={},dirs={},measures={};
   has.Zemin=1;zLoad();
   if(state.product==='tee')has[TPL_CAT_MUSIC]=1;
+  if(window.TPL_MEDIA_CATS)window.TPL_MEDIA_CATS().forEach(function(c){has[c]=1;});
   TPLS.forEach(function(t){if(tplFits(t,g)){has[t.c]=1;dirs[tplOrientation(t)]=1;measures[tplAreaName(t)]=1;}});
   if(window.TPL_EXTRA_CATS)window.TPL_EXTRA_CATS(g).forEach(function(c){has[c]=1;});
   if(view.tplCat!=='Tümü'&&!has[view.tplCat])view.tplCat='Tümü';
@@ -4408,7 +4410,7 @@ function renderTpl(){
   $('#tplFilters').hidden=!(state.product==='tee'||state.product==='sweat'||state.product==='polo'||state.product==='canvas');
   if($('#tplFilters').hidden)view.tplDir='Tümü';
   $('#tplFilters').innerHTML=fc;
-  TPL_CATS.forEach(function(c){if(c!=='Tümü'&&!has[c])return;cc+='<button data-tc="'+c+'"'+(c===view.tplCat&&!q?' class="on"':'')+'>'+c+'</button>';});
+  TPL_CATS.forEach(function(c){if(c!=='Tümü'&&!has[c])return;cc+='<button data-tc="'+escapeTplCategory(c)+'"'+(c===view.tplCat&&!q?' class="on"':'')+'>'+escapeTplCategory(c)+'</button>';});
   $('#tplCats').innerHTML=cc;
   TPLS.forEach(function(t,i){if(!tplFits(t,g))return;if(view.tplDir&&view.tplDir!=='Tümü'&&tplOrientation(t)!==view.tplDir)return;if(view.tplArea&&view.tplArea!=='Tümü'&&tplAreaName(t)!==view.tplArea)return;if(q){if(!tplMatch(t,q))return;}else if(view.tplCat!=='Tümü'&&t.c!==view.tplCat)return;n++;h+='<button class="tpl" data-tpl="'+i+'" data-tpl-dir="'+tplOrientation(t)+'"><div class="prev"><div class="in"></div></div><span>'+t.n+'</span></button>';});
   $('#tplGrid').innerHTML=h;tplLastGroup=g;var em=$('#tplEmpty');em.textContent=q?'Bu aramayla eşleşen şablon yok. Başka bir kelime dene.':view.tplCat===TPL_CAT_MUSIC?'Müzik şablonları yakında burada.':'Bu ürünün ('+TPL_GROUP_NAME[g]+') baskı ölçüsüne özel şablonlar hazırlanıyor, çok yakında burada.';em.hidden=n>0;$('#tplQx').hidden=!q;
@@ -5349,6 +5351,7 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
   var baseWolf=renderWolf;
   renderWolf=function(){baseWolf();var g=$('#wfGrid');if(!g)return;var l=(WOLF_CAT&&TPL_ITEMS[WOLF_CAT])||[];
     g.insertAdjacentHTML('afterbegin',l.map(function(it){var u=srcOf(it.img);return '<button class="wcard" data-sitem="'+esc(u)+'"><div class="prev" style="background:'+state.tee+'"><img alt="" src="'+esc(u)+'" loading="lazy" style="position:absolute;left:50%;top:10px;width:139px;height:196px;object-fit:contain;transform:translateX(-50%)"></div><b>'+esc(it.name||'Wolf tasarımı')+'</b><small>A4 dikey · A4 yatay · A3</small></button>';}).join(''));};
+  window.TPL_MEDIA_CATS=function(){return Object.keys(TPL_ITEMS);};
   var baseClip=renderClipGrid,baseTpl=renderTpl;
   renderClipGrid=function(){baseClip();var g=$('#clipGrid');if(g)g.insertAdjacentHTML('beforeend',itemBtns(CLIP_ITEMS[view.clipCat]));};
   renderTpl=function(){
@@ -5394,7 +5397,10 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
         tv.forEach(function(c){if(TPL_CATS.indexOf(c.name)<0&&(c.items||[]).length)TPL_CATS.push(c.name);});
       }else{
         tv.forEach(function(c){TPL_CATS.push(c.name);});
-        if(!tm[TPL_CAT_MUSIC]&&TPL_CATS.indexOf(TPL_CAT_MUSIC)<0)TPL_CATS.splice(1,0,TPL_CAT_MUSIC);
+        var missing=TPL_CANON.filter(function(c){
+          return !tm[c]&&TPL_CATS.indexOf(c)<0&&!tplCats.some(function(x){return x.name===c;});
+        });
+        TPL_CATS.splice.apply(TPL_CATS,[1,0].concat(missing));
       }
       var nw=[];TPLS.forEach(function(t){if(t.c!=='__gizli__'&&!tm[t.c]&&TPL_CATS.indexOf(t.c)<0&&nw.indexOf(t.c)<0&&!st.tplCats.some(function(x){return x.name===t.c;}))nw.push(t.c);});TPL_CATS.splice.apply(TPL_CATS,[1,0].concat(nw));
       if(TPL_CATS.indexOf(view.tplCat)<0)view.tplCat='Tümü';
