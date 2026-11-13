@@ -6807,7 +6807,7 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
   ];
   var el=document.getElementById('guide'),i=0,mode='';
   function seen(){try{localStorage.setItem('wf_studio_guide','1');}catch(_){}}
-  function close(){el.hidden=true;el.innerHTML='';seen();var hb=document.getElementById('helpBtn');if(hb&&mode)try{hb.focus();}catch(_){}mode='';}
+  function close(){voiceSession=false;micStop();aysStop();el.hidden=true;el.innerHTML='';seen();var hb=document.getElementById('helpBtn');if(hb&&mode)try{hb.focus();}catch(_){}mode='';}
   function tour(n){
     mode='tour';i=Math.max(0,Math.min(GD.length-1,n||0));var d=GD[i],last=i===GD.length-1;
     el.innerHTML='<div class="gd-card" id="gdCard"><div class="gd-art" aria-hidden="true">'+d.a+'</div><div class="gd-step">Adım '+(i+1)+' / '+GD.length+'</div><h2 id="gdTitle">'+d.t+'</h2><p>'+d.p+'</p>'+
@@ -6818,7 +6818,7 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
   function help(){
     mode='help';
     el.innerHTML='<div class="gd-card gd-help"><div class="gd-top"><h2 id="gdTitle">Nasıl kullanılır?</h2><button type="button" class="ib" data-gd="skip" aria-label="Kapat"><svg class="i" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>'+
-      '<div class="gd-ask"><div class="gd-ah"><img src="'+AYB+'" alt="" width="44" height="44"><span><b>Aybüke\'ye sor</b><small>Ben Aybüke, tasarım asistanın. Ne hazırlayalım? Örneğin, babamın arabasıyla bir kupa yap.</small></span></div><div class="gd-msgs" id="gdMsgs">'+askHtml()+'</div><div id="gdDesign"><label id="gdUploadLabel" hidden>Araç fotoğrafını yükle <input id="gdPhoto" type="file" accept="image/*"></label><img id="gdPreview" hidden alt="Kupanın iki yüzünün baskı önizlemesi" style="width:100%;max-height:180px;object-fit:contain"></div>'+
+      '<div class="gd-ask"><div class="gd-ah"><img src="'+AYB+'" alt="" width="44" height="44"><span><b>Aybüke\'ye sor</b><small>Ben Aybüke, tasarım asistanın. Ne hazırlayalım? Örneğin, babamın arabasıyla bir kupa yap.</small></span></div><div class="gd-msgs" id="gdMsgs">'+askHtml()+'</div><div id="gdDesign"><label id="gdUploadLabel" hidden>Araç fotoğrafını yükle <input id="gdPhoto" type="file" accept="image/*"></label><div id="gdMugViews" aria-label="Kupada sağ ve sol görünüm" style="display:flex"></div><img id="gdPreview" hidden alt="Kupanın iki yüzünün baskı önizlemesi" style="width:100%;max-height:180px;object-fit:contain"></div>'+
       '<form class="gd-in" id="gdAskF">'+(SR?'<button type="button" class="gd-mic'+(micOn?' on':'')+'" data-gd="mic" aria-label="Aybüke ile konuş"><svg class="i" viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></button>':'')+'<input id="gdAsk" maxlength="400" placeholder="'+(micOn?'Dinliyorum, konuş…':'Örn. Logoyu sağ göğse nasıl koyarım?')+'" autocomplete="off" enterkeyhint="send"><button type="submit" class="primary" aria-label="Gönder">Sor</button></form>'+
       (TTS?'<label class="gd-tts"><input type="checkbox" data-gdtts="1"'+(ttsOn?' checked':'')+'> Aybüke cevapları sesli okusun</label>':'')+'</div>'+
       '<ol class="gd-list">'+GD.map(function(d,k){return '<li><span class="n">'+(k+1)+'</span><span><b>'+d.t+'</b>'+d.p+'</span></li>';}).join('')+'</ol>'+
@@ -6830,7 +6830,7 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
   /* Asistanın görseli: assets/aybuke içinde aybuke.webp/png/jpg varsa o, yoksa çizim (aybuke.svg) */
   var AYB='assets/aybuke/aybuke.svg';(function(){var im=new Image();im.onload=function(){AYB=im.src;};im.src='assets/aybuke/aybuke.webp';})();
   /* Sesli: telefonun / tarayıcının kendi ses tanıması ve okuması (ücretsiz). Desteklenmeyen tarayıcıda düğmeler görünmez. */
-  var SR=window.SpeechRecognition||window.webkitSpeechRecognition,TTS=!!window.speechSynthesis,micOn=false,rec=null,ttsOn=false;
+  var SR=window.SpeechRecognition||window.webkitSpeechRecognition,TTS=!!window.speechSynthesis,micOn=false,rec=null,ttsOn=false,voiceSession=false;
   try{ttsOn=localStorage.getItem('wf_ask_tts')==='1';}catch(_){}
   /* Aybüke'nin sesi: önce yapay zekâ sesi (sunucu: yardim, mode: ses; doğal kadın sesi, ücretli, kuruşlar), olmazsa telefonun en iyi Türkçe sesi.
      iPhone sesin çalmasına yalnız dokunuşla izin verir: her dokunuşta (sor, mikrofon, aç) ses kanalı açık tutulur (aysAc). */
@@ -6838,21 +6838,22 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
   function aysAc(){try{if(!AYS_AC){var C=window.AudioContext||window.webkitAudioContext;if(!C)return;AYS_AC=new C();}if(AYS_AC.state==='suspended')AYS_AC.resume();var b=AYS_AC.createBuffer(1,1,22050),s=AYS_AC.createBufferSource();s.buffer=b;s.connect(AYS_AC.destination);s.start(0);}catch(_){}}
   function aysStop(){AYS_SEQ++;try{if(AYS_SRC)AYS_SRC.stop();}catch(_){}AYS_SRC=null;try{speechSynthesis.cancel();}catch(_){}}
   function aysVoice(){try{var v=speechSynthesis.getVoices().filter(function(x){return /^tr/i.test(x.lang);});var sc=function(x){var n=x.name||'';return (/premium/i.test(n)?4:0)+(/enhanced|geli[sş]mi[sş]|geli[sş]tirilmi[sş]|natural|neural/i.test(n)?3:0)+(/yelda|female|kad[iı]n|seda|filiz|emel/i.test(n)?1:0);};v.sort(function(a,b){return sc(b)-sc(a);});return v[0]||null;}catch(_){return null;}}
-  function aysLocal(t){try{speechSynthesis.cancel();var v=aysVoice();(String(t).replace(/["“”*]/g,'').replace(/\s*\n+\s*/g,'. ').match(/[^.!?…:]+[.!?…:]*/g)||[]).forEach(function(c){c=c.trim();if(!c)return;var u=new SpeechSynthesisUtterance(c);u.lang='tr-TR';if(v)u.voice=v;u.rate=0.97;u.pitch=1.02;speechSynthesis.speak(u);});}catch(_){}}
-  async function aysSay(t){t=String(t||'').trim();if(!t)return;aysStop();var my=AYS_SEQ;
+  function aysLocal(t,done){try{speechSynthesis.cancel();var v=aysVoice(),chunks=(String(t).replace(/["“”*]/g,'').replace(/\s*\n+\s*/g,'. ').match(/[^.!?…:]+[.!?…:]*/g)||[]).map(function(c){return c.trim();}).filter(Boolean);chunks.forEach(function(c,idx){var u=new SpeechSynthesisUtterance(c);u.lang='tr-TR';if(v)u.voice=v;u.rate=0.97;u.pitch=1.02;if(idx===chunks.length-1)u.onend=done;speechSynthesis.speak(u);});}catch(_){}}
+  async function aysSay(t){t=String(t||'').trim();if(!t)return;aysStop();var my=AYS_SEQ,done=function(){if(my===AYS_SEQ&&voiceSession&&mode==='help'&&!el.hidden&&!askBusy&&!micOn)listen();};
     try{if(!AYS_AC)throw 0;var r=await fetch(SB.url+'/functions/v1/yardim',{method:'POST',headers:{'Content-Type':'application/json',apikey:SB.key},body:JSON.stringify({mode:'ses',text:t})});
       if(!r.ok||!/audio/.test(r.headers.get('content-type')||''))throw 0;var buf=await r.arrayBuffer();if(my!==AYS_SEQ)return;
       var ab=await new Promise(function(ok,no){AYS_AC.decodeAudioData(buf,ok,no);});if(my!==AYS_SEQ)return;if(AYS_AC.state==='suspended')await AYS_AC.resume();
-      var s=AYS_AC.createBufferSource();s.buffer=ab;s.connect(AYS_AC.destination);s.start(0);AYS_SRC=s;}
-    catch(_){if(my===AYS_SEQ)aysLocal(t);}}
-  function say(t){if(!TTS||!ttsOn||!t)return;aysSay(t);}
-  function micStop(){micOn=false;try{if(rec)rec.stop();}catch(_){}var m=document.querySelector('.gd-mic');if(m)m.classList.remove('on');var i2=document.getElementById('gdAsk');if(i2)i2.placeholder='Örn. Logoyu sağ göğse nasıl koyarım?';}
-  function micStart(){if(!SR)return;aysAc();if(micOn){micStop();return;}aysStop();
+      var s=AYS_AC.createBufferSource();s.buffer=ab;s.connect(AYS_AC.destination);s.onended=done;s.start(0);AYS_SRC=s;}
+    catch(_){if(my===AYS_SEQ)aysLocal(t,done);}}
+  function say(t){if(!t)return;if(TTS&&(ttsOn||voiceSession))aysSay(t);else if(voiceSession&&!el.hidden&&!micOn)listen();}
+  function micStop(){micOn=false;try{if(rec)rec.stop();}catch(_){}var m=document.querySelector('.gd-mic');if(m){m.classList.toggle('on',voiceSession);m.setAttribute('aria-pressed',String(voiceSession));m.setAttribute('aria-label',voiceSession?'Sesli konuşmayı durdur':'Aybüke ile konuş');}var i2=document.getElementById('gdAsk');if(i2)i2.placeholder='Örn. Logoyu sağ göğse nasıl koyarım?';}
+  function micStart(){if(!SR)return;aysAc();if(voiceSession){voiceSession=false;micStop();aysStop();return;}voiceSession=true;aysStop();listen();}
+  function listen(){if(!SR||el.hidden||mode!=='help')return;
     rec=new SR();rec.lang='tr-TR';rec.interimResults=true;rec.continuous=false;rec.maxAlternatives=1;var fin='';
     rec.onresult=function(e){var t='';for(var k=e.resultIndex;k<e.results.length;k++){if(e.results[k].isFinal)fin+=e.results[k][0].transcript;else t+=e.results[k][0].transcript;}var i2=document.getElementById('gdAsk');if(i2)i2.value=(fin+t).trim();};
-    rec.onerror=function(e){micStop();if(e&&/not-allowed|service-not-allowed/.test(e.error))toast('Mikrofon izni verilmedi. Telefonun ayarlarından bu siteye mikrofon izni ver.');};
-    rec.onend=function(){var was=micOn;micStop();var v=(fin||'').trim();if(was&&v){var i2=document.getElementById('gdAsk');if(i2)i2.value='';askSend(v);}};
-    try{rec.start();micOn=true;var m=document.querySelector('.gd-mic');if(m)m.classList.add('on');var i3=document.getElementById('gdAsk');if(i3){i3.value='';i3.placeholder='Dinliyorum, konuş…';}}catch(_){micStop();}}
+    rec.onerror=function(e){voiceSession=false;micStop();if(e&&/not-allowed|service-not-allowed/.test(e.error))toast('Mikrofon izni verilmedi. Telefonun ayarlarından bu siteye mikrofon izni ver.');};
+    rec.onend=function(){var was=micOn;micStop();var v=(fin||'').trim();if(was&&!v){voiceSession=false;micStop();}if(was&&v){var i2=document.getElementById('gdAsk');if(i2)i2.value='';askSend(v);}};
+    try{rec.start();micOn=true;var m=document.querySelector('.gd-mic');if(m){m.classList.add('on');m.setAttribute('aria-pressed','true');m.setAttribute('aria-label','Sesli konuşmayı durdur');}var i3=document.getElementById('gdAsk');if(i3){i3.value='';i3.placeholder='Dinliyorum, konuş…';}}catch(_){voiceSession=false;micStop();}}
   if(TTS)try{speechSynthesis.getVoices();speechSynthesis.onvoiceschanged=function(){};}catch(_){}
   var ASK=[],askBusy=false;try{ASK=JSON.parse(sessionStorage.getItem('wf_ask')||'[]')||[];}catch(_){ASK=[];}
   function askEsc(t){return String(t).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}).replace(/\n/g,'<br>');}
@@ -6869,11 +6870,19 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
     var photos=ayFaces(),upload=$('#gdUploadLabel'),preview=$('#gdPreview');
     if(!upload||!preview)return;
     upload.hidden=!photos.length;
-    preview.hidden=true;
+    var views=$('#gdMugViews');views.replaceChildren();preview.hidden=true;
     if(!photos.length||photos.some(function(o){return o.phEmpty;}))return;
     var sig=designSig(),canvas=await renderPreview('front',1,true);
     if(sig!==designSig())return;
     preview.src=canvas.toDataURL('image/png');preview.hidden=false;
+    var scenes=await Promise.allSettled([mugScene('front',1,360,'tableR'),mugScene('front',-1,360,'table')]);
+    if(sig!==designSig()||!views.isConnected)return;
+    views.replaceChildren();
+    scenes.forEach(function(scene,i){
+      if(scene.status!=='fulfilled')return;
+      var picture=scene.value;picture.style.width='50%';picture.setAttribute('role','img');
+      picture.setAttribute('aria-label',i?'Kupa, kulp solda':'Kupa, kulp sağda');views.appendChild(picture);
+    });
   }
   function ayFinish(a){
     ASK.push({role:'assistant',text:a});askBusy=false;say(a);
@@ -6884,7 +6893,7 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
     var q=normTR(t).replace(/[.!?]+$/,'').trim(),photos=ayFaces();
     var name=/\b(motosiklet|motor)/.test(q)?'Benim Motorum':/\b(araba|otomobil)/.test(q)?'Benim Arabam':'';
     var theme=/\bmavi/.test(q)?'Duman mavisi':/\bkum\b|\bbej\b/.test(q)?'Kum tonu':'';
-    if((name&&/\bkupa/.test(q)&&/\b(yap|hazirla|tasarla|istiyorum)/.test(q))||(photos.length&&theme&&/\b(zemin|arka plan)/.test(q))){
+    if((name&&/\bkupa/.test(q)&&/\b(yap|hazirla|tasarla|istiyorum)/.test(q)&&!/\b(nasil|yapma|hazirlama|tasarlama)\b/.test(q))||(photos.length&&theme&&/\b(zemin|arka plan)/.test(q))){
       if(name){
         chooseProduct('mug','sub');
         ayVehicle=name;
@@ -6903,7 +6912,7 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
     if(caption){
       var value=caption[2].trim().replace(/^["“‘']|["”’']$/g,''),where=normTR(caption[1]);
       if(!value)return 'Kupaya ne yazmamı istersin?';
-      var pos=/alt/.test(where)?'bottom':'top';
+      var pos=caption[1].match(/(?:üstüne|üstte|alta|altına|altta)$/iu)[0].toLocaleLowerCase('tr').startsWith('alt')?'bottom':'top';
       var faces=/\bsag/.test(where)&&!/\bsol/.test(where)?['right']:/\bsol/.test(where)&&!/\bsag/.test(where)?['left']:['left','right'];
       faces.forEach(function(face){editMugVehicleText(face+'-'+pos,value);});
       ayApproval=null;await showAybukeDesign();
@@ -6921,7 +6930,10 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
       if(photos.some(function(o){return o.phEmpty;}))return 'Önce araç fotoğrafını yükle. İki yüzü de hazırlayayım.';
       var sig=designSig(),price=priceInfo().unit;
       if(q==='sepete ekle'&&ayApproval&&ayApproval.sig===sig&&ayApproval.price===price){
-        ayApproval=null;return (await addToCart(true))?'Bir adet kupayı sepete ekledim.':'Kupa sepete eklenemedi. Biraz sonra tekrar deneyebilirsin.';
+        ayApproval=null;
+        var existing=cartItems.some(function(item){return item.sig===sig;});
+        if(!await addToCart(true))return 'Kupa sepete eklenemedi. Biraz sonra tekrar deneyebilirsin.';
+        return existing?'Bu tasarım zaten sepetinde.':'Bir adet kupayı sepete ekledim.';
       }
       await showAybukeDesign();
       ayApproval={sig:sig,price:price};
@@ -6929,6 +6941,7 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
     }
     return '';
   }
+  el.addEventListener('click',function(e){if(e.target.id==='gdPhoto'){micStop();aysStop();}});
   el.addEventListener('change',async function(e){
     if(e.target.id!=='gdPhoto')return;
     var f=e.target.files[0],slot=ayFaces()[0];e.target.value='';
@@ -6954,7 +6967,7 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
     if(e.target===el){close();return;}
     var b=e.target.closest('[data-gd]');if(!b)return;var a=b.dataset.gd;
     if(a==='mic'){micStart();return;}
-    if(a==='skip'){micStop();aysStop();close();}else if(a==='tour')tour(0);
+    if(a==='skip'){close();}else if(a==='tour'){voiceSession=false;micStop();aysStop();tour(0);}
     else if(a==='next'){if(i>=GD.length-1)close();else tour(i+1);}
   });
   var sx=null;
