@@ -3315,7 +3315,7 @@ async function cartoonSlot(o,st){
 function slotEmpty(){var n=0;['front','logo','logo2','back'].forEach(function(sd){((state[sd]&&state[sd].objs)||[]).forEach(function(o){if(o.phEmpty)n++;});});return n;}
 /* Fotoğraf yerine yeni fotoğraf: yer aynı kalır, fotoğraf ortadan kırpılıp yere sığdırılır, kenar tarzı korunur */
 function slotAspect(o){var inset=o.teePhoto?2*(o.bw||0):0;return Math.max(1,o.w-inset)/Math.max(1,o.h-inset);}
-async function petPortrait(url){
+async function photoCutout(url,fullVehicle){
   var blob=await aiRemoveBg(url),cutout=URL.createObjectURL(blob);
   try{
     var im=await loadImg(cutout),canvas=document.createElement('canvas');
@@ -3329,14 +3329,16 @@ async function petPortrait(url){
       else {l=Math.min(l,x);t=Math.min(t,y);r=Math.max(r,x);b=Math.max(b,y);}
     }
     if(r<l||clear<w*h*.01)throw Error('portrait cutout unavailable');
-    var headH=Math.min(b-t+1,Math.round((r-l+1)*1.08)),headW=r-l+1;
+    var headW=r-l+1,headH=fullVehicle?b-t+1:Math.min(b-t+1,Math.round(headW*1.08));
     var size=Math.max(headW,headH),out=document.createElement('canvas');out.width=out.height=size;
     var ox=out.getContext('2d'),left=(size-headW)/2;
     ox.drawImage(canvas,l,t,headW,headH,left,0,headW,headH);
-    ox.globalCompositeOperation='destination-in';
-    var fade=ox.createLinearGradient(0,0,0,headH);
-    fade.addColorStop(0,'#000');fade.addColorStop(.79,'#000');fade.addColorStop(1,'transparent');
-    ox.fillStyle=fade;ox.fillRect(0,0,size,size);
+    if(!fullVehicle){
+      ox.globalCompositeOperation='destination-in';
+      var fade=ox.createLinearGradient(0,0,0,headH);
+      fade.addColorStop(0,'#000');fade.addColorStop(.79,'#000');fade.addColorStop(1,'transparent');
+      ox.fillStyle=fade;ox.fillRect(0,0,size,size);
+    }
     var result=await new Promise(function(resolve){out.toBlob(resolve,'image/png');});
     if(!result)throw Error('portrait export unavailable');
     return {url:URL.createObjectURL(result),w:size,h:size,up:true,nobg:true};
@@ -3346,15 +3348,15 @@ async function fillSlot(o,file,quiet){
   var url=URL.createObjectURL(file),im=await loadImg(url);
   url=await uploadedPhotoURL(file,url,im);
   var id='a'+(++assetN);assets[id]={url:url,w:im.naturalWidth,h:im.naturalHeight,up:true};assetList.push(id);renderUploads();
-  if(o.petPhoto){
-    var side=cur(),portrait;
-    try{bgToast('Hayvan portresinin arka planı kaldırılıyor…');portrait=await petPortrait(url);}
-    catch(_){if(quiet)throw Error('portrait');longToast('Portre ayrıştırılamadı. Baş ve kulakların net göründüğü başka bir fotoğraf dene.');return;}
+  if(o.petPhoto||o.vehiclePhoto){
+    var side=cur(),portrait,vehicle=!!o.vehiclePhoto;
+    try{bgToast('Fotoğrafın arka planı kaldırılıyor…');portrait=await photoCutout(url,vehicle);}
+    catch(_){if(quiet)throw Error('portrait');longToast(vehicle?'Araç ayrıştırılamadı. Aracın tamamının net göründüğü başka bir fotoğraf dene.':'Portre ayrıştırılamadı. Baş ve kulakların net göründüğü başka bir fotoğraf dene.');return;}
     if(cur()!==side||side.objs.indexOf(o)<0){URL.revokeObjectURL(portrait.url);return;}
     var petId='a'+(++assetN);assets[petId]=portrait;
     o.assetId=petId;o.base=petId;o.crop={x:0,y:0,w:1,h:1};o.phs='none';o.phe='none';delete o.phEmpty;
     renderObjects();select(o.id);pushHist();
-    if(!quiet)toast('Hayvan portresi yerleşti.');
+    if(!quiet)toast(vehicle?'Araç yerleşti. İstersen Yazı bölümünden adını veya model yılını ekle.':'Hayvan portresi yerleşti.');
     return;
   }
   var A=slotAspect(o),asp=im.naturalWidth/im.naturalHeight,cr={x:0,y:0,w:1,h:1};
@@ -3712,7 +3714,7 @@ function moveZ(dir){
 function remap(c,oa,na){
   var topAnchored=!oa.at&&!na.at;
   c.objs.forEach(function(o){
-    if(o.petPhoto&&topAnchored&&Math.min(oa.w,oa.h)!==Math.min(na.w,na.h)){
+    if((o.petPhoto||o.vehiclePhoto)&&topAnchored&&Math.min(oa.w,oa.h)!==Math.min(na.w,na.h)){
       var oldSize=Math.min(28*PPC,Math.min(oa.w,oa.h)),newSize=Math.min(28*PPC,Math.min(na.w,na.h));
       o.w*=newSize/oldSize;o.h*=newSize/oldSize;
       o.x=na.cx;o.y=na.t+o.h/2;return;
@@ -4083,15 +4085,18 @@ function editTeePhotoText(position){
 ['Kedi','Köpek'].forEach(function(name){
   TPLS.push({n:name+' · Çerçevesiz portre',c:'Fotoğraflı tişört',p:'giyim',product:'tee',yon:'dikey',petPhoto:true,box:[100,100],items:[{t:'ph',e:'none',w:100,h:100,dx:0,dy:0}]});
 });
+['Benim Arabam','Benim Motorum'].forEach(function(name){
+  TPLS.push({n:name,c:'Fotoğraflı tişört',p:'giyim',product:'tee',yon:'dikey',vehiclePhoto:true,box:[100,100],items:[{t:'ph',e:'none',w:100,h:100,dx:0,dy:0}]});
+});
 function applyTemplate(t,silent){
-  if(t.petPhoto){
+  if(t.petPhoto||t.vehiclePhoto){
     if(!tplFits(t))return;
     var area=cur().area==='a3'?'a3':'a4';
     if(areasFor(view.side).indexOf(area)<0)return;
     selectArea(area,false);
     var bounds=areaBox(view.side,area),size=(area==='a3'?28:21)*PPC;
     var slot=tplObjects(t,{cx:bounds.cx,cy:bounds.t+size/2},size/100,autoInk())[0];
-    slot.petPhoto=true;
+    if(t.vehiclePhoto)slot.vehiclePhoto=true;else slot.petPhoto=true;
     cur().objs=cur().objs.filter(function(o){return o.lock&&!o.thru;}).concat(slot);
     if(view.tab==='tpl')closeTab();
     select(null);renderAll();pushHist();
