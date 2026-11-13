@@ -4405,6 +4405,8 @@ function renderTpl(){
   if(view.tplArea!=='Tümü'&&!measures[view.tplArea])view.tplArea='Tümü';
   var fc='';
   ['dikey','yatay'].forEach(function(v){fc+='<button data-td="'+v+'"'+(view.tplDir===v?' class="on"':'')+' aria-pressed="'+(view.tplDir===v?'true':'false')+'">'+(v==='dikey'?'Dikey':'Yatay')+'</button>';});
+  $('#tplFilters').hidden=!(state.product==='tee'||state.product==='sweat'||state.product==='polo'||state.product==='canvas');
+  if($('#tplFilters').hidden)view.tplDir='Tümü';
   $('#tplFilters').innerHTML=fc;
   TPL_CATS.forEach(function(c){if(c!=='Tümü'&&!has[c])return;cc+='<button data-tc="'+c+'"'+(c===view.tplCat&&!q?' class="on"':'')+'>'+c+'</button>';});
   $('#tplCats').innerHTML=cc;
