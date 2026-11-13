@@ -2309,7 +2309,7 @@ var IC={
   dup:'<svg viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V6a2 2 0 0 1 2-2h9"/></svg>'
 };
 /* Tümünü seç: kilitsiz bütün öğeler tek kutuda; köşedeki noktayla hep birlikte büyür/küçülür/döner, sürükleyince hep birlikte taşınır */
-function grpObjs(){return cur().objs.filter(function(o){return (!o.lock||o.musicInk)&&!o.oilSlot&&!o.oilBg;});}
+function grpObjs(){return cur().objs.filter(function(o){return (!o.lock||o.musicInk)&&!o.oilBg&&!(o.oilSlot&&o.phEmpty);});}
 function grpBox(){
   var L=1e9,R=-1e9,T=1e9,B=-1e9;
   grpObjs().forEach(function(o){var ik=inkOf(o);if(!ik)inkEnsure(o);var w=ik?ik.w:o.w,h=ik?ik.h:o.h,c=inkCenter(o),a=o.rot*PI/180,
@@ -4657,7 +4657,7 @@ function ctxClick(e){
   if(c!=='gdel')view.gdel=false;
   if(c==='gcenter'){var GX=grpBox(),GA=areaBox(view.side,cur().area);if(GX){var ddx=GA.cx-GX.cx,ddy=GA.cy-GX.cy;grpObjs().forEach(function(q){q.x+=ddx;q.y+=ddy;place(els[q.id],q);});updateSel();var ab2=$('#areaBox');ab2.classList.add('onV','onH');setTimeout(centerOff,900);pushHist();toast('Tasarım baskı alanına ortalandı');}return;}
   if(view.grp)return;
-  var fixed=selObj();if(fixed&&(fixed.oilBg||fixed.oilSlot)&&['lock','center','zin','zout','fwd','bwd','dup','fill','all'].indexOf(c)>=0)return;
+  var fixed=selObj();if(fixed&&(fixed.oilBg||fixed.oilSlot)&&['lock','center','zin','zout','fwd','bwd','dup','fill'].indexOf(c)>=0)return;
   if(c==='lock'){toggleLock();return;}
   if(c==='swap'){var so=selObj();if(so&&!so.lock){view.swapId=so.id;$('#swapIn').click();}return;}
   if(selObj()&&selObj().lock)return;
