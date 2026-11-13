@@ -3370,7 +3370,7 @@ async function fillSlot(o,file,quiet){
     targets.forEach(function(q){q.assetId=petId;q.base=petId;q.crop={x:0,y:0,w:1,h:1};q.phs='none';q.phe='none';delete q.phEmpty;});
     renderObjects();select(o.id);pushHist();
     if(!quiet)toast(mugSide?'Araç iki yüze yerleşti. İstersen üst veya alt yazı ekle.':vehicle?'Araç yerleşti. İstersen Yazı bölümünden adını veya model yılını ekle.':'Hayvan portresi yerleşti.');
-    return;
+    return true;
   }
   var A=slotAspect(o),asp=im.naturalWidth/im.naturalHeight,cr={x:0,y:0,w:1,h:1};
   if(asp>A){cr.w=A/asp;cr.x=(1-cr.w)/2;}else{cr.h=asp/A;cr.y=(1-cr.h)/2;}
@@ -4141,7 +4141,7 @@ function applyMugVehicleTemplate(t,silent){
   select(null);renderAll();pushHist();
   if(!silent&&!previous)slotPick(layers[1].id);
 }
-function editMugVehicleText(position){
+function editMugVehicleText(position,value){
   if(!mugWrap()||!cur().objs.some(function(o){return o.mugVehicleFace;}))return;
   var o=cur().objs.find(function(q){return q.mugVehicleText===position;});
   if(!o){
@@ -4151,6 +4151,7 @@ function editMugVehicleText(position){
     o.y=A.t+A.h*(position.endsWith('-top')?.12:.88);o.size=.5*PPC;
     cur().objs.push(o);renderObjects();pushHist();
   }
+  if(value!==undefined){o.value=value;renderObjects();pushHist();return o;}
   select(o.id);openTab('text',true);
 }
 function applyTemplate(t,silent){
@@ -6817,13 +6818,13 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
   function help(){
     mode='help';
     el.innerHTML='<div class="gd-card gd-help"><div class="gd-top"><h2 id="gdTitle">Nasıl kullanılır?</h2><button type="button" class="ib" data-gd="skip" aria-label="Kapat"><svg class="i" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>'+
-      '<div class="gd-ask"><div class="gd-ah"><img src="'+AYB+'" alt="" width="44" height="44"><span><b>Aybüke\'ye sor</b><small>Ben Aybüke, tasarım asistanın. Takıldığın yeri yaz; nasıl yapacağını adım adım anlatayım.</small></span></div><div class="gd-msgs" id="gdMsgs">'+askHtml()+'</div>'+
-      '<form class="gd-in" id="gdAskF">'+(SR?'<button type="button" class="gd-mic'+(micOn?' on':'')+'" data-gd="mic" aria-label="Konuşarak sor"><svg class="i" viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></button>':'')+'<input id="gdAsk" maxlength="400" placeholder="'+(micOn?'Dinliyorum, konuş…':'Örn. Logoyu sağ göğse nasıl koyarım?')+'" autocomplete="off" enterkeyhint="send"><button type="submit" class="primary" aria-label="Gönder">Sor</button></form>'+
+      '<div class="gd-ask"><div class="gd-ah"><img src="'+AYB+'" alt="" width="44" height="44"><span><b>Aybüke\'ye sor</b><small>Ben Aybüke, tasarım asistanın. Ne hazırlayalım? Örneğin, babamın arabasıyla bir kupa yap.</small></span></div><div class="gd-msgs" id="gdMsgs">'+askHtml()+'</div><div id="gdDesign"><label id="gdUploadLabel" hidden>Araç fotoğrafını yükle <input id="gdPhoto" type="file" accept="image/*"></label><img id="gdPreview" hidden alt="Kupanın iki yüzünün baskı önizlemesi" style="width:100%;max-height:180px;object-fit:contain"></div>'+
+      '<form class="gd-in" id="gdAskF">'+(SR?'<button type="button" class="gd-mic'+(micOn?' on':'')+'" data-gd="mic" aria-label="Aybüke ile konuş"><svg class="i" viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></button>':'')+'<input id="gdAsk" maxlength="400" placeholder="'+(micOn?'Dinliyorum, konuş…':'Örn. Logoyu sağ göğse nasıl koyarım?')+'" autocomplete="off" enterkeyhint="send"><button type="submit" class="primary" aria-label="Gönder">Sor</button></form>'+
       (TTS?'<label class="gd-tts"><input type="checkbox" data-gdtts="1"'+(ttsOn?' checked':'')+'> Aybüke cevapları sesli okusun</label>':'')+'</div>'+
       '<ol class="gd-list">'+GD.map(function(d,k){return '<li><span class="n">'+(k+1)+'</span><span><b>'+d.t+'</b>'+d.p+'</span></li>';}).join('')+'</ol>'+
       '<h3>Sık sorulanlar</h3><div class="gd-faq">'+FAQ.map(function(q){return '<details><summary>'+q[0]+'</summary><p>'+q[1]+'</p></details>';}).join('')+'</div>'+
       '<div class="gd-nav"><button type="button" class="gd-skip" data-gd="tour">Tanıtımı yeniden izle</button><button type="button" class="primary" data-gd="skip">Tamam</button></div></div>';
-    el.hidden=false;
+    el.hidden=false;showAybukeDesign().catch(function(){});
   }
   /* Asistan: sorular stüdyonun kurallarını bilen yardım asistanına (sunucu: yardim) gider; konuşma yalnız bu cihazda tutulur */
   /* Asistanın görseli: assets/aybuke içinde aybuke.webp/png/jpg varsa o, yoksa çizim (aybuke.svg) */
@@ -6860,12 +6861,93 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
   function askCtx(){var c=[];try{c.push('Ürün: '+productLabel());c.push('Açık yüz: '+(SIDE_NAME[view.side]||view.side)+', alan: '+AREAS[cur().area].name);
     var fe=function(k){try{return Math.round(areaFee(k));}catch(_){return null;}};c.push('Ürünün baskısız fiyatı: '+Math.round(basePrice())+' TL');
     c.push('Baskı ücretleri: logo '+fe('logo')+' TL (her logo), A4 '+fe('a4')+' TL, A3 '+fe('a3')+' TL'+(state.product==='hat'?', şapka '+fe('hat')+' TL':''));
-    c.push('Şu anki toplam: '+Math.round(priceInfo().unit)+' TL / adet');}catch(_){}return c.join('. ');}
+    c.push('Şu anki toplam: '+Math.round(priceInfo().unit)+' TL / adet');
+    c.push('Yalnız doğrulanmış ürün bilgilerini söyle. Kumaş gramajı, boya sertifikası ve sağlık iddiası için bu ürünün doğrulanmış verisi yoksa bunu açıkça belirt.');}catch(_){}return c.join('. ');}
+  var ayVehicle='',ayApproval=null;
+  function ayFaces(){return mugWrap()?cur().objs.filter(function(o){return o.mugVehicleFace;}):[];}
+  async function showAybukeDesign(){
+    var photos=ayFaces(),upload=$('#gdUploadLabel'),preview=$('#gdPreview');
+    if(!upload||!preview)return;
+    upload.hidden=!photos.length;
+    preview.hidden=true;
+    if(!photos.length||photos.some(function(o){return o.phEmpty;}))return;
+    var sig=designSig(),canvas=await renderPreview('front',1,true);
+    if(sig!==designSig())return;
+    preview.src=canvas.toDataURL('image/png');preview.hidden=false;
+  }
+  function ayFinish(a){
+    ASK.push({role:'assistant',text:a});askBusy=false;say(a);
+    try{sessionStorage.setItem('wf_ask',JSON.stringify(ASK.slice(-16)));}catch(_){}
+    askPaint();
+  }
+  async function ayAction(t){
+    var q=normTR(t).replace(/[.!?]+$/,'').trim(),photos=ayFaces();
+    var name=/\b(motosiklet|motor)/.test(q)?'Benim Motorum':/\b(araba|otomobil)/.test(q)?'Benim Arabam':'';
+    var theme=/\bmavi/.test(q)?'Duman mavisi':/\bkum\b|\bbej\b/.test(q)?'Kum tonu':'';
+    if((name&&/\bkupa/.test(q)&&/\b(yap|hazirla|tasarla|istiyorum)/.test(q))||(photos.length&&theme&&/\b(zemin|arka plan)/.test(q))){
+      if(name){
+        chooseProduct('mug','sub');
+        ayVehicle=name;
+      }
+      var tpl=TPLS.find(function(x){return x.mugVehicle&&x.n===(ayVehicle||'Benim Arabam')+' · '+(theme||'Kum tonu')&&tplFits(x);});
+      if(!tpl)return 'Çift yüzlü tasarım için 20 × 9 santimetre baskı alanı olan süblimasyon kupa gerekiyor.';
+      applyTemplate(tpl,true);ayApproval=null;
+      await showAybukeDesign();
+      return ayFaces().some(function(o){return o.phEmpty;})?'Kupa şablonunu hazırladım. Araç fotoğrafını yükle, iki yüze ben yerleştireyim.':'Zemini güncelledim. Yeni baskı önizlemesi hazır.';
+    }
+    if(photos.length&&/\b(gramaj|murekkep|boya|sagliga|sertifika|kalite)/.test(q)){
+      return 'Bu kupa için süblimasyon baskı kullanıyoruz. Mürekkebin sağlık uygunluğu belgesine ilişkin doğrulanmış bilgi şu anda ürün kartında yok.';
+    }
+    if(!photos.length)return '';
+    var caption=t.match(/^(.*?(?:üstüne|üstte|alta|altına|altta))\s+(.+?)\s+yaz[.!?]?$/iu);
+    if(caption){
+      var value=caption[2].trim().replace(/^["“‘']|["”’']$/g,''),where=normTR(caption[1]);
+      if(!value)return 'Kupaya ne yazmamı istersin?';
+      var pos=/alt/.test(where)?'bottom':'top';
+      var faces=/\bsag/.test(where)&&!/\bsol/.test(where)?['right']:/\bsol/.test(where)&&!/\bsag/.test(where)?['left']:['left','right'];
+      faces.forEach(function(face){editMugVehicleText(face+'-'+pos,value);});
+      ayApproval=null;await showAybukeDesign();
+      return 'Yazıyı ekledim. İstersen yazı tipini değiştirebilirim. Örneğin, yazı tipini Manrope yap.';
+    }
+    if(/\byazi (tipi|karakteri)/.test(q)){
+      var font=FONTS.filter(function(f){return (' '+q+' ').includes(' '+normTR(f[0])+' ');}).sort(function(a,b){return b[0].length-a[0].length;})[0];
+      var texts=cur().objs.filter(function(o){return o.mugVehicleText;});
+      if(!texts.length)return 'Önce kupaya yazmak istediğin metni söyle.';
+      if(!font)return 'Hangi yazı tipini istersin? Örneğin Manrope veya Cormorant Garamond.';
+      texts.forEach(function(o){o.font=font[0];});renderObjects();pushHist();
+      ayApproval=null;await showAybukeDesign();return 'Yazı tipini '+font[0]+' yaptım.';
+    }
+    if(/^(onizlemeyi goster|bu hali (guzel|tamam)|tasarimi onayliyorum|sepete ekle)$/.test(q)){
+      if(photos.some(function(o){return o.phEmpty;}))return 'Önce araç fotoğrafını yükle. İki yüzü de hazırlayayım.';
+      var sig=designSig(),price=priceInfo().unit;
+      if(q==='sepete ekle'&&ayApproval&&ayApproval.sig===sig&&ayApproval.price===price){
+        ayApproval=null;return (await addToCart(true))?'Bir adet kupayı sepete ekledim.':'Kupa sepete eklenemedi. Biraz sonra tekrar deneyebilirsin.';
+      }
+      await showAybukeDesign();
+      ayApproval={sig:sig,price:price};
+      return 'İki yüzün baskı önizlemesi hazır. Bir adet süblimasyon kupa '+fmt(price)+'. Tasarımı onaylıyorsan sepete ekle diyebilirsin.';
+    }
+    return '';
+  }
+  el.addEventListener('change',async function(e){
+    if(e.target.id!=='gdPhoto')return;
+    var f=e.target.files[0],slot=ayFaces()[0];e.target.value='';
+    if(!f||!slot||askBusy)return;
+    askBusy=true;askPaint();aysAc();
+    try{
+      var placed=await fillSlot(slot,f,true);
+      if(!placed||!ayFaces().includes(slot)||slot.phEmpty)throw Error('photo');
+      ayApproval=null;await showAybukeDesign();
+      ayFinish('Fotoğrafı kupanın iki yüzüne yerleştirdim. İstersen üstüne bir isim yazabilir veya zemini değiştirebilirim.');
+    }catch(_){ayFinish('Fotoğrafı hazırlayamadım. Aracın tamamının net göründüğü bir fotoğraf deneyebilirsin.');}
+  });
   async function askSend(t){t=String(t||'').trim();if(!t||askBusy)return;ASK.push({role:'user',text:t});ASK=ASK.slice(-16);askBusy=true;askPaint();
-    var a='';try{var r=await fetch(SB.url+'/functions/v1/yardim',{method:'POST',headers:{'Content-Type':'application/json',apikey:SB.key},body:JSON.stringify({messages:ASK.slice(-8),context:askCtx()})});
+    var a='';
+    try{a=await ayAction(t);}catch(_){a='İşlemi tamamlayamadım. Biraz sonra yeniden deneyebilirsin.';}
+    if(a){ayFinish(a);return;}
+    try{var r=await fetch(SB.url+'/functions/v1/yardim',{method:'POST',headers:{'Content-Type':'application/json',apikey:SB.key},body:JSON.stringify({messages:ASK.slice(-8),context:askCtx()})});
       var jj=await r.json().catch(function(){return {};});a=jj.cevap||jj.message||'';}catch(_){}
-    ASK.push({role:'assistant',text:a||'Şu an cevap veremedim. Biraz sonra yeniden dene ya da WhatsApp 0530 764 17 17 üzerinden bize yaz.'});askBusy=false;say(a);
-    try{sessionStorage.setItem('wf_ask',JSON.stringify(ASK.slice(-16)));}catch(_){}askPaint();}
+    ayFinish(a||'Şu an cevap veremedim. Biraz sonra yeniden dene ya da WhatsApp 0530 764 17 17 üzerinden bize yaz.');}
   el.addEventListener('change',function(e){var t=e.target;if(!t||!t.dataset||!t.dataset.gdtts)return;ttsOn=t.checked;try{localStorage.setItem('wf_ask_tts',ttsOn?'1':'0');}catch(_){}aysAc();if(!ttsOn)aysStop();else say('Merhaba, ben Aybüke. Cevaplarımı sesli okuyacağım.');});
   el.addEventListener('submit',function(e){var f=e.target;if(!f||f.id!=='gdAskF')return;e.preventDefault();aysAc();var i2=document.getElementById('gdAsk');var v=i2.value;i2.value='';askSend(v);});
   el.addEventListener('click',function(e){
