@@ -820,7 +820,8 @@ img{-webkit-touch-callout:none;-webkit-user-drag:none}
     <button class="ib" id="pgClose" aria-label="Geri"><svg class="i" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button>
     <h2>Ürün seç</h2>
   </div>
-  <div class="o-body" id="pgBody">
+  <iframe id="sharedProductPicker" title="Kendin tasarla · Ürün seç" style="width:100%;flex:1;min-height:0;border:0"></iframe>
+  <div class="o-body" id="pgBody" hidden>
     <div class="pgf" id="pgFilter"></div><div hidden><em id="pgColorName"></em><div id="pgColors"></div></div>
     <p class="note" style="margin:0">A4 ve A3 baskı boğaz (arkada ense) çizgisinden yetişkin bedenlerde 6,5 cm, çocuk bedenlerinde 8 cm aşağıda başlar. Logo sol göğüste 8 × 8 cm, yakadan ve orta çizgiden her üründe aynı ölçüde. Ürüne dokununca tasarımına dönersin; tasarımın kaybolmaz.</p>
     <div class="pg-list" id="pgList"></div>
@@ -3770,8 +3771,22 @@ function chooseProduct(p,c,skipTransferPrompt){
   toast((state.product==='canvas'?CUT_NAME[state.cut]:productLabel())+': '+(state.product==='mug'?(state.cut==='sub'?'kupanın çevresini saran 20 × 9 cm süblimasyon baskı.':'kulpun iki yanına (ön ve arka) 8 × 8 cm baskı.'):P().rule));
 }
 function syncProduct(){}
-function openProdPage(){closeTab();select(null);renderProdPage();$('#prodPage').hidden=false;$('#pgBody').scrollTop=0;}
+function openProdPage(){closeTab();select(null);var picker=$('#sharedProductPicker');if(!picker.hasAttribute('src'))picker.src='index.html?studioPicker=1#tasarla';$('#prodPage').hidden=false;}
 function closeProdPage(){$('#prodPage').hidden=true;}
+window.addEventListener('message',function(e){
+  var picker=$('#sharedProductPicker');
+  if(e.origin!==location.origin||e.source!==picker.contentWindow||$('#prodPage').hidden||!e.data||e.data.type!=='wolflano-product-selected'||typeof e.data.query!=='string')return;
+  var q=new URLSearchParams(e.data.query),p=q.get('urun'),c=q.get('kesim');
+  if(!Object.prototype.hasOwnProperty.call(PRODUCTS,p))return;
+  var cuts=PRODUCTS[p].cuts,model=q.get('model')||'',kulp=q.get('kulp'),color=q.get('renk'),size=q.get('beden');
+  state.bid=model;state.kulp=/^[0-9a-f]{6}$/i.test(kulp||'')?'#'+kulp:'';
+  chooseProduct(p,cuts.indexOf(c)>=0?c:cuts[0]);
+  if(color&&/^\d+$/.test(color))color=(TEES[+color]||[])[1];
+  if(color){var match=TEES.find(function(t){return t[1].toLowerCase()===color.toLowerCase();});if(match)teeSwap(match[1]);}
+  if(size&&sizeList().indexOf(size)>=0){state.sizes={};state.sizes[size]=1;}
+  else if(!isStd()&&sizeList().length)openTab('opt');
+  renderAll();pushHist();
+});
 /* Ürün seç: sitedeki "Baskıya uygun ürünler" ile aynı düzen. Sekmeler Tümü · Kadın · Erkek · Çocuk · Kupa · Canvas,
    giyim sekmelerinde tür kutusu; her kartta o ürünün renkleri (yalnız o kartın fotoğrafını değiştirir) */
 var PG={tab:'',type:'',open:false,col:{},kulp:{}},PG_TABS=[['','Tümü'],['kadin','Kadın'],['erkek','Erkek'],['cocuk','Çocuk'],['kupa','Kupa'],['canvas','Canvas']],PG_ORD=['tee','sweat','hood','zip','polo','hat','mug','canvas'],PG_G=['erkek','kadin','cocuk'];
