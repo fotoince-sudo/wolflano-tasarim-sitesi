@@ -25,24 +25,26 @@ async function testAybuke(){
       };
     });
     const html=fs.readFileSync('studyo.html','utf8').replace('  async function askSend(t){',
-      '  window.aybukeTest={cart:function(){return cartItems.length;},faces:ayFaces,objects:function(){return cur().objs;}};\n  async function askSend(t){');
+      '  window.aybukeTest={cart:function(){return cartItems.length;},faces:ayFaces,objects:function(){return cur().objs;},stubCutout:function(fn){aiRemoveBg=fn;}};\n  async function askSend(t){');
     await page.route('http://studio.test/**',route=>route.request().isNavigationRequest()
       ?route.fulfill({contentType:'text/html',body:html}):route.abort());
     await page.route('https://**/*',route=>route.abort());
     await page.goto('http://studio.test/studyo.html',{waitUntil:'domcontentloaded'});
     await page.evaluate(()=>{
-      aiRemoveBg=async()=>{
+      aybukeTest.stubCutout(async()=>{
         const canvas=document.createElement('canvas');canvas.width=286;canvas.height=150;
         const ctx=canvas.getContext('2d');ctx.fillStyle='#234';ctx.fillRect(15,35,256,85);
         return await new Promise(resolve=>canvas.toBlob(resolve,'image/png'));
-      };
+      });
     });
     await page.locator('#helpBtn').click();
     await page.locator('[data-gd="mic"]').click();
     async function speak(text,reply){
       await page.waitForFunction(()=>!!window.activeMicrophone);
       await page.evaluate(text=>window.speakToAybuke(text),text);
-      await page.locator('#gdMsgs .as').filter({hasText:reply}).last().waitFor();
+      await page.locator('#gdMsgs .as').filter({hasText:reply}).last().waitFor({timeout:9000}).catch(async error=>{
+        throw new Error((await page.locator('#gdMsgs').innerText())+'\n'+error.message);
+      });
     }
     await speak('Babamın arabasıyla kupa yap','Kupa şablonunu hazırladım');
     const photo=await page.evaluate(()=>{
