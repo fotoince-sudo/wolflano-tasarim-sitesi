@@ -683,6 +683,10 @@ img{-webkit-touch-callout:none;-webkit-user-drag:none}
       <button data-c="zem" id="zemBtn" hidden><svg class="i" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M3 15l5-5 4 4 3-3 6 6"/></svg><span>Zemin ekle</span></button>
       <label id="musicInkControl" hidden>Şablon rengi <select id="musicInk" aria-label="Şablon rengi"></select></label>
       <button type="button" data-c="tee-text-top" hidden>Üst yazı</button>
+      <button type="button" data-c="mug-vehicle-left-top" hidden>Sol üst yazı</button>
+      <button type="button" data-c="mug-vehicle-left-bottom" hidden>Sol alt yazı</button>
+      <button type="button" data-c="mug-vehicle-right-top" hidden>Sağ üst yazı</button>
+      <button type="button" data-c="mug-vehicle-right-bottom" hidden>Sağ alt yazı</button>
       <button type="button" data-c="tee-text-bottom" hidden>Alt yazı</button>
       <button type="button" data-c="tee-text-left" hidden>Sol yazı</button>
       <button type="button" data-c="tee-text-right" hidden>Sağ yazı</button>
@@ -2398,7 +2402,7 @@ function qualityOf(o){
   if(ppi>=75)return null;
   return {ppi:ppi,cls:'low',txt:'Fotoğraf küçük'};
 }
-function syncCtx(){syncCtx0();syncMusicInk();var teeText=state.product==='tee'&&cur().area==='a4'&&!isLand(view.side)&&cur().objs.some(function(o){return o.teePhoto;});$$('#ctxBar [data-c^="tee-text-"]').forEach(function(b){b.hidden=!teeText;});var zb=$('#zemBtn');if(zb){var layers=cur().objs;zb.hidden=!layers.length;if(!zb.hidden){ctx.hidden=false;zb.querySelector('span').textContent=tplFrame()||layers.some(function(o){return o.zem;})?'Zemini değiştir':'Zemin ekle';}}try{zemSync();}catch(_){}var sb=$('#stageBar');if(sb){var was=sb.hidden;sb.hidden=ctx.hidden||!$$('#stageBar button').some(function(b){return !b.hidden;});if(was!==sb.hidden&&!(view.g||view.drag))requestAnimationFrame(layout);}}
+function syncCtx(){syncCtx0();syncMusicInk();var teeText=state.product==='tee'&&cur().area==='a4'&&!isLand(view.side)&&cur().objs.some(function(o){return o.teePhoto;});$$('#ctxBar [data-c^="tee-text-"]').forEach(function(b){b.hidden=!teeText;});var mugText=mugWrap()&&cur().objs.some(function(o){return o.mugVehicleFace;});$$('#ctxBar [data-c^="mug-vehicle-"]').forEach(function(b){b.hidden=!mugText;});var zb=$('#zemBtn');if(zb){var layers=cur().objs;zb.hidden=!layers.length;if(!zb.hidden){ctx.hidden=false;zb.querySelector('span').textContent=tplFrame()||layers.some(function(o){return o.zem;})?'Zemini değiştir':'Zemin ekle';}}try{zemSync();}catch(_){}var sb=$('#stageBar');if(sb){var was=sb.hidden;sb.hidden=ctx.hidden||!$$('#stageBar button').some(function(b){return !b.hidden;});if(was!==sb.hidden&&!(view.g||view.drag))requestAnimationFrame(layout);}}
 /* Alt panel, seçim çubuğu ya da tarayıcı çubuğu açılıp kapanınca tasarım alanı yeniden sığdırılır (görsel kaybolmasın) */
 (function(){if(!window.ResizeObserver)return;var t=0,lw=0,lh=0;new ResizeObserver(function(en){var r=en[0].contentRect;if(Math.abs(r.width-lw)<1&&Math.abs(r.height-lh)<1)return;lw=r.width;lh=r.height;cancelAnimationFrame(t);t=requestAnimationFrame(function(){try{layout();}catch(_){}});}).observe(wrap);})();
 function syncCtx0(){
@@ -3251,7 +3255,8 @@ function slotMsg(ne){var cz=emptySlots().some(function(o){return o.ais;});return
 function emptySlots(){return cur().objs.filter(function(o){return o.phEmpty;}).sort(function(a,b){return Math.abs(a.y-b.y)>Math.min(a.h,b.h)*0.5?a.y-b.y:a.x-b.x;});}
 /* Boş yerlere dokununca: birden çok boş yer varsa çoklu seçim açılır, seçilen fotoğraflar sırayla kendiliğinden yerleşir */
 function slotPick(firstId){var E=emptySlots();if(!E.length)return;view.slotFirst=firstId||null;
-  if(E.length>1){try{$('#slotsIn').click();}catch(_){}}else{view.swapId=E[0].id;try{$('#swapIn').click();}catch(_){}}}
+  var paired=E.length>1&&E.every(function(o){return o.mugVehicleFace;});
+  if(E.length>1&&!paired){try{$('#slotsIn').click();}catch(_){}}else{view.swapId=paired&&firstId?firstId:E[0].id;try{$('#swapIn').click();}catch(_){}}}
 async function fillSlots(files){var E=emptySlots(),f=view.slotFirst;view.slotFirst=null;
   if(f){var i0=E.findIndex(function(o){return o.id===f;});if(i0>0)E=E.slice(i0).concat(E.slice(0,i0));}
   var n=Math.min(files.length,E.length),bad=0;
@@ -3315,7 +3320,7 @@ async function cartoonSlot(o,st){
 function slotEmpty(){var n=0;['front','logo','logo2','back'].forEach(function(sd){((state[sd]&&state[sd].objs)||[]).forEach(function(o){if(o.phEmpty)n++;});});return n;}
 /* Fotoğraf yerine yeni fotoğraf: yer aynı kalır, fotoğraf ortadan kırpılıp yere sığdırılır, kenar tarzı korunur */
 function slotAspect(o){var inset=o.teePhoto?2*(o.bw||0):0;return Math.max(1,o.w-inset)/Math.max(1,o.h-inset);}
-async function photoCutout(url,fullVehicle){
+async function photoCutout(url,fullVehicle,printAspect){
   var blob=await aiRemoveBg(url),cutout=URL.createObjectURL(blob);
   try{
     var im=await loadImg(cutout),canvas=document.createElement('canvas');
@@ -3331,8 +3336,12 @@ async function photoCutout(url,fullVehicle){
     if(r<l||clear<w*h*.01)throw Error('portrait cutout unavailable');
     var headW=r-l+1,headH=fullVehicle?b-t+1:Math.min(b-t+1,Math.round(headW*1.08));
     var size=Math.max(headW,headH),out=document.createElement('canvas');out.width=out.height=size;
-    var ox=out.getContext('2d'),left=(size-headW)/2;
-    ox.drawImage(canvas,l,t,headW,headH,left,0,headW,headH);
+    if(printAspect){
+      out.width=Math.ceil(Math.max(headW,headH*printAspect));
+      out.height=Math.ceil(Math.max(headH,headW/printAspect));
+    }
+    var ox=out.getContext('2d'),left=(out.width-headW)/2,top=printAspect?(out.height-headH)/2:0;
+    ox.drawImage(canvas,l,t,headW,headH,left,top,headW,headH);
     if(!fullVehicle){
       ox.globalCompositeOperation='destination-in';
       var fade=ox.createLinearGradient(0,0,0,headH);
@@ -3341,22 +3350,26 @@ async function photoCutout(url,fullVehicle){
     }
     var result=await new Promise(function(resolve){out.toBlob(resolve,'image/png');});
     if(!result)throw Error('portrait export unavailable');
-    return {url:URL.createObjectURL(result),w:size,h:size,up:true,nobg:true};
+    return {url:URL.createObjectURL(result),w:out.width,h:out.height,up:true,nobg:true};
   }finally{URL.revokeObjectURL(cutout);}
 }
+var mugVehicleUploads=new WeakMap();
 async function fillSlot(o,file,quiet){
+  var mugSide=o.mugVehicleFace?cur():null,request;
+  if(mugSide){request={};mugVehicleUploads.set(mugSide,request);}
   var url=URL.createObjectURL(file),im=await loadImg(url);
   url=await uploadedPhotoURL(file,url,im);
   var id='a'+(++assetN);assets[id]={url:url,w:im.naturalWidth,h:im.naturalHeight,up:true};assetList.push(id);renderUploads();
   if(o.petPhoto||o.vehiclePhoto){
     var side=cur(),portrait,vehicle=!!o.vehiclePhoto;
-    try{bgToast('Fotoğrafın arka planı kaldırılıyor…');portrait=await photoCutout(url,vehicle);}
+    try{bgToast('Fotoğrafın arka planı kaldırılıyor…');portrait=await photoCutout(url,vehicle,mugSide?o.w/o.h:0);}
     catch(_){if(quiet)throw Error('portrait');longToast(vehicle?'Araç ayrıştırılamadı. Aracın tamamının net göründüğü başka bir fotoğraf dene.':'Portre ayrıştırılamadı. Baş ve kulakların net göründüğü başka bir fotoğraf dene.');return;}
-    if(cur()!==side||side.objs.indexOf(o)<0){URL.revokeObjectURL(portrait.url);return;}
+    if(cur()!==side||side.objs.indexOf(o)<0||(mugSide&&mugVehicleUploads.get(mugSide)!==request)){URL.revokeObjectURL(portrait.url);return;}
     var petId='a'+(++assetN);assets[petId]=portrait;
-    o.assetId=petId;o.base=petId;o.crop={x:0,y:0,w:1,h:1};o.phs='none';o.phe='none';delete o.phEmpty;
+    var targets=mugSide?side.objs.filter(function(q){return q.mugVehicleFace;}):[o];
+    targets.forEach(function(q){q.assetId=petId;q.base=petId;q.crop={x:0,y:0,w:1,h:1};q.phs='none';q.phe='none';delete q.phEmpty;});
     renderObjects();select(o.id);pushHist();
-    if(!quiet)toast(vehicle?'Araç yerleşti. İstersen Yazı bölümünden adını veya model yılını ekle.':'Hayvan portresi yerleşti.');
+    if(!quiet)toast(mugSide?'Araç iki yüze yerleşti. İstersen üst veya alt yazı ekle.':vehicle?'Araç yerleşti. İstersen Yazı bölümünden adını veya model yılını ekle.':'Hayvan portresi yerleşti.');
     return;
   }
   var A=slotAspect(o),asp=im.naturalWidth/im.naturalHeight,cr={x:0,y:0,w:1,h:1};
@@ -3691,6 +3704,13 @@ function toggleLock(){
 }
 function deleteSel(){
   var o=selObj();if(!o||o.lock)return;
+  if(o.mugVehicleFace){
+    mugVehicleUploads.delete(cur());
+    cur().objs.filter(function(q){return q.mugVehicleFace;}).forEach(function(q){
+      delete q.base;delete q.crop;delete q.phs;delete q.aiOk;q.phEmpty=1;q.assetId=phAsset(q.edge,q.w/q.h);
+    });
+    renderObjects();view.noPick=true;try{select(o.id);}finally{view.noPick=false;}pushHist();return;
+  }
   if(o.oilSlot||o.teePhoto){delete o.base;delete o.crop;delete o.phs;delete o.aiOk;o.phEmpty=1;o.assetId=phAsset(o.edge,o.w/o.h);renderObjects();view.noPick=true;try{select(o.id);}finally{view.noPick=false;}pushHist();return;}
   var a=cur().objs;a.splice(a.indexOf(o),1);
   view.sel=null;renderObjects();select(null);pushHist();
@@ -3698,6 +3718,7 @@ function deleteSel(){
 function dupSel(){
   var o=selObj();if(!o||o.oilBg||o.oilSlot)return;
   var A=areaBox(view.side,cur().area),c=JSON.parse(JSON.stringify(o));
+  delete c.mugVehicleFace;delete c.mugVehicleText;
   c.id=view.nextId++;c.x=clamp(o.x+14,A.l,A.r);c.y=clamp(o.y+14,A.t,A.b);
   cur().objs.push(c);renderObjects();select(c.id);pushHist();
 }
@@ -4085,10 +4106,55 @@ function editTeePhotoText(position){
 ['Kedi','Köpek'].forEach(function(name){
   TPLS.push({n:name+' · Çerçevesiz portre',c:'Fotoğraflı tişört',p:'giyim',product:'tee',yon:'dikey',petPhoto:true,box:[100,100],items:[{t:'ph',e:'none',w:100,h:100,dx:0,dy:0}]});
 });
+function mugVehicleBackdrop(color){
+  var svg='<svg xmlns="http://www.w3.org/2000/svg" width="2362" height="1063" viewBox="0 0 200 90"><defs>'+
+    '<radialGradient id="fade"><stop stop-color="'+color+'" stop-opacity=".92"/>'+
+    '<stop offset=".5" stop-color="'+color+'" stop-opacity=".74"/>'+
+    '<stop offset="1" stop-color="'+color+'" stop-opacity="0"/></radialGradient></defs>'+
+    '<ellipse cx="50" cy="45" rx="49" ry="39" fill="url(#fade)"/>'+
+    '<ellipse cx="150" cy="45" rx="49" ry="39" fill="url(#fade)"/></svg>';
+  return {t:'img',u:svgUrl(svg),aw:2362,ah:1063,w:200,h:90,dx:0,dy:0,zem:1};
+}
+var MUG_VEHICLE_COLORS=[
+  ['Kum tonu',mugVehicleBackdrop('#bb925e')],
+  ['Duman mavisi',mugVehicleBackdrop('#5b839b')]
+];
 ['Benim Arabam','Benim Motorum'].forEach(function(name){
   TPLS.push({n:name,c:'Fotoğraflı tişört',p:'giyim',product:'tee',yon:'dikey',vehiclePhoto:true,box:[100,100],items:[{t:'ph',e:'none',w:100,h:100,dx:0,dy:0}]});
+  MUG_VEHICLE_COLORS.forEach(function(theme){
+    var photos=[-50,50].map(function(dx){return {t:'ph',e:'none',w:80,h:56,dx:dx,dy:0};});
+    TPLS.push({n:name+' · '+theme[0],c:'Araba ve motosiklet',p:'kupa',product:'mug',cut:'sub',area:'mugw',cm:[20,9],yon:'yatay',mugVehicle:true,box:[200,90],items:[theme[1]].concat(photos)});
+  });
 });
+function applyMugVehicleTemplate(t,silent){
+  selectArea(t.area,false);
+  var A=areaBox(view.side,t.area),objs=cur().objs,previous=objs.find(function(o){return o.mugVehicleBg;});
+  var layers=tplObjects(t,A,A.w/t.box[0],autoInk()),bg=layers[0];
+  bg.lock=true;bg.thru=1;bg.fitPrintArea=true;bg.mugVehicleBg=true;
+  if(previous){
+    bg.id=previous.id;cur().objs=objs.map(function(o){return o===previous?bg:o;});
+  }else{
+    layers.slice(1).forEach(function(o,i){o.vehiclePhoto=true;o.mugVehicleFace=i?'right':'left';});
+    cur().objs=layers.concat(objs.filter(function(o){return o.lock&&!o.thru&&!o.zem;}));
+  }
+  if(view.tab==='tpl')closeTab();
+  select(null);renderAll();pushHist();
+  if(!silent&&!previous)slotPick(layers[1].id);
+}
+function editMugVehicleText(position){
+  if(!mugWrap()||!cur().objs.some(function(o){return o.mugVehicleFace;}))return;
+  var o=cur().objs.find(function(q){return q.mugVehicleText===position;});
+  if(!o){
+    var A=areaBox(view.side,'mugw');
+    o=newBase('text');o.mugVehicleText=position;o.value=' ';o.font=view.font;o.color='#222222';
+    o.x=A.l+A.w*(position.indexOf('left-')===0?.25:.75);
+    o.y=A.t+A.h*(position.endsWith('-top')?.12:.88);o.size=.5*PPC;
+    cur().objs.push(o);renderObjects();pushHist();
+  }
+  select(o.id);openTab('text',true);
+}
 function applyTemplate(t,silent){
+  if(t.mugVehicle){if(tplFits(t))applyMugVehicleTemplate(t,silent);return;}
   if(t.petPhoto||t.vehiclePhoto){
     if(!tplFits(t))return;
     var area=cur().area==='a3'?'a3':'a4';
@@ -4519,7 +4585,7 @@ function tplAreaName(t){
 }
 var tplLastGroup='';
 function renderTpl(){
-  ['Zemin','Yağlı boya','Fotoğraflı tişört'].forEach(function(c){if(TPL_CATS.indexOf(c)<0)TPL_CATS.push(c);});
+  ['Zemin','Yağlı boya','Fotoğraflı tişört','Araba ve motosiklet'].forEach(function(c){if(TPL_CATS.indexOf(c)<0)TPL_CATS.push(c);});
   var h='',cc='',q=normTR(($('#tplQ')&&$('#tplQ').value||'').trim()),n=0,g=tplGroup(),has={},dirs={},measures={};
   has.Zemin=1;zLoad();
   if(state.product==='tee')has[TPL_CAT_MUSIC]=1;
@@ -4764,6 +4830,7 @@ $('#tplGrid').addEventListener('click',function(e){var b=e.target.closest('[data
 function ctxClick(e){
   var b=e.target.closest('[data-c]');if(!b)return;
   var c=b.dataset.c;
+  if(c.indexOf('mug-vehicle-')===0){editMugVehicleText(c.slice(12));return;}
   if(c.indexOf('tee-text-')===0){editTeePhotoText(c.slice(9));return;}
   if(c==='zem'){if(view.tab!=='image')openTab('image');setTimeout(function(){var z=$('#zemT');if(z)z.scrollIntoView({behavior:'smooth',block:'start'});},250);return;}
   if(c==='all'){if(enterGroup())toast('Tüm tasarım seçildi. Sol üstteki beyaz kareyle hepsini birlikte büyüt, küçült.');return;}
@@ -4834,7 +4901,7 @@ if(document.fonts){
 function loadImg(src){return new Promise(function(res,rej){var im=new Image();if(/^https?:/i.test(String(src)))im.crossOrigin='anonymous';im.onload=function(){res(im);};im.onerror=function(){rej(new Error('img'));};im.src=src;});}
 function svgUrl(s){return 'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(s);}
 async function drawObj(c,o,S,ox,oy,hi,imageCache){
-  if(o.teePhoto&&o.phEmpty)return;
+  if((o.teePhoto||o.mugVehicleFace)&&o.phEmpty)return;
   c.save();
   c.translate((o.x-ox)*S,(o.y-oy)*S);c.rotate(o.rot*PI/180);
   if(o.type==='text'&&o.sy&&o.sy!==1)c.scale(1,o.sy);
