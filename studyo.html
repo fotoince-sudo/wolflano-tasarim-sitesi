@@ -783,7 +783,7 @@ img{-webkit-touch-callout:none;-webkit-user-drag:none}
       <div class="wstep"><i>1</i>Fotoğraf <em>isteğe bağlı</em></div>
       <div class="wolfph" id="wolfPh"></div>
       <div class="wstep"><i>2</i>Tarz seç</div>
-      <div class="fxc ai" id="wolfSt"></div>
+      <div class="fxc ai" id="wolfSt"></div><label id="selcukluBorkRow" hidden style="margin-top:8px"><input type="checkbox" id="selcukluBork"> Börk ekle</label>
       <div class="wstep"><i>3</i>Fikrin <em>isteğe bağlı</em><span class="wch"><button type="button" data-wch="sehir" class="on">Şehir</button><button type="button" data-wch="gun">Özel gün</button><button type="button" data-wch="meslek">Meslek</button></span></div>
       <textarea id="wolfIn" rows="1" enterkeyhint="done" placeholder="Örn. ay ışığında uluyan kurt, Çeşme ya da Öğretmen"></textarea>
       <div class="wcity" id="wolfCity"></div>
@@ -4488,12 +4488,12 @@ $('#sheetX').addEventListener('click',closeTab);
 $('#undoBtn').addEventListener('click',undo);
 $('#redoBtn').addEventListener('click',redo);
 $('#wolfIn').addEventListener('keydown',function(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();$('#wolfGo').click();}});
-var WOLF_ST=[['tisort','Tişört grafiği'],['kurt','Kurtla portre'],['tarih','Kurt ve tarih'],['real','Gerçekçi'],['illus','İllüstrasyon'],['cartoon','Karikatür'],['pencil','Kalem'],['canvas','Yağlı boya']],wolfSt='tisort';
+var WOLF_ST=[['selcuklu','Selçuklu kaftanı · Deneme'],['tisort','Tişört grafiği'],['kurt','Kurtla portre'],['tarih','Kurt ve tarih'],['real','Gerçekçi'],['illus','İllüstrasyon'],['cartoon','Karikatür'],['pencil','Kalem'],['canvas','Yağlı boya']],wolfSt='tisort';
 /* Wolf, tasarımı seçili tişört rengine uyumlu üretsin */
 function shirtName(){var h=String(state.tee||'').toLowerCase(),n='';TEES.forEach(function(t){if(t[1].toLowerCase()===h)n=t[0];});if(!n){try{phColors(phBlank(state.product,state.cut)).forEach(function(c){if(String(c.hex).toLowerCase()===h)n=c.name;});}catch(_){}}return n;}
 /* "Kurtla portre" yalnız giyim baskısında (kupa ve canvas'ta gösterilmez) */
-function kurtOk(st){return (st!=='kurt'&&st!=='tarih')||(state.product!=='mug'&&state.product!=='canvas');}
-function wolfStRender(){if(!kurtOk(wolfSt))wolfSt=state.product==='canvas'?'canvas':'illus';var wi=$('#wolfIn');if(wi)wi.placeholder=wolfSt==='tarih'?'Tarihi yer yaz: Efes, Aspendos, Van Kalesi… (boş bırakırsan Wolf seçer)':wolfSt==='kurt'?'Fotoğrafını ekle, Wolf seni kurtla birlikte çizsin':'Örn. ay ışığında uluyan kurt, Çeşme ya da Öğretmen';var e=$('#wolfSt');if(e)e.innerHTML=WOLF_ST.filter(function(s){return kurtOk(s[0]);}).map(function(s){return '<button type="button" data-wst="'+s[0]+'"'+(s[0]===wolfSt?' class="on"':'')+'>'+s[1]+'</button>';}).join('');}
+function kurtOk(st){if(st==='selcuklu')return state.product==='tee'&&state.cut==='erkek';return (st!=='kurt'&&st!=='tarih')||(state.product!=='mug'&&state.product!=='canvas');}
+function wolfStRender(){if(!kurtOk(wolfSt))wolfSt=state.product==='canvas'?'canvas':'illus';var br=$('#selcukluBorkRow');if(br)br.hidden=wolfSt!=='selcuklu';var wi=$('#wolfIn');if(wi)wi.placeholder=wolfSt==='selcuklu'?'Önce yüzü net görünen bir fotoğraf ekle':wolfSt==='tarih'?'Tarihi yer yaz: Efes, Aspendos, Van Kalesi… (boş bırakırsan Wolf seçer)':wolfSt==='kurt'?'Fotoğrafını ekle, Wolf seni kurtla birlikte çizsin':'Örn. ay ışığında uluyan kurt, Çeşme ya da Öğretmen';var e=$('#wolfSt');if(e)e.innerHTML=WOLF_ST.filter(function(s){return kurtOk(s[0]);}).map(function(s){return '<button type="button" data-wst="'+s[0]+'"'+(s[0]===wolfSt?' class="on"':'')+'>'+s[1]+'</button>';}).join('');}
 wolfStRender();
 /* Şehir kısayolları: dokununca kutuya yazılır, Tasarla ile o şehrin tasarımı yapılır */
 var WOLF_CH={sehir:['Çeşme','Bodrum','Antalya','Kapadokya','İstanbul','İzmir','Alaçatı','Fethiye'],
@@ -4508,7 +4508,10 @@ var wolfStPicked=false;
 /* Canvas tabloda varsayılan tarz Yağlı boya; tişörte dönünce Tişört grafiği (müşteri kendisi seçmediyse) */
 function wolfStDefault(){if(wolfStPicked)return;wolfSt=state.product==='canvas'?'canvas':state.product==='mug'?'illus':'tisort';wolfStRender();}
 document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('[data-wst]');if(!b)return;wolfSt=b.dataset.wst;wolfStPicked=true;wolfStRender();});
-$('#wolfGo').addEventListener('click',async function(){var t=($('#wolfIn').value||'').trim(),sp=selObj();if(t.length<2&&!(sp&&sp.type==='image')&&wolfSt!=='tarih'){toast(wolfSt==='kurt'?'Önce fotoğrafını ekle':'Fotoğraf ekle ya da fikrini yaz');$('#wolfIn').focus();return;}
+function selcukluPrompt(bork){
+  return 'Use the photo only to draw one recognizable adult. Render the entire full-length figure in the same 2D cartoon style: clean dark contours, flat color fills and two-tone cel shading on face, hands, kaftan, boots, rings and hat. Keep age, facial features, expression, hair and natural neutral skin tone. Avoid photographic texture, pores and red skin tint. Dress the figure in a dark teal Seljuk-inspired kaftan with terracotta lining and cream and gold geometric embroidery. Show both hands relaxed with small turquoise and red stone rings. Remove the original clothes, scene, stickers and text. Fit the whole figure on a transparent background. '+(bork?'Add a tall charcoal leather börk with a broad gray fur band and small silver rosette, leaving eyes and brows visible.':'Keep the head uncovered.');
+}
+$('#wolfGo').addEventListener('click',async function(){var t=($('#wolfIn').value||'').trim(),sp=selObj();var pilot=wolfSt==='selcuklu';if(pilot&&!(sp&&sp.type==='image')){toast('Önce yüzü net görünen bir fotoğraf ekle ve seç.');return;}var bork=pilot&&$('#selcukluBork').checked;if(pilot)t=selcukluPrompt(bork);if(t.length<2&&!(sp&&sp.type==='image')&&wolfSt!=='tarih'){toast(wolfSt==='kurt'?'Önce fotoğrafını ekle':'Fotoğraf ekle ya da fikrini yaz');$('#wolfIn').focus();return;}
   if(AI_BUSY)return;
   var so0=selObj();
   if(/(orijinal|orjinal|asıl|eski hal|ilk hal|geri (getir|al|dön)|gerçek fotoğraf|geri al)/i.test(t)){
@@ -4518,15 +4521,16 @@ $('#wolfGo').addEventListener('click',async function(){var t=($('#wolfIn').value
   AI_BUSY=true;var g=$('#wolfGo');g.disabled=true;
   try{var tk=await aiTok();if(!tk){aiLogin();return;}
     var A=areaBox(view.side,cur().area),so=selObj(),ph=(so&&so.type==='image')?so:null;closeTab();popClose();aiWait('Wolf çiziyor');
-    var mg=state.product==='mug',cvs=state.product==='canvas'||(mg&&mugWrap()),body={prompt:t,style:wolfSt,orient:A.w>A.h*1.15?'landscape':'portrait',shirt:(cvs||mg)?'':shirtName(),shirtHex:(cvs||mg)?'':(state.tee||'')};if(state.product==='canvas')body.canvas=true;if(mg)body.mug=mugWrap()?'wrap':'logo';var dbl=mg&&mugWrap()&&ph&&wolfLay==='double';if(dbl){body.layout='double';body.orient='portrait';}if(cvs&&!dbl)body.transparent=false;
+    var mg=state.product==='mug',cvs=state.product==='canvas'||(mg&&mugWrap()),body={prompt:t,style:pilot?'cartoon':wolfSt,orient:A.w>A.h*1.15?'landscape':'portrait',shirt:(cvs||mg)?'':shirtName(),shirtHex:(cvs||mg)?'':(state.tee||'')};if(state.product==='canvas')body.canvas=true;if(mg)body.mug=mugWrap()?'wrap':'logo';var dbl=mg&&mugWrap()&&ph&&wolfLay==='double';if(dbl){body.layout='double';body.orient='portrait';}if(cvs&&!dbl)body.transparent=false;
     if(ph){if(!ph.base||!assets[ph.base])ph.base=ph.assetId;body.image=await aiPhotoData(ph.base);}
+    if(pilot){body.orient='portrait';body.transparent=true;}
     var img=await aiCall(body);
     if(!img)return;var id=await aiAsset(img);
     /* Canvas ve saran kupada sonuç baskı alanını tamamen kaplar ve ortalanır (fotoğraf seçiliyse onun yerine geçer) */
     var fill=function(o){var na2=assets[id];if(!o||!na2)return;var k2=Math.max(A.w/na2.w,A.h/na2.h);o.w=na2.w*k2;o.h=na2.h*k2;o.x=A.cx;o.y=A.cy;o.rot=0;};
     if(ph&&dbl){var nd=assets[id],hh=A.h*0.94,ww=hh*nd.w/nd.h;ph.assetId=id;ph.phs='ai-'+wolfSt;ph.phe='none';ph.rot=0;ph.h=hh;ph.w=ww;ph.x=A.cx-A.w*0.25;ph.y=A.cy;
       var cp=JSON.parse(JSON.stringify(ph));cp.id=view.nextId++;cp.x=A.cx+A.w*0.25;cur().objs.push(cp);renderObjects();updateSel();syncCtx();pushHist();}
-    else if(ph){var na=assets[id];ph.assetId=id;ph.phs='ai-'+wolfSt;ph.phe='none';ph.h=ph.w*na.h/na.w;if(cvs)fill(ph);renderObjects();updateSel();syncCtx();pushHist();}else{addImageObj(id);if(cvs){fill(selObj());renderObjects();updateSel();syncCtx();pushHist();}}closeTab();toast(state.product==='canvas'?'Wolf tabloyu çizdi. Kaydırarak konumunu ayarlayabilirsin.':'Wolf çizdi. Taşıyabilir, büyütebilirsin.');}
+    else if(ph){var na=assets[id];ph.assetId=id;ph.phs='ai-'+wolfSt;ph.phe='none';ph.h=ph.w*na.h/na.w;if(pilot){var fitScale=Math.min(A.w/na.w,A.h/na.h)*0.94;ph.w=na.w*fitScale;ph.h=na.h*fitScale;ph.x=A.cx;ph.y=A.cy;ph.rot=0;}else if(cvs)fill(ph);renderObjects();updateSel();syncCtx();pushHist();}else{addImageObj(id);if(cvs){fill(selObj());renderObjects();updateSel();syncCtx();pushHist();}}closeTab();toast(state.product==='canvas'?'Wolf tabloyu çizdi. Kaydırarak konumunu ayarlayabilirsin.':'Wolf çizdi. Taşıyabilir, büyütebilirsin.');}
   catch(_){longToast('Wolf şu an çizemedi. Biraz sonra yeniden dene.');}
   finally{AI_BUSY=false;g.disabled=false;aiDone();}
 });
