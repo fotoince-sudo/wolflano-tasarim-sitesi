@@ -2473,6 +2473,8 @@ function addClip(key){
   cur().objs.push(o);renderObjects();select(o.id);pushHist();
 }
 /* ===== Zeminler: fotoğraflı şablonda zemini değiştir (fotoğraflar yerinde kalır) ya da zemini görsel olarak ekle ===== */
+var CANVAS_ZEMS=[['acik-krem','Açık krem'],['fildisi','Fildişi'],['kum-kremi','Kum kremi']];
+var CANVAS_ZEM_PATH='assets/kanvas-zemin/';
 var ZEMS=[['yilbasi','Yılbaşı'],['sevgi','Sevgililer Günü · Kalpler'],['anne','Çiçekler'],['neon','Neon'],['kamuflaj','Kamuflaj'],['gece','Gece ve dağlar'],['mermer','Mermer'],['suluboya','Suluboya'],['bohem','Bohem'],['gokyuzu','Gökkuşağı'],['balon','Balon'],['uzay','Uzay']];
 function zemUrl(k,th,wide){return 'assets/zemin/'+k+(wide?'-kupa':th?'-k':'')+'.jpg';}
 /* Geniş baskı alanı (kupa çevresi gibi) için zeminin geniş sürümü kullanılır; dikey zemin kırpılmaz */
@@ -2498,7 +2500,11 @@ function zCat(){var p=state.product;return p==='mug'?'mug':p==='canvas'?'canvas'
 async function zLoad(){if(ZCUS_OK)return;ZCUS_OK=true;try{var r=await fetch(SB.url+'/rest/v1/admin_designs?select=id,title,thumb,data,product&kind=eq.zemin&published=eq.true&order=created_at.desc&limit=300',{headers:{apikey:SB.key}});ZCUS=r.ok?await r.json():[];}catch(_){ZCUS=[];}renderZem(true);}
 function renderZem(force){try{renderMk();}catch(_){}var g=$('#zemGrid');if(!g)return;var key=zCat()+'|'+ZCUS.length+'|'+cur().area+'|'+isLand(view.side);if(!force&&g.dataset.ok===key){zemSync();return;}g.dataset.ok=key;zLoad();
   var adm=document.body.classList.contains('wfadm'),cus=ZCUS.filter(function(z){return z.product===zCat();});
-  g.innerHTML=cus.map(function(z){return '<button data-zem="z:'+z.id+'" aria-label="'+escX(z.title||'Zemin')+'"><img alt="" loading="lazy" src="'+escX(z.thumb||z.data.url)+'"><span>'+escX(z.title||'Zemin')+'</span>'+(adm?'<i class="zdel" data-zdel="'+z.id+'" role="button" aria-label="Kaldır">×</i>':'')+'</button>';}).join('')+
+  $('#zemT').textContent=state.product==='canvas'?'Kanvas Zeminleri':'Zeminler';
+  var canvasCards=state.product==='canvas'?CANVAS_ZEMS.map(function(z){
+    return '<button type="button" data-zem="canvas:'+z[0]+'" aria-label="'+z[1]+' zemini"><img alt="" loading="lazy" src="'+CANVAS_ZEM_PATH+z[0]+'-web.webp"><span>'+z[1]+'</span></button>';
+  }).join(''):'';
+  g.innerHTML=canvasCards+cus.map(function(z){return '<button data-zem="z:'+z.id+'" aria-label="'+escX(z.title||'Zemin')+'"><img alt="" loading="lazy" src="'+escX(z.thumb||z.data.url)+'"><span>'+escX(z.title||'Zemin')+'</span>'+(adm?'<i class="zdel" data-zdel="'+z.id+'" role="button" aria-label="Kaldır">×</i>':'')+'</button>';}).join('')+
     (state.product==='mug'?OIL_ART.filter(function(z){return z.background;}).map(function(z){return '<button data-zem="oil:'+z.id+'" aria-label="'+escX(z.name)+' zemini"><img alt="" loading="lazy" src="assets/yagliboya/'+z.id+'-thumb.webp"><span>'+escX(z.name)+'</span></button>';}).join(''):'')+
     (state.product==='tee'&&cur().area==='a4'&&!isLand(view.side)?TEE_PHOTO_ART.map(function(z){return '<button data-zem="tee:'+z.id+'" aria-label="'+escX(z.name)+' zemini"><img alt="" loading="lazy" src="'+teePhotoAsset(z).thumb+'"><span>'+escX(z.name)+'</span></button>';}).join(''):'')+
     ZEMS.map(function(z){return '<button data-zem="'+z[0]+'" aria-label="'+z[1]+' zemini"><img alt="" loading="lazy" src="'+zemUrl(z[0],1)+'"><span>'+z[1]+'</span></button>';}).join('');zemSync();}
@@ -2552,6 +2558,16 @@ function replaceZemLayer(asset,frame,coveredFrame){
   pushHist();if(innerWidth<700)closeTab();toast('Zemin değişti. Tasarımın yerinde.');
 }
 async function zemPick(k){
+  if(k.indexOf('canvas:')===0){
+    if(state.product!=='canvas')return false;
+    var theme=CANVAS_ZEMS.find(function(z){return 'canvas:'+z[0]===k;});
+    if(!theme)return false;
+    var url=CANVAS_ZEM_PATH+theme[0],side=cur(),preview=url+'-web.webp';
+    await loadImg(preview);
+    if(cur()!==side||state.product!=='canvas')return false;
+    replaceZemLayer({url:preview,hi:url+'.webp',w:9154,h:9154},side.objs.find(function(o){return o.zem;}));
+    return true;
+  }
   if(k==='sevgi'&&state.product==='canvas'){
     var side=cur(),land=isLand(view.side),A=areaBox(view.side,side.area),url=zemUrl(k,0,A.w>A.h),image=await loadImg(url);
     if(cur()!==side||isLand(view.side)!==land)return false;
@@ -6984,6 +7000,13 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
   }
   async function ayAction(t){
     var q=normTR(t).replace(/[.!?]+$/,'').trim(),photos=ayFaces();
+    if(state.product==='canvas'&&/\b(zemin|arka plan)/.test(q)){
+      var cream=CANVAS_ZEMS.find(function(z){return q.includes(normTR(z[1]));});
+      if(cream&&/\b(ekle|yap|uygula|olsun)/.test(q)&&await zemPick('canvas:'+cream[0])){
+        ayApproval=null;return cream[1]+' zeminini kanvasınıza ekledim. Stüdyoda önizleyebilirsiniz.';
+      }
+      if(/\b(hangi|neler|renkleri)/.test(q))return 'Kanvas Zeminleri’nde açık krem, fildişi ve kum kremi var. Hangisini görmek istersiniz?';
+    }
     if(state.product==='canvas'&&/\b(sevgililer gunu|kalpli)\b/.test(q)&&/\b(zemin|arka plan)/.test(q)&&/\b(ekle|yap|uygula|olsun)/.test(q)){
       if(await zemPick('sevgi')){
         ayApproval=null;
