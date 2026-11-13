@@ -6872,7 +6872,29 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
     var listed=TPLS.filter(function(t){return tplFits(t)&&!tplHid(t);});
     return listed.concat(window.TPL_PUBLIC_SUMMARY?window.TPL_PUBLIC_SUMMARY():[]).filter(function(t){return t.n;});
   }
-  var ayVehicle='',ayApproval=null;
+  var ayVehicle='',ayApproval=null,aySupport=null;
+  function aySupportOffer(step,message){
+    aySupport={step:step,sig:designSig(),request:(ASK.slice().reverse().find(function(m){return m.role==='user';})||{}).text||''};
+    return message+' İsterseniz taslağınızı incelemeye gönderebilirim. Bunun için “İncelemeye gönder” diyebilirsiniz.';
+  }
+  async function aySendSupport(){
+    var pending=aySupport;
+    if(!pending||pending.sig!==designSig())return 'Bu tasarım için bekleyen bir destek isteği yok.';
+    var tk=await aiTok();
+    if(!tk)return 'Taslağınızı hesabınıza bağlamak için giriş yapabilir misiniz? Ardından “İncelemeye gönder” diyebilirsiniz.';
+    var draft=await buildSaved(state.bid||'');
+    if(pending.sig!==designSig()||!await svUpload(draft))return 'Taslak kaydedilemedi. Biraz sonra tekrar deneyebilirsiniz.';
+    var headers={apikey:SBX_KEY,Authorization:'Bearer '+tk,'Content-Type':'application/json'};
+    var lookup=await fetch(SBX_URL+'/rest/v1/user_designs?select=id&sig=eq.'+encodeURIComponent(draft.sig)+'&limit=1',{headers:headers});
+    var rows=lookup.ok?await lookup.json():[];
+    if(!rows.length||pending.sig!==designSig())return 'Taslağın kaydını doğrulayamadım. Biraz sonra tekrar deneyebilirsiniz.';
+    var response=await fetch(SBX_URL+'/rest/v1/rpc/wf_request_design_support',{method:'POST',headers:headers,body:JSON.stringify({p_design_id:rows[0].id,p_step:pending.step,p_request:pending.request.slice(0,400)})});
+    if(!response.ok)return 'Destek kaydı açılamadı. Taslağınız hesabınıza kaydedildi.';
+    var ticket=await response.json();
+    if(typeof ticket!=='string')return 'Destek kaydını doğrulayamadım. Taslağınız hesabınıza kaydedildi.';
+    aySupport=null;
+    return 'Taslağınızı destek ekibimize ilettim. Takip numaranız '+ticket.slice(0,8)+'.';
+  }
   var AY_STYLES=[['İllüstrasyon','illus',/illustr/],['Yağlı boya','canvas',/yagli boya/],['Çizgi roman','cartoon',/cizgi roman|karikatur/]];
   function ayPhotoTargets(){
     var pair=ayFaces().filter(function(o){return !o.phEmpty;});
@@ -6889,7 +6911,7 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
     try{
       if(!await aiTok())return 'Wolf ile çizim hazırlamak için hesabınıza giriş yapmanız gerekiyor.';
       var img=await aiCall(body);
-      if(!img)return 'Wolf çizimi hazırlayamadı. Mevcut tasarımınız duruyor.';
+      if(!img)return aySupportOffer('wolf','Wolf çizimi hazırlayamadı. Mevcut tasarımınız duruyor.');
       var id=await aiAsset(img);
       if(side!==view.side||sig!==designSig())return 'Tasarım değiştiği için çizimi uygulamadım.';
       await apply(id);
@@ -6956,6 +6978,7 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
   }
   async function ayAction(t){
     var q=normTR(t).replace(/[.!?]+$/,'').trim(),photos=ayFaces();
+    if(/^(incelemeye gonder|incelemeye gonderin|destek kaydi ac|destek kaydi acin)$/.test(q))return aySendSupport();
     var style=AY_STYLES.find(function(st){return st[2].test(q);});
     if(style&&(/^(illustrasyon|yagli boya|cizgi roman|karikatur)$/.test(q)||/\b(yap|donustur|uygula|ciz|olsun)\b/.test(q)))return ayPhotoStyle(style);
     if(/\b(hangi|neler|nelerdir|listele|goster)\b/.test(q)&&/\bsablon/.test(q)){
@@ -7013,7 +7036,7 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
       if(q==='sepete ekle'&&ayApproval&&ayApproval.sig===sig&&ayApproval.price===price){
         ayApproval=null;
         var existing=cartItems.some(function(item){return item.sig===sig;});
-        if(!await addToCart(true))return 'Kupa sepete eklenemedi. Biraz sonra tekrar deneyebilirsiniz.';
+        if(!await addToCart(true))return aySupportOffer('cart','Kupa sepete eklenemedi.');
         return existing?'Bu tasarım zaten sepetinizde.':'Bir adet kupayı sepete ekledim.';
       }
       await showAybukeDesign();
@@ -7033,7 +7056,7 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
       if(!placed||!ayFaces().includes(slot)||slot.phEmpty)throw Error('photo');
       ayApproval=null;await showAybukeDesign();
       ayFinish('Fotoğrafı kupanın iki yüzüne yerleştirdim. İsterseniz fotoğrafınızı illüstrasyon, yağlı boya veya çizgi roman tarzında hazırlayabilirim. Hangisini görmek istersiniz?');
-    }catch(_){ayFinish('Bu fotoğrafı hazırlayamadım. Elinizde aracınızın tamamının net göründüğü başka bir fotoğraf varsa paylaşabilir misiniz?');}
+    }catch(_){ayFinish(aySupportOffer('photo','Bu fotoğrafı tasarıma yerleştiremedim.'));}
   });
   async function askSend(t){t=String(t||'').trim();if(!t||askBusy)return;ASK.push({role:'user',text:t});ASK=ASK.slice(-16);askBusy=true;askPaint();
     var a='';
