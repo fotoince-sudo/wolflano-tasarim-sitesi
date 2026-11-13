@@ -714,6 +714,7 @@ img{-webkit-touch-callout:none;-webkit-user-drag:none}
       <span class="pill gsel" data-g="1">Tüm tasarım seçili</span>
       <button data-c="all" data-i="1"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" stroke-dasharray="3 2.4"/><rect x="8" y="8" width="8" height="8" rx="1"/></svg>Tümünü seç</button>
       <span class="pill gsel" data-i="1">ya da bir parçaya dokun</span>
+      <button data-c="all" data-g="1" data-all-next hidden>Tümünü seç</button>
       <button data-c="gdone" data-g="1"><svg class="i" viewBox="0 0 24 24"><path d="M5 12l5 5L20 7"/></svg>Bitti</button>
     </div>
   </div>
@@ -2309,7 +2310,13 @@ var IC={
   dup:'<svg viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V6a2 2 0 0 1 2-2h9"/></svg>'
 };
 /* Tümünü seç: kilitsiz bütün öğeler tek kutuda; köşedeki noktayla hep birlikte büyür/küçülür/döner, sürükleyince hep birlikte taşınır */
-function grpObjs(){return cur().objs.filter(function(o){return (!o.lock||o.musicInk)&&!o.oilBg&&!(o.oilSlot&&o.phEmpty);});}
+function groupPhotos(){return cur().objs.filter(function(o){
+  return o.type==='image'&&!o.lock&&!o.zem&&(o.slot||(assets[o.assetId]&&assets[o.assetId].up));
+});}
+function grpObjs(){
+  if(view.grp==='photos')return groupPhotos();
+  return cur().objs.filter(function(o){return (!o.lock||o.musicInk||(view.grp==='template'&&o.teePhotoBg))&&!o.oilBg&&!(o.oilSlot&&o.phEmpty);});
+}
 function grpBox(){
   var L=1e9,R=-1e9,T=1e9,B=-1e9;
   grpObjs().forEach(function(o){var ik=inkOf(o);if(!ik)inkEnsure(o);var w=ik?ik.w:o.w,h=ik?ik.h:o.h,c=inkCenter(o),a=o.rot*PI/180,
@@ -2318,8 +2325,10 @@ function grpBox(){
   return L>R?null:{l:L,r:R,t:T,b:B,cx:(L+R)/2,cy:(T+B)/2};
 }
 function enterGroup(){
-  if(grpObjs().length<1)return false;
-  view.sel=null;view.pop=null;view.gdel=false;view.grp=true;buildSel();syncCtx();syncTextInput();return true;
+  var mode=state.product==='tee'?(view.grp!=='photos'&&view.grp!=='template'&&groupPhotos().length?'photos':'template'):true;
+  var previous=view.grp;view.grp=mode;
+  if(grpObjs().length<1){view.grp=previous;return false;}
+  view.sel=null;view.pop=null;view.gdel=false;buildSel();syncCtx();syncTextInput();return true;
 }
 function buildSel(){
   selLayer.innerHTML='';
@@ -2402,7 +2411,7 @@ function syncCtx(){syncCtx0();syncMusicInk();var teeText=state.product==='tee'&&
 (function(){if(!window.ResizeObserver)return;var t=0,lw=0,lh=0;new ResizeObserver(function(en){var r=en[0].contentRect;if(Math.abs(r.width-lw)<1&&Math.abs(r.height-lh)<1)return;lw=r.width;lh=r.height;cancelAnimationFrame(t);t=requestAnimationFrame(function(){try{layout();}catch(_){}});}).observe(wrap);})();
 function syncCtx0(){
   var o=selObj();setTimeout(function(){var so=selObj();if(so&&so.slot)$$('#ctxBar [data-c="center"],#stageBar [data-c="center"]').forEach(function(b){b.hidden=true;});},0);
-  $$('#ctxBar [data-g],#stageBar [data-g]').forEach(function(b){b.hidden=!view.grp;});
+  $$('#ctxBar [data-g],#stageBar [data-g]').forEach(function(b){b.hidden=b.hasAttribute('data-all-next')?view.grp!=='photos':!view.grp;});
   var idle=!o&&!view.grp&&grpObjs().length>0;$$('#ctxBar [data-i],#stageBar [data-i]').forEach(function(b){b.hidden=!idle;});
   if(idle){ctx.hidden=false;$('#colorPop').hidden=true;view.pop=null;$$('#ctxBar [data-t],#stageBar [data-t]').forEach(function(b){b.hidden=true;});return;}
   if(view.grp){ctx.hidden=false;$('#colorPop').hidden=!view.pop;$$('#ctxBar [data-t],#stageBar [data-t]').forEach(function(b){b.hidden=true;});
@@ -4649,11 +4658,11 @@ function ctxClick(e){
   var c=b.dataset.c;
   if(c.indexOf('tee-text-')===0){editTeePhotoText(c.slice(9));return;}
   if(c==='zem'){if(view.tab!=='image')openTab('image');setTimeout(function(){var z=$('#zemT');if(z)z.scrollIntoView({behavior:'smooth',block:'start'});},250);return;}
-  if(c==='all'){if(enterGroup())toast('Tüm tasarım seçildi. Sol üstteki beyaz kareyle hepsini birlikte büyüt, küçült.');return;}
+  if(c==='all'){if(enterGroup())toast(view.grp==='photos'?'Fotoğraflar seçildi. Şablonun tamamı için tekrar dokun.':'Tüm tasarım seçildi. Sol üstteki beyaz kareyle hepsini birlikte büyüt, küçült.');return;}
   if(c==='gdone'){select(null);return;}
   if(c==='gzin'||c==='gzout'){grpScale(c==='gzin'?1.05:1/1.05);return;}
   if(c==='gcolor'){view.gdel=false;showPop('fill');syncCtx();return;}
-  if(c==='gdel'){if(!view.gdel){view.gdel=true;syncCtx();return;}/* Tümünü seç > Sil: çerçeve, fotoğraf, zemin ve kilitli şablon katmanları dahil etkin baskı yüzünü tamamen temizle. */cur().objs=[];select(null);renderAll();pushHist();toast('Tasarım silindi. Geri almak için ↶');return;}
+  if(c==='gdel'){if(!view.gdel){view.gdel=true;syncCtx();return;}/* Tümünü seç > Sil: çerçeve, fotoğraf, zemin ve kilitli şablon katmanları dahil etkin baskı yüzünü tamamen temizle. */var photos=view.grp==='photos'?new Set(grpObjs()):null;cur().objs=photos?cur().objs.filter(function(o){return !photos.has(o);}):[];select(null);renderAll();pushHist();toast((photos?'Fotoğraflar':'Tasarım')+' silindi. Geri almak için ↶');return;}
   if(c!=='gdel')view.gdel=false;
   if(c==='gcenter'){var GX=grpBox(),GA=areaBox(view.side,cur().area);if(GX){var ddx=GA.cx-GX.cx,ddy=GA.cy-GX.cy;grpObjs().forEach(function(q){q.x+=ddx;q.y+=ddy;place(els[q.id],q);});updateSel();var ab2=$('#areaBox');ab2.classList.add('onV','onH');setTimeout(centerOff,900);pushHist();toast('Tasarım baskı alanına ortalandı');}return;}
   if(view.grp)return;
