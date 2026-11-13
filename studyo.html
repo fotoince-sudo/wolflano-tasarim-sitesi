@@ -6217,11 +6217,14 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
       var full=cvData(im,W),fit=cvFit(full.d,W,H,bx);if(!fit)return null;
       var fw0=fit.Q[1][0]-fit.Q[0][0],fh0=((fit.Q[3][1]-fit.Q[0][1])+(fit.Q[2][1]-fit.Q[1][1]))/2,er=yan?cvErase(full.d,W,H,fit,fw0*0.14+4,fh0*0.02+3,true):cvErase(full.d,W,H,fit,fw0*0.05+4),id=new ImageData(er.d,W,H);
       D={Q:fit.Q,bg:id,wall:fit.wall};CV_DET[jj.url]=D;}
-    var c=document.createElement('canvas');c.width=W;c.height=H;var x=c.getContext('2d'),Q0=D.Q;
+    var c=document.createElement('canvas'),scale=Math.max(1,Math.min(3,3000/Math.max(W,H)));
+    c.width=Math.round(W*scale);c.height=Math.round(H*scale);
+    var x=c.getContext('2d'),Q0=D.Q,room=document.createElement('canvas');
+    room.width=W;room.height=H;room.getContext('2d').putImageData(D.bg,0,0);
+    x.scale(c.width/W,c.height/H);x.imageSmoothingQuality='high';
     /* yandan görünüş her zaman SAĞDAN: sahnede kamera soldaysa fotoğraf aynalanır, tablo sağ yanı görünecek şekilde kurulur */
-    if(yan&&(Q0[3][1]-Q0[0][1])>=(Q0[2][1]-Q0[1][1])){var tc=document.createElement('canvas');tc.width=W;tc.height=H;tc.getContext('2d').putImageData(D.bg,0,0);
-      x.save();x.translate(W,0);x.scale(-1,1);x.drawImage(tc,0,0);x.restore();var mr=function(p){return [W-p[0],p[1]];};Q0=[mr(Q0[1]),mr(Q0[0]),mr(Q0[3]),mr(Q0[2])];}
-    else x.putImageData(D.bg,0,0);
+    if(yan&&(Q0[3][1]-Q0[0][1])>=(Q0[2][1]-Q0[1][1])){x.save();x.translate(W,0);x.scale(-1,1);x.drawImage(room,0,0);x.restore();var mr=function(p){return [W-p[0],p[1]];};Q0=[mr(Q0[1]),mr(Q0[0]),mr(Q0[3]),mr(Q0[2])];}
+    else x.drawImage(room,0,0);
     var Q=yan?cvGrow(cvShape(Q0,(F.cm[0]-2*CV_WRAP_CM)/(F.cm[1]-2*CV_WRAP_CM)),cvOlcu()==='5070'?1.4:1):D.Q,fwp=Q[1][0]-Q[0][0],fhp=((Q[3][1]-Q[0][1])+(Q[2][1]-Q[1][1]))/2,fw=F.c.width-2*F.sx,fh=F.c.height-2*F.sy;
     /* görünen yan yüz: kameraya yakın (daha uzun) kenarda; 3,75 cm derinlik, 30° bakışta yaklaşık yarısı görünür */
     var lh=Q[3][1]-Q[0][1],rh=Q[2][1]-Q[1][1],left=lh>=rh,eh=left?lh:rh,sw=yan?eh/(F.cm[1]-2*CV_WRAP_CM)*CV_WRAP_CM*0.5:0,SQ=null;
@@ -6240,7 +6243,7 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
     var gd='rgba(0,0,0,'+(yan?0.06:0.03)+')';g.addColorStop(0,yan&&!left?gd:'rgba(255,255,255,0)');g.addColorStop(1,yan&&!left?'rgba(255,255,255,0)':gd);x.fillStyle=g;x.fillRect(0,0,W,H);x.restore();
     /* ince kenar çizgisi: tuvalin kalınlığı belli olsun */
     x.save();cvPath(x,Q);x.lineWidth=1;x.strokeStyle='rgba(0,0,0,.18)';x.stroke();x.restore();
-    var tk='img/ortam-canvas-'+sahne+'-'+rnd()+'.jpg';await upload('site',tk,await canvasBlob(c,'image/jpeg',.9));return tk;}
+    var tk='img/ortam-canvas-'+sahne+'-'+rnd()+'.jpg';await upload('site',tk,await canvasBlob(c,'image/jpeg',.95));return tk;}
   function renderAdm(){
     var w=$('#admSheet');
     var tabs=[['sablon','Şablon'],['urun','Ürün yap'],['baski','Baskıya gönder'],['taslak','Taslak']];if(!/^(mug|canvas)$/.test(state.product))tabs.push(['manken','Mankende gör']);else if(mode==='manken')mode='sablon';if(ADM.edit)tabs.unshift(['guncelle','Güncelle']);else if(mode==='guncelle')mode='sablon';
