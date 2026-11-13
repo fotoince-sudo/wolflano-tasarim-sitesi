@@ -2314,7 +2314,7 @@ var IC={
   dup:'<svg viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V6a2 2 0 0 1 2-2h9"/></svg>'
 };
 /* Tümünü seç: kilitsiz bütün öğeler tek kutuda; köşedeki noktayla hep birlikte büyür/küçülür/döner, sürükleyince hep birlikte taşınır */
-function grpObjs(){return cur().objs.filter(function(o){return (!o.lock||o.musicInk)&&!o.oilBg&&!(o.oilSlot&&o.phEmpty);});}
+function grpObjs(){return cur().objs.filter(function(o){return (!o.lock||o.musicInk)&&!o.oilBg&&!o.oilSlot;});}
 function grpBox(){
   var L=1e9,R=-1e9,T=1e9,B=-1e9;
   grpObjs().forEach(function(o){var ik=inkOf(o);if(!ik)inkEnsure(o);var w=ik?ik.w:o.w,h=ik?ik.h:o.h,c=inkCenter(o),a=o.rot*PI/180,
