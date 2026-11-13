@@ -3698,17 +3698,23 @@ function ensureSizes(){var l=sizeList(),tot=l.reduce(function(a,s){return a+(sta
 /* Ürün sayfasından seçim: ürün ve kesim uygulanır, sayfa kapanır, ürün yakınlaştırılmadan bütün olarak gösterilir. */
 
 /* Shared one-photo art layouts. Product-scoped backgrounds never cross products. */
-var OIL_ART=[{"id":"kizil-guller","name":"Kızıl güller","background":true,"rect":[0.32,0.24,0.34,0.5],"w":1774,"h":887},{"id":"mavi-cicekler","name":"Mavi çiçekler","background":true,"rect":[0.34,0.22,0.32,0.56],"w":1774,"h":887},{"id":"aycicekleri","name":"Ayçiçekleri","background":true,"rect":[0.34,0.2,0.32,0.5],"w":1774,"h":887},{"id":"gunbatimi-ask","name":"Gün batımında aşk","background":false,"rect":[0.42,0.25,0.3,0.52],"w":1774,"h":887},{"id":"romantik-kalpler","name":"Romantik kalpler","background":true,"rect":[0.29,0.23,0.3,0.52],"w":1774,"h":887},{"id":"ramazan","name":"Ramazan Bayramı","background":false,"rect":[0.34,0.2,0.32,0.6],"w":1774,"h":887},{"id":"kurban","name":"Kurban Bayramı","background":false,"rect":[0.34,0.2,0.32,0.6],"w":1774,"h":887},{"id":"23-nisan","name":"23 Nisan","background":false,"rect":[0.34,0.2,0.32,0.6],"w":1774,"h":887},{"id":"19-mayis","name":"19 Mayıs","background":false,"rect":[0.35,0.2,0.3,0.6],"w":1774,"h":887},{"id":"30-agustos","name":"30 Ağustos","background":false,"rect":[0.34,0.2,0.32,0.6],"w":1774,"h":887},{"id":"29-ekim","name":"29 Ekim","background":false,"rect":[0.34,0.24,0.32,0.5],"w":1774,"h":887},{"id":"kediler","name":"Kediler","background":false,"rect":[0.35,0.18,0.3,0.64],"w":1774,"h":887},{"id":"kopekler","name":"Köpekler","background":false,"rect":[0.35,0.18,0.3,0.64],"w":1774,"h":887},{"id":"atlar","name":"Atlar","background":false,"rect":[0.35,0.18,0.3,0.64],"w":1774,"h":887},{"id":"kurtlar","name":"Kurtlar","background":false,"rect":[0.35,0.18,0.3,0.64],"w":1774,"h":887},{"id":"kuslar","name":"Kuşlar","background":false,"rect":[0.35,0.18,0.3,0.64],"w":1774,"h":887},{"id":"kelebekler","name":"Kelebekler ve lavanta","background":true,"rect":[0.35,0.18,0.3,0.64],"w":1774,"h":887},{"id":"tavsanlar","name":"Tavşanlar","background":false,"rect":[0.35,0.18,0.3,0.64],"w":1774,"h":887},{"id":"yunuslar","name":"Yunuslar","background":false,"rect":[0.35,0.18,0.3,0.64],"w":1774,"h":887},{"id":"aslanlar","name":"Aslanlar","background":false,"rect":[0.35,0.18,0.3,0.64],"w":1774,"h":887}];
+var OIL_ART=[{"id":"kizil-guller","name":"Kızıl güller","background":true,"w":1774,"h":887},{"id":"mavi-cicekler","name":"Mavi çiçekler","background":true,"w":1774,"h":887},{"id":"aycicekleri","name":"Ayçiçekleri","background":true,"w":1774,"h":887},{"id":"gunbatimi-ask","name":"Gün batımında aşk","background":false,"w":1774,"h":887},{"id":"romantik-kalpler","name":"Romantik kalpler","background":true,"w":1774,"h":887},{"id":"ramazan","name":"Ramazan Bayramı","background":false,"w":1774,"h":887},{"id":"kurban","name":"Kurban Bayramı","background":false,"w":1774,"h":887},{"id":"23-nisan","name":"23 Nisan","background":false,"w":1774,"h":887},{"id":"19-mayis","name":"19 Mayıs","background":false,"w":1774,"h":887},{"id":"30-agustos","name":"30 Ağustos","background":false,"w":1774,"h":887},{"id":"29-ekim","name":"29 Ekim","background":false,"w":1774,"h":887},{"id":"kediler","name":"Kediler","background":false,"w":1774,"h":887},{"id":"kopekler","name":"Köpekler","background":false,"w":1774,"h":887},{"id":"atlar","name":"Atlar","background":false,"w":1774,"h":887},{"id":"kurtlar","name":"Kurtlar","background":false,"w":1774,"h":887},{"id":"kuslar","name":"Kuşlar","background":false,"w":1774,"h":887},{"id":"kelebekler","name":"Kelebekler ve lavanta","background":true,"w":1774,"h":887},{"id":"tavsanlar","name":"Tavşanlar","background":false,"w":1774,"h":887},{"id":"yunuslar","name":"Yunuslar","background":false,"w":1774,"h":887},{"id":"aslanlar","name":"Aslanlar","background":false,"w":1774,"h":887}];
 OIL_ART.forEach(function(z){
-  var W=20,H=10,r=z.rect,u='assets/yagliboya/'+z.id+'.webp';
+  var W=20,H=9,photoW=6,photoH=5.76,u='assets/yagliboya/'+z.id+'.webp';
   var bg={t:'img',u:u,aw:z.w,ah:z.h,w:W,h:H,dx:0,dy:0,fillArea:true,oilBg:1,zem:1};
-  TPLS.push({n:z.name+' · Tek fotoğraf',c:'Yağlı boya',p:'kupa',product:'mug',cut:'sub',area:'mugw',box:[W,H],yon:'yatay',oil:z.id,items:[bg,{t:'ph',e:'none',w:r[2]*W,h:r[3]*H,dx:(r[0]+r[2]/2-.5)*W,dy:(r[1]+r[3]/2-.5)*H,oilSlot:1}]});
+  TPLS.push({n:z.name+' · Tek fotoğraf',c:'Yağlı boya',p:'kupa',product:'mug',cut:'sub',area:'mugw',box:[W,H],yon:'yatay',oil:z.id,items:[bg,{t:'ph',e:'none',w:photoW,h:photoH,dx:0,dy:0,oilSlot:1}]});
   if(z.background)TPLS.push({n:z.name+' · Zemin',c:'Zemin',p:'kupa',product:'mug',cut:'sub',area:'mugw',box:[W,H],yon:'yatay',oilZem:z.id,items:[{t:'img',u:u,aw:z.w,ah:z.h,w:W,h:H,dx:0,dy:0,fillArea:true,zem:1}]});
 });
 async function applyOilTemplate(t,silent){
   if(!tplFits(t))return;
   selectArea(t.area,false);
-  var side=cur(),A=areaBox(view.side,side.area),prior=side.objs.find(function(o){return o.oilSlot&&!o.phEmpty;});
+  var side=cur(),existing=side.objs.find(function(o){return o.oilSlot;});
+  if(existing){
+    var bg=t.items[0];
+    replaceZemLayer({url:bg.u,w:bg.aw,h:bg.ah},side.objs.find(function(o){return o.oilBg||o.zem;}));
+    return;
+  }
+  var A=areaBox(view.side,side.area),prior=null;
   var selected=selObj(),selectedAsset=selected&&assets[selected.assetId];
   if(!prior&&selected&&selected.type==='image'&&!selected.lock&&!selected.zem&&!selected.slot&&selectedAsset&&selectedAsset.up)prior=selected;
   var restoreSelection=prior&&view.sel===prior.id;
