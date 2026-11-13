@@ -3851,9 +3851,11 @@ var ASTRONAUT_INKS=[['white','Beyaz'],['red','Kırmızı'],['navy','Lacivert'],[
 function artworkInks(instrument){return instrument==='minik-kasif'?ASTRONAUT_INKS:MUSIC_INKS;}
 function musicArtworkAsset(instrument,color){
   var id='music-'+instrument+'-'+color;
-  var large=instrument==='ud-buyuk',astronaut=instrument==='minik-kasif';
+  var round=instrument==='baglama-yuvarlak'||instrument==='gitar-yuvarlak';
+  var large=round||instrument==='ud-buyuk',astronaut=instrument==='minik-kasif';
   var folder=astronaut?'children-templates':'music-templates';
   if(!assets[id])assets[id]={url:'assets/'+folder+'/'+instrument+'-'+color+'.webp',w:astronaut?1055:large?1254:1536,h:astronaut?1491:large?1254:1024,tpl:true};
+  if(round)assets[id].hi='assets/music-templates/'+instrument+'-'+color+'-print.webp';
   return id;
 }
 function musicArtwork(){
@@ -3885,7 +3887,9 @@ $('#musicInk').addEventListener('change',function(e){changeMusicInk(e.target.val
   {id:'baglama',name:'Bağlamanın Sesi',frame:[540,337,361,388,27]},
   {id:'ud',name:'Udun Sesi',frame:[475,297,431,501,39]},
   {id:'ud-buyuk',name:'Udun Sesi · Büyük',box:[1254,1254],frame:[255,389,532,574,53]},
-  {id:'gitar',name:'Gitarın Sesi',frame:[474,340,440,424,40]}
+  {id:'gitar',name:'Gitarın Sesi',frame:[474,340,440,424,40]},
+  {id:'baglama-yuvarlak',name:'Bağlamanın Sesi · Yuvarlak',box:[1254,1254],frame:[224,406,565,560,62]},
+  {id:'gitar-yuvarlak',name:'Gitarın Sesi · Yuvarlak',box:[1254,1254],frame:[205,345,620,621,62]}
 ].forEach(function(instrument){
   var f=instrument.frame,box=instrument.box||[1536,1024];
   TPLS.push({
