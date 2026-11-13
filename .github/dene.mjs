@@ -5,6 +5,8 @@ import http from 'node:http';
 import fs from 'node:fs';
 import path from 'node:path';
 
+await import('./oil-check.mjs');
+
 const root = path.resolve('dist');
 const types = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.png': 'image/png', '.jpg': 'image/jpeg', '.webp': 'image/webp', '.svg': 'image/svg+xml', '.json': 'application/json' };
 const srv = http.createServer((q, r) => {
