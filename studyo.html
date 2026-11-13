@@ -3880,6 +3880,7 @@ function changeMusicInk(color){
   if(!layer||layer.musicInk===color||!artworkInks(layer.musicInstrument).some(function(entry){return entry[0]===color;}))return;
   layer.assetId=musicArtworkAsset(layer.musicInstrument||'baglama',color);
   layer.musicInk=color;
+  if(layer.musicInstrument!=='minik-kasif'&&lum(state.tee)>0.5)layer.musicLightInk=color;
   renderObjects();syncCtx();pushHist();
 }
 $('#musicInk').addEventListener('change',function(e){changeMusicInk(e.target.value);});
@@ -5090,7 +5091,13 @@ $('#rosterList').addEventListener('input',function(e){
 $('#rosterList').addEventListener('change',function(){pushHist();});
 $('#optBtn').addEventListener('click',function(){openTab('opt');});
 /* Ürün rengi değişince otomatik mürekkep rengindeki parçalar da yeni zemine göre açık/koyu olur */
-function teeSwap(hex){var o0=autoInk();state.tee=hex;var o1=autoInk();if(o0!==o1)['front','logo','logo2','back'].forEach(function(sd){(state[sd]&&state[sd].objs||[]).forEach(function(o){if(o.color&&String(o.color).toLowerCase()===String(o0).toLowerCase())o.color=o1;});});}
+function musicLayers(){return ['front','logo','logo2','back'].flatMap(function(side){return (state[side]&&state[side].objs||[]).filter(function(o){return o.musicInk&&o.musicInstrument!=='minik-kasif';});});}
+function teeSwap(hex,batch){var previous=state.tee,o0=autoInk();state.tee=hex;
+  if(batch||previous.toLowerCase()!==hex.toLowerCase())musicLayers().forEach(function(o){
+    if(lum(previous)>0.5)o.musicLightInk=o.musicInk;
+    var ink=lum(hex)>0.5?(o.musicLightInk||'charcoal'):'white';
+    o.musicInk=ink;o.assetId=musicArtworkAsset(o.musicInstrument||'baglama',ink);
+  });var o1=autoInk();if(o0!==o1)['front','logo','logo2','back'].forEach(function(sd){(state[sd]&&state[sd].objs||[]).forEach(function(o){if(o.color&&String(o.color).toLowerCase()===String(o0).toLowerCase())o.color=o1;});});}
 $('#optColors').addEventListener('click',function(e){var kb=e.target.closest('[data-kulp]');if(kb){state.kulp=kb.dataset.kulp===KULP[0][1]?'':kb.dataset.kulp;renderShirt();syncOpt();renderOpt();pushHist();toast('Kulp rengi: '+kulpName()+'. Gövde süblimasyon baskı için beyaz kalır.');return;}var b=e.target.closest('[data-tee]');if(!b)return;teeSwap(b.dataset.tee);renderShirt();renderObjects();syncOpt();renderOpt();pushHist();});
 $('#optSizes').addEventListener('click',function(e){var b=e.target.closest('[data-oz]');if(!b)return;var z=b.dataset.oz,ks=Object.keys(state.sizes).filter(function(k){return state.sizes[k]>0;});
   if(ks.length<=1){var q=ks.length?state.sizes[ks[0]]:1;state.sizes={};state.sizes[z]=q;}
@@ -5829,6 +5836,8 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
       /* Ortam fotoğrafı için ayrı referans: beyaz kupa açık zeminde kaybolunca yapay zekâ kupanın boyunu tahmin edip baskıyı küçültüyordu; koyu zeminde kupanın silüeti ve baskının kupayı ne kadar kapladığı net görünür */
       if(i===0&&/^(mug|canvas)$/.test(state.product)){try{var rf=document.createElement('canvas');rf.width=c.width;rf.height=c.height;var rx=rf.getContext('2d');rx.fillStyle='#9aa39e';rx.fillRect(0,0,rf.width,rf.height);rx.drawImage(c,0,0);var rk='img/ref-'+rnd()+'.jpg';await upload('site',rk,await canvasBlob(rf,'image/jpeg',.9));ADM.refTok=rk;}catch(_){ADM.refTok=null;}}}return imgs;}
   /* Yayındaki ürünü güncelle: yalnız tasarım görselleri yenilenir; kod, fiyat, kategori, açıklama aynı kalır */
+  function saveMusicColors(){return musicLayers().map(function(o){return [o,o.musicInk,o.assetId,o.musicLightInk];});}
+  function restoreMusicColors(saved){saved.forEach(function(v){v[0].musicInk=v[1];v[0].assetId=v[2];if(v[3]===undefined)delete v[0].musicLightInk;else v[0].musicLightInk=v[3];});}
   async function doUpdate(){
     var E=ADM.edit;if(!E)throw {msg:'Düzenlenen ürün yok.'};
     var ss=sidesWith();if(!ss.length)throw {msg:'Önce bir tasarım yap.'};
@@ -5841,11 +5850,11 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
       /* Tasarım kodu (W…) varsa onunla; eski ürünlerde kod yok: sitedeki Koleksiyon'un renkleri gruplarken kullandığı tasarım imzasıyla (dKey) */
       sibs=sibs.concat((d.products||[]).filter(function(x){return x!==p&&x.dsg&&x.dsg.tee&&ck(x)===k&&String(x.dsg.tee).toLowerCase()!==String(p.dsg&&p.dsg.tee).toLowerCase()&&(+p.wc?+x.wc===+p.wc:dKey(x)===dk);}));
       var seenT={};sibs=sibs.filter(function(x){var t=String(x.dsg&&x.dsg.tee||'').toLowerCase()||x.id;if(seenT[t])return false;seenT[t]=1;return true;});}
-    var t0=state.tee,btn=$('#amGo'),bad=[];
+    var t0=state.tee,musicColors=saveMusicColors(),btn=$('#amGo'),bad=[];
     try{for(var si=0;si<sibs.length;si++){var q=sibs[si],qt=si?q.dsg.tee:t0;
       /* Eski üründe kayıtlı ton bugünkü renk listesinde birebir yoksa aynı adlı / en yakın renge oturur */
       if(si){var qc=phPick(TEES.map(function(x){return {name:x[0],hex:x[1]};}),qt,q.color);if(qc)qt=qc.hex;}
-      if(sibs.length>1){teeSwap(qt);renderShirt();renderObjects();await phWait(qt);renderShirt();renderObjects();await new Promise(function(r){setTimeout(r,120);});if(btn)btn.textContent='Güncelleniyor: '+(q.color||colorName()||qt)+' ('+(si+1)+'/'+sibs.length+')…';}
+      if(sibs.length>1){teeSwap(qt,true);renderShirt();renderObjects();await phWait(qt);renderShirt();renderObjects();await new Promise(function(r){setTimeout(r,120);});if(btn)btn.textContent='Güncelleniyor: '+(q.color||colorName()||qt)+' ('+(si+1)+'/'+sibs.length+')…';}
       try{var imgs=await withOrtam(await prodImgs(ss),btn),rest=(q.imgs||[]).filter(function(k){if(/^img\/(tas|ortam)-/.test(String(k)))return false;
           // Gaziantep kupasının geçici galeri kareleri de stüdyo yeniden kaydında yenilenir.
           return q.id!=='nmw94omgrs682p'||!/^https:\/\/raw\.githubusercontent\.com\/fotoince-sudo\/wolflano-tasarim-sitesi\/[a-f0-9]+\/assets\/galeri\/gaziantep-kupa-(?:on-masa|arka-masa|elde)\.jpg$/.test(String(k));});
@@ -5854,7 +5863,7 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
         q.dsg=data;
         if(q.adesign)await rq('/rest/v1/admin_designs?id=eq.'+q.adesign,{method:'PATCH',body:{data:data,thumb:pubUrl(imgs[0]),product:state.product,cut:state.cut,color:state.tee}});
       }catch(e){if(e&&e.code==='auth'||!si)throw e;bad.push(q.color||q.name);try{console.error('Renk güncelleme',e);}catch(_){}}}}
-    finally{if(sibs.length>1){teeSwap(t0);renderShirt();renderObjects();try{renderOpt();}catch(_){}}}
+    finally{if(sibs.length>1){teeSwap(t0);restoreMusicColors(musicColors);renderShirt();renderObjects();syncMusicInk();try{renderOpt();}catch(_){}}}
     await rq('/rest/v1/site_content?on_conflict=id',{method:'POST',body:{id:'main',data:d,updated_at:new Date().toISOString()},prefer:'resolution=merge-duplicates,return=minimal'});
     var nm=p.name||E.title;ADM.edit=null;mode='urun';
     setTimeout(function(){location.href='index.html#urun-'+encodeURIComponent(p.id);},1800);
@@ -5930,12 +5939,12 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
   function allCols(){if(/^(mug|canvas)$/.test(state.product))return [];return TEES.map(function(t){return t[1];}).filter(function(h,i,a){return a.indexOf(h)===i;});}
   function allColBox(){var n=allCols().length;if(n<2)return '';
     return '<label class="am-all"><input type="checkbox" id="amAll" checked><span><b>Tüm renklere uygula ('+n+' renk)</b><small>Aynı tasarım bu ürünün bütün renklerinde ayrı ayrı yayınlanır. Yalnız seçili renk için işareti kaldır.</small></span></label>';}
-  async function doProdAll(title,cat,pr,info,btn){var cols=allCols(),t0=state.tee,ok=[],bad=[];
+  async function doProdAll(title,cat,pr,info,btn){var cols=allCols(),t0=state.tee,musicColors=saveMusicColors(),ok=[],bad=[];
     var cur=cols.filter(function(h){return String(h).toLowerCase()===String(t0).toLowerCase();});cols=cur.concat(cols.filter(function(h){return cur.indexOf(h)<0;}));
-    try{for(var i=0;i<cols.length;i++){teeSwap(cols[i]);renderShirt();renderObjects();await phWait(cols[i]);renderShirt();renderObjects();await new Promise(function(r){setTimeout(r,120);});
+    try{for(var i=0;i<cols.length;i++){teeSwap(cols[i],true);renderShirt();renderObjects();await phWait(cols[i]);renderShirt();renderObjects();await new Promise(function(r){setTimeout(r,120);});
         var cn=colorName()||cols[i];if(btn)btn.textContent='Yayınlanıyor: '+cn+' ('+(i+1)+'/'+cols.length+')…';
         try{await doProd(title,cat,pr,false,Object.assign({},info,{color:null}));ok.push(cn);}catch(e){if(e&&e.code==='auth')throw e;bad.push(cn);try{console.error('Renk',cn,e);}catch(_){}}}}
-    finally{teeSwap(t0);renderShirt();renderObjects();try{renderOpt();}catch(_){}}
+    finally{teeSwap(t0);restoreMusicColors(musicColors);renderShirt();renderObjects();syncMusicInk();try{renderOpt();}catch(_){}}
     if(!ok.length)throw {msg:'Hiçbir renk yayınlanamadı. Tekrar dene.'};
     return ok.length+' renkte yayınlandı: '+ok.join(', ')+'.'+(bad.length?' Yayınlanamayan: '+bad.join(', ')+' (o rengi tek başına tekrar dene).':'')+' Hepsi aynı tasarım kodunu aldı.';}
   async function doPrint(title,sizes,byWolf){
