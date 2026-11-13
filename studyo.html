@@ -6781,12 +6781,9 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
       if(fd)openFav(fd.data);else toast('Kayıtlı tasarım bulunamadı');})();}}catch(_){}
   init();
 })();
-})();
 
 /* ---------- Kullanım rehberi: ilk girişte bir kez 4 kartlık tanıtım; üstteki ? ile kısa rehber ve sık sorulanlar ---------- */
 (function(){
-  /* Bu bölüm ana kodun dışında: sunucu adresi burada da tanımlı olmalı (yoksa Aybüke cevap veremez) */
-  var SB={url:'https://wgovwmeirlzwalelazfj.supabase.co',key:'sb_publishable_PP5xFd7ga61xaDOCHeET_Q_zfMaE_4G'};
   var GD=[
     {t:'Ürününü seç',p:'Alttaki Ürün düğmesinden tişört, sweatshirt, polo, şapka ya da kupa seç, sonra rengini belirle.',
      a:'<svg viewBox="0 0 64 64"><path d="M22 10l-12 6 4 12 6-2v28h24V26l6 2 4-12-12-6c-1 4-5 7-10 7s-9-3-10-7z"/></svg>'},
@@ -6978,6 +6975,7 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
   var done=false;try{done=localStorage.getItem('wf_studio_guide')==='1';}catch(_){done=true;}
   var q='';try{q=location.search;}catch(_){}
   if(!done&&!/[?&](vitrin|admin)=/.test(q))setTimeout(function(){if(el.hidden)tour(0);},1200);
+})();
 })();
 </script>
 
