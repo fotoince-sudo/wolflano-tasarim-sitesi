@@ -6814,14 +6814,15 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
   }
   function help(){
     mode='help';
+    var welcome='';try{if(sessionStorage.getItem('wf_ayb_hi')!=='1'){sessionStorage.setItem('wf_ayb_hi','1');welcome='Wolflano’ya hoş geldin! Ben Aybüke. ';}}catch(_){}
     el.innerHTML='<div class="gd-card gd-help"><div class="gd-top"><h2 id="gdTitle">Nasıl kullanılır?</h2><button type="button" class="ib" data-gd="skip" aria-label="Kapat"><svg class="i" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>'+
-      '<div class="gd-ask"><div class="gd-ah"><img src="'+AYB+'" alt="" width="44" height="44"><span><b>Aybüke\'ye sor</b><small>Ben Aybüke, tasarım asistanın. Ne hazırlayalım? Örneğin, babamın arabasıyla bir kupa yap.</small></span></div><div class="gd-msgs" id="gdMsgs">'+askHtml()+'</div><div id="gdDesign"><label id="gdUploadLabel" hidden>Araç fotoğrafını yükle <input id="gdPhoto" type="file" accept="image/*"></label><div id="gdMugViews" aria-label="Kupada sağ ve sol görünüm" style="display:flex"></div><img id="gdPreview" hidden alt="Kupanın iki yüzünün baskı önizlemesi" style="width:100%;max-height:180px;object-fit:contain"></div>'+
+      '<div class="gd-ask"><div class="gd-ah"><img src="'+AYB+'" alt="" width="44" height="44"><span><b>Aybüke\'ye sor</b><small>'+welcome+'Ne hazırlayalım? Örneğin, babamın arabasıyla bir kupa yap.</small></span></div><div class="gd-msgs" id="gdMsgs">'+askHtml()+'</div><div id="gdDesign"><label id="gdUploadLabel" hidden>Araç fotoğrafını yükle <input id="gdPhoto" type="file" accept="image/*"></label><div id="gdMugViews" aria-label="Kupada sağ ve sol görünüm" style="display:flex"></div><img id="gdPreview" hidden alt="Kupanın iki yüzünün baskı önizlemesi" style="width:100%;max-height:180px;object-fit:contain"></div>'+
       '<form class="gd-in" id="gdAskF">'+(SR?'<button type="button" class="gd-mic'+(micOn?' on':'')+'" data-gd="mic" aria-label="Aybüke ile konuş"><svg class="i" viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></button>':'')+'<input id="gdAsk" maxlength="400" placeholder="'+(micOn?'Dinliyorum, konuş…':'Örn. Logoyu sağ göğse nasıl koyarım?')+'" autocomplete="off" enterkeyhint="send"><button type="submit" class="primary" aria-label="Gönder">Sor</button></form>'+
       (TTS?'<label class="gd-tts"><input type="checkbox" data-gdtts="1"'+(ttsOn?' checked':'')+'> Aybüke cevapları sesli okusun</label>':'')+'</div>'+
       '<ol class="gd-list">'+GD.map(function(d,k){return '<li><span class="n">'+(k+1)+'</span><span><b>'+d.t+'</b>'+d.p+'</span></li>';}).join('')+'</ol>'+
       '<h3>Sık sorulanlar</h3><div class="gd-faq">'+FAQ.map(function(q){return '<details><summary>'+q[0]+'</summary><p>'+q[1]+'</p></details>';}).join('')+'</div>'+
       '<div class="gd-nav"><button type="button" class="gd-skip" data-gd="tour">Tanıtımı yeniden izle</button><button type="button" class="primary" data-gd="skip">Tamam</button></div></div>';
-    el.hidden=false;showAybukeDesign().catch(function(){});
+    el.hidden=false;if(welcome){aysAc();say(welcome+'Ne hazırlayalım?');}showAybukeDesign().catch(function(){});
   }
   /* Asistan: sorular stüdyonun kurallarını bilen yardım asistanına (sunucu: yardim) gider; konuşma yalnız bu cihazda tutulur */
   /* Asistanın görseli: assets/aybuke içinde aybuke.webp/png/jpg varsa o, yoksa çizim (aybuke.svg) */
@@ -6958,7 +6959,7 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
     try{var r=await fetch(SB.url+'/functions/v1/yardim',{method:'POST',headers:{'Content-Type':'application/json',apikey:SB.key},body:JSON.stringify({messages:ASK.slice(-8),context:askCtx()})});
       var jj=await r.json().catch(function(){return {};});a=jj.cevap||jj.message||'';}catch(_){}
     ayFinish(a||'Şu an cevap veremedim. Biraz sonra yeniden dene ya da WhatsApp 0530 764 17 17 üzerinden bize yaz.');}
-  el.addEventListener('change',function(e){var t=e.target;if(!t||!t.dataset||!t.dataset.gdtts)return;ttsOn=t.checked;try{localStorage.setItem('wf_ask_tts',ttsOn?'1':'0');}catch(_){}aysAc();if(!ttsOn)aysStop();else say('Merhaba, ben Aybüke. Cevaplarımı sesli okuyacağım.');});
+  el.addEventListener('change',function(e){var t=e.target;if(!t||!t.dataset||!t.dataset.gdtts)return;ttsOn=t.checked;try{localStorage.setItem('wf_ask_tts',ttsOn?'1':'0');}catch(_){}aysAc();if(!ttsOn)aysStop();else say('Sesli yanıtlar açık.');});
   el.addEventListener('submit',function(e){var f=e.target;if(!f||f.id!=='gdAskF')return;e.preventDefault();aysAc();var i2=document.getElementById('gdAsk');var v=i2.value;i2.value='';askSend(v);});
   el.addEventListener('click',function(e){
     if(e.target===el){close();return;}
