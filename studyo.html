@@ -846,7 +846,7 @@ img{-webkit-touch-callout:none;-webkit-user-drag:none}
     <h2>Siparişini tamamla</h2>
   </div>
   <div class="o-body">
-    <section><h3>Önizleme</h3><div class="thumbs" id="thumbs"></div><div class="btnrow" style="margin-top:10px"><button class="ghost" id="saveDesign" type="button">♥ Tasarımımı kaydet</button></div><p class="note" style="margin:6px 0 0">Hesabına kaydedilir; sonra Favoriler'den açıp tekrar sipariş verebilirsin.</p></section>
+    <section><h3>Önizleme</h3><div class="thumbs" id="thumbs"></div><div id="quickMugActions" hidden><button type="button" class="ghost" id="quickMugReplace">Fotoğrafı değiştir</button><button type="button" class="ghost" id="quickMugBack">Ürünlere dön</button></div><div class="btnrow" style="margin-top:10px"><button class="ghost" id="saveDesign" type="button">♥ Tasarımımı kaydet</button></div><p class="note" style="margin:6px 0 0">Hesabına kaydedilir; sonra Favoriler'den açıp tekrar sipariş verebilirsin.</p></section>
     <section id="brandSec" hidden><h3>Wolflano marka işareti</h3><label class="brandopt"><input type="checkbox" id="brandChk" checked><span>Ürünün üstünde küçük Wolflano işareti olsun<small>Kendi logonla çakışmasın istersen kaldırabilirsin. Etiket ve yan dikiş şeridi her üründe kalır.</small></span></label></section>
     <section><h3 id="sizeHead">Beden ve adet</h3><div class="size-grid" id="sizeGrid"></div></section>
     <section id="rosterSec" hidden><h3>İsim ve numara listesi</h3><p class="note" style="margin:0 0 10px">Her ürün için ayrı yaz. Boş bıraktığın ürüne isim veya numara basılmaz.</p><div id="rosterList" class="rs"></div></section>
@@ -6678,12 +6678,86 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
   var hb=document.getElementById('helpBtn');if(hb)hb.addEventListener('click',help);
   var done=false;try{done=localStorage.getItem('wf_studio_guide')==='1';}catch(_){done=true;}
   var q='';try{q=location.search;}catch(_){}
-  if(!done&&!/[?&](vitrin|admin)=/.test(q))setTimeout(function(){if(el.hidden)tour(0);},1200);
+  if(!done&&!/[?&](vitrin|admin|prova)=/.test(q))setTimeout(function(){if(el.hidden)tour(0);},1200);
 })();
 </script>
 
 <script>
 /* Üst sol geri tuşu: siteden gelindiyse aynı yere (ürün listesine) döner, yoksa Baskı Atölyesi ürünlerine gider */
 
+</script>
+<style>
+#quickMug{width:min(420px,calc(100% - 32px));max-height:85vh;overflow:auto;padding:24px;border:0;border-radius:18px;color:#172725;background:#fff}
+#quickMug::backdrop{background:#112421b8}
+#quickMug h2{margin:0 0 12px;font-size:24px}
+#quickMug p{margin:0 0 16px}
+#quickMug img{display:block;width:100%;border-radius:10px;margin:0 0 16px}
+#quickMug button.primary{width:100%}
+#quickMugActions{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}
+#quickMugActions[hidden]{display:none}
+</style>
+<dialog id="quickMug" aria-labelledby="quickMugTitle">
+  <h2 id="quickMugTitle">Fotoğrafını yükle</h2>
+  <p>Fotoğrafın Mavi Çiçekler tasarımına otomatik yerleşir.</p>
+  <img src="assets/yagliboya/mavi-cicekler.webp" alt="Mavi çiçekli fotoğraf şablonu">
+  <button type="button" class="primary" id="quickMugNext">Fotoğraf yükle</button>
+  <p id="quickMugStatus" role="status" hidden></p>
+</dialog>
+<input id="quickMugFile" type="file" accept="image/*" hidden>
+<script>
+(function(){
+  if(new URLSearchParams(location.search).get('prova')!=='kupa')return;
+  const dialog=document.getElementById('quickMug');
+  const title=document.getElementById('quickMugTitle');
+  const next=document.getElementById('quickMugNext');
+  const status=document.getElementById('quickMugStatus');
+  const fileInput=document.getElementById('quickMugFile');
+  const actions=document.getElementById('quickMugActions');
+  const add=document.getElementById('addCart');
+  const template=TPLS.find(t=>t.oil==='mavi-cicekler');
+  if(!template)return;
+  let slot=null, busy=false;
+  next.addEventListener('click',function(){if(slot&&!busy)fileInput.click();});
+  fileInput.addEventListener('change',async function(){
+    const file=fileInput.files[0];
+    fileInput.value='';
+    if(!file||!slot||busy)return;
+    busy=true;
+    next.disabled=true;
+    add.disabled=true;
+    status.hidden=false;
+    status.textContent='Fotoğraf yerleştiriliyor…';
+    try{
+      await fillSlot(slot,file,true);
+      if(dialog.open)dialog.close();
+      actions.hidden=false;
+      add.textContent='Onayla ve sepete ekle';
+      await openOrder();
+      add.textContent='Onayla ve sepete ekle';
+    }catch(_){
+      if(!dialog.open)dialog.showModal();
+      status.hidden=false;
+      status.textContent='Fotoğraf açılamadı. JPG veya PNG ile tekrar dene.';
+    }finally{busy=false;next.disabled=false;add.disabled=false;}
+  });
+  document.getElementById('quickMugReplace').onclick=function(){
+    if(!busy)fileInput.click();
+  };
+  document.getElementById('quickMugBack').onclick=function(){
+    if(!busy)location.href='index.html#hediye';
+  };
+  dialog.addEventListener('cancel',e=>{if(busy)e.preventDefault();});
+  dialog.showModal();
+  next.disabled=true;
+  Promise.resolve().then(function(){
+    chooseProduct('mug','sub',true);
+    switchSide('front');
+    return applyTemplate(template,true);
+  }).then(function(){
+    slot=state.front.objs.find(o=>o.oilSlot);
+    if(!slot)throw Error('photo slot');
+    next.disabled=false;
+  }).catch(function(){status.hidden=false;status.textContent='Ürün açılamadı. Sayfayı yenileyip tekrar dene.';});
+})();
 </script>
 </body></html>
