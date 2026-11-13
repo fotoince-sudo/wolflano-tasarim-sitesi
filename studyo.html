@@ -4281,7 +4281,7 @@ function buildPanels(){
   FONTS.forEach(function(f){fg+='<button class="font" data-f="'+f[0]+'" style="font-family:'+fontStack(f[0]).replace(/"/g,"'")+';font-weight:'+f[1]+'">Wolflano<small>'+f[0]+'</small></button>';});
   $('#fontGrid').innerHTML=fg;
   var cc='';
-  CLIP_CATS.forEach(function(c){cc+='<button data-cat="'+c+'"'+(c===view.clipCat?' class="on"':'')+'>'+c+'</button>';});
+  CLIP_CATS.forEach(function(c){cc+='<button data-cat="'+c+'"'+(c===view.clipCat?' class="on"':'')+'>'+tplCategoryLabel(c)+'</button>';});
   $('#clipCats').innerHTML=cc;
   renderClipGrid();renderTpl();syncTeeUI();
 }
@@ -4394,6 +4394,7 @@ function tplAreaName(t){
   return 'GENEL';
 }
 var tplLastGroup='';
+function tplCategoryLabel(category){return category==='Kurt geziyor'?'Wolf geziyor':category;}
 function renderTpl(){
   ['Zemin','Yağlı boya','Fotoğraflı tişört'].forEach(function(c){if(TPL_CATS.indexOf(c)<0)TPL_CATS.push(c);});
   var h='',cc='',q=normTR(($('#tplQ')&&$('#tplQ').value||'').trim()),n=0,g=tplGroup(),has={},dirs={},measures={};
@@ -5296,7 +5297,7 @@ try{if(new URLSearchParams(location.search).get('wolf')){setTimeout(function(){i
 (function(){try{var q=new URLSearchParams(location.search),u=q.get('urun'),k=q.get('kesim'),bd=q.get('beden');if(u&&PRODUCTS[u]){var cs=PRODUCTS[u].cuts;if(q.get('model'))state.bid=q.get('model');if(q.get('kulp'))state.kulp='#'+String(q.get('kulp')).replace('#','');chooseProduct(u,cs.indexOf(k)>=0?k:cs[0]);if(bd&&sizeList().indexOf(bd)>=0){state.sizes={};state.sizes[bd]=1;renderAll();}else if(!isStd()&&(sizeList()||[]).length){setTimeout(function(){try{openTab('opt');toast('Bedenini seç. Rengi de buradan değiştirebilirsin.');}catch(_){}},700);}if(PRODUCTS[u].vb){['front','logo','logo2','back'].forEach(function(sd){if(state[sd]&&state[sd].objs)state[sd].objs=[];});view.sel=null;renderAll();}}
   if(q.get('vitrin')==='wolf'){if(!u&&PRODUCTS.tee)chooseProduct('tee',PRODUCTS.tee.cuts[0]);openWolf();}
   /* Şablon kategorisiyle açılış: studyo.html?sablon=Wolf%20tasarımları (Kurdun İzinde sayfasından) */
-  var sbq=q.get('sablon');if(sbq){if(!u&&PRODUCTS.tee)chooseProduct('tee',PRODUCTS.tee.cuts[0]);setTimeout(function(){try{view.tplCat=TPL_CATS.indexOf(sbq)>=0?sbq:'Tümü';openTab('tpl');renderTpl();renderTplPreviews();}catch(_){}},400);}}catch(_){}})();
+  var sbq=q.get('sablon');if(sbq==='Wolf geziyor'&&TPL_CATS.indexOf(sbq)<0)sbq='Kurt geziyor';if(sbq){if(!u&&PRODUCTS.tee)chooseProduct('tee',PRODUCTS.tee.cuts[0]);setTimeout(function(){try{view.tplCat=TPL_CATS.indexOf(sbq)>=0?sbq:'Tümü';openTab('tpl');renderTpl();renderTplPreviews();}catch(_){}},400);}}catch(_){}})();
 syncUndo();
 /* Ürünlere dönüş: stüdyoya hangi sayfadan gelindiyse oraya; ürün o sırada türü değiştiyse (kupa ↔ giyim) ürüne uygun sayfaya (kupa/canvas → Hediye & Dekor, giyim → Giyim & Moda) */
 (function(){var p0=null,from='';try{from=sessionStorage.getItem('wf_from')||'';}catch(_){}
@@ -6223,7 +6224,7 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
     var body='';
     if(mode==='guncelle')body='<p class="note">Düzenlenen ürün: <b>'+ea(ADM.edit.title||'')+'</b>. "Ürünü güncelle" yalnız ön ve arka görsellerini yeniler; ürün kodu, fiyat, kategori, açıklama ve stok aynı kalır.</p>'+(allCols().length>1?'<label class="am-all"><input type="checkbox" id="amUAll" checked><span><b>Tüm renklerde güncelle</b><small>Bu tasarımın sitedeki bütün renkleri birlikte yenilenir. Yalnız bu renk için işareti kaldır.</small></span></label>':'')+ortBox();
     if(mode==='sablon')body='<div class="am-two"><label class="am-f">Kimler görsün<select id="amVis"><option value="herkes"'+(tplVis==='herkes'?' selected':'')+'>Herkes (müşteriler de)</option><option value="ozel"'+(tplVis==='ozel'?' selected':'')+'>Sadece Wolflano</option></select></label>'+
-      '<label class="am-f">Kategori<select id="amTCat"><option value="">'+ea(TPL_CAT_ADM)+'</option>'+TPL_CATS.filter(function(c){return c!=='Tümü'&&c!==TPL_CAT_ADM&&c!==TPL_CAT_PRIV&&(c!==TPL_CAT_MUSIC||state.product==='tee');}).map(function(c){return '<option'+(c===tplCat?' selected':'')+'>'+ea(c)+'</option>';}).join('')+'</select></label></div>'+
+      '<label class="am-f">Kategori<select id="amTCat"><option value="">'+ea(TPL_CAT_ADM)+'</option>'+TPL_CATS.filter(function(c){return c!=='Tümü'&&c!==TPL_CAT_ADM&&c!==TPL_CAT_PRIV&&(c!==TPL_CAT_MUSIC||state.product==='tee');}).map(function(c){return '<option'+(c===tplCat?' selected':'')+' value="'+ea(c)+'">'+ea(tplCategoryLabel(c))+'</option>';}).join('')+'</select></label></div>'+
       '<p class="note">'+(tplVis==='ozel'?'Yalnız sen ve yetkililer Şablon panelinde "'+TPL_CAT_PRIV+'" altında görürsünüz; müşterinin sayfasına hiç yüklenmez.':'Müşteriler Şablon panelinde seçtiğin kategoride görür; seçince kendi ürününe uyarlanır.')+'</p>';
     if(mode==='urun')body='<div class="am-sum" id="amSum"></div>'+allColBox()+'<button type="button" class="btn soft" id="amRefresh" style="width:100%;margin:6px 0 10px">Eski koleksiyon görsellerini yenile (beyaz ürünlerdeki açık hale)</button>'+
       '<details class="am-more"><summary>Ayrıntıları değiştir (tür, renk, kategori, fiyat, etiket, açıklama)</summary>'+prodInfo()+
