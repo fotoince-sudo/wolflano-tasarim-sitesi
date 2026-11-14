@@ -1,0 +1,262 @@
+[
+  {
+    "id": "kizil-guller",
+    "name": "Kızıl güller",
+    "background": true,
+    "rect": [
+      0.32,
+      0.24,
+      0.34,
+      0.5
+    ],
+    "w": 1774,
+    "h": 887
+  },
+  {
+    "id": "mavi-cicekler",
+    "name": "Mavi çiçekler",
+    "background": true,
+    "rect": [
+      0.34,
+      0.22,
+      0.32,
+      0.56
+    ],
+    "w": 1774,
+    "h": 887
+  },
+  {
+    "id": "aycicekleri",
+    "name": "Ayçiçekleri",
+    "background": true,
+    "rect": [
+      0.34,
+      0.2,
+      0.32,
+      0.5
+    ],
+    "w": 1774,
+    "h": 887
+  },
+  {
+    "id": "gunbatimi-ask",
+    "name": "Gün batımında aşk",
+    "background": false,
+    "rect": [
+      0.42,
+      0.25,
+      0.3,
+      0.52
+    ],
+    "w": 1774,
+    "h": 887
+  },
+  {
+    "id": "romantik-kalpler",
+    "name": "Romantik kalpler",
+    "background": true,
+    "rect": [
+      0.29,
+      0.23,
+      0.3,
+      0.52
+    ],
+    "w": 1774,
+    "h": 887
+  },
+  {
+    "id": "ramazan",
+    "name": "Ramazan Bayramı",
+    "background": false,
+    "rect": [
+      0.34,
+      0.2,
+      0.32,
+      0.6
+    ],
+    "w": 1774,
+    "h": 887
+  },
+  {
+    "id": "kurban",
+    "name": "Kurban Bayramı",
+    "background": false,
+    "rect": [
+      0.34,
+      0.2,
+      0.32,
+      0.6
+    ],
+    "w": 1774,
+    "h": 887
+  },
+  {
+    "id": "23-nisan",
+    "name": "23 Nisan",
+    "background": false,
+    "rect": [
+      0.34,
+      0.2,
+      0.32,
+      0.6
+    ],
+    "w": 1774,
+    "h": 887
+  },
+  {
+    "id": "19-mayis",
+    "name": "19 Mayıs",
+    "background": false,
+    "rect": [
+      0.35,
+      0.2,
+      0.3,
+      0.6
+    ],
+    "w": 1774,
+    "h": 887
+  },
+  {
+    "id": "30-agustos",
+    "name": "30 Ağustos",
+    "background": false,
+    "rect": [
+      0.34,
+      0.2,
+      0.32,
+      0.6
+    ],
+    "w": 1774,
+    "h": 887
+  },
+  {
+    "id": "29-ekim",
+    "name": "29 Ekim",
+    "background": false,
+    "rect": [
+      0.34,
+      0.24,
+      0.32,
+      0.5
+    ],
+    "w": 1774,
+    "h": 887
+  },
+  {
+    "id": "kediler",
+    "name": "Kediler",
+    "background": false,
+    "rect": [
+      0.35,
+      0.18,
+      0.3,
+      0.64
+    ],
+    "w": 1774,
+    "h": 887
+  },
+  {
+    "id": "kopekler",
+    "name": "Köpekler",
+    "background": false,
+    "rect": [
+      0.35,
+      0.18,
+      0.3,
+      0.64
+    ],
+    "w": 1774,
+    "h": 887
+  },
+  {
+    "id": "atlar",
+    "name": "Atlar",
+    "background": false,
+    "rect": [
+      0.35,
+      0.18,
+      0.3,
+      0.64
+    ],
+    "w": 1774,
+    "h": 887
+  },
+  {
+    "id": "kurtlar",
+    "name": "Kurtlar",
+    "background": false,
+    "rect": [
+      0.35,
+      0.18,
+      0.3,
+      0.64
+    ],
+    "w": 1774,
+    "h": 887
+  },
+  {
+    "id": "kuslar",
+    "name": "Kuşlar",
+    "background": false,
+    "rect": [
+      0.35,
+      0.18,
+      0.3,
+      0.64
+    ],
+    "w": 1774,
+    "h": 887
+  },
+  {
+    "id": "kelebekler",
+    "name": "Kelebekler ve lavanta",
+    "background": true,
+    "rect": [
+      0.35,
+      0.18,
+      0.3,
+      0.64
+    ],
+    "w": 1774,
+    "h": 887
+  },
+  {
+    "id": "tavsanlar",
+    "name": "Tavşanlar",
+    "background": false,
+    "rect": [
+      0.35,
+      0.18,
+      0.3,
+      0.64
+    ],
+    "w": 1774,
+    "h": 887
+  },
+  {
+    "id": "yunuslar",
+    "name": "Yunuslar",
+    "background": false,
+    "rect": [
+      0.35,
+      0.18,
+      0.3,
+      0.64
+    ],
+    "w": 1774,
+    "h": 887
+  },
+  {
+    "id": "aslanlar",
+    "name": "Aslanlar",
+    "background": false,
+    "rect": [
+      0.35,
+      0.18,
+      0.3,
+      0.64
+    ],
+    "w": 1774,
+    "h": 887
+  }
+]

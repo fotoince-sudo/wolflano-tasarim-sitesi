@@ -1,0 +1,176 @@
+{
+ "baslik": "Kurt kütüphanesi",
+ "ikonlar": [
+  {
+   "dosya": "kurt-kafa-geometrik.svg",
+   "ad": "Geometrik kurt başı"
+  },
+  {
+   "dosya": "kurt-profil.svg",
+   "ad": "Kurt profili"
+  },
+  {
+   "dosya": "uluyan-kurt.svg",
+   "ad": "Uluyan kurt"
+  },
+  {
+   "dosya": "ay-ve-kurt.svg",
+   "ad": "Ay ve kurt"
+  },
+  {
+   "dosya": "pati.svg",
+   "ad": "Kurt patisi"
+  },
+  {
+   "dosya": "pati-izi.svg",
+   "ad": "Pati izleri"
+  },
+  {
+   "dosya": "kurt-gozleri.svg",
+   "ad": "Kurt bakışı"
+  },
+  {
+   "dosya": "kalkan-kurt.svg",
+   "ad": "Kurt arması"
+  },
+  {
+   "dosya": "kosan-kurt-2.svg",
+   "ad": "Koşan kurt"
+  },
+  {
+   "dosya": "kurt-surusu.svg",
+   "ad": "Kurt sürüsü"
+  },
+  {
+   "dosya": "dag-ve-kurt.svg",
+   "ad": "Dağ başında kurt"
+  },
+  {
+   "dosya": "kurt-rozet.svg",
+   "ad": "Kurt rozeti"
+  },
+  {
+   "dosya": "tirnak-izi.svg",
+   "ad": "Tırnak izi"
+  },
+  {
+   "dosya": "kurt-yildiz.svg",
+   "ad": "Kurt ve yıldız"
+  },
+  {
+   "dosya": "voleybol.svg",
+   "ad": "Voleybol topu",
+   "kategori": "Spor"
+  },
+  {
+   "dosya": "madalya.svg",
+   "ad": "Madalya",
+   "kategori": "Spor"
+  },
+  {
+   "dosya": "duduk.svg",
+   "ad": "Düdük",
+   "kategori": "Spor"
+  },
+  {
+   "dosya": "raket.svg",
+   "ad": "Tenis raketi",
+   "kategori": "Spor"
+  },
+  {
+   "dosya": "bisiklet.svg",
+   "ad": "Bisiklet",
+   "kategori": "Spor"
+  },
+  {
+   "dosya": "dambil.svg",
+   "ad": "Dambıl",
+   "kategori": "Spor"
+  },
+  {
+   "dosya": "nota.svg",
+   "ad": "Nota",
+   "kategori": "Semboller"
+  },
+  {
+   "dosya": "kahve.svg",
+   "ad": "Kahve fincanı",
+   "kategori": "Semboller"
+  },
+  {
+   "dosya": "sonsuz.svg",
+   "ad": "Sonsuzluk",
+   "kategori": "Semboller"
+  },
+  {
+   "dosya": "capa.svg",
+   "ad": "Çapa",
+   "kategori": "Semboller"
+  },
+  {
+   "dosya": "pusula.svg",
+   "ad": "Pusula",
+   "kategori": "Semboller"
+  },
+  {
+   "dosya": "nazar.svg",
+   "ad": "Nazar boncuğu",
+   "kategori": "Semboller"
+  },
+  {
+   "dosya": "cay.svg",
+   "ad": "Çay bardağı",
+   "kategori": "Semboller"
+  },
+  {
+   "dosya": "simit.svg",
+   "ad": "Simit",
+   "kategori": "Semboller"
+  },
+  {
+   "dosya": "patlama.svg",
+   "ad": "Patlama",
+   "kategori": "Şekiller"
+  },
+  {
+   "dosya": "sekizgen.svg",
+   "ad": "Sekizgen",
+   "kategori": "Şekiller"
+  },
+  {
+   "dosya": "selcuklu-yildizi.svg",
+   "ad": "Selçuklu yıldızı",
+   "kategori": "Şekiller"
+  },
+  {
+   "dosya": "afis.svg",
+   "ad": "Afiş şeridi",
+   "kategori": "Şekiller"
+  },
+  {
+   "dosya": "kalp-cizgi.svg",
+   "ad": "Kalp çizgisi",
+   "kategori": "Şekiller"
+  },
+  {
+   "dosya": "agac.svg",
+   "ad": "Ağaç",
+   "kategori": "Doğa"
+  },
+  {
+   "dosya": "kar.svg",
+   "ad": "Kar tanesi",
+   "kategori": "Doğa"
+  },
+  {
+   "dosya": "zeytin.svg",
+   "ad": "Zeytin dalı",
+   "kategori": "Doğa"
+  },
+  {
+   "dosya": "dalga2.svg",
+   "ad": "Büyük dalga",
+   "kategori": "Doğa"
+  }
+ ]
+}

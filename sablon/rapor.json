@@ -1,0 +1,1822 @@
+{
+ "10kasim-dikey": {
+  "ad": "10 Kasım",
+  "baski": [
+   3508,
+   4961
+  ],
+  "buyutulmus": [
+   4244,
+   5772
+  ],
+  "dpi": 300,
+  "kat": "Kurt geziyor · Özel günler",
+  "kaynak": [
+   1088,
+   1456
+  ],
+  "kirpilmis": [
+   1061,
+   1443
+  ],
+  "tamam": true,
+  "yon": "dikey"
+ },
+ "10kasim-yatay": {
+  "ad": "10 Kasım",
+  "baski": [
+   4961,
+   3508
+  ],
+  "buyutulmus": [
+   5928,
+   4032
+  ],
+  "dpi": 300,
+  "kat": "Kurt geziyor · Özel günler",
+  "kaynak": [
+   1536,
+   1024
+  ],
+  "kirpilmis": [
+   1482,
+   1008
+  ],
+  "tamam": true,
+  "yon": "yatay"
+ },
+ "23nisan-dikey": {
+  "ad": "23 Nisan",
+  "baski": [
+   3508,
+   4961
+  ],
+  "buyutulmus": [
+   4268,
+   5672
+  ],
+  "dpi": 300,
+  "kat": "Kurt geziyor · Özel günler",
+  "kaynak": [
+   1088,
+   1456
+  ],
+  "kirpilmis": [
+   1067,
+   1418
+  ],
+  "tamam": true,
+  "yon": "dikey"
+ },
+ "23nisan-yatay": {
+  "ad": "23 Nisan",
+  "baski": [
+   4961,
+   3508
+  ],
+  "buyutulmus": [
+   5984,
+   3856
+  ],
+  "dpi": 300,
+  "kat": "Kurt geziyor · Özel günler",
+  "kaynak": [
+   1536,
+   1024
+  ],
+  "kirpilmis": [
+   1496,
+   964
+  ],
+  "tamam": true,
+  "yon": "yatay"
+ },
+ "antalya-dikey": {
+  "ad": "Antalya",
+  "baski": [
+   3508,
+   4961
+  ],
+  "buyutulmus": [
+   4352,
+   5824
+  ],
+  "dpi": 300,
+  "kat": "Şehirler",
+  "kaynak": [
+   1088,
+   1456
+  ],
+  "kirpilmis": [
+   1088,
+   1456
+  ],
+  "tamam": true,
+  "yon": "dikey"
+ },
+ "antalya-yatay": {
+  "ad": "Antalya",
+  "baski": [
+   4961,
+   3508
+  ],
+  "buyutulmus": [
+   6144,
+   4096
+  ],
+  "dpi": 300,
+  "kat": "Şehirler",
+  "kaynak": [
+   1536,
+   1024
+  ],
+  "kirpilmis": [
+   1536,
+   1024
+  ],
+  "tamam": true,
+  "yon": "yatay"
+ },
+ "aydin-dikey": {
+  "ad": "Aydın",
+  "baski": [
+   3508,
+   4961
+  ],
+  "buyutulmus": [
+   4252,
+   5680
+  ],
+  "dpi": 300,
+  "kat": "Şehirler",
+  "kaynak": [
+   1088,
+   1456
+  ],
+  "kirpilmis": [
+   1063,
+   1420
+  ],
+  "tamam": true,
+  "yon": "dikey"
+ },
+ "aydin-yatay": {
+  "ad": "Aydın",
+  "baski": [
+   4961,
+   3508
+  ],
+  "buyutulmus": [
+   6024,
+   4096
+  ],
+  "dpi": 300,
+  "kat": "Şehirler",
+  "kaynak": [
+   1536,
+   1024
+  ],
+  "kirpilmis": [
+   1506,
+   1024
+  ],
+  "tamam": true,
+  "yon": "yatay"
+ },
+ "bodrum-dikey": {
+  "ad": "Bodrum",
+  "baski": [
+   3508,
+   4961
+  ],
+  "buyutulmus": [
+   4188,
+   5616
+  ],
+  "dpi": 300,
+  "kat": "Şehirler",
+  "kaynak": [
+   1088,
+   1456
+  ],
+  "kirpilmis": [
+   1047,
+   1404
+  ],
+  "tamam": true,
+  "yon": "dikey"
+ },
+ "bodrum-yatay": {
+  "ad": "Bodrum",
+  "baski": [
+   4961,
+   3508
+  ],
+  "buyutulmus": [
+   6100,
+   3976
+  ],
+  "dpi": 300,
+  "kat": "Şehirler",
+  "kaynak": [
+   1536,
+   1024
+  ],
+  "kirpilmis": [
+   1525,
+   994
+  ],
+  "tamam": true,
+  "yon": "yatay"
+ },
+ "cesme-dikey": {
+  "ad": "Çeşme",
+  "baski": [
+   3508,
+   4961
+  ],
+  "buyutulmus": [
+   4052,
+   5576
+  ],
+  "dpi": 300,
+  "kat": "Şehirler",
+  "kaynak": [
+   1088,
+   1456
+  ],
+  "kirpilmis": [
+   1013,
+   1394
+  ],
+  "tamam": true,
+  "yon": "dikey"
+ },
+ "cesme-yatay": {
+  "ad": "Çeşme",
+  "baski": [
+   4961,
+   3508
+  ],
+  "buyutulmus": [
+   5984,
+   3880
+  ],
+  "dpi": 300,
+  "kat": "Şehirler",
+  "kaynak": [
+   1536,
+   1024
+  ],
+  "kirpilmis": [
+   1496,
+   970
+  ],
+  "tamam": true,
+  "yon": "yatay"
+ },
+ "erkek-cesme-dikey": {
+  "ad": "Çeşme",
+  "baski": [
+   3508,
+   4961
+  ],
+  "buyutulmus": [
+   4028,
+   5576
+  ],
+  "dolgu": false,
+  "dpi": 300,
+  "kat": "Şehirler",
+  "kaynak": [
+   1088,
+   1456
+  ],
+  "kirpilmis": [
+   1007,
+   1394
+  ],
+  "tamam": true,
+  "yon": "dikey"
+ },
+ "erkek-cesme-yatay": {
+  "ad": "Çeşme",
+  "baski": [
+   4961,
+   3508
+  ],
+  "buyutulmus": [
+   5984,
+   3864
+  ],
+  "dolgu": false,
+  "dpi": 300,
+  "kat": "Şehirler",
+  "kaynak": [
+   1536,
+   1024
+  ],
+  "kirpilmis": [
+   1496,
+   966
+  ],
+  "tamam": true,
+  "yon": "yatay"
+ },
+ "erkek-hastane-ankara-dikey": {
+  "ad": "Ankara",
+  "baski": [
+   3508,
+   4961
+  ],
+  "buyutulmus": [
+   4080,
+   5764
+  ],
+  "dolgu": false,
+  "dpi": 300,
+  "kat": "Kurt geziyor · Şehir hastaneleri",
+  "kaynak": [
+   1088,
+   1456
+  ],
+  "kirpilmis": [
+   1020,
+   1441
+  ],
+  "tamam": true,
+  "yon": "dikey"
+ },
+ "erkek-hastane-ankara-yatay": {
+  "ad": "Ankara",
+  "baski": [
+   4961,
+   3508
+  ],
+  "buyutulmus": [
+   6016,
+   4096
+  ],
+  "dolgu": false,
+  "dpi": 300,
+  "kat": "Kurt geziyor · Şehir hastaneleri",
+  "kaynak": [
+   1536,
+   1024
+  ],
+  "kirpilmis": [
+   1504,
+   1024
+  ],
+  "tamam": true,
+  "yon": "yatay"
+ },
+ "erkek-hastane-istanbul-dikey": {
+  "ad": "İstanbul",
+  "baski": [
+   3508,
+   4961
+  ],
+  "buyutulmus": [
+   4160,
+   5756
+  ],
+  "dolgu": false,
+  "dpi": 300,
+  "kat": "Kurt geziyor · Şehir hastaneleri",
+  "kaynak": [
+   1088,
+   1456
+  ],
+  "kirpilmis": [
+   1040,
+   1439
+  ],
+  "tamam": true,
+  "yon": "dikey"
+ },
+ "erkek-hastane-istanbul-yatay": {
+  "ad": "İstanbul",
+  "baski": [
+   4961,
+   3508
+  ],
+  "buyutulmus": [
+   5820,
+   4068
+  ],
+  "dolgu": false,
+  "dpi": 300,
+  "kat": "Kurt geziyor · Şehir hastaneleri",
+  "kaynak": [
+   1536,
+   1024
+  ],
+  "kirpilmis": [
+   1455,
+   1017
+  ],
+  "tamam": true,
+  "yon": "yatay"
+ },
+ "erkek-hastane-izmir-dikey": {
+  "ad": "İzmir",
+  "baski": [
+   3508,
+   4961
+  ],
+  "buyutulmus": [
+   4152,
+   5528
+  ],
+  "dolgu": false,
+  "dpi": 300,
+  "kat": "Kurt geziyor · Şehir hastaneleri",
+  "kaynak": [
+   1088,
+   1456
+  ],
+  "kirpilmis": [
+   1038,
+   1382
+  ],
+  "tamam": true,
+  "yon": "dikey"
+ },
+ "erkek-hastane-izmir-yatay": {
+  "ad": "İzmir",
+  "baski": [
+   4961,
+   3508
+  ],
+  "buyutulmus": [
+   5944,
+   4056
+  ],
+  "dolgu": false,
+  "dpi": 300,
+  "kat": "Kurt geziyor · Şehir hastaneleri",
+  "kaynak": [
+   1536,
+   1024
+  ],
+  "kirpilmis": [
+   1486,
+   1014
+  ],
+  "tamam": true,
+  "yon": "yatay"
+ },
+ "erkek-hastane-kayseri-dikey": {
+  "ad": "Kayseri",
+  "baski": [
+   3508,
+   4961
+  ],
+  "buyutulmus": [
+   4260,
+   5700
+  ],
+  "dolgu": false,
+  "dpi": 300,
+  "kat": "Kurt geziyor · Şehir hastaneleri",
+  "kaynak": [
+   1088,
+   1456
+  ],
+  "kirpilmis": [
+   1065,
+   1425
+  ],
+  "tamam": true,
+  "yon": "dikey"
+ },
+ "erkek-hastane-kayseri-yatay": {
+  "ad": "Kayseri",
+  "baski": [
+   4961,
+   3508
+  ],
+  "buyutulmus": [
+   6016,
+   4032
+  ],
+  "dolgu": false,
+  "dpi": 300,
+  "kat": "Kurt geziyor · Şehir hastaneleri",
+  "kaynak": [
+   1536,
+   1024
+  ],
+  "kirpilmis": [
+   1504,
+   1008
+  ],
+  "tamam": true,
+  "yon": "yatay"
+ },
+ "erkek-yemek-izmir-dikey": {
+  "ad": "İzmir · Boyoz",
+  "baski": [
+   3508,
+   4961
+  ],
+  "buyutulmus": [
+   3960,
+   5564
+  ],
+  "dolgu": false,
+  "dpi": 300,
+  "kat": "Kurt geziyor · Yöresel lezzetler",
+  "kaynak": [
+   1088,
+   1456
+  ],
+  "kirpilmis": [
+   990,
+   1391
+  ],
+  "tamam": true,
+  "yon": "dikey"
+ },
+ "erkek-yemek-izmir-yatay": {
+  "ad": "İzmir · Boyoz",
+  "baski": [
+   4961,
+   3508
+  ],
+  "buyutulmus": [
+   5764,
+   3988
+  ],
+  "dolgu": false,
+  "dpi": 300,
+  "kat": "Kurt geziyor · Yöresel lezzetler",
+  "kaynak": [
+   1536,
+   1024
+  ],
+  "kirpilmis": [
+   1441,
+   997
+  ],
+  "tamam": true,
+  "yon": "yatay"
+ },
+ "erkek-yemek-trabzon-dikey": {
+  "ad": "Trabzon · Hamsi",
+  "baski": [
+   3508,
+   4961
+  ],
+  "buyutulmus": [
+   4072,
+   5676
+  ],
+  "dolgu": false,
+  "dpi": 300,
+  "kat": "Kurt geziyor · Yöresel lezzetler",
+  "kaynak": [
+   1088,
+   1456
+  ],
+  "kirpilmis": [
+   1018,
+   1419
+  ],
+  "tamam": true,
+  "yon": "dikey"
+ },
+ "erkek-yemek-trabzon-yatay": {
+  "ad": "Trabzon · Hamsi",
+  "baski": [
+   4961,
+   3508
+  ],
+  "buyutulmus": [
+   6076,
+   4012
+  ],
+  "dolgu": false,
+  "dpi": 300,
+  "kat": "Kurt geziyor · Yöresel lezzetler",
+  "kaynak": [
+   1536,
+   1024
+  ],
+  "kirpilmis": [
+   1519,
+   1003
+  ],
+  "tamam": true,
+  "yon": "yatay"
+ },
+ "gobeklitepe-dikey": {
+  "ad": "Göbeklitepe",
+  "baski": [
+   3508,
+   4961
+  ],
+  "buyutulmus": [
+   4156,
+   5676
+  ],
+  "dpi": 300,
+  "kat": "Şehirler",
+  "kaynak": [
+   1088,
+   1456
+  ],
+  "kirpilmis": [
+   1039,
+   1419
+  ],
+  "tamam": true,
+  "yon": "dikey"
+ },
+ "gobeklitepe-yatay": {
+  "ad": "Göbeklitepe",
+  "baski": [
+   4961,
+   3508
+  ],
+  "buyutulmus": [
+   6104,
+   4096
+  ],
+  "dpi": 300,
+  "kat": "Şehirler",
+  "kaynak": [
+   1536,
+   1024
+  ],
+  "kirpilmis": [
+   1526,
+   1024
+  ],
+  "tamam": true,
+  "yon": "yatay"
+ },
+ "hastane-ankara-dikey": {
+  "ad": "Ankara",
+  "baski": [
+   3508,
+   4961
+  ],
+  "buyutulmus": [
+   4292,
+   5780
+  ],
+  "dpi": 300,
+  "kat": "Kurt geziyor · Şehir hastaneleri",
+  "kaynak": [
+   1088,
+   1456
+  ],
+  "kirpilmis": [
+   1073,
+   1445
+  ],
+  "tamam": true,
+  "yon": "dikey"
+ },
+ "hastane-ankara-yatay": {
+  "ad": "Ankara",
+  "baski": [
+   4961,
+   3508
+  ],
+  "buyutulmus": [
+   6072,
+   4096
+  ],
+  "dpi": 300,
+  "kat": "Kurt geziyor · Şehir hastaneleri",
+  "kaynak": [
+   1536,
+   1024
+  ],
+  "kirpilmis": [
+   1518,
+   1024
+  ],
+  "tamam": true,
+  "yon": "yatay"
+ },
+ "hastane-istanbul-dikey": {
+  "ad": "İstanbul",
+  "baski": [
+   3508,
+   4961
+  ],
+  "buyutulmus": [
+   4236,
+   5740
+  ],
+  "dpi": 300,
+  "kat": "Kurt geziyor · Şehir hastaneleri",
+  "kaynak": [
+   1088,
+   1456
+  ],
+  "kirpilmis": [
+   1059,
+   1435
+  ],
+  "tamam": true,
+  "yon": "dikey"
+ },
+ "hastane-istanbul-yatay": {
+  "ad": "İstanbul",
+  "baski": [
+   4961,
+   3508
+  ],
+  "buyutulmus": [
+   6104,
+   4068
+  ],
+  "dpi": 300,
+  "kat": "Kurt geziyor · Şehir hastaneleri",
+  "kaynak": [
+   1536,
+   1024
+  ],
+  "kirpilmis": [
+   1526,
+   1017
+  ],
+  "tamam": true,
+  "yon": "yatay"
+ },
+ "hastane-izmir-dikey": {
+  "ad": "İzmir",
+  "baski": [
+   3508,
+   4961
+  ],
+  "buyutulmus": [
+   4220,
+   5524
+  ],
+  "dpi": 300,
+  "kat": "Kurt geziyor · Şehir hastaneleri",
+  "kaynak": [
+   1088,
+   1456
+  ],
+  "kirpilmis": [
+   1055,
+   1381
+  ],
+  "tamam": true,
+  "yon": "dikey"
+ },
+ "hastane-izmir-yatay": {
+  "ad": "İzmir",
+  "baski": [
+   4961,
+   3508
+  ],
+  "buyutulmus": [
+   5944,
+   4060
+  ],
+  "dpi": 300,
+  "kat": "Kurt geziyor · Şehir hastaneleri",
+  "kaynak": [
+   1536,
+   1024
+  ],
+  "kirpilmis": [
+   1486,
+   1015
+  ],
+  "tamam": true,
+  "yon": "yatay"
+ },
+ "hastane-kayseri-dikey": {
+  "ad": "Kayseri",
+  "baski": [
+   3508,
+   4961
+  ],
+  "buyutulmus": [
+   4312,
+   5700
+  ],
+  "dpi": 300,
+  "kat": "Kurt geziyor · Şehir hastaneleri",
+  "kaynak": [
+   1088,
+   1456
+  ],
+  "kirpilmis": [
+   1078,
+   1425
+  ],
+  "tamam": true,
+  "yon": "dikey"
+ },
+ "hastane-kayseri-yatay": {
+  "ad": "Kayseri",
+  "baski": [
+   4961,
+   3508
+  ],
+  "buyutulmus": [
+   6036,
+   4036
+  ],
+  "dpi": 300,
+  "kat": "Kurt geziyor · Şehir hastaneleri",
+  "kaynak": [
+   1536,
+   1024
+  ],
+  "kirpilmis": [
+   1509,
+   1009
+  ],
+  "tamam": true,
+  "yon": "yatay"
+ },
+ "istanbul-dikey": {
+  "ad": "İstanbul",
+  "baski": [
+   3508,
+   4961
+  ],
+  "buyutulmus": [
+   4324,
+   5784
+  ],
+  "dpi": 300,
+  "kat": "Şehirler",
+  "kaynak": [
+   1088,
+   1456
+  ],
+  "kirpilmis": [
+   1081,
+   1446
+  ],
+  "tamam": true,
+  "yon": "dikey"
+ },
+ "istanbul-yatay": {
+  "ad": "İstanbul",
+  "baski": [
+   4961,
+   3508
+  ],
+  "buyutulmus": [
+   5972,
+   4064
+  ],
+  "dpi": 300,
+  "kat": "Şehirler",
+  "kaynak": [
+   1536,
+   1024
+  ],
+  "kirpilmis": [
+   1493,
+   1016
+  ],
+  "tamam": true,
+  "yon": "yatay"
+ },
+ "kiraz-tekirdag-dikey": {
+  "ad": "Tekirdağ · Kiraz Festivali",
+  "baski": [
+   3508,
+   4961
+  ],
+  "buyutulmus": [
+   4352,
+   5808
+  ],
+  "dolgu": false,
+  "dpi": 300,
+  "kat": "Kurt geziyor · Festivaller",
+  "kaynak": [
+   1088,
+   1456
+  ],
+  "kirpilmis": [
+   1088,
+   1452
+  ],
+  "tamam": true,
+  "yon": "dikey"
+ },
+ "kiraz-tekirdag-yatay": {
+  "ad": "Tekirdağ · Kiraz Festivali",
+  "baski": [
+   4961,
+   3508
+  ],
+  "buyutulmus": [
+   8440,
+   5560
+  ],
+  "dolgu": false,
+  "dpi": 300,
+  "kat": "Kurt geziyor · Festivaller",
+  "kaynak": [
+   2110,
+   1390
+  ],
+  "kirpilmis": [
+   2110,
+   1390
+  ],
+  "tamam": true,
+  "yon": "yatay"
+ },
+ "kirsehir-dikey": {
+  "ad": "Kırşehir",
+  "baski": [
+   3508,
+   4961
+  ],
+  "buyutulmus": [
+   4264,
+   5732
+  ],
+  "dpi": 300,
+  "kat": "Şehirler",
+  "kaynak": [
+   1088,
+   1456
+  ],
+  "kirpilmis": [
+   1066,
+   1433
+  ],
+  "tamam": true,
+  "yon": "dikey"
+ },
+ "kirsehir-yatay": {
+  "ad": "Kırşehir",
+  "baski": [
+   4961,
+   3508
+  ],
+  "buyutulmus": [
+   5996,
+   4096
+  ],
+  "dpi": 300,
+  "kat": "Şehirler",
+  "kaynak": [
+   1536,
+   1024
+  ],
+  "kirpilmis": [
+   1499,
+   1024
+  ],
+  "tamam": true,
+  "yon": "yatay"
+ },
+ "kupa-10kasim": {
+  "ad": "10 Kasım",
+  "baski": [
+   2362,
+   1063
+  ],
+  "buyutulmus": [
+   7104,
+   3360
+  ],
+  "dolgu": true,
+  "dpi": 300,
+  "kat": "Kurt geziyor · Özel günler",
+  "kaynak": [
+   1776,
+   896
+  ],
+  "kirpilmis": [
+   1776,
+   840
+  ],
+  "tamam": true,
+  "yon": "yatay"
+ },
+ "kupa-23nisan": {
+  "ad": "23 Nisan",
+  "baski": [
+   2362,
+   1063
+  ],
+  "buyutulmus": [
+   7104,
+   3252
+  ],
+  "dolgu": true,
+  "dpi": 300,
+  "kat": "Kurt geziyor · Özel günler",
+  "kaynak": [
+   1776,
+   896
+  ],
+  "kirpilmis": [
+   1776,
+   813
+  ],
+  "tamam": true,
+  "yon": "yatay"
+ },
+ "kupa-antalya": {
+  "ad": "Antalya",
+  "baski": [
+   2362,
+   1063
+  ],
+  "buyutulmus": [
+   7080,
+   3456
+  ],
+  "dolgu": true,
+  "dpi": 300,
+  "kat": "Şehirler",
+  "kaynak": [
+   1776,
+   896
+  ],
+  "kirpilmis": [
+   1770,
+   864
+  ],
+  "tamam": true,
+  "yon": "yatay"
+ },
+ "kupa-aydin": {
+  "ad": "Aydın",
+  "baski": [
+   2362,
+   1063
+  ],
+  "buyutulmus": [
+   7104,
+   3444
+  ],
+  "dolgu": true,
+  "dpi": 300,
+  "kat": "Şehirler",
+  "kaynak": [
+   1776,
+   896
+  ],
+  "kirpilmis": [
+   1776,
+   861
+  ],
+  "tamam": true,
+  "yon": "yatay"
+ },
+ "kupa-bodrum": {
+  "ad": "Bodrum",
+  "baski": [
+   2362,
+   1063
+  ],
+  "buyutulmus": [
+   7028,
+   3252
+  ],
+  "dolgu": true,
+  "dpi": 300,
+  "kat": "Şehirler",
+  "kaynak": [
+   1776,
+   896
+  ],
+  "kirpilmis": [
+   1757,
+   813
+  ],
+  "tamam": true,
+  "yon": "yatay"
+ },
+ "kupa-cesme": {
+  "ad": "Çeşme",
+  "baski": [
+   2362,
+   1063
+  ],
+  "buyutulmus": [
+   6992,
+   3448
+  ],
+  "dolgu": true,
+  "dpi": 300,
+  "kat": "Şehirler",
+  "kaynak": [
+   1776,
+   896
+  ],
+  "kirpilmis": [
+   1748,
+   862
+  ],
+  "tamam": true,
+  "yon": "yatay"
+ },
+ "kupa-gobeklitepe": {
+  "ad": "Göbeklitepe",
+  "baski": [
+   2362,
+   1063
+  ],
+  "buyutulmus": [
+   7104,
+   3568
+  ],
+  "dolgu": true,
+  "dpi": 300,
+  "kat": "Şehirler",
+  "kaynak": [
+   1776,
+   896
+  ],
+  "kirpilmis": [
+   1776,
+   892
+  ],
+  "tamam": true,
+  "yon": "yatay"
+ },
+ "kupa-hastane-ankara": {
+  "ad": "Ankara",
+  "baski": [
+   2362,
+   1063
+  ],
+  "buyutulmus": [
+   7104,
+   3496
+  ],
+  "dolgu": true,
+  "dpi": 300,
+  "kat": "Kurt geziyor · Şehir hastaneleri",
+  "kaynak": [
+   1776,
+   896
+  ],
+  "kirpilmis": [
+   1776,
+   874
+  ],
+  "tamam": true,
+  "yon": "yatay"
+ },
+ "kupa-hastane-istanbul": {
+  "ad": "İstanbul",
+  "baski": [
+   2362,
+   1063
+  ],
+  "buyutulmus": [
+   6940,
+   3116
+  ],
+  "dolgu": true,
+  "dpi": 300,
+  "kat": "Kurt geziyor · Şehir hastaneleri",
+  "kaynak": [
+   1776,
+   896
+  ],
+  "kirpilmis": [
+   1735,
+   779
+  ],
+  "tamam": true,
+  "yon": "yatay"
+ },
+ "kupa-hastane-izmir": {
+  "ad": "İzmir",
+  "baski": [
+   2362,
+   1063
+  ],
+  "buyutulmus": [
+   7072,
+   3528
+  ],
+  "dolgu": true,
+  "dpi": 300,
+  "kat": "Kurt geziyor · Şehir hastaneleri",
+  "kaynak": [
+   1776,
+   896
+  ],
+  "kirpilmis": [
+   1768,
+   882
+  ],
+  "tamam": true,
+  "yon": "yatay"
+ },
+ "kupa-hastane-kayseri": {
+  "ad": "Kayseri",
+  "baski": [
+   2362,
+   1063
+  ],
+  "buyutulmus": [
+   7084,
+   3408
+  ],
+  "dolgu": true,
+  "dpi": 300,
+  "kat": "Kurt geziyor · Şehir hastaneleri",
+  "kaynak": [
+   1776,
+   896
+  ],
+  "kirpilmis": [
+   1771,
+   852
+  ],
+  "tamam": true,
+  "yon": "yatay"
+ },
+ "kupa-istanbul": {
+  "ad": "İstanbul",
+  "baski": [
+   2362,
+   1063
+  ],
+  "buyutulmus": [
+   7080,
+   3336
+  ],
+  "dolgu": true,
+  "dpi": 300,
+  "kat": "Şehirler",
+  "kaynak": [
+   1776,
+   896
+  ],
+  "kirpilmis": [
+   1770,
+   834
+  ],
+  "tamam": true,
+  "yon": "yatay"
+ },
+ "kupa-kiraz-tekirdag": {
+  "ad": "Tekirdağ · Kiraz Festivali",
+  "baski": [
+   2362,
+   1063
+  ],
+  "buyutulmus": [
+   10136,
+   4560
+  ],
+  "dolgu": true,
+  "dpi": 300,
+  "kat": "Kurt geziyor · Festivaller",
+  "kaynak": [
+   2534,
+   1140
+  ],
+  "kirpilmis": [
+   2534,
+   1140
+  ],
+  "tamam": true,
+  "yon": "yatay"
+ },
+ "kupa-kirsehir": {
+  "ad": "Kırşehir",
+  "baski": [
+   2362,
+   1063
+  ],
+  "buyutulmus": [
+   6956,
+   3512
+  ],
+  "dolgu": true,
+  "dpi": 300,
+  "kat": "Şehirler",
+  "kaynak": [
+   1776,
+   896
+  ],
+  "kirpilmis": [
+   1739,
+   878
+  ],
+  "tamam": true,
+  "yon": "yatay"
+ },
+ "kupa-van": {
+  "ad": "Van",
+  "baski": [
+   2362,
+   1063
+  ],
+  "buyutulmus": [
+   7104,
+   3560
+  ],
+  "dolgu": true,
+  "dpi": 300,
+  "kat": "Şehirler",
+  "kaynak": [
+   1776,
+   896
+  ],
+  "kirpilmis": [
+   1776,
+   890
+  ],
+  "tamam": true,
+  "yon": "yatay"
+ },
+ "kupa-yemek-adana": {
+  "ad": "Adana · Adana kebap",
+  "baski": [
+   2362,
+   1063
+  ],
+  "buyutulmus": [
+   7064,
+   3560
+  ],
+  "dolgu": true,
+  "dpi": 300,
+  "kat": "Kurt geziyor · Yöresel lezzetler",
+  "kaynak": [
+   1776,
+   896
+  ],
+  "kirpilmis": [
+   1766,
+   890
+  ],
+  "tamam": true,
+  "yon": "yatay"
+ },
+ "kupa-yemek-bursa": {
+  "ad": "Bursa · İskender",
+  "baski": [
+   2362,
+   1063
+  ],
+  "buyutulmus": [
+   7104,
+   3284
+  ],
+  "dolgu": true,
+  "dpi": 300,
+  "kat": "Kurt geziyor · Yöresel lezzetler",
+  "kaynak": [
+   1776,
+   896
+  ],
+  "kirpilmis": [
+   1776,
+   821
+  ],
+  "tamam": true,
+  "yon": "yatay"
+ },
+ "kupa-yemek-gaziantep": {
+  "ad": "Gaziantep · Fıstıklı baklava",
+  "baski": [
+   2362,
+   1063
+  ],
+  "buyutulmus": [
+   7104,
+   3508
+  ],
+  "dolgu": true,
+  "dpi": 300,
+  "kat": "Kurt geziyor · Yöresel lezzetler",
+  "kaynak": [
+   1776,
+   896
+  ],
+  "kirpilmis": [
+   1776,
+   877
+  ],
+  "tamam": true,
+  "yon": "yatay"
+ },
+ "kupa-yemek-izmir": {
+  "ad": "İzmir · Boyoz",
+  "baski": [
+   2362,
+   1063
+  ],
+  "buyutulmus": [
+   7012,
+   3100
+  ],
+  "dolgu": true,
+  "dpi": 300,
+  "kat": "Kurt geziyor · Yöresel lezzetler",
+  "kaynak": [
+   1776,
+   896
+  ],
+  "kirpilmis": [
+   1753,
+   775
+  ],
+  "tamam": true,
+  "yon": "yatay"
+ },
+ "kupa-yemek-kayseri": {
+  "ad": "Kayseri · Mantı",
+  "baski": [
+   2362,
+   1063
+  ],
+  "buyutulmus": [
+   7072,
+   3396
+  ],
+  "dolgu": true,
+  "dpi": 300,
+  "kat": "Kurt geziyor · Yöresel lezzetler",
+  "kaynak": [
+   1776,
+   896
+  ],
+  "kirpilmis": [
+   1768,
+   849
+  ],
+  "tamam": true,
+  "yon": "yatay"
+ },
+ "kupa-yemek-trabzon": {
+  "ad": "Trabzon · Hamsi",
+  "baski": [
+   2362,
+   1063
+  ],
+  "buyutulmus": [
+   7104,
+   3584
+  ],
+  "dolgu": true,
+  "dpi": 300,
+  "kat": "Kurt geziyor · Yöresel lezzetler",
+  "kaynak": [
+   1776,
+   896
+  ],
+  "kirpilmis": [
+   1776,
+   896
+  ],
+  "tamam": true,
+  "yon": "yatay"
+ },
+ "van-dikey": {
+  "ad": "Van",
+  "baski": [
+   3508,
+   4961
+  ],
+  "buyutulmus": [
+   4312,
+   5816
+  ],
+  "dpi": 300,
+  "kat": "Şehirler",
+  "kaynak": [
+   1088,
+   1456
+  ],
+  "kirpilmis": [
+   1078,
+   1454
+  ],
+  "tamam": true,
+  "yon": "dikey"
+ },
+ "van-yatay": {
+  "ad": "Van",
+  "baski": [
+   4961,
+   3508
+  ],
+  "buyutulmus": [
+   6032,
+   3980
+  ],
+  "dpi": 300,
+  "kat": "Şehirler",
+  "kaynak": [
+   1536,
+   1024
+  ],
+  "kirpilmis": [
+   1508,
+   995
+  ],
+  "tamam": true,
+  "yon": "yatay"
+ },
+ "yemek-adana-dikey": {
+  "ad": "Adana · Adana kebap",
+  "baski": [
+   3508,
+   4961
+  ],
+  "buyutulmus": [
+   3880,
+   5720
+  ],
+  "dolgu": false,
+  "dpi": 300,
+  "kat": "Kurt geziyor · Yöresel lezzetler",
+  "kaynak": [
+   1088,
+   1456
+  ],
+  "kirpilmis": [
+   970,
+   1430
+  ],
+  "tamam": true,
+  "yon": "dikey"
+ },
+ "yemek-adana-yatay": {
+  "ad": "Adana · Adana kebap",
+  "baski": [
+   4961,
+   3508
+  ],
+  "buyutulmus": [
+   5988,
+   3972
+  ],
+  "dolgu": false,
+  "dpi": 300,
+  "kat": "Kurt geziyor · Yöresel lezzetler",
+  "kaynak": [
+   1536,
+   1024
+  ],
+  "kirpilmis": [
+   1497,
+   993
+  ],
+  "tamam": true,
+  "yon": "yatay"
+ },
+ "yemek-bursa-dikey": {
+  "ad": "Bursa · İskender",
+  "baski": [
+   3508,
+   4961
+  ],
+  "buyutulmus": [
+   4092,
+   5728
+  ],
+  "dolgu": false,
+  "dpi": 300,
+  "kat": "Kurt geziyor · Yöresel lezzetler",
+  "kaynak": [
+   1088,
+   1456
+  ],
+  "kirpilmis": [
+   1023,
+   1432
+  ],
+  "tamam": true,
+  "yon": "dikey"
+ },
+ "yemek-bursa-yatay": {
+  "ad": "Bursa · İskender",
+  "baski": [
+   4961,
+   3508
+  ],
+  "buyutulmus": [
+   6096,
+   4036
+  ],
+  "dolgu": false,
+  "dpi": 300,
+  "kat": "Kurt geziyor · Yöresel lezzetler",
+  "kaynak": [
+   1536,
+   1024
+  ],
+  "kirpilmis": [
+   1524,
+   1009
+  ],
+  "tamam": true,
+  "yon": "yatay"
+ },
+ "yemek-gaziantep-dikey": {
+  "ad": "Gaziantep · Fıstıklı baklava",
+  "baski": [
+   3508,
+   4961
+  ],
+  "buyutulmus": [
+   4100,
+   5816
+  ],
+  "dolgu": false,
+  "dpi": 300,
+  "kat": "Kurt geziyor · Yöresel lezzetler",
+  "kaynak": [
+   1088,
+   1456
+  ],
+  "kirpilmis": [
+   1025,
+   1454
+  ],
+  "tamam": true,
+  "yon": "dikey"
+ },
+ "yemek-gaziantep-yatay": {
+  "ad": "Gaziantep · Fıstıklı baklava",
+  "baski": [
+   4961,
+   3508
+  ],
+  "buyutulmus": [
+   6064,
+   4056
+  ],
+  "dolgu": false,
+  "dpi": 300,
+  "kat": "Kurt geziyor · Yöresel lezzetler",
+  "kaynak": [
+   1536,
+   1024
+  ],
+  "kirpilmis": [
+   1516,
+   1014
+  ],
+  "tamam": true,
+  "yon": "yatay"
+ },
+ "yemek-izmir-dikey": {
+  "ad": "İzmir · Boyoz",
+  "baski": [
+   3508,
+   4961
+  ],
+  "buyutulmus": [
+   4024,
+   5552
+  ],
+  "dolgu": false,
+  "dpi": 300,
+  "kat": "Kurt geziyor · Yöresel lezzetler",
+  "kaynak": [
+   1088,
+   1456
+  ],
+  "kirpilmis": [
+   1006,
+   1388
+  ],
+  "tamam": true,
+  "yon": "dikey"
+ },
+ "yemek-izmir-yatay": {
+  "ad": "İzmir · Boyoz",
+  "baski": [
+   4961,
+   3508
+  ],
+  "buyutulmus": [
+   5756,
+   3992
+  ],
+  "dolgu": false,
+  "dpi": 300,
+  "kat": "Kurt geziyor · Yöresel lezzetler",
+  "kaynak": [
+   1536,
+   1024
+  ],
+  "kirpilmis": [
+   1439,
+   998
+  ],
+  "tamam": true,
+  "yon": "yatay"
+ },
+ "yemek-kayseri-dikey": {
+  "ad": "Kayseri · Mantı",
+  "baski": [
+   3508,
+   4961
+  ],
+  "buyutulmus": [
+   4080,
+   5752
+  ],
+  "dolgu": false,
+  "dpi": 300,
+  "kat": "Kurt geziyor · Yöresel lezzetler",
+  "kaynak": [
+   1088,
+   1456
+  ],
+  "kirpilmis": [
+   1020,
+   1438
+  ],
+  "tamam": true,
+  "yon": "dikey"
+ },
+ "yemek-kayseri-yatay": {
+  "ad": "Kayseri · Mantı",
+  "baski": [
+   4961,
+   3508
+  ],
+  "buyutulmus": [
+   5964,
+   3944
+  ],
+  "dolgu": false,
+  "dpi": 300,
+  "kat": "Kurt geziyor · Yöresel lezzetler",
+  "kaynak": [
+   1536,
+   1024
+  ],
+  "kirpilmis": [
+   1491,
+   986
+  ],
+  "tamam": true,
+  "yon": "yatay"
+ },
+ "yemek-trabzon-dikey": {
+  "ad": "Trabzon · Hamsi",
+  "baski": [
+   3508,
+   4961
+  ],
+  "buyutulmus": [
+   4096,
+   5668
+  ],
+  "dolgu": false,
+  "dpi": 300,
+  "kat": "Kurt geziyor · Yöresel lezzetler",
+  "kaynak": [
+   1088,
+   1456
+  ],
+  "kirpilmis": [
+   1024,
+   1417
+  ],
+  "tamam": true,
+  "yon": "dikey"
+ },
+ "yemek-trabzon-yatay": {
+  "ad": "Trabzon · Hamsi",
+  "baski": [
+   4961,
+   3508
+  ],
+  "buyutulmus": [
+   6076,
+   4012
+  ],
+  "dolgu": false,
+  "dpi": 300,
+  "kat": "Kurt geziyor · Yöresel lezzetler",
+  "kaynak": [
+   1536,
+   1024
+  ],
+  "kirpilmis": [
+   1519,
+   1003
+  ],
+  "tamam": true,
+  "yon": "yatay"
+ }
+}
