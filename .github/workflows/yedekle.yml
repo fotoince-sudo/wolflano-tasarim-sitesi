@@ -1,0 +1,30 @@
+# Supabase tablolarını JSON olarak indirir; sonuç Actions > çalışma > Artifacts altında "supabase-yedek" olarak çıkar.
+# Gerekli secret: SUPABASE_SERVICE_KEY (Supabase > Settings > API > service_role). Yoksa anon anahtar kullanılır (RLS izin verdiği kadar).
+name: Supabase yedekle
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  yedek:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Tabloları çek
+        env:
+          URL: https://wgovwmeirlzwalelazfj.supabase.co
+          KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: |
+          if [ -z "$KEY" ]; then
+            KEY=$(curl -fsSL https://raw.githubusercontent.com/${{ github.repository }}/${{ github.sha }}/js/supabaseClient.js | grep -o "eyJ[A-Za-z0-9_.-]*" | head -1)
+          fi
+          mkdir -p yedek
+          curl -fsSL "$URL/rest/v1/" -H "apikey: $KEY" -H "Authorization: Bearer $KEY" -o yedek/_sema.json
+          for t in $(jq -r '.paths | keys[] | select(. != "/") | ltrimstr("/")' yedek/_sema.json); do
+            curl -sSL "$URL/rest/v1/$t?select=*" -H "apikey: $KEY" -H "Authorization: Bearer $KEY" -H "Range: 0-49999" -o "yedek/$t.json"
+            echo "$t: $(jq 'length' "yedek/$t.json" 2>/dev/null || echo hata)"
+          done
+      - uses: actions/upload-artifact@v4
+        with:
+          name: supabase-yedek
+          path: yedek
+          retention-days: 7
