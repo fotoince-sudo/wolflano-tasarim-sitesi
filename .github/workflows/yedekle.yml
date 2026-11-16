@@ -19,9 +19,21 @@ jobs:
           fi
           mkdir -p yedek
           curl -fsSL "$URL/rest/v1/" -H "apikey: $KEY" -H "Authorization: Bearer $KEY" -o yedek/_sema.json
-          for t in $(jq -r '.paths | keys[] | select(. != "/") | ltrimstr("/")' yedek/_sema.json); do
-            curl -sSL "$URL/rest/v1/$t?select=*" -H "apikey: $KEY" -H "Authorization: Bearer $KEY" -H "Range: 0-49999" -o "yedek/$t.json"
-            echo "$t: $(jq 'length' "yedek/$t.json" 2>/dev/null || echo hata)"
+          for t in $(jq -r '.paths | keys[] | select(. != "/" and (startswith("/rpc/") | not)) | ltrimstr("/")' yedek/_sema.json); do
+            offset=0
+            pages=()
+            while :; do
+              page="yedek/.$t-$offset.json"
+              end=$((offset + 999))
+              curl -fsSL "$URL/rest/v1/$t?select=*" -H "apikey: $KEY" -H "Authorization: Bearer $KEY" -H "Range-Unit: items" -H "Range: $offset-$end" -o "$page"
+              count=$(jq -er 'if type == "array" then length else error("Beklenen yanıt bir JSON dizisi değil") end' "$page")
+              pages+=("$page")
+              [ "$count" -eq 0 ] && break
+              offset=$((offset + count))
+            done
+            jq -s 'add' "${pages[@]}" > "yedek/$t.json"
+            rm -- "${pages[@]}"
+            echo "$t: $offset"
           done
       - uses: actions/upload-artifact@v4
         with:
