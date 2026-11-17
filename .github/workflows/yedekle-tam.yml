@@ -1,0 +1,30 @@
+# Supabase tablolar + Storage dosyaları + Auth kullanıcıları. Sonuç: Artifacts > "supabase-tam-yedek".
+# Gerekli secret: SUPABASE_SERVICE_KEY
+name: Supabase tam yedek
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  yedek:
+    runs-on: ubuntu-latest
+    env:
+      URL: https://wgovwmeirlzwalelazfj.supabase.co
+      KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Tabloları çek
+        run: |
+          mkdir -p yedek
+          curl -fsSL "$URL/rest/v1/" -H "apikey: $KEY" -H "Authorization: Bearer $KEY" -o yedek/_sema.json
+          for t in $(jq -r '.paths | keys[] | select(. != "/" and (startswith("/rpc/") | not)) | ltrimstr("/")' yedek/_sema.json); do
+            curl -sSL "$URL/rest/v1/$t?select=*" -H "apikey: $KEY" -H "Authorization: Bearer $KEY" -H "Range: 0-49999" -o "yedek/$t.json"
+            echo "$t: $(jq 'length' "yedek/$t.json" 2>/dev/null || echo hata)"
+          done
+      - name: Storage + Auth
+        run: node .github/yedek-depo.mjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: supabase-tam-yedek
+          path: yedek
+          retention-days: 30
