@@ -1,0 +1,19 @@
+name: Kanvas dokuları
+on:
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  doku:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: pip install pillow
+      - run: python .github/kanvas.py
+      - name: Depoya ekle
+        run: |
+          git config user.name "github-actions"
+          git config user.email "actions@users.noreply.github.com"
+          git add dokular/kanvas
+          git commit -m "50 tonlu kanvas dokusu (ambientCG CC0)"
+          git push
