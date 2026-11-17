@@ -6062,7 +6062,8 @@ var DATA_P=(async function(){
   function greet(){if(!greetingPending||bal.hidden||!TTS)return;greetingPending=false;aysAc();aysSay(welcomeLine);}
   document.addEventListener('click',function(ev){if(!ev.isTrusted||bal.contains(ev.target)||fab.contains(ev.target)||ev.target.closest('[data-aysor]'))return;greet();});
   var seen=false;try{seen=sessionStorage.getItem('wf_ayb_hi')==='1';}catch(_){}
-  if(!seen)setTimeout(function(){var h=(location.hash||'').slice(1);if(fab.hidden||!pn.hidden||/^(odeme|sepet|yonetim|crm)/.test(h))return;bal.hidden=false;greetingPending=true;seen=true;try{sessionStorage.setItem('wf_ayb_hi','1');}catch(_){}if(navigator.userActivation&&navigator.userActivation.hasBeenActive)greet();},3500);
+  /* Mobilde otomatik karşılama balonu sayfa içeriğinin üstüne binmesin. */
+  if(!seen)setTimeout(function(){var h=(location.hash||'').slice(1);if(innerWidth<700||fab.hidden||!pn.hidden||/^(odeme|sepet|yonetim|crm)/.test(h))return;bal.hidden=false;greetingPending=true;seen=true;try{sessionStorage.setItem('wf_ayb_hi','1');}catch(_){}if(navigator.userActivation&&navigator.userActivation.hasBeenActive)greet();},3500);
 })();
 })();
 (async function(){
