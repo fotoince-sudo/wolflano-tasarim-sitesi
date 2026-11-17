@@ -2474,6 +2474,9 @@ function addClip(key){
 }
 /* ===== Zeminler: fotoğraflı şablonda zemini değiştir (fotoğraflar yerinde kalır) ya da zemini görsel olarak ekle ===== */
 var ZEMS=[['yilbasi','Yılbaşı'],['sevgi','Kalpler'],['anne','Çiçekler'],['neon','Neon'],['kamuflaj','Kamuflaj'],['gece','Gece ve dağlar'],['mermer','Mermer'],['suluboya','Suluboya'],['bohem','Bohem'],['gokyuzu','Gökkuşağı'],['balon','Balon'],['uzay','Uzay']];
+/* Kanvas dokuları: 50 ton (dokular/kanvas); seçilince küçük doku karo olarak döşenip tam boyutlu zemin üretilir */
+var KNV=[];for(var kn=1;kn<=50;kn++)KNV.push(('0'+kn).slice(-2));
+async function knvAsset(n,wide){var im=await loadImg('dokular/kanvas/kanvas-'+n+'.jpg'),W=2362,H=wide?1063:3307,c=document.createElement('canvas');c.width=W;c.height=H;var x=c.getContext('2d'),T=700;for(var yy=0;yy<H;yy+=T)for(var xx=0;xx<W;xx+=T)x.drawImage(im,xx,yy,T,T);return {url:c.toDataURL('image/jpeg',0.9),w:W,h:H};}
 function zemUrl(k,th,wide){return 'assets/zemin/'+k+(wide?'-kupa':th?'-k':'')+'.jpg';}
 /* Geniş baskı alanı (kupa çevresi gibi) için zeminin geniş sürümü kullanılır; dikey zemin kırpılmaz */
 function zemWide(w,h){return w/h>1.5;}
@@ -2501,7 +2504,8 @@ function renderZem(force){try{renderMk();}catch(_){}var g=$('#zemGrid');if(!g)re
   g.innerHTML=cus.map(function(z){return '<button data-zem="z:'+z.id+'" aria-label="'+escX(z.title||'Zemin')+'"><img alt="" loading="lazy" src="'+escX(z.thumb||z.data.url)+'"><span>'+escX(z.title||'Zemin')+'</span>'+(adm?'<i class="zdel" data-zdel="'+z.id+'" role="button" aria-label="Kaldır">×</i>':'')+'</button>';}).join('')+
     (state.product==='mug'?OIL_ART.filter(function(z){return z.background;}).map(function(z){return '<button data-zem="oil:'+z.id+'" aria-label="'+escX(z.name)+' zemini"><img alt="" loading="lazy" src="assets/yagliboya/'+z.id+'-thumb.webp"><span>'+escX(z.name)+'</span></button>';}).join(''):'')+
     (state.product==='tee'&&cur().area==='a4'&&!isLand(view.side)?TEE_PHOTO_ART.map(function(z){return '<button data-zem="tee:'+z.id+'" aria-label="'+escX(z.name)+' zemini"><img alt="" loading="lazy" src="'+teePhotoAsset(z).thumb+'"><span>'+escX(z.name)+'</span></button>';}).join(''):'')+
-    ZEMS.map(function(z){return '<button data-zem="'+z[0]+'" aria-label="'+z[1]+' zemini"><img alt="" loading="lazy" src="'+zemUrl(z[0],1)+'"><span>'+z[1]+'</span></button>';}).join('');zemSync();}
+    ZEMS.map(function(z){return '<button data-zem="'+z[0]+'" aria-label="'+z[1]+' zemini"><img alt="" loading="lazy" src="'+zemUrl(z[0],1)+'"><span>'+z[1]+'</span></button>';}).join('')+
+    KNV.map(function(n){return '<button data-zem="kv:'+n+'" aria-label="Kanvas '+(+n)+' zemini"><img alt="" loading="lazy" src="dokular/kanvas/k/kanvas-'+n+'.jpg"><span>Kanvas '+(+n)+'</span></button>';}).join('');zemSync();}
 function zemTarget(){var f=tplFrame();if(f)return f;var o=selObj();return o&&o.type==='image'&&o.zem?o:null;}
 function zemSync(){var w=$('#zemBlurW');if(!w)return;var t=zemTarget();w.hidden=!t;if(t){var r=$('#zemBlur');if(r&&document.activeElement!==r)r.value=t.zb||0;}}
 /* Flulaştır: zemin bulanıklaşır; fotoğraf pencereleri, çerçeveleri ve dış beyaz kenar keskin kalır */
@@ -2564,16 +2568,16 @@ async function zemPick(k){
   var oil=k.indexOf('oil:')===0;
   var ot=oil?TPLS.find(function(t){return t.oil===k.slice(4)&&tplFits(t);}):null;
   if(oil&&!ot)return;
-  var f=tplFrame(),cz=k.indexOf('z:')===0?ZCUS.find(function(z){return 'z:'+z.id===k;}):null;
+  var kvn=k.indexOf('kv:')===0?k.slice(3):null,f=tplFrame(),cz=k.indexOf('z:')===0?ZCUS.find(function(z){return 'z:'+z.id===k;}):null;
   var it=ot&&ot.items[0];
   var custom=it?{url:it.u,w:it.aw,h:it.ah}:cz&&{url:cz.data.url,w:cz.data.w,h:cz.data.h};
   if(!f||f.oilBg||f.teePhotoBg){
     var A=areaBox(view.side,cur().area),wd=zemWide(A.w,A.h);
-    replaceZemLayer(custom||{url:zemUrl(k,0,wd),w:2362,h:wd?1063:3307},f);
+    replaceZemLayer(custom||(kvn?await knvAsset(kvn,wd):{url:zemUrl(k,0,wd),w:2362,h:wd?1063:3307}),f);
     return;
   }
   bgToast('Zemin değiştiriliyor…');
-  try{var a=assets[f.assetId],W=a.w,H=a.h,bg=await loadImg(custom?custom.url:zemUrl(k,0,zemWide(W,H))),c=document.createElement('canvas');c.width=W;c.height=H;var x=c.getContext('2d');
+  try{var a=assets[f.assetId],W=a.w,H=a.h,bg=await loadImg(custom?custom.url:kvn?(await knvAsset(kvn,zemWide(W,H))).url:zemUrl(k,0,zemWide(W,H))),c=document.createElement('canvas');c.width=W;c.height=H;var x=c.getContext('2d');
     var ia=bg.naturalWidth/bg.naturalHeight,ca=W/H,sw,sh,sx,sy;if(ia>ca){sh=bg.naturalHeight;sw=sh*ca;sx=(bg.naturalWidth-sw)/2;sy=0;}else{sw=bg.naturalWidth;sh=sw/ca;sx=0;sy=(bg.naturalHeight-sh)/2;}
     x.drawImage(bg,sx,sy,sw,sh,0,0,W,H);
     var L=cur().objs,slots=L.filter(function(o){return o.slot;}),under=L.indexOf(f)<L.indexOf(slots[0]),kx=W/f.w,ky=H/f.h,l0=f.x-f.w/2,t0=f.y-f.h/2;
