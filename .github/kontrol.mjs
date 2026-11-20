@@ -42,7 +42,7 @@ async function sayfaLink(re) { return await page.evaluate((s) => { const r = new
 const git = async (h) => { await page.evaluate((x) => { location.hash = x; }, h); await page.waitForTimeout(1500); };
 
 await adim('Fiyat ve kargo ayarları', async () => {
-  const r = await fetch('https://wgovwmeirlzwalelazfj.supabase.co/rest/v1/site_content?select=data&id=eq.main', { headers: { apikey: 'sb_publishable_PP5xFd7ga61xaDOCHeET_Q_zfMaE_4G' } });
+  const r = await fetch('https://api.wolflano.com.tr/rest/v1/site_content?select=data&id=eq.main', { headers: { apikey: 'sb_publishable_PP5xFd7ga61xaDOCHeET_Q_zfMaE_4G' } });
   const d = (await r.json())[0].data, sorun = [];
   (d.blanks || []).filter((b) => b.show !== false).forEach((b) => { if (!(+b.price > 0)) sorun.push('Fiyatı 0 olan baskısız ürün: ' + (b.name || b.id)); });
   (d.products || []).filter((p) => p.show !== false).forEach((p) => { if (!(+p.price > 0) && !(p.pc && p.pc.b)) sorun.push('Fiyatı 0 olan ürün: ' + (p.name || p.id)); });

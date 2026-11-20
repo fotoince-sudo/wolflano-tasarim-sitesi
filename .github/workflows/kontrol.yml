@@ -68,7 +68,7 @@ jobs:
           b=json.dumps({'subject':os.environ['KONU'],'text':t,'link':os.environ['LINK']}).encode()
           q=urllib.request.Request(os.environ['ACTIONS_ID_TOKEN_REQUEST_URL']+'&audience=wolflano-kontrol',headers={'Authorization':'Bearer '+os.environ['ACTIONS_ID_TOKEN_REQUEST_TOKEN']})
           tok=json.loads(urllib.request.urlopen(q,timeout=30).read())['value']
-          r=urllib.request.Request('https://wgovwmeirlzwalelazfj.supabase.co/functions/v1/kontrol-rapor',data=b,headers={'Content-Type':'application/json','Authorization':'Bearer '+tok})
+          r=urllib.request.Request('https://api.wolflano.com.tr/functions/v1/kontrol-rapor',data=b,headers={'Content-Type':'application/json','Authorization':'Bearer '+tok})
           try: print(urllib.request.urlopen(r,timeout=60).read().decode())
           except Exception as e: print('rapor gönderilemedi',e)
           PY

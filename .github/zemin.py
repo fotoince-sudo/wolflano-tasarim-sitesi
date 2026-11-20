@@ -10,7 +10,7 @@ from PIL import Image
 sys.path.insert(0, os.path.dirname(__file__))
 import kes
 
-SB = 'https://wgovwmeirlzwalelazfj.supabase.co'
+SB = 'https://api.wolflano.com.tr'
 OUT = 'zemin'
 MAXS = 1400
 BG = np.array([241, 243, 242], np.float32)

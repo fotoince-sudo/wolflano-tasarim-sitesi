@@ -1700,7 +1700,7 @@ function ndrop(side,d){if(d===undefined){try{d=phDims(state.product,state.cut);}
 function kidDims(){var m=(SZM[state.product]||{})[state.cut];if(!m)return null;var ks=Object.keys(state.sizes||{}).filter(function(z){return (state.sizes[z]||0)>0&&m[z];});var p=phSize();if(p&&m[p])ks.push(p);var best=null;ks.forEach(function(z){if(!best||m[z][1]<best[1])best=m[z];});return best;}
 function areaFits(key,land){if(key!=='a3')return true;return kidK(key,dimsNom(key,land))>=1;} /* A3 küçültülmez: sığmayan bedende gösterilmez (küçülmüş A3 = A4) */
 var PH={site:null,media:'',cal:{},want:'',teesBase:null};
-function phSrc(t){if(!t)return '';if(/^(https?:|data:|blob:)/.test(t))return t;if(PH.media==='sb'&&/^(img|vid)\//.test(t))return 'https://wgovwmeirlzwalelazfj.supabase.co/storage/v1/object/public/site/'+t;return t;}
+function phSrc(t){if(!t)return '';if(/^(https?:|data:|blob:)/.test(t))return t;if(PH.media==='sb'&&/^(img|vid)\//.test(t))return 'https://api.wolflano.com.tr/storage/v1/object/public/site/'+t;return t;}
 /* Ürün deposu (yalnız yönetici): depodan seçilen hayalet ürün fotoğrafı, o ürün ve kesim için tek renkli boş ürün olarak kullanılır */
 var DEPO={items:[],cur:null};
 function depoCols(d){var l=(d.colors&&d.colors.length)?d.colors:[{name:d.color,hex:d.hex,front:d.front,back:d.back}];return l.filter(function(c){return c&&c.front;}).map(function(c){return {name:c.name||'Depo',hex:/^#[0-9a-f]{6}$/i.test(c.hex||'')?c.hex:'#f6f6f4',front:c.front,back:c.back||''};});}
@@ -5472,7 +5472,7 @@ $('#copyAll').addEventListener('click',async function(){
   catch(_){var ta=$('#sum');ta.value=txt;ta.focus();ta.select();toast('Metin seçildi. Kopyala seçeneğine dokun.');}
 });
 /* ---------- Siparişi yönetim paneline (Supabase) kaydet: indirim ve ücretsiz adet sunucuda yeniden hesaplanır ---------- */
-var SB={url:'https://wgovwmeirlzwalelazfj.supabase.co',key:'sb_publishable_PP5xFd7ga61xaDOCHeET_Q_zfMaE_4G'};
+var SB={url:'https://api.wolflano.com.tr',key:'sb_publishable_PP5xFd7ga61xaDOCHeET_Q_zfMaE_4G'};
 /* Ziyaretçi sayacı (çerezsiz, kişisel veri yok) */
 function wfStat(k){try{if(localStorage.getItem('wf_nostat')||navigator.webdriver||!/wolflano/i.test(location.hostname)||/bot|crawl|spider|preview|headless|facebookexternalhit/i.test(navigator.userAgent||''))return;
   fetch(SB.url+'/rest/v1/rpc/wf_hit',{method:'POST',keepalive:true,headers:{apikey:SB.key,'Content-Type':'application/json'},body:JSON.stringify({p_keys:k})}).catch(function(){});}catch(_){}}
@@ -5482,7 +5482,7 @@ function wfStat(k){try{if(localStorage.getItem('wf_nostat')||navigator.webdriver
   [['instagram',/instagram/],['facebook',/facebook|fbclid/],['google',/google/],['whatsapp',/whatsapp|wa\.me/],['tiktok',/tiktok/],['youtube',/youtube|youtu\.be/]].some(function(x){if(x[1].test(t)){src=x[0];return true;}});
   if(src==='direkt'&&r&&!/wolflano/i.test(r))src='diger';
   k.push('v','r:'+src,'d:'+(/Mobi|Android|iPhone|iPad/i.test(u)?'mobil':'masaustu'));}}catch(_){}wfStat(k);})();
-var SBX_URL='https://wgovwmeirlzwalelazfj.supabase.co',SBX_KEY='sb_publishable_PP5xFd7ga61xaDOCHeET_Q_zfMaE_4G';
+var SBX_URL='https://api.wolflano.com.tr',SBX_KEY='sb_publishable_PP5xFd7ga61xaDOCHeET_Q_zfMaE_4G';
 function sbTok(){try{var x=JSON.parse(localStorage.getItem('wf_sb')||'null');return x&&x.access&&x.exp>Date.now()?x.access:null;}catch(_){return null;}}
 function telNorm(t){var d=String(t||'').replace(/\D/g,'');if(d.indexOf('90')===0&&d.length===12)d=d.slice(2);if(d.length===10&&d.charAt(0)==='5')d='0'+d;return d;}
 $('#goPay').addEventListener('click',async function(){
@@ -5545,7 +5545,7 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
 }catch(_){}DRAFT.ready=true;})();
 /* ===== Yönetim panelinden gelen stüdyo düğmeleri (Supabase site_content.studio) ===== */
 (function(){
-  var SBX={url:'https://wgovwmeirlzwalelazfj.supabase.co',key:'sb_publishable_PP5xFd7ga61xaDOCHeET_Q_zfMaE_4G'};
+  var SBX={url:'https://api.wolflano.com.tr',key:'sb_publishable_PP5xFd7ga61xaDOCHeET_Q_zfMaE_4G'};
   var MEDIA='',CLIP_ITEMS={},TPL_ITEMS={},HIDE_TPL={};var WOLF_CAT='Wolf tasarımları';
   function esc(t){return String(t==null?'':t).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
   function srcOf(t){if(!t)return '';if(/^(https?:|data:|blob:)/.test(t))return t;if(MEDIA==='sb'&&/^(img|vid)\//.test(t))return SBX.url+'/storage/v1/object/public/site/'+t;return t;}
@@ -5832,7 +5832,7 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
    Tasarım: hazır şablon olarak kaydedilir, sitede ürün olarak yayınlanır ya da sepet/ödeme olmadan doğrudan baskıya gider.
    Aynı işler Wolf panelinden yazılı görevle de yaptırılabilir. Kayıtlar Supabase admin_designs tablosunda durur. */
 (function(){
-  var SBA={url:'https://wgovwmeirlzwalelazfj.supabase.co',key:'sb_publishable_PP5xFd7ga61xaDOCHeET_Q_zfMaE_4G'};
+  var SBA={url:'https://api.wolflano.com.tr',key:'sb_publishable_PP5xFd7ga61xaDOCHeET_Q_zfMaE_4G'};
   var ADM={on:false,email:'',uid:'',site:null,tpls:[],busy:false};
   var TPL_CAT_ADM='Wolflano şablonları',TPL_CAT_PRIV='Sadece Wolflano',tplVis='herkes',tplCat='';
   /* Şablon kaydederken seçilen kategoride görünür; "Sadece Wolflano" olanlar (yalnız yöneticiye yüklenir) hem kendi kategorisinde hem "Sadece Wolflano" başlığında çıkar */

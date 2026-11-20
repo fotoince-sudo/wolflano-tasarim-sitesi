@@ -1,9 +1,9 @@
 /**
  * Supabase Client - Wolflano Tasarım Sitesi
- * https://wgovwmeirlzwalelazfj.supabase.co
+ * https://api.wolflano.com.tr
  */
 
-const SUPABASE_URL = 'https://wgovwmeirlzwalelazfj.supabase.co';
+const SUPABASE_URL = 'https://api.wolflano.com.tr';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Indnb3Z3bWVpcmx6d2FsZWxhemZqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA1MDA4MDAsImV4cCI6MjEwNjA3NjgwMH0.IPM9KBdmxJqz0X8Txh2n9XwvrAaFrU9f1uGBc0l7MQI';
 
 // ============================================

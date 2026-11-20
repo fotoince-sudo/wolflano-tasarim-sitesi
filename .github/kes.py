@@ -10,7 +10,7 @@ import numpy as np, cv2
 from PIL import Image
 import onnxruntime as ort
 
-SB_URL = 'https://wgovwmeirlzwalelazfj.supabase.co'
+SB_URL = 'https://api.wolflano.com.tr'
 SB_KEY = 'sb_publishable_PP5xFd7ga61xaDOCHeET_Q_zfMaE_4G'
 MODEL = os.environ.get('KES_MODEL', 'isnet.onnx')
 OUT = 'cut'

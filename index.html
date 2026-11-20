@@ -3127,7 +3127,7 @@ var ACCOUNT={ready:false,user:null,
   reset:function(x){return Promise.resolve({ok:false,message:'Üyelik sistemi henüz bağlı değil.'});}};
 
 /* ===== ÜYELİK: Supabase (wolflano projesi) ===== */
-var SB={url:'https://wgovwmeirlzwalelazfj.supabase.co',key:'sb_publishable_PP5xFd7ga61xaDOCHeET_Q_zfMaE_4G'};
+var SB={url:'https://api.wolflano.com.tr',key:'sb_publishable_PP5xFd7ga61xaDOCHeET_Q_zfMaE_4G'};
 var SBS=null;
 function sbLoad(){try{SBS=JSON.parse(localStorage.getItem('wf_sb')||'null');}catch(_){SBS=null;}}
 function sbStore(x){SBS=x;try{if(x)localStorage.setItem('wf_sb',JSON.stringify(x));else localStorage.removeItem('wf_sb');}catch(_){}}
