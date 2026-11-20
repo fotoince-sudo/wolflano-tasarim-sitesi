@@ -17970,6 +17970,7 @@ async function geminiChat(sys, msgs, o = {}) {
     const gc = { maxOutputTokens: (o.maxTokens || 1200) + (/^gemini-2\.5/.test(model) ? 0 : 3e3), temperature: 0.7 };
     if (o.json) gc.responseMimeType = "application/json";
     if (/^gemini-2\.5-flash/.test(model)) gc.thinkingConfig = { thinkingBudget: 0 };
+    else if (o.fast && !NO_MIN.has(model)) gc.thinkingConfig = { thinkingLevel: "minimal" };
     let r, j14;
     try {
       ({ r, j: j14 } = await call(model, { systemInstruction: { parts: [{ text: sys }] }, contents, generationConfig: gc }, Math.min(o.timeout || 6e4, 25e3)));
@@ -17977,6 +17978,17 @@ async function geminiChat(sys, msgs, o = {}) {
       console.error("gemini", model, String(e));
       last = { ok: false, status: 504, text: "", err: "timeout", model };
       continue;
+    }
+    if (r.status === 400 && gc.thinkingConfig && !/^gemini-2\.5/.test(model) && /think/i.test(JSON.stringify(j14?.error || ""))) {
+      NO_MIN.add(model);
+      delete gc.thinkingConfig;
+      try {
+        ({ r, j: j14 } = await call(model, { systemInstruction: { parts: [{ text: sys }] }, contents, generationConfig: gc }, Math.min(o.timeout || 6e4, 25e3)));
+      } catch (e) {
+        console.error("gemini", model, String(e));
+        last = { ok: false, status: 504, text: "", err: "timeout", model };
+        continue;
+      }
     }
     const err = JSON.stringify(j14?.error || "").toLowerCase();
     const text = (j14?.candidates?.[0]?.content?.parts || []).map((p) => p?.text || "").join("").trim();
@@ -17995,6 +18007,7 @@ async function geminiTts(text, tarif) {
   const voices = [Deno.env.get("GEMINI_TTS_VOICE") || "", "Sulafat", "Kore"].filter((v, i, a) => v && a.indexOf(v) === i);
   const bitis = Date.now() + 5e4;
   for (const model of models) {
+    if ((TTS_DOLU.get(model) || 0) > Date.now()) continue;
     for (const voice of voices) {
       const kalan = bitis - Date.now();
       if (kalan < 4e3) {
@@ -18024,6 +18037,7 @@ ${text}` }] }],
       }
       const err = JSON.stringify(j14?.error || "").toLowerCase();
       console.error("gemini-tts", model, voice, r.status, err.slice(0, 200));
+      if (r.status === 429) TTS_DOLU.set(model, Date.now() + 15 * 6e4);
       if (skip(r.status, err) || r.status === 429 || r.status >= 500) break;
       if (!(r.status === 400 && /voice/.test(err))) return null;
     }
@@ -18094,12 +18108,14 @@ async function geminiImage(prompt, images, aspect, timeout = 15e4) {
   }
   return last;
 }
-var API, gKey, skip;
+var API, gKey, skip, NO_MIN, TTS_DOLU;
 var init_gemini = __esm({
   "../supabase/functions/_shared/gemini.ts"() {
     API = "https://generativelanguage.googleapis.com/v1beta/models/";
     gKey = () => Deno.env.get("GEMINI_API_KEY") || Deno.env.get("GOOGLE_API_KEY") || "";
     skip = (status, t) => status === 404 || status === 400 && /model/.test(t) && /not (found|supported)|unknown|invalid/.test(t);
+    NO_MIN = /* @__PURE__ */ new Set();
+    TTS_DOLU = /* @__PURE__ */ new Map();
   }
 });
 
@@ -43828,9 +43844,9 @@ function sesAllow(ip) {
     SES_TOP = 0;
     SES_IP.clear();
   }
-  if (SES_TOP >= 1500) return false;
+  if (SES_TOP >= 3e3) return false;
   const now = Date.now(), a = (SES_IP.get(ip) || []).filter((t) => now - t < 864e5);
-  if (a.length >= 60) {
+  if (a.length >= 150) {
     SES_IP.set(ip, a);
     return false;
   }
@@ -44002,7 +44018,7 @@ M\xFC\u015Fterinin \u015Fu anki ekran\u0131 ve g\xFCncel \xFCcretler: ${ctx}` : 
         let raw = "";
         if (gKey()) {
           const [sys0, ...rest2] = msgs;
-          const g = await geminiChat(String(sys0.content), rest2.map((m) => ({ role: m.role, text: m.content })), { json: true, maxTokens: 800, timeout: 45e3, env: "GEMINI_HELP_MODEL" });
+          const g = await geminiChat(String(sys0.content), rest2.map((m) => ({ role: m.role, text: m.content })), { json: true, maxTokens: 800, timeout: 45e3, env: "GEMINI_HELP_MODEL", fast: true });
           if (!g.ok) return j13({ error: "fail", message: "Asistan \u015Fu an cevap veremedi. Biraz sonra yeniden dene." }, 502);
           raw = g.text;
         } else {

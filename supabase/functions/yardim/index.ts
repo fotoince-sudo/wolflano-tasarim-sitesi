@@ -125,9 +125,9 @@ let SES_GUN = '', SES_TOP = 0;
 function sesAllow(ip: string): boolean {
   const gun = new Date().toISOString().slice(0, 10);
   if (gun !== SES_GUN) { SES_GUN = gun; SES_TOP = 0; SES_IP.clear(); }
-  if (SES_TOP >= 1500) return false;
+  if (SES_TOP >= 3000) return false;
   const now = Date.now(), a = (SES_IP.get(ip) || []).filter((t) => now - t < 86400_000);
-  if (a.length >= 60) { SES_IP.set(ip, a); return false; }
+  if (a.length >= 150) { SES_IP.set(ip, a); return false; }
   a.push(now); SES_IP.set(ip, a); SES_TOP++;
   return true;
 }
@@ -194,7 +194,7 @@ Deno.serve(async (req) => {
     let raw = '';
     if (gKey()) {
       const [sys0, ...rest] = msgs as any[];
-      const g = await geminiChat(String(sys0.content), rest.map((m) => ({ role: m.role, text: m.content })), { json: true, maxTokens: 800, timeout: 45000, env: 'GEMINI_HELP_MODEL' });
+      const g = await geminiChat(String(sys0.content), rest.map((m) => ({ role: m.role, text: m.content })), { json: true, maxTokens: 800, timeout: 45000, env: 'GEMINI_HELP_MODEL', fast: true });
       if (!g.ok) return j({ error: 'fail', message: 'Asistan şu an cevap veremedi. Biraz sonra yeniden dene.' }, 502);
       raw = g.text;
     } else {

@@ -42,8 +42,9 @@ async function call(model: string, body: unknown, timeout: number) {
 
 const skip = (status: number, t: string) => status === 404 || (status === 400 && /model/.test(t) && /not (found|supported)|unknown|invalid/.test(t));
 
+const NO_MIN = new Set<string>();
 /** Metin sohbeti. msgs: kullanıcı/asistan sırası; son kullanıcı mesajında görsel (data URL) olabilir. */
-export async function geminiChat(sys: string, msgs: GMsg[], o: { json?: boolean; maxTokens?: number; timeout?: number; env?: string } = {}): Promise<GOut> {
+export async function geminiChat(sys: string, msgs: GMsg[], o: { json?: boolean; maxTokens?: number; timeout?: number; env?: string; fast?: boolean } = {}): Promise<GOut> {
   const contents: any[] = [];
   for (const m of msgs) {
     const role = m.role === 'assistant' ? 'model' : 'user';
@@ -65,9 +66,16 @@ export async function geminiChat(sys: string, msgs: GMsg[], o: { json?: boolean;
     const gc: Record<string, unknown> = { maxOutputTokens: (o.maxTokens || 1200) + (/^gemini-2\.5/.test(model) ? 0 : 3000), temperature: 0.7 };
     if (o.json) gc.responseMimeType = 'application/json';
     if (/^gemini-2\.5-flash/.test(model)) gc.thinkingConfig = { thinkingBudget: 0 };
+    // Hızlı cevap (Aybüke): model uzun uzun "düşünmesin"; bu ayarı tanımayan model olursa ayarsız yeniden denenir
+    else if (o.fast && !NO_MIN.has(model)) gc.thinkingConfig = { thinkingLevel: 'minimal' };
     let r: Response, j: any;
     try { ({ r, j } = await call(model, { systemInstruction: { parts: [{ text: sys }] }, contents, generationConfig: gc }, Math.min(o.timeout || 60000, 25000))); }
     catch (e) { console.error('gemini', model, String(e)); last = { ok: false, status: 504, text: '', err: 'timeout', model }; continue; }
+    if (r.status === 400 && gc.thinkingConfig && !/^gemini-2\.5/.test(model) && /think/i.test(JSON.stringify(j?.error || ''))) {
+      NO_MIN.add(model); delete gc.thinkingConfig;
+      try { ({ r, j } = await call(model, { systemInstruction: { parts: [{ text: sys }] }, contents, generationConfig: gc }, Math.min(o.timeout || 60000, 25000))); }
+      catch (e) { console.error('gemini', model, String(e)); last = { ok: false, status: 504, text: '', err: 'timeout', model }; continue; }
+    }
     const err = JSON.stringify(j?.error || '').toLowerCase();
     const text = (j?.candidates?.[0]?.content?.parts || []).map((p: any) => p?.text || '').join('').trim();
     last = { ok: r.ok && !!text, status: r.status, text, err, model };
@@ -78,6 +86,7 @@ export async function geminiChat(sys: string, msgs: GMsg[], o: { json?: boolean;
   return last;
 }
 
+const TTS_DOLU = new Map<string, number>();
 /** Sesli okuma (Aybüke). 24 kHz PCM gelir, tarayıcının çalabileceği WAV'a çevrilir. */
 export async function geminiTts(text: string, tarif: string): Promise<Uint8Array | null> {
   const models = [Deno.env.get('GEMINI_TTS_MODEL') || '', 'gemini-3.8-flash-tts', 'gemini-3.1-flash-tts-preview', 'gemini-2.5-flash-preview-tts'].filter((m, i, a) => m && a.indexOf(m) === i);
@@ -85,6 +94,7 @@ export async function geminiTts(text: string, tarif: string): Promise<Uint8Array
   // Toplam süre sınırı: sunucunun önündeki vekil (Plesk/nginx) ~60 sn'de isteği keser; ses ondan önce dönmeli.
   const bitis = Date.now() + 50000;
   for (const model of models) {
+    if ((TTS_DOLU.get(model) || 0) > Date.now()) continue; // kotası dolu model bir süre denenmez (boşuna bekletmesin)
     for (const voice of voices) {
       const kalan = bitis - Date.now();
       if (kalan < 4000) { console.error('gemini-tts sure doldu'); return null; }
@@ -110,6 +120,7 @@ export async function geminiTts(text: string, tarif: string): Promise<Uint8Array
       }
       const err = JSON.stringify(j?.error || '').toLowerCase();
       console.error('gemini-tts', model, voice, r.status, err.slice(0, 200));
+      if (r.status === 429) TTS_DOLU.set(model, Date.now() + 15 * 60_000);
       if (skip(r.status, err) || r.status === 429 || r.status >= 500) break; // sonraki model (kota dolduysa diğer ses modelinin kotası ayrı)
       if (!(r.status === 400 && /voice/.test(err))) return null;
     }
