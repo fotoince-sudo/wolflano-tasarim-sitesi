@@ -147,7 +147,8 @@ async function ses(req: Request, key: string, body: any): Promise<Response> {
     const w = await geminiTts(text, SES_NOT);
     if (w && text.length <= 240) { if (SES_CACHE.size > 200) SES_CACHE.clear(); SES_CACHE.set(text, w); }
     if (w) return new Response(w, { headers: { ...cors, 'Content-Type': 'audio/wav', 'Cache-Control': 'no-store' } });
-    return j({ error: 'fail' }, 502);
+    if (!key) return j({ error: 'fail' }, 502);
+    // Gemini sesi gelmezse (ör. kota dolu) OpenAI anahtarı varsa onunla okunur
   }
   const model = Deno.env.get('OPENAI_TTS_MODEL') || 'gpt-4o-mini-tts';
   const voices = [Deno.env.get('OPENAI_TTS_VOICE') || '', 'marin', 'coral', 'nova'].filter((v, i, a) => v && a.indexOf(v) === i);
