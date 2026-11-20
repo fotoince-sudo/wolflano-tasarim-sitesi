@@ -82,14 +82,21 @@ export async function geminiChat(sys: string, msgs: GMsg[], o: { json?: boolean;
 export async function geminiTts(text: string, tarif: string): Promise<Uint8Array | null> {
   const models = [Deno.env.get('GEMINI_TTS_MODEL') || '', 'gemini-3.8-flash-tts', 'gemini-3.1-flash-tts-preview', 'gemini-2.5-flash-preview-tts'].filter((m, i, a) => m && a.indexOf(m) === i);
   const voices = [Deno.env.get('GEMINI_TTS_VOICE') || '', 'Sulafat', 'Kore'].filter((v, i, a) => v && a.indexOf(v) === i);
+  // Toplam süre sınırı: sunucunun önündeki vekil (Plesk/nginx) ~60 sn'de isteği keser; ses ondan önce dönmeli.
+  const bitis = Date.now() + 50000;
   for (const model of models) {
     for (const voice of voices) {
+      const kalan = bitis - Date.now();
+      if (kalan < 4000) { console.error('gemini-tts sure doldu'); return null; }
       // Uzun yönerge metnin önüne eklenince model bazen yönergeyi de sesli okuyordu.
       // Gemini'nin önerdiği biçim: tek satırlık kısa yönetmen notu + iki nokta + okunacak metin.
-      const { r, j } = await call(model, {
-        contents: [{ parts: [{ text: `${tarif}:\n${text}` }] }],
-        generationConfig: { responseModalities: ['AUDIO'], speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: voice } } } },
-      }, 40000);
+      let r: Response, j: any;
+      try {
+        ({ r, j } = await call(model, {
+          contents: [{ parts: [{ text: `${tarif}:\n${text}` }] }],
+          generationConfig: { responseModalities: ['AUDIO'], speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: voice } } } },
+        }, Math.min(30000, kalan)));
+      } catch (e) { console.error('gemini-tts', model, voice, 'zaman aşımı/bağlantı', String(e).slice(0, 120)); break; } // sonraki model
       const part = (j?.candidates?.[0]?.content?.parts || []).find((p: any) => p?.inlineData?.data);
       if (r.ok && part) {
         const rate = Number(/rate=(\d+)/.exec(part.inlineData.mimeType || '')?.[1] || 24000);

@@ -6123,7 +6123,7 @@ var DATA_P=(async function(){
       var buf=await bl.arrayBuffer();if(my!==AYS_SEQ)return;
       var ab=await new Promise(function(ok,no){AYS_AC.decodeAudioData(buf,ok,no);});if(my!==AYS_SEQ)return;if(AYS_AC.state==='suspended')await AYS_AC.resume();
       var s=AYS_AC.createBufferSource();s.buffer=ab;s.connect(AYS_AC.destination);s.onended=done;s.start(0);AYS_SRC=s;}
-    catch(_){/* Sunucu sesi gelmezse telefonun robotik sesi kullanılmaz; yazı ekranda kalır */if(my===AYS_SEQ)done();}}
+    catch(_){/* Sunucu sesi gelmezse Aybüke susmasın: telefonun en iyi Türkçe sesiyle okur */if(my===AYS_SEQ){if(window.speechSynthesis)aysLocal(t,done);else done();}}}
   function say(t){if(!t||document.hidden||(pn.hidden&&!voiceSession))return;if(TTS&&(ttsOn||voiceSession))aysSay(t);else if(voiceSession&&!micOn)listen();}
   async function send(t){t=String(t||'').trim();if(!t||busy)return;M.push({role:'user',text:t});M=M.slice(-16);busy=true;paint();
     micStop();if(voiceSession)barSt('dusun','Düşünüyorum…');var a='',ur=[],g='',ac='',son=false;try{var r=await fetch(SB.url+'/functions/v1/yardim',{method:'POST',headers:{'Content-Type':'application/json',apikey:SB.key},body:JSON.stringify({mode:'site',messages:M.slice(-8).map(function(m){return {role:m.role,text:m.text};}),context:ctx()})});
