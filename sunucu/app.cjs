@@ -43138,7 +43138,7 @@ function quoteItems(d, input, ay = null) {
     wholesale: items.every((x) => x.id === "toptan")
   };
 }
-function shipping(d, sum, method, wholesale2 = false) {
+function shipping(d, sum, method, wholesale2 = false, qty = 1) {
   if (wholesale2) return 0;
   if (method !== void 0 && method !== "kargo" && method !== "elden") {
     throw new CheckoutError("Teslimat y\xF6ntemi ge\xE7ersiz.");
@@ -43147,7 +43147,8 @@ function shipping(d, sum, method, wholesale2 = false) {
   if (free > 0 && sum >= free) return 0;
   if (method === "elden") {
     const p = d.ship?.pickup;
-    return money(p === void 0 || p === null || p === "" ? 50 : amount(p));
+    const n = Math.max(1, Math.floor(Number(qty) || 1));
+    return money((p === void 0 || p === null || p === "" ? 50 : amount(p)) * n);
   }
   return money(amount(d.ship?.fee));
 }
@@ -43340,7 +43341,7 @@ var init_order_create = __esm({
           throw new CheckoutError("Fiyat\u0131 belirlenecek \xFCr\xFCnler i\xE7in toptan sipari\u015F talebi g\xF6nder.", 409);
         }
         const itemsSum = priced.sum, qty = priced.qty;
-        const ship = shipping(catalog, itemsSum, body.delivery, priced.wholesale);
+        const ship = shipping(catalog, itemsSum, body.delivery, priced.wholesale, qty);
         let special = null;
         let doc = null;
         const spKey = s(body.special?.type, 20);

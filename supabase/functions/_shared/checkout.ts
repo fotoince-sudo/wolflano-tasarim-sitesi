@@ -342,6 +342,7 @@ export function shipping(
   sum: number,
   method: unknown,
   wholesale = false,
+  qty = 1,
 ) {
   if (wholesale) return 0; // Wholesale remains an unfulfilled order request, as before.
   if (method !== undefined && method !== "kargo" && method !== "elden") {
@@ -349,10 +350,11 @@ export function shipping(
   }
   const free = amount(d.ship?.free);
   if (free > 0 && sum >= free) return 0;
-  // İzmir teslim noktası: yönetimdeki ücret, boşsa 50 ₺.
+  // İzmir teslim noktası: ürün başına yönetimdeki ücret (boşsa 50 ₺) × adet.
   if (method === "elden") {
     const p = d.ship?.pickup;
-    return money(p === undefined || p === null || p === "" ? 50 : amount(p));
+    const n = Math.max(1, Math.floor(Number(qty) || 1));
+    return money((p === undefined || p === null || p === "" ? 50 : amount(p)) * n);
   }
   return money(amount(d.ship?.fee));
 }

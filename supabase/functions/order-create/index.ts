@@ -164,7 +164,7 @@ Deno.serve(async (req) => {
       throw new CheckoutError('Fiyatı belirlenecek ürünler için toptan sipariş talebi gönder.', 409);
     }
     const itemsSum = priced.sum, qty = priced.qty;
-    const ship = shipping(catalog, itemsSum, body.delivery, priced.wholesale);
+    const ship = shipping(catalog, itemsSum, body.delivery, priced.wholesale, qty);
 
     // Özel indirim (belge zorunlu)
     let special: Record<string, unknown> | null = null;
