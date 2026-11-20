@@ -3665,7 +3665,8 @@ function fxPop(){
   var o=selObj(),pop=$('#colorPop');if(!o||o.type!=='image'||view.pop!=='fx')return;
   var st=o.phs||'none',ed=o.phe||'none',sf=o.phf==null?0.5:o.phf;
   pop.innerHTML='<div class="fxp"><b>Wolf çizsin <em class="aitag">Yapay zekâ</em></b><div class="fxc ai">'+AI_ST.filter(function(s){return kurtOk(s[0]);}).map(function(s){return '<button type="button" data-ais="'+s[0]+'"'+(st==='ai-'+s[0]?' class="on"':'')+(AI_BUSY||fxBusy?' disabled':'')+'>'+s[1]+'</button>';}).join('')+'</div><small class="ainote">'+(AI_BUSY?'Wolf çiziyor…':'Gerçek çizim gibi sonuç · 30-60 sn · günde 3 ücretsiz hak, sonrası 50 ₺')+'</small>'+
-    '<b>Hızlı filtre</b><div class="fxc">'+PHS.map(function(s){return '<button type="button" data-phs="'+s[0]+'"'+(s[0]===st?' class="on"':'')+(fxBusy?' disabled':'')+'>'+s[1]+'</button>';}).join('')+'</div>'+
+    /* "Hızlı filtre" satırı kaldırıldı (Wolf'un tarzlarıyla aynı seçenekler iki kez görünüyordu); yalnız asıl fotoğrafa dönüş kaldı */
+    (st!=='none'?'<div class="fxc"><button type="button" data-phs="none"'+(fxBusy?' disabled':'')+'>↺ Asıl fotoğraf</button></div>':'')+
     '<b>Kenar</b><div class="fxc">'+PHE.map(function(s){return '<button type="button" data-phe="'+s[0]+'"'+(s[0]===ed?' class="on"':'')+(fxBusy?' disabled':'')+'>'+s[1]+'</button>';}).join('')+'</div>'+
     (ed!=='none'&&!isBrush(ed)?'<label class="fxr"><span>Kenar yumuşaklığı</span><input type="range" min="0" max="100" value="'+Math.round(sf*100)+'" data-phf="1"'+(fxBusy?' disabled':'')+'></label>':'')+'</div>';
   pop.hidden=false;
