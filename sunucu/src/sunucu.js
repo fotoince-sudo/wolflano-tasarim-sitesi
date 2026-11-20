@@ -157,16 +157,24 @@ async function geminiDene() {
     if (r.ok) out.modeller = (j.models || []).map((m) => m.name.replace('models/', '')).filter((n) => /flash|tts|image/.test(n));
     else out.liste_hata = temiz(JSON.stringify(j.error || j));
   } catch (e) { out.liste_hata = temiz(e && (e.cause?.code || e.message) || e); }
-  try {
-    const r = await disFetch('https://generativelanguage.googleapis.com/v1beta/models/' + (process.env.GEMINI_CHAT_MODEL || 'gemini-3.8-flash') + ':generateContent', {
-      method: 'POST', headers: { 'x-goog-api-key': key, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ contents: [{ role: 'user', parts: [{ text: 'Sadece "tamam" yaz.' }] }], generationConfig: { maxOutputTokens: 2000 } }),
-      signal: AbortSignal.timeout(30000),
-    });
-    const j = await r.json().catch(() => ({}));
-    out.deneme = r.status;
-    out.cevap = r.ok ? (j.candidates?.[0]?.content?.parts || []).map((x) => x.text || '').join('') : temiz(JSON.stringify(j.error || j));
-  } catch (e) { out.deneme_hata = temiz(e && (e.cause?.code || e.message) || e); }
+  const dene = async (model, tc) => {
+    const t0 = Date.now();
+    try {
+      const gc = { maxOutputTokens: 3000 };
+      if (tc) gc.thinkingConfig = tc;
+      const r = await disFetch('https://generativelanguage.googleapis.com/v1beta/models/' + model + ':generateContent', {
+        method: 'POST', headers: { 'x-goog-api-key': key, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ contents: [{ role: 'user', parts: [{ text: 'Sadece "tamam" yaz.' }] }], generationConfig: gc }),
+        signal: AbortSignal.timeout(40000),
+      });
+      const j = await r.json().catch(() => ({}));
+      return { model, durum: r.status, sn: (Date.now() - t0) / 1000, cevap: r.ok ? (j.candidates?.[0]?.content?.parts || []).map((x) => x.text || '').join('').slice(0, 40) : temiz(JSON.stringify(j.error || j)).slice(0, 220) };
+    } catch (e) { return { model, sn: (Date.now() - t0) / 1000, hata: temiz(e && (e.cause?.code || e.message) || e) }; }
+  };
+  out.denemeler = await Promise.all([
+    dene('gemini-3.8-flash', { thinkingLevel: 'low' }), dene('gemini-3.8-flash', null), dene('gemini-3.5-flash', { thinkingLevel: 'low' }),
+    dene('gemini-3.5-flash-lite', null), dene('gemini-3.1-flash-lite', null), dene('gemini-flash-latest', null), dene('gemini-flash-lite-latest', null),
+  ]);
   geminiSon = Date.now(); geminiSonuc = out;
   return out;
 }

@@ -44160,19 +44160,32 @@ async function geminiDene() {
   } catch (e) {
     out2.liste_hata = temiz(e && (e.cause?.code || e.message) || e);
   }
-  try {
-    const r = await disFetch("https://generativelanguage.googleapis.com/v1beta/models/" + (process.env.GEMINI_CHAT_MODEL || "gemini-3.8-flash") + ":generateContent", {
-      method: "POST",
-      headers: { "x-goog-api-key": key, "Content-Type": "application/json" },
-      body: JSON.stringify({ contents: [{ role: "user", parts: [{ text: 'Sadece "tamam" yaz.' }] }], generationConfig: { maxOutputTokens: 2e3 } }),
-      signal: AbortSignal.timeout(3e4)
-    });
-    const j14 = await r.json().catch(() => ({}));
-    out2.deneme = r.status;
-    out2.cevap = r.ok ? (j14.candidates?.[0]?.content?.parts || []).map((x) => x.text || "").join("") : temiz(JSON.stringify(j14.error || j14));
-  } catch (e) {
-    out2.deneme_hata = temiz(e && (e.cause?.code || e.message) || e);
-  }
+  const dene = async (model, tc) => {
+    const t0 = Date.now();
+    try {
+      const gc = { maxOutputTokens: 3e3 };
+      if (tc) gc.thinkingConfig = tc;
+      const r = await disFetch("https://generativelanguage.googleapis.com/v1beta/models/" + model + ":generateContent", {
+        method: "POST",
+        headers: { "x-goog-api-key": key, "Content-Type": "application/json" },
+        body: JSON.stringify({ contents: [{ role: "user", parts: [{ text: 'Sadece "tamam" yaz.' }] }], generationConfig: gc }),
+        signal: AbortSignal.timeout(4e4)
+      });
+      const j14 = await r.json().catch(() => ({}));
+      return { model, durum: r.status, sn: (Date.now() - t0) / 1e3, cevap: r.ok ? (j14.candidates?.[0]?.content?.parts || []).map((x) => x.text || "").join("").slice(0, 40) : temiz(JSON.stringify(j14.error || j14)).slice(0, 220) };
+    } catch (e) {
+      return { model, sn: (Date.now() - t0) / 1e3, hata: temiz(e && (e.cause?.code || e.message) || e) };
+    }
+  };
+  out2.denemeler = await Promise.all([
+    dene("gemini-3.8-flash", { thinkingLevel: "low" }),
+    dene("gemini-3.8-flash", null),
+    dene("gemini-3.5-flash", { thinkingLevel: "low" }),
+    dene("gemini-3.5-flash-lite", null),
+    dene("gemini-3.1-flash-lite", null),
+    dene("gemini-flash-latest", null),
+    dene("gemini-flash-lite-latest", null)
+  ]);
   geminiSon = Date.now();
   geminiSonuc = out2;
   return out2;
