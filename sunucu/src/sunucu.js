@@ -207,8 +207,10 @@ function dinle() {
 const server = http.createServer(async (req, res) => {
   const ip = String(req.headers['x-forwarded-for'] || req.socket.remoteAddress || '').split(',')[0].trim();
   try {
-    const proto = req.headers['x-forwarded-proto'] || 'https';
-    const host = req.headers['x-forwarded-host'] || req.headers.host || 'localhost';
+    // vekil sunucular bu başlıkları "https, https" gibi çoğaltabiliyor: ilk değeri al
+    const ilk = (v) => String(v || '').split(',')[0].trim();
+    const proto = /^https?$/.test(ilk(req.headers['x-forwarded-proto'])) ? ilk(req.headers['x-forwarded-proto']) : 'https';
+    const host = ilk(req.headers['x-forwarded-host']) || ilk(req.headers.host) || 'localhost';
     const chunks = [];
     let size = 0;
     if (req.method !== 'GET' && req.method !== 'HEAD') {
