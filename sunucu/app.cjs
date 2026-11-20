@@ -18024,7 +18024,7 @@ ${text}` }] }],
       }
       const err = JSON.stringify(j14?.error || "").toLowerCase();
       console.error("gemini-tts", model, voice, r.status, err.slice(0, 200));
-      if (skip(r.status, err)) break;
+      if (skip(r.status, err) || r.status === 429 || r.status >= 500) break;
       if (!(r.status === 400 && /voice/.test(err))) return null;
     }
   }
@@ -43853,7 +43853,7 @@ async function ses(req, key, body) {
       SES_CACHE.set(text, w);
     }
     if (w) return new Response(w, { headers: { ...cors7, "Content-Type": "audio/wav", "Cache-Control": "no-store" } });
-    return j13({ error: "fail" }, 502);
+    if (!key) return j13({ error: "fail" }, 502);
   }
   const model = Deno.env.get("OPENAI_TTS_MODEL") || "gpt-4o-mini-tts";
   const voices = [Deno.env.get("OPENAI_TTS_VOICE") || "", "marin", "coral", "nova"].filter((v, i, a) => v && a.indexOf(v) === i);

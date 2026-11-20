@@ -110,7 +110,7 @@ export async function geminiTts(text: string, tarif: string): Promise<Uint8Array
       }
       const err = JSON.stringify(j?.error || '').toLowerCase();
       console.error('gemini-tts', model, voice, r.status, err.slice(0, 200));
-      if (skip(r.status, err)) break; // sonraki model
+      if (skip(r.status, err) || r.status === 429 || r.status >= 500) break; // sonraki model (kota dolduysa diğer ses modelinin kotası ayrı)
       if (!(r.status === 400 && /voice/.test(err))) return null;
     }
   }
