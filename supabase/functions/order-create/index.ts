@@ -77,7 +77,7 @@ function totalsRows(row: any) {
     `<tr><td style="padding:6px 0">Kargo</td><td align="right">${row.ship ? tl(row.ship) : 'Ücretsiz'}</td></tr>` +
     `<tr><td style="padding:8px 0;font-weight:bold;font-size:16px">Toplam</td><td align="right" style="font-weight:bold;font-size:16px"> ${pricePending ? (row.total ? tl(row.total) + ' + fiyatı belirlenecek kalemler' : 'Fiyat belirlenecek') : tl(row.total)}</td></tr>`;
 }
-async function orderMails(row: any) {
+async function orderMails(row: any, bank: any = null) {
   if (!smtpReady()) return;
   const table = `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:14px 0;font-size:14px">${itemRows(row.items)}${totalsRows(row)}</table>`;
   const sp = row.special as any, sc = row.school as any;
@@ -85,10 +85,18 @@ async function orderMails(row: any) {
   const notes = (sp ? `<p style="margin:0 0 10px;color:#6b746e;font-size:13px">Özel indirim belgen kontrol edildikten sonra siparişin hazırlanmaya başlar.</p>` : '') +
     (sc && sc.free ? `<p style="margin:0 0 10px;color:#6b746e;font-size:13px">Okul siparişi: ${sc.free} adet ücretsiz ürün ihtiyaç sahibi öğrenciler için eklenecek.</p>` : '');
   const legal = `<p style="margin:14px 0 0;color:#6b746e;font-size:12px">Siparişini onaylarken kabul ettiğin <a href="${SITE}#mesafeli">Ön Bilgilendirme Formu ve Mesafeli Satış Sözleşmesi</a>, <a href="${SITE}#iade">Cayma ve İade Koşulları</a> ve <a href="${SITE}#kvkk">KVKK Aydınlatma Metni</a> bu bağlantılarda; bu e-posta sözleşmenin bir örneğidir. Kişiye özel baskılı ürünlerde yasa gereği cayma hakkı yoktur.</p>`;
+  // Havale/EFT: banka bilgileri (yönetim panelinde Fiyatlar > Havale / EFT bilgileri)
+  const iban = String(bank?.iban || '').replace(/\s+/g, '').toUpperCase();
+  const bankHtml = wholesale ? '' : iban
+    ? `<div style="margin:14px 0;padding:14px 16px;border:1px solid #dde5df;border-radius:12px;background:#f6f9f7"><p style="margin:0 0 8px;font-weight:bold">Ödeme: Havale / EFT</p>` +
+      (bank?.ad ? `<p style="margin:0 0 4px">Alıcı: ${esc(bank.ad)}</p>` : '') + (bank?.banka ? `<p style="margin:0 0 4px">Banka: ${esc(bank.banka)}</p>` : '') +
+      `<p style="margin:0 0 4px">IBAN: <b style="font-family:monospace">${esc(iban.replace(/(.{4})/g, '$1 ').trim())}</b></p><p style="margin:0 0 4px">Tutar: <b>${tl(row.total)}</b></p>` +
+      `<p style="margin:0;color:#6b746e;font-size:13px">Açıklamaya sipariş numaran <b>${esc(row.code)}</b> yazmayı unutma. Siparişin ödeme gelince hazırlanmaya başlar.</p></div>`
+    : `<p style="margin:0 0 12px;color:#6b746e;font-size:13px">Ödeme: Havale / EFT. Banka bilgilerimiz sana ayrıca iletilecek; açıklamaya sipariş numaran <b>${esc(row.code)}</b> yazman yeterli.</p>`;
   const cust = frame({
     title: wholesale ? 'Toptan sipariş talebini aldık' : 'Siparişini aldık',
     pre: `${row.code} numaralı siparişin alındı.`,
-    body: `<p style="margin:0 0 12px">Merhaba ${esc(row.ad)},</p><p style="margin:0 0 12px">Wolflano'yu seçtiğin için teşekkürler. <b>${esc(row.code)}</b> numaralı siparişin elimize ulaştı. ${wholesale ? 'Toptan sipariş talebin için seninle iletişime geçeceğiz.' : 'Siparişler 2-4 iş gününde kargoya verilir; kargoya verildiğinde takip numarasını ayrıca göndereceğiz.'}</p>${table}${notes}` +
+    body: `<p style="margin:0 0 12px">Merhaba ${esc(row.ad)},</p><p style="margin:0 0 12px">Wolflano'yu seçtiğin için teşekkürler. <b>${esc(row.code)}</b> numaralı siparişin elimize ulaştı. ${wholesale ? 'Toptan sipariş talebin için seninle iletişime geçeceğiz.' : 'Ödemen ulaştıktan sonra siparişin 2-4 iş gününde kargoya verilir; kargoya verildiğinde takip numarasını ayrıca göndereceğiz.'}</p>${bankHtml}${table}${notes}` +
       `<p style="margin:0 0 4px;color:#6b746e;font-size:13px">Teslimat adresi</p><p style="margin:0 0 12px">${esc(row.adres)}${row.ilce || row.il ? '<br>' + esc([row.ilce, row.il].filter(Boolean).join(' / ')) : ''}</p>` +
       `<p style="margin:0;color:#6b746e;font-size:13px">Sorun olursa bu e-postayı yanıtlaman ya da WhatsApp'tan yazman yeterli.</p>` + legal,
     btn: { href: SITE, label: "Wolflano'ya dön" },
@@ -225,7 +233,7 @@ Deno.serve(async (req) => {
       });
       if (r.ok) {
         // E-postalar arka planda gider; müşteri sipariş onayını beklemez
-        const p = orderMails(row).catch((e) => console.error('order mails', String(e)));
+        const p = orderMails(row, catalog.bank).catch((e) => console.error('order mails', String(e)));
         try { (globalThis as any).EdgeRuntime?.waitUntil(p); } catch { /* yoksa sorun değil */ }
         // bekleyen sepet: sipariş verdi
         try { await fetch(`${SB_URL}/rest/v1/carts?owner_key=eq.${encodeURIComponent(owner)}`, { method: 'PATCH', headers: { apikey: SRK, Authorization: `Bearer ${SRK}`, 'Content-Type': 'application/json', Prefer: 'return=minimal' }, body: JSON.stringify({ status: 'sipariş verdi', updated_at: new Date().toISOString() }) }); } catch { /* yoksa sorun değil */ }
