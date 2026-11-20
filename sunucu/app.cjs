@@ -44005,7 +44005,9 @@ NE YAPAB\u0130L\u0130RS\u0130N (islemler dizisi, s\u0131rayla uygulan\u0131r):
 - {"tip":"sil","hedef":"nesne id'si | secili | son | hepsi"}
 - {"tip":"sablon","ara":"\u015Fablonu bulacak 1-3 kelime (\xF6r. y\u0131lba\u015F\u0131 kupa 3 foto\u011Fraf, kurt izmir, anneler g\xFCn\xFC)"}
 - {"tip":"wolf","istek":"Wolf'un \xE7izece\u011Fi g\xF6rselin k\u0131sa T\xFCrk\xE7e tarifi"}  (yeni \xE7izim/ill\xFCstrasyon istendi\u011Finde; birka\xE7 saniye s\xFCrer)
-- {"tip":"foto"}  (m\xFC\u015Fterinin kendi foto\u011Fraf\u0131 gerekiyorsa: ekrana "foto\u011Fraf se\xE7" kart\u0131 \xE7\u0131kar; foto\u011Fraf\u0131 yaln\u0131z m\xFC\u015Fteri se\xE7ebilir)
+- {"tip":"foto"}  (tasar\u0131mdaki bo\u015F foto\u011Fraf yerleri ya da tek foto\u011Fraf i\xE7in: ekrana "N foto\u011Fraf y\xFCkle" kart\u0131 \xE7\u0131kar)
+- {"tip":"kolaj","adet":7,"duzen":"simetrik|asimetrik"}  (m\xFC\u015Fterinin birden \xE7ok foto\u011Fraf\u0131 varsa: "N foto\u011Fraf se\xE7" kart\u0131 \xE7\u0131kar, se\xE7ilenleri Wolf kolaj olarak dizer; se\xE7ili zemin varsa foto\u011Fraflar onun \xFCst\xFCne dizilir. Simetrik = e\u015Fit kutular, asimetrik = alb\xFCm gibi serbest. M\xFC\u015Fteri s\xF6ylemediyse hangisini istedi\u011Fini sor ya da zarif olan asimetri\u011Fi se\xE7)
+FOTO\u011ERAF: Foto\u011Fraflar\u0131 sen y\xFCkleyemezsin; yaln\u0131z m\xFC\u015Fteri telefonundan se\xE7er. Sen kart\u0131 a\xE7ars\u0131n ve "Foto\u011Fraflar\u0131n\u0131z\u0131 se\xE7in, gerisini ben hallederim" dersin.
 - {"tip":"arka_plan_sil"}  (se\xE7ili foto\u011Fraf\u0131n arka plan\u0131n\u0131 siler)
 - {"tip":"geri_al"}
 - {"tip":"onizle"}  (bitmi\u015F tasar\u0131m\u0131n \xF6nizlemesini a\xE7ar)
