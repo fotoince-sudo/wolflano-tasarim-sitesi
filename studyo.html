@@ -700,10 +700,11 @@ img{-webkit-touch-callout:none;-webkit-user-drag:none}
       <button data-c="dup" data-t="text clip image"><svg class="i" viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V6a2 2 0 0 1 2-2h9"/></svg>Kopyala</button>
       <button data-c="lock" data-t="text clip image" id="lockBtn"><svg class="i" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg><span>Kilitle</span></button>
       <button data-c="giydir" data-t="text" class="aibtn"><svg class="i" viewBox="0 0 24 24"><path d="M4 6V4h16v2M12 4v16M9 20h6"/><path d="M15.5 9.5l2-2 3 3-2 2" /><circle cx="18.5" cy="16.5" r="2.5"/></svg>Yazıyı giydir</button>
+      <button data-c="giydir" data-t="clip" class="aibtn"><svg class="i" viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/><circle cx="12" cy="11" r="2"/></svg>Şekli giydir</button>
       <button data-c="edit" data-t="text"><svg class="i" viewBox="0 0 24 24"><path d="M4 20l4-1 11-11-3-3L5 16z"/></svg>Düzenle</button>
       <button data-c="font" data-t="text"><svg class="i" viewBox="0 0 24 24"><path d="M5 6V4h14v2M12 4v16M9 20h6"/></svg>Yazı tipi</button>
       <button data-c="stroke" data-t="text"><svg class="i" viewBox="0 0 24 24"><rect x="5" y="5" width="14" height="14" rx="3" stroke-dasharray="3 2.4"/></svg>Kontur</button>
-      <button data-c="intext" data-t="image" class="aibtn"><svg class="i" viewBox="0 0 24 24"><path d="M4 6V4h16v2M12 4v16M9 20h6"/><rect x="2.5" y="9" width="7" height="7" rx="1" stroke-dasharray="2 1.6"/></svg>Yazının içine</button>
+      <button data-c="intext" data-t="image" class="aibtn"><svg class="i" viewBox="0 0 24 24"><path d="M4 6V4h16v2M12 4v16M9 20h6"/><rect x="2.5" y="9" width="7" height="7" rx="1" stroke-dasharray="2 1.6"/></svg>İçine giydir</button>
       <button data-c="tsplit" data-t="image" id="tsplitBtn" hidden><svg class="i" viewBox="0 0 24 24"><path d="M4 6V4h16v2M12 4v16M9 20h6"/><path d="M3 21l4-4M21 21l-4-4"/></svg>Yazıyı ayır</button>
       <button data-c="crop" data-t="image"><svg class="i" viewBox="0 0 24 24"><path d="M6 2v14a2 2 0 0 0 2 2h14"/><path d="M2 6h14a2 2 0 0 1 2 2v14"/></svg>Kırp</button>
       <button data-c="wout" data-t="image" id="woutBtn"><svg class="i" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="4"/><rect x="8" y="8" width="8" height="8" rx="1.5"/></svg>Kontur</button>
@@ -3524,14 +3525,14 @@ function crpShape(sh){CRP.s=sh;var el=$('#crpR');if(el){el.className='crp-r'+(sh
   $$('.crp-sh [data-crs]').forEach(function(x){x.classList.toggle('on',x.dataset.crs===(sh||'rect'));});
   if(sh==='circle'){$$('.crp-f1 [data-crp]').forEach(function(x){x.classList.toggle('on',x.dataset.crp==='sq');});crpAspect(1);}}
 /* ---------- Yazıyı giydir ----------
-   Yazı seçiliyken "Yazıyı giydir": müşteri bir fotoğraf yükler ya da Zeminler'den bir desen seçer; görsel yazıyı kaplayacak
+   Yazı ya da şekil seçiliyken "Yazıyı giydir" / "Şekli giydir": müşteri bir fotoğraf yükler ya da Zeminler'den bir desen seçer; görsel yazıyı kaplayacak
    büyüklükte yazının üstüne konur ve "Yazının içine" kendiliğinden uygulanır. Böylece özelliği bilmeyen müşteri de bulur. */
 var GIYDIR=null,GIYDIR_AT=0;
-function giydirStart(){var t=selObj();if(!t||t.type!=='text'||t.lock)return;GIYDIR=t.id;GIYDIR_AT=Date.now();openTab('image');
-  longToast('Yazıyı giydir: bir fotoğraf yükle ya da Zeminler\'den bir desen seç; yazının içine yerleştireceğim.');}
+function giydirStart(){var t=selObj();if(!t||(t.type!=='text'&&t.type!=='clip')||t.lock)return;GIYDIR=t.id;GIYDIR_AT=Date.now();openTab('image');
+  longToast((t.type==='text'?'Yazıyı':'Şekli')+' giydir: bir fotoğraf yükle ya da Zeminler\'den bir desen seç; '+(t.type==='text'?'yazının':'şeklin')+' içine yerleştireceğim.');}
 function giydirAfterAdd(o){if(!GIYDIR)return false;var id=GIYDIR;GIYDIR=null;if(Date.now()-GIYDIR_AT>5*60e3)return false;
-  var t=cur().objs.filter(function(q){return q.id===id&&q.type==='text';})[0];if(!t)return false;
-  if(!isWarped(t))measureText(t);var tb=objBB(t),bw=tb.r-tb.l,bh=tb.b-tb.t,asp=(o.w&&o.h)?o.w/o.h:1,w=Math.max(bw,bh*asp)*1.06;
+  var t=cur().objs.filter(function(q){return q.id===id&&(q.type==='text'||q.type==='clip');})[0];if(!t)return false;
+  if(t.type==='text'&&!isWarped(t))measureText(t);var tb=objBB(t),bw=tb.r-tb.l,bh=tb.b-tb.t,asp=(o.w&&o.h)?o.w/o.h:1,w=Math.max(bw,bh*asp)*1.06;
   o.w=w;o.h=w/asp;o.x=t.x;o.y=t.y;o.rot=0;renderObjects();select(o.id);
   try{if(view.tab&&innerWidth<700)closeTab();}catch(_){}
   intextGo();return true;}
@@ -3541,26 +3542,26 @@ function giydirAfterAdd(o){if(!GIYDIR)return false;var id=GIYDIR;GIYDIR=null;if(
 function objBB(o){var w=o.w||10,h=o.h||10,a=(o.rot||0)*PI/180,hw=(Math.abs(w*Math.cos(a))+Math.abs(h*Math.sin(a)))/2,hh=(Math.abs(w*Math.sin(a))+Math.abs(h*Math.cos(a)))/2;return {l:o.x-hw,r:o.x+hw,t:o.y-hh,b:o.y+hh};}
 async function intextGo(){var im=selObj();if(!im||im.type!=='image'||im.lock)return;
   var objs=cur().objs,ib=objBB(im),best=null,ba=0;
-  objs.forEach(function(q){if(q.type!=='text'||q.lock)return;if(!isWarped(q))measureText(q);var tb=objBB(q),ov=Math.max(0,Math.min(ib.r,tb.r)-Math.max(ib.l,tb.l))*Math.max(0,Math.min(ib.b,tb.b)-Math.max(ib.t,tb.t));if(ov>ba){ba=ov;best=q;}});
-  if(!best){toast('Önce fotoğrafı bir yazının üstüne sürükle, sonra "Yazının içine"ye bas.');return;}
-  bgToast('Fotoğraf yazının içine yerleştiriliyor…');
-  try{var t=best,pad=(t.size||20)*(t.stroke?(t.sw||0.1)+0.04:0.06),tb=objBB(t);tb={l:tb.l-pad,r:tb.r+pad,t:tb.t-pad,b:tb.b+pad};
+  objs.forEach(function(q){if((q.type!=='text'&&q.type!=='clip')||q.lock)return;if(q.type==='text'&&!isWarped(q))measureText(q);var tb=objBB(q),ov=Math.max(0,Math.min(ib.r,tb.r)-Math.max(ib.l,tb.l))*Math.max(0,Math.min(ib.b,tb.b)-Math.max(ib.t,tb.t));if(ov>ba){ba=ov;best=q;}});
+  if(!best){toast('Önce fotoğrafı bir yazının ya da şeklin üstüne sürükle, sonra "İçine giydir"e bas.');return;}
+  var isTx=best.type==='text';bgToast(isTx?'Fotoğraf yazının içine yerleştiriliyor…':'Fotoğraf şeklin içine yerleştiriliyor…');
+  try{var t=best,pad=isTx?(t.size||20)*(t.stroke?(t.sw||0.1)+0.04:0.06):Math.max(t.w||10,t.h||10)*0.02,tb=objBB(t);tb={l:tb.l-pad,r:tb.r+pad,t:tb.t-pad,b:tb.b+pad};
     var bw=tb.r-tb.l,bh=tb.b-tb.t,K=Math.min(300/2.54/PPC,4000/Math.max(bw,bh));
     var c=document.createElement('canvas');c.width=Math.max(2,Math.round(bw*K));c.height=Math.max(2,Math.round(bh*K));var x=c.getContext('2d');
     var m=JSON.parse(JSON.stringify(t));m.look='fill';m.stroke=null;m.color='#000';
     await drawObj(x,m,K,tb.l,tb.t);
     x.globalCompositeOperation='source-in';await drawObj(x,im,K,tb.l,tb.t);
-    if(t.stroke||lookOf(t)==='shadow'){var m2=JSON.parse(JSON.stringify(t));m2.color=t.stroke||shadowCol(t);if(lookOf(t)==='hollow')m2.look='fill';x.globalCompositeOperation='destination-over';await drawObj(x,m2,K,tb.l,tb.t);}
+    if(isTx&&(t.stroke||lookOf(t)==='shadow')){var m2=JSON.parse(JSON.stringify(t));m2.color=t.stroke||shadowCol(t);if(lookOf(t)==='hollow')m2.look='fill';x.globalCompositeOperation='destination-over';await drawObj(x,m2,K,tb.l,tb.t);}
     x.globalCompositeOperation='source-over';
     var blob=await new Promise(function(r){c.toBlob(r,'image/png');}),url=URL.createObjectURL(blob),id='a'+(++assetN);
     assets[id]={url:url,w:c.width,h:c.height,nobg:true,fx:1};
     var o=newBase('image');o.assetId=id;o.base=id;o.x=(tb.l+tb.r)/2;o.y=(tb.t+tb.b)/2;o.w=bw;o.h=bh;o.phs='none';o.phe='none';
     o.tsrc={text:JSON.parse(JSON.stringify(t)),img:JSON.parse(JSON.stringify(im))};
     var at=Math.min(objs.indexOf(t),objs.indexOf(im));cur().objs=objs.filter(function(q){return q!==t&&q!==im;});cur().objs.splice(at,0,o);
-    renderObjects();select(o.id);pushHist();var tt=$('#toast');if(tt)tt.hidden=true;toast('Fotoğraf yazının içine yerleşti. Beğenmezsen "Yazıyı ayır" ya da ↶');}
+    renderObjects();select(o.id);pushHist();var tt=$('#toast');if(tt)tt.hidden=true;toast(isTx?'Fotoğraf yazının içine yerleşti. Beğenmezsen "Ayır" ya da ↶':'Fotoğraf şeklin içine yerleşti. Beğenmezsen "Ayır" ya da ↶');}
   catch(_){toast('Yapılamadı, tekrar dene.');}}
 function intextSplit(){var o=selObj();if(!o||!o.tsrc)return;var a=cur().objs,i=a.indexOf(o),t=o.tsrc.text,im=o.tsrc.img;t.id=view.nextId++;im.id=view.nextId++;
-  a.splice(i,1,t,im);renderObjects();select(im.id);pushHist();toast('Yazı ve fotoğraf ayrıldı. Fotoğrafı kaydırıp yeniden "Yazının içine"ye basabilirsin.');}
+  a.splice(i,1,t,im);renderObjects();select(im.id);pushHist();toast('Ayrıldı. Fotoğrafı kaydırıp yeniden "İçine giydir"e basabilirsin.');}
 function openCrop(){
   var o=selObj();if(!o||o.type!=='image'||o.lock)return;if(!o.base||!assets[o.base])o.base=o.assetId;
   var a=assets[o.base];if(!a)return;popClose();
