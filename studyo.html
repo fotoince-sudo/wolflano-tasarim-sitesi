@@ -638,6 +638,19 @@ img{-webkit-touch-callout:none;-webkit-user-drag:none}
 /* Renk ve beden Ürün seç sayfasında seçiliyor; stüdyonun üstünde ayrıca gösterilmiyor (yer kaplıyordu) */
 #optBtn{display:none!important}
 #ovPill{display:none!important} /* işlem çubuğunda bilgi yazısı olmaz */
+/* Yazı paneli düzenli: üstte yazı kutusu ve "Yeni yazı" yan yana; yazı tipleri tek sıra yana kayar; başlıklar arası boşluk eşit */
+.txtop{display:flex;gap:8px;align-items:flex-end;margin-bottom:8px;padding-right:44px!important}
+.txtop .txin{flex:1 1 0;min-width:0;margin:0!important}
+.txtop .txin input{width:100%;min-width:0}
+.txtop .txin span{display:none}
+.txtop .txin input{height:40px!important}
+.txtop #addText{flex:none;height:40px;padding:0 12px;white-space:nowrap;font-size:13.5px}
+.panel[data-p="text"] .mini-title{margin:10px 0 6px!important}
+#fontGrid{display:flex!important;grid-template-columns:none!important;overflow-x:auto;gap:6px!important;padding-bottom:2px;scrollbar-width:none}
+#fontGrid .font{flex:none;width:104px;font-size:17px!important;padding:6px 8px!important}
+#styRow{padding-bottom:2px!important}
+.panel[data-p="text"] .fxrow{margin-bottom:0!important}
+#inceT:has(+ #syWrap[hidden]){display:none!important}
 /* Şablon paneli sade ve kısa: arama ince, filtre ve gruplar tek satırda, kartlar küçük tek sıra (ürün görünür kalır) */
 .panel[data-p="tpl"]:not([hidden]){display:flex!important;flex-wrap:wrap;align-content:flex-start;column-gap:6px;row-gap:6px}
 .panel[data-p="tpl"]>.search{flex:1 1 100%;height:36px!important;margin:0 40px 0 0!important;border-radius:10px!important}
@@ -757,20 +770,21 @@ img{-webkit-touch-callout:none;-webkit-user-drag:none}
   <section class="sheet" id="sheet" hidden>
     <button class="sheet-x" id="sheetX" aria-label="Paneli kapat"><svg class="i" viewBox="0 0 24 24" style="width:18px;height:18px"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
     <div class="panel" data-p="text" hidden>
-      <button class="primary wide" id="addText">+ Yazı ekle</button>
+      <!-- Sıra: yazıyı yaz/ekle → yazı tipi → hazır stiller → şekil → görünüm → ince ayarlar -->
+      <div class="txtop"><label class="fld txin"><span>Yazıyı düzenle</span><input id="textIn" type="text" maxlength="40" disabled placeholder="Önce bir yazı ekle veya seç" autocomplete="off"></label><button class="primary" id="addText">+ Yeni yazı</button></div>
+      <div class="mini-title">Yazı tipi</div>
+      <div class="fonts" id="fontGrid"></div>
       <div class="mini-title">Hazır yazı stilleri</div>
       <div class="tsty" id="styRow"></div>
-      <label class="fld"><span>Yazıyı düzenle</span><input id="textIn" type="text" maxlength="40" disabled placeholder="Önce bir yazı ekle veya seç" autocomplete="off"></label>
       <div class="mini-title">Şekil</div>
       <div class="fxrow" id="warpRow"></div>
-      <label class="fld rng" id="syWrap" hidden><span>Yazı yüksekliği <b id="syOut"></b></span><input type="range" id="syAmt" min="40" max="250" step="5" value="100"></label>
-      <label class="fld rng" id="lsWrap" hidden><span>Harf aralığı <b id="lsOut"></b></span><input type="range" id="lsAmt" min="0" max="100" step="1" value="0"></label>
       <label class="fld rng" id="warpAmtWrap" hidden><span>Eğim <b id="warpAmtOut"></b></span><input type="range" id="warpAmt" min="10" max="100" step="1" value="50"></label>
       <div class="mini-title">Görünüm</div>
       <div class="fxrow" id="lookRow"></div>
       <p class="note" id="lookNote" hidden style="margin:2px 0 12px">Gölge ve 3D derinlik rengini Kontur düğmesinden değiştirebilirsin.</p>
-      <div class="mini-title">Yazı tipi</div>
-      <div class="fonts" id="fontGrid"></div>
+      <div class="mini-title" id="inceT">İnce ayar</div>
+      <label class="fld rng" id="syWrap" hidden><span>Yazı yüksekliği <b id="syOut"></b></span><input type="range" id="syAmt" min="40" max="250" step="5" value="100"></label>
+      <label class="fld rng" id="lsWrap" hidden><span>Harf aralığı <b id="lsOut"></b></span><input type="range" id="lsAmt" min="0" max="100" step="1" value="0"></label>
     </div>
     <div class="panel" data-p="clip" hidden>
       <button type="button" class="ghost wide" id="qrBtn" style="height:38px;margin-bottom:8px"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3h-3zM18 18h3v3h-3zM14 20h2M20 14v2"/></svg>QR kod ekle (web sitesi, Instagram, menü, telefon)</button>
