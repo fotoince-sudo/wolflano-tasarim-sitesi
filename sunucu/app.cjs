@@ -44090,6 +44090,7 @@ async function handle(request, ip) {
     await Promise.race([hazir, new Promise((r) => setTimeout(r, 8e3))]);
     return jres(200, durum());
   }
+  if (p === "/wf/gemini") return jres(200, await geminiDene());
   if (p === "/wf/uyan") {
     await hazir;
     zamanla().catch(() => {
@@ -44142,6 +44143,40 @@ async function handle(request, ip) {
   }
   return jres(404, { message: "Bu adres yok." });
 }
+var geminiSon = 0;
+var geminiSonuc = null;
+async function geminiDene() {
+  const key = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
+  if (!key) return { gemini: "GEMINI_API_KEY girilmedi" };
+  if (geminiSonuc && Date.now() - geminiSon < 15e3) return geminiSonuc;
+  const temiz = (t) => String(t).split(key).join("***").slice(0, 400);
+  const out2 = {};
+  try {
+    const r = await disFetch("https://generativelanguage.googleapis.com/v1beta/models?pageSize=200", { headers: { "x-goog-api-key": key }, signal: AbortSignal.timeout(15e3) });
+    const j14 = await r.json().catch(() => ({}));
+    out2.liste = r.status;
+    if (r.ok) out2.modeller = (j14.models || []).map((m) => m.name.replace("models/", "")).filter((n) => /flash|tts|image/.test(n));
+    else out2.liste_hata = temiz(JSON.stringify(j14.error || j14));
+  } catch (e) {
+    out2.liste_hata = temiz(e && (e.cause?.code || e.message) || e);
+  }
+  try {
+    const r = await disFetch("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent", {
+      method: "POST",
+      headers: { "x-goog-api-key": key, "Content-Type": "application/json" },
+      body: JSON.stringify({ contents: [{ role: "user", parts: [{ text: 'Sadece "tamam" yaz.' }] }], generationConfig: { maxOutputTokens: 20, thinkingConfig: { thinkingBudget: 0 } } }),
+      signal: AbortSignal.timeout(3e4)
+    });
+    const j14 = await r.json().catch(() => ({}));
+    out2.deneme = r.status;
+    out2.cevap = r.ok ? (j14.candidates?.[0]?.content?.parts || []).map((x) => x.text || "").join("") : temiz(JSON.stringify(j14.error || j14));
+  } catch (e) {
+    out2.deneme_hata = temiz(e && (e.cause?.code || e.message) || e);
+  }
+  geminiSon = Date.now();
+  geminiSonuc = out2;
+  return out2;
+}
 function durum() {
   return {
     ad: "Wolflano sunucusu",
@@ -44154,7 +44189,7 @@ function durum() {
     kurulum: Object.fromEntries(bilgi.kurulum),
     dosyalar: bilgi.depo,
     eposta: process.env.SMTP_PASS ? "ayarl\u0131" : "SMTP_PASS girilmedi (\xFCyelik ve sipari\u015F e-postalar\u0131 gitmez)",
-    openai: process.env.OPENAI_API_KEY ? "ayarl\u0131" : "OPENAI_API_KEY girilmedi (Wolf ve Ayb\xFCke \xE7al\u0131\u015Fmaz)",
+    yapay_zeka: process.env.GEMINI_API_KEY ? "Gemini ayarl\u0131 (deneme: /wf/gemini)" : process.env.OPENAI_API_KEY ? "OpenAI ayarl\u0131" : "GEMINI_API_KEY girilmedi (Wolf ve Ayb\xFCke \xE7al\u0131\u015Fmaz)",
     fonksiyonlar: ADLAR.length,
     adres: ayar.publicUrl
   };
