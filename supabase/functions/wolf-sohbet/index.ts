@@ -4,6 +4,7 @@
 // Sohbet ucuz bir metin modeliyle çalışır; ücretli olan yalnız çizimdir.
 const SB_URL = Deno.env.get('SUPABASE_URL')!;
 const SRK = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+import { gKey, geminiChat } from '../_shared/gemini.ts';
 const cors = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
@@ -39,7 +40,7 @@ Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: cors });
   try {
     const key = Deno.env.get('OPENAI_API_KEY');
-    if (!key) return j({ error: 'not_configured', message: 'Wolf henüz etkinleştirilmedi.' }, 503);
+    if (!key && !gKey()) return j({ error: 'not_configured', message: 'Wolf henüz etkinleştirilmedi.' }, 503);
 
     // Yalnız yönetici: site sahibi ya da wf_staff tablosundaki yetkili kişiler
     const tok = (req.headers.get('Authorization') || '').replace(/^Bearer /i, '');
@@ -72,6 +73,18 @@ Deno.serve(async (req) => {
       } else if (text) msgs.push({ role, content: text });
     });
 
+    let raw = '';
+    if (gKey()) {
+      const sys = SYS + (ctx ? `\n\nŞu anki stüdyo durumu: ${ctx}` : '');
+      const gm = list.map((m, i) => ({
+        role: (m.role === 'assistant' ? 'assistant' : 'user') as 'user' | 'assistant',
+        text: String(m.text || '').slice(0, 2000) || (i === lastImg ? '(görsel ekledim)' : ''),
+        image: i === lastImg && (m.image as string).length <= 8_000_000 ? m.image : undefined,
+      }));
+      const g = await geminiChat(sys, gm, { json: true, maxTokens: 1500 });
+      if (!g.ok) return j({ error: 'fail', message: 'Wolf şu an cevap veremedi. Biraz sonra yeniden dene.' }, 502);
+      raw = g.text;
+    } else {
     const envModel = Deno.env.get('OPENAI_CHAT_MODEL') || '';
     const models = [envModel, 'gpt-5-mini', 'gpt-4.1-mini', 'gpt-4o-mini'].filter((m, i, a) => m && a.indexOf(m) === i);
     let r: Response | null = null, out: any = null;
@@ -90,7 +103,8 @@ Deno.serve(async (req) => {
     }
     if (!r || !r.ok) return j({ error: 'fail', message: 'Wolf şu an cevap veremedi. Biraz sonra yeniden dene.' }, 502);
 
-    const raw = String(out?.choices?.[0]?.message?.content || '');
+    raw = String(out?.choices?.[0]?.message?.content || '');
+    }
     let p: any = null;
     try { p = JSON.parse(raw); } catch (_) { const m = /\{[\s\S]*\}/.exec(raw); if (m) { try { p = JSON.parse(m[0]); } catch (_) { /* yok */ } } }
     const cevap = String(p?.cevap || raw || '').slice(0, 3000).trim() || 'Anlayamadım, biraz daha açık yazar mısın?';

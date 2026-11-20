@@ -4,6 +4,7 @@
 // Yükleme: GitHub Actions "Sunucu fonksiyonları" (main'e gönderilince otomatik).
 const SB_URL = Deno.env.get('SUPABASE_URL')!;
 const SRK = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+import { gKey, geminiImage, aspectOf } from '../_shared/gemini.ts';
 const cors = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
@@ -138,7 +139,7 @@ Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: cors });
   try {
     const key = Deno.env.get('OPENAI_API_KEY');
-    if (!key) return j({ error: 'not_configured', message: 'Görsel servisi etkin değil.' }, 503);
+    if (!key && !gKey()) return j({ error: 'not_configured', message: 'Görsel servisi etkin değil.' }, 503);
 
     const tok = (req.headers.get('Authorization') || '').replace(/^Bearer /i, '');
     const ur = await fetch(`${SB_URL}/auth/v1/user`, { headers: { apikey: SRK, Authorization: `Bearer ${tok}` } });
@@ -281,6 +282,17 @@ Deno.serve(async (req) => {
       prompt = `${who} ${sc.t}. ${subj} wears ${TEE}, with ${alt}. ${pz}. Use only the person from the reference; do not copy any other clothing from it. ${style} Vertical 2:3 composition.`;
     }
 
+    let blob: Blob | null = null;
+    if (gKey()) {
+      const g = await geminiImage(prompt + (mode === 'urun' ? ' Plain pure white background.' : ''), refBlob ? [refBlob] : [], aspectOf(mode === 'urun' ? '1024x1536' : size), 140000);
+      if (!g.ok) {
+      if (/safety|prohibited|blocked|image_safety|recitation/.test(g.err)) return j({ error: 'moderation', message: 'Bu fotoğraf üretilemedi, başka bir mekân ya da poz dene.' }, 422);
+      if (g.status === 429 && /free|tier|billing|limit: 0|quota/.test(g.err) || g.status === 403) return j({ error: 'quota', message: 'Görsel üretimi için Google AI Studio hesabında faturalandırma açılmalı (ücretsiz katmanda görsel üretilmiyor).' }, 402);
+      if (g.status === 429) return j({ error: 'rate', message: 'Google kısa süreli yoğunluk dedi, birazdan yeniden dene.' }, 429);
+        return j({ error: 'fail', message: 'Fotoğraf şu an üretilemedi, biraz sonra yeniden dene.' }, 502);
+      }
+      blob = blobFromB64(g.b64, g.mime);
+    } else {
     // OpenAI model adları zamanla değişiyor: sırayla dene, olmayan modeli ve desteklenmeyen ayarı atla
     const envModel = Deno.env.get('OPENAI_IMAGE_MODEL') || '';
     const models = [envModel, refBlob ? 'gpt-image-2.5-sunburst' : 'gpt-image-2.5-flare', refBlob ? 'gpt-image-2.5-flare' : 'gpt-image-2.5-sunburst', 'gpt-image-2', 'gpt-image-1.5', 'gpt-image-1']
@@ -340,10 +352,10 @@ Deno.serve(async (req) => {
       if (/billing|quota|insufficient/.test(msg)) return j({ error: 'quota', message: 'OpenAI hesabında bakiye yok. Hesaba bakiye yüklenince çalışır.' }, 402);
       return j({ error: 'fail', message: 'Fotoğraf şu an üretilemedi, biraz sonra yeniden dene.' }, 502);
     }
-    let blob: Blob | null = null;
     const b64 = out?.data?.[0]?.b64_json;
     if (b64) blob = blobFromB64(b64, 'application/octet-stream');
     else if (out?.data?.[0]?.url) { const ir = await fetch(out.data[0].url); if (ir.ok) blob = await ir.blob(); }
+    }
     if (!blob) { console.error('no image', JSON.stringify(out).slice(0, 300)); return j({ error: 'fail', message: 'Fotoğraf şu an üretilemedi.' }, 502); }
     const head = new Uint8Array(await blob.slice(0, 4).arrayBuffer());
     const isPng = head[0] === 0x89 && head[1] === 0x50;
