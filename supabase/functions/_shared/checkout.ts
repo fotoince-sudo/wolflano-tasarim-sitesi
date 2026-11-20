@@ -350,13 +350,14 @@ export function shipping(
   }
   const free = amount(d.ship?.free);
   if (free > 0 && sum >= free) return 0;
+  const n = Math.max(1, Math.floor(Number(qty) || 1));
   // İzmir teslim noktası: ürün başına yönetimdeki ücret (boşsa 50 ₺) × adet.
   if (method === "elden") {
     const p = d.ship?.pickup;
-    const n = Math.max(1, Math.floor(Number(qty) || 1));
     return money((p === undefined || p === null || p === "" ? 50 : amount(p)) * n);
   }
-  return money(amount(d.ship?.fee));
+  // Kargo: ürün başına ücret × adet (kargo firmasıyla anlaşma yapılana kadar).
+  return money(amount(d.ship?.fee) * n);
 }
 export function requireConsent(body: Row) {
   if (body.onay?.kvkk !== true || body.onay?.sozlesme !== true) {

@@ -43145,12 +43145,12 @@ function shipping(d, sum, method, wholesale2 = false, qty = 1) {
   }
   const free = amount(d.ship?.free);
   if (free > 0 && sum >= free) return 0;
+  const n = Math.max(1, Math.floor(Number(qty) || 1));
   if (method === "elden") {
     const p = d.ship?.pickup;
-    const n = Math.max(1, Math.floor(Number(qty) || 1));
     return money((p === void 0 || p === null || p === "" ? 50 : amount(p)) * n);
   }
-  return money(amount(d.ship?.fee));
+  return money(amount(d.ship?.fee) * n);
 }
 function requireConsent(body) {
   if (body.onay?.kvkk !== true || body.onay?.sozlesme !== true) {

@@ -179,6 +179,7 @@ Deno.test("shipping uses trusted thresholds, delivery and strict method whitelis
   equal(shipping({ ...d, ship: { ...d.ship, pickup: 30 } }, 100, "elden"), 30);
   equal(shipping(d, 2500, "elden"), 0);
   equal(shipping(d, 300, "elden", false, 3), 150); // teslim noktası ürün başına
+  equal(shipping(d, 300, "kargo", false, 3), 360); // kargo ürün başına
   equal(shipping(d, 100, undefined, true), 0);
   rejects(() => shipping(d, 100, "free"));
   const bad: any = fixture();
