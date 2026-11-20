@@ -760,6 +760,7 @@ img{-webkit-touch-callout:none;-webkit-user-drag:none}
     </div>
     <div class="panel" data-p="image" hidden>
       <label class="primary wide" for="fileIn" style="height:44px;cursor:pointer"><svg class="i" viewBox="0 0 24 24"><path d="M12 16V4M7 9l5-5 5 5"/><path d="M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"/></svg>Fotoğraf yükle</label>
+      <button type="button" class="ghost wide" id="kolajKisa" hidden style="height:42px;margin-top:8px"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="4" width="8" height="10" rx="1" transform="rotate(-6 7 9)"/><rect x="12" y="3" width="9" height="7" rx="1" transform="rotate(5 16.5 6.5)"/><rect x="11" y="12" width="10" height="9" rx="1"/></svg>Birden çok fotoğraf: Wolf kolaj yapsın</button>
       <input id="fileIn" type="file" accept="image/*" hidden>
       <input id="swapIn" type="file" accept="image/*" hidden><input id="slotsIn" type="file" accept="image/*" multiple hidden>
       <p class="note" id="imgNote">PNG, JPG veya WebP yükle. Net baskı için fotoğrafı büyük boyutta yükle. Fotoğrafın arkasındaki duvarı, odayı silmek için fotoğrafı seçip <b>Arka planı sil</b>'e dokun.</p>
@@ -2836,6 +2837,7 @@ async function kolajMake(){if(KOLAJ.length<2){toast('Kolaj için en az 2 fotoğr
   /* İş bitince panel kapanır ki müşteri tasarımı hemen görsün */
   if(view.tab)closeTab();
   toast('İşlem tamamlandı, kolajın hazır'+(nf?' ('+nf+' fotoğrafta yüzler korundu)':'')+'. Fotoğrafları tek tek taşıyıp döndürebilirsin.');}
+$('#kolajKisa').addEventListener('click',function(){openTab('wolf',true);var w=$('#kolajIn');if(w&&w.hidden)$('#kolajBtn').click();});
 $('#kolajBtn').addEventListener('click',function(){var w=$('#kolajIn');w.hidden=!w.hidden;this.classList.toggle('on',!w.hidden);if(!w.hidden){kolajSync();if(!KOLAJ.length)$('#kolajFile').click();}});
 $('#kolajFile').addEventListener('change',function(){var f=this.files;kolajAdd(f).then(function(){if(window.__agKolaj){window.__agKolaj=0;kolajMake();}});this.value='';});
 $('#kolajGo').addEventListener('click',kolajMake);
@@ -4484,7 +4486,7 @@ wrap.addEventListener('contextmenu',function(e){e.preventDefault();});
 
 /* ---------- Sekmeler ve paneller ---------- */
 function openTab(name,focusInput){
-  if(name==='image'){try{renderMk();renderZem();}catch(_){}}
+  if(name==='image'){try{renderMk();renderZem();var kk=$('#kolajKisa');if(kk)kk.hidden=!kolajOn();}catch(_){}}
   if(document.body.classList.contains('odak'))odakSet(false);
   if(name==='tee'){openProdPage();return;}
   if(view.tab===name&&!focusInput){closeTab();return;}
@@ -4497,6 +4499,8 @@ function openTab(name,focusInput){
   if(name==='opt')renderOpt();
   sheet.classList.toggle('tall',name==='wolf');
   if(name==='wolf')try{wolfStDefault();wolfPhRender();kolajSync();kosSync();}catch(_){}
+  /* Panel her açılışta baştan görünsün (Kolaj yap en üstte kalıyordu, önceki kaydırmada gözden kaçıyordu) */
+  try{sheet.scrollTop=0;$$('.panel').forEach(function(p){if(!p.hidden)p.scrollTop=0;});}catch(_){}
   syncOpt();
   if(name==='text')renderFxRows();
   if(name==='text'&&focusInput){setTimeout(function(){if(!textIn.disabled){textIn.focus();textIn.select();}},80);}
