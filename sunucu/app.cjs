@@ -17935,13 +17935,20 @@ async function geminiChat(sys, msgs, o = {}) {
   }
   while (contents.length && contents[0].role !== "user") contents.shift();
   if (!contents.length) return { ok: false, status: 400, text: "", err: "empty", model: "" };
-  const models = [Deno.env.get(o.env || "GEMINI_CHAT_MODEL") || "", "gemini-3.8-flash", "gemini-flash-latest", "gemini-3.5-flash", "gemini-3.1-flash-lite", "gemini-flash-lite-latest"].filter((m, i, a) => m && a.indexOf(m) === i);
+  const models = [Deno.env.get(o.env || "GEMINI_CHAT_MODEL") || "", "gemini-3.5-flash-lite", "gemini-flash-lite-latest", "gemini-3.1-flash-lite", "gemini-3.5-flash"].filter((m, i, a) => m && a.indexOf(m) === i);
   let last = { ok: false, status: 0, text: "", err: "", model: "" };
   for (const model of models) {
     const gc = { maxOutputTokens: (o.maxTokens || 1200) + (/^gemini-2\.5/.test(model) ? 0 : 3e3), temperature: 0.7 };
     if (o.json) gc.responseMimeType = "application/json";
     if (/^gemini-2\.5-flash/.test(model)) gc.thinkingConfig = { thinkingBudget: 0 };
-    const { r, j: j14 } = await call(model, { systemInstruction: { parts: [{ text: sys }] }, contents, generationConfig: gc }, o.timeout || 6e4);
+    let r, j14;
+    try {
+      ({ r, j: j14 } = await call(model, { systemInstruction: { parts: [{ text: sys }] }, contents, generationConfig: gc }, Math.min(o.timeout || 6e4, 25e3)));
+    } catch (e) {
+      console.error("gemini", model, String(e));
+      last = { ok: false, status: 504, text: "", err: "timeout", model };
+      continue;
+    }
     const err = JSON.stringify(j14?.error || "").toLowerCase();
     const text = (j14?.candidates?.[0]?.content?.parts || []).map((p) => p?.text || "").join("").trim();
     last = { ok: r.ok && !!text, status: r.status, text, err, model };
@@ -17950,7 +17957,7 @@ async function geminiChat(sys, msgs, o = {}) {
       return last;
     }
     console.error("gemini", model, r.status, (err || JSON.stringify(j14?.promptFeedback || j14?.candidates?.[0]?.finishReason || "")).slice(0, 200));
-    if (!skip(r.status, err)) break;
+    if (!(skip(r.status, err) || r.status === 503 || r.status === 429 || r.status >= 500)) break;
   }
   return last;
 }
