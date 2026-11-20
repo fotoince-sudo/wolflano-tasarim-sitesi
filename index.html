@@ -3049,6 +3049,7 @@ document.addEventListener('click',function(e){var a=e.target.closest&&e.target.c
   var m=/[?&]hazir=([^&#]+)/.exec(a.getAttribute('href')),id=m&&decodeURIComponent(m[1]),p=ALLP.filter(function(x){return x.id===id;})[0];if(!p||!DLOADED)return;
   var bid=(p.pc&&p.pc.b)||(p.dsg&&p.dsg.bid)||'',b=(BLANKS||[]).filter(function(x){return x.id===bid;})[0];
   if(b&&bVisible(b)&&!soldOut(b))return;
+  try{if(sbAdmin())return;}catch(_){} /* yönetici stokta olmayan ürünü de stüdyoda açabilir (şablon hazırlamak için) */
   e.preventDefault();e.stopPropagation();favs[p.id]=1;syncCart();
   waitSheet({kind:'baski',id:bid||p.id,name:(b&&b.name)||p.name,title:'Seçtiğin ürün şu an stoklarda yok'});},true);
 function sfavGet(){try{return JSON.parse(localStorage.getItem('wf_sfav')||'[]')||[];}catch(_){return [];}}
