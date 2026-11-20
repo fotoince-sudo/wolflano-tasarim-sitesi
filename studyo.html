@@ -6876,7 +6876,7 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
       if(!r.ok||!/audio/.test(r.headers.get('content-type')||''))throw 0;var buf=await r.arrayBuffer();if(my!==AYS_SEQ)return;
       var ab=await new Promise(function(ok,no){AYS_AC.decodeAudioData(buf,ok,no);});if(my!==AYS_SEQ)return;if(AYS_AC.state==='suspended')await AYS_AC.resume();
       var s=AYS_AC.createBufferSource();s.buffer=ab;s.connect(AYS_AC.destination);s.onended=done;s.start(0);AYS_SRC=s;}
-    catch(_){if(my===AYS_SEQ)aysLocal(t,done);}}
+    catch(_){/* Sunucu sesi gelmezse telefonun robotik sesi kullanılmaz; yazı ekranda kalır */if(my===AYS_SEQ)done();}}
   function say(t){if(!t)return;if(TTS&&(ttsOn||voiceSession))aysSay(t);else if(voiceSession&&!el.hidden&&!micOn)listen();}
   function micStop(){micOn=false;try{if(rec)rec.stop();}catch(_){}var m=document.querySelector('.gd-mic');if(m){m.classList.toggle('on',voiceSession);m.setAttribute('aria-pressed',String(voiceSession));m.setAttribute('aria-label',voiceSession?'Sesli konuşmayı durdur':'Aybüke ile konuş');}var i2=document.getElementById('gdAsk');if(i2)i2.placeholder='Örn. Logoyu sağ göğse nasıl koyarım?';}
   function micStart(){if(!SR)return;aysAc();if(voiceSession){voiceSession=false;micStop();aysStop();return;}voiceSession=true;aysStop();listen();}

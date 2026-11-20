@@ -17996,9 +17996,8 @@ async function geminiTts(text, tarif) {
   for (const model of models) {
     for (const voice of voices) {
       const { r, j: j14 } = await call(model, {
-        contents: [{ parts: [{ text: `${tarif}
-
-\u015Eunu oku: ${text}` }] }],
+        contents: [{ parts: [{ text: `${tarif}:
+${text}` }] }],
         generationConfig: { responseModalities: ["AUDIO"], speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: voice } } } }
       }, 4e4);
       const part = (j14?.candidates?.[0]?.content?.parts || []).find((p) => p?.inlineData?.data);
@@ -18006,7 +18005,10 @@ async function geminiTts(text, tarif) {
         const rate = Number(/rate=(\d+)/.exec(part.inlineData.mimeType || "")?.[1] || 24e3);
         const bin = atob(part.inlineData.data), pcm = new Uint8Array(bin.length);
         for (let i = 0; i < bin.length; i++) pcm[i] = bin.charCodeAt(i);
-        return wav(pcm, rate);
+        const sn = pcm.length / (rate * 2), limit = 3 + text.length / 7;
+        if (sn <= limit) return wav(pcm, rate);
+        console.error("gemini-tts too long", model, voice, sn.toFixed(1), limit.toFixed(1));
+        continue;
       }
       const err = JSON.stringify(j14?.error || "").toLowerCase();
       console.error("gemini-tts", model, voice, r.status, err.slice(0, 200));
@@ -43830,7 +43832,13 @@ async function ses(req, key, body) {
   if (!text) return j13({ error: "empty" }, 400);
   if (!sesAllow(ip)) return j13({ error: "limit" }, 429);
   if (gKey()) {
-    const w = await geminiTts(text, SES_TARIF);
+    const hit = SES_CACHE.get(text);
+    if (hit) return new Response(hit, { headers: { ...cors7, "Content-Type": "audio/wav", "Cache-Control": "no-store" } });
+    const w = await geminiTts(text, SES_NOT);
+    if (w && text.length <= 240) {
+      if (SES_CACHE.size > 200) SES_CACHE.clear();
+      SES_CACHE.set(text, w);
+    }
     if (w) return new Response(w, { headers: { ...cors7, "Content-Type": "audio/wav", "Cache-Control": "no-store" } });
     return j13({ error: "fail" }, 502);
   }
@@ -43850,7 +43858,7 @@ async function ses(req, key, body) {
   }
   return j13({ error: "fail" }, 502);
 }
-var cors7, j13, SYS2, FOTO, SYS_SITE, HITS, SES_IP, SES_GUN, SES_TOP, SES_TARIF;
+var cors7, j13, SYS2, FOTO, SYS_SITE, HITS, SES_IP, SES_GUN, SES_TOP, SES_TARIF, SES_NOT, SES_CACHE;
 var init_yardim = __esm({
   "../supabase/functions/yardim/index.ts"() {
     init_gemini();
@@ -43927,6 +43935,8 @@ Cevab\u0131n\u0131 SADECE \u015Fu JSON bi\xE7iminde ver:
     SES_GUN = "";
     SES_TOP = 0;
     SES_TARIF = "T\xFCrk\xE7e konu\u015F, do\u011Fal \u0130stanbul T\xFCrk\xE7esi telaffuzuyla. Sen Ayb\xFCke'sin: gen\xE7, s\u0131cak, g\xFCler y\xFCzl\xFC ve kendinden emin bir kad\u0131n ma\u011Faza dan\u0131\u015Fman\u0131. Samimi ve sakin konu\u015F, sanki kar\u015F\u0131ndaki m\xFC\u015Fteriye g\xFCl\xFCmseyerek anlat\u0131yorsun. Ne \xE7ok h\u0131zl\u0131 ne yava\u015F; c\xFCmle aralar\u0131nda do\u011Fal k\u0131sa duraklar ver. Robotik ya da reklam spikeri gibi de\u011Fil, ger\xE7ek bir insan gibi.";
+    SES_NOT = "Read this aloud in natural, fluent Istanbul Turkish, in a warm, friendly and relaxed voice, like a smiling young woman chatting with a customer in a shop, not like a robot or an announcer";
+    SES_CACHE = /* @__PURE__ */ new Map();
     Deno.serve(async (req) => {
       if (req.method === "OPTIONS") return new Response("ok", { headers: cors7 });
       try {

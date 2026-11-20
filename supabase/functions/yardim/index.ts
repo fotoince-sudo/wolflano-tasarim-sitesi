@@ -105,13 +105,19 @@ function sesAllow(ip: string): boolean {
 }
 const SES_TARIF = 'Türkçe konuş, doğal İstanbul Türkçesi telaffuzuyla. Sen Aybüke\'sin: genç, sıcak, güler yüzlü ve kendinden emin bir kadın mağaza danışmanı. ' +
   'Samimi ve sakin konuş, sanki karşındaki müşteriye gülümseyerek anlatıyorsun. Ne çok hızlı ne yavaş; cümle aralarında doğal kısa duraklar ver. Robotik ya da reklam spikeri gibi değil, gerçek bir insan gibi.';
+// Gemini için tek satırlık yönetmen notu (uzun yönerge sesli okunabiliyordu). Aynı cümlenin sesi (ör. karşılama) bellekte tutulur.
+const SES_NOT = 'Read this aloud in natural, fluent Istanbul Turkish, in a warm, friendly and relaxed voice, like a smiling young woman chatting with a customer in a shop, not like a robot or an announcer';
+const SES_CACHE = new Map<string, Uint8Array>();
 async function ses(req: Request, key: string, body: any): Promise<Response> {
   const ip = (req.headers.get('x-forwarded-for') || req.headers.get('cf-connecting-ip') || 'x').split(',')[0].trim();
   const text = String(body.text || '').replace(/https?:\/\/\S+/g, '').replace(/\b(?=[a-z0-9]*\d)[a-z0-9]{10,}\b/g, '').replace(/₺\s*([\d.,]+)/g, '$1 TL').replace(/([\d.,]+)\s*₺/g, '$1 TL').replace(/[*_#>`|•]/g, '').replace(/\s+/g, ' ').trim().slice(0, 700);
   if (!text) return j({ error: 'empty' }, 400);
   if (!sesAllow(ip)) return j({ error: 'limit' }, 429);
   if (gKey()) {
-    const w = await geminiTts(text, SES_TARIF);
+    const hit = SES_CACHE.get(text);
+    if (hit) return new Response(hit, { headers: { ...cors, 'Content-Type': 'audio/wav', 'Cache-Control': 'no-store' } });
+    const w = await geminiTts(text, SES_NOT);
+    if (w && text.length <= 240) { if (SES_CACHE.size > 200) SES_CACHE.clear(); SES_CACHE.set(text, w); }
     if (w) return new Response(w, { headers: { ...cors, 'Content-Type': 'audio/wav', 'Cache-Control': 'no-store' } });
     return j({ error: 'fail' }, 502);
   }
