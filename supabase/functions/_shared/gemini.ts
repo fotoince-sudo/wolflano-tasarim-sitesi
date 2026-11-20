@@ -40,11 +40,12 @@ export async function geminiChat(sys: string, msgs: GMsg[], o: { json?: boolean;
   }
   while (contents.length && contents[0].role !== 'user') contents.shift();
   if (!contents.length) return { ok: false, status: 400, text: '', err: 'empty', model: '' };
-  const models = [Deno.env.get(o.env || 'GEMINI_CHAT_MODEL') || '', 'gemini-2.5-flash', 'gemini-flash-latest', 'gemini-2.5-flash-lite']
+  const models = [Deno.env.get(o.env || 'GEMINI_CHAT_MODEL') || '', 'gemini-3.8-flash', 'gemini-flash-latest', 'gemini-3.5-flash', 'gemini-3.1-flash-lite', 'gemini-flash-lite-latest']
     .filter((m, i, a) => m && a.indexOf(m) === i);
   let last: GOut = { ok: false, status: 0, text: '', err: '', model: '' };
   for (const model of models) {
-    const gc: Record<string, unknown> = { maxOutputTokens: o.maxTokens || 1200, temperature: 0.7 };
+    // Yeni modeller önce "düşünür"; düşünme de çıktı sınırından yer, bu yüzden sınır geniş tutulur
+    const gc: Record<string, unknown> = { maxOutputTokens: (o.maxTokens || 1200) + (/^gemini-2\.5/.test(model) ? 0 : 3000), temperature: 0.7 };
     if (o.json) gc.responseMimeType = 'application/json';
     if (/^gemini-2\.5-flash/.test(model)) gc.thinkingConfig = { thinkingBudget: 0 };
     const { r, j } = await call(model, { systemInstruction: { parts: [{ text: sys }] }, contents, generationConfig: gc }, o.timeout || 60000);
@@ -60,7 +61,7 @@ export async function geminiChat(sys: string, msgs: GMsg[], o: { json?: boolean;
 
 /** Sesli okuma (Aybüke). 24 kHz PCM gelir, tarayıcının çalabileceği WAV'a çevrilir. */
 export async function geminiTts(text: string, tarif: string): Promise<Uint8Array | null> {
-  const models = [Deno.env.get('GEMINI_TTS_MODEL') || '', 'gemini-2.5-flash-preview-tts', 'gemini-2.5-flash-tts'].filter((m, i, a) => m && a.indexOf(m) === i);
+  const models = [Deno.env.get('GEMINI_TTS_MODEL') || '', 'gemini-3.8-flash-tts', 'gemini-3.1-flash-tts-preview', 'gemini-2.5-flash-preview-tts'].filter((m, i, a) => m && a.indexOf(m) === i);
   const voices = [Deno.env.get('GEMINI_TTS_VOICE') || '', 'Sulafat', 'Kore'].filter((v, i, a) => v && a.indexOf(v) === i);
   for (const model of models) {
     for (const voice of voices) {
@@ -116,7 +117,7 @@ export async function geminiImage(prompt: string, images: Blob[], aspect: string
   Promise<{ ok: boolean; status: number; b64: string; mime: string; err: string; model: string }> {
   const parts: any[] = [{ text: prompt }];
   for (const b of images) parts.push(await blobPart(b));
-  const models = [Deno.env.get('GEMINI_IMAGE_MODEL') || '', 'gemini-3.1-flash-image-preview', 'gemini-2.5-flash-image']
+  const models = [Deno.env.get('GEMINI_IMAGE_MODEL') || '', 'gemini-3.1-flash-image', 'gemini-3.1-flash-image-preview', 'gemini-2.5-flash-image']
     .filter((m, i, a) => m && a.indexOf(m) === i);
   let last = { ok: false, status: 0, b64: '', mime: '', err: '', model: '' };
   for (const model of models) {
