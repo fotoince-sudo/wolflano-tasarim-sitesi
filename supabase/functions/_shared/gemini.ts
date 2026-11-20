@@ -84,8 +84,10 @@ export async function geminiTts(text: string, tarif: string): Promise<Uint8Array
   const voices = [Deno.env.get('GEMINI_TTS_VOICE') || '', 'Sulafat', 'Kore'].filter((v, i, a) => v && a.indexOf(v) === i);
   for (const model of models) {
     for (const voice of voices) {
+      // Uzun yönerge metnin önüne eklenince model bazen yönergeyi de sesli okuyordu.
+      // Gemini'nin önerdiği biçim: tek satırlık kısa yönetmen notu + iki nokta + okunacak metin.
       const { r, j } = await call(model, {
-        contents: [{ parts: [{ text: `${tarif}\n\nŞunu oku: ${text}` }] }],
+        contents: [{ parts: [{ text: `${tarif}:\n${text}` }] }],
         generationConfig: { responseModalities: ['AUDIO'], speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: voice } } } },
       }, 40000);
       const part = (j?.candidates?.[0]?.content?.parts || []).find((p: any) => p?.inlineData?.data);
@@ -93,7 +95,11 @@ export async function geminiTts(text: string, tarif: string): Promise<Uint8Array
         const rate = Number(/rate=(\d+)/.exec(part.inlineData.mimeType || '')?.[1] || 24000);
         const bin = atob(part.inlineData.data), pcm = new Uint8Array(bin.length);
         for (let i = 0; i < bin.length; i++) pcm[i] = bin.charCodeAt(i);
-        return wav(pcm, rate);
+        // Ses metne göre çok uzunsa yönerge de okunmuştur: bu sesi kullanma, sıradakini dene.
+        const sn = pcm.length / (rate * 2), limit = 3 + text.length / 7;
+        if (sn <= limit) return wav(pcm, rate);
+        console.error('gemini-tts too long', model, voice, sn.toFixed(1), limit.toFixed(1));
+        continue;
       }
       const err = JSON.stringify(j?.error || '').toLowerCase();
       console.error('gemini-tts', model, voice, r.status, err.slice(0, 200));

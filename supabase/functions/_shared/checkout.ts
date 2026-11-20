@@ -344,12 +344,17 @@ export function shipping(
   wholesale = false,
 ) {
   if (wholesale) return 0; // Wholesale remains an unfulfilled order request, as before.
-  if (method === "elden") return 0;
-  if (method !== undefined && method !== "kargo") {
+  if (method !== undefined && method !== "kargo" && method !== "elden") {
     throw new CheckoutError("Teslimat yöntemi geçersiz.");
   }
-  const fee = amount(d.ship?.fee), free = amount(d.ship?.free);
-  return free > 0 && sum >= free ? 0 : money(fee);
+  const free = amount(d.ship?.free);
+  if (free > 0 && sum >= free) return 0;
+  // İzmir teslim noktası: yönetimdeki ücret, boşsa 50 ₺.
+  if (method === "elden") {
+    const p = d.ship?.pickup;
+    return money(p === undefined || p === null || p === "" ? 50 : amount(p));
+  }
+  return money(amount(d.ship?.fee));
 }
 export function requireConsent(body: Row) {
   if (body.onay?.kvkk !== true || body.onay?.sozlesme !== true) {
