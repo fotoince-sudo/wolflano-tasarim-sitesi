@@ -43887,7 +43887,7 @@ async function ses(req, key, body) {
   }
   return j13({ error: "fail" }, 502);
 }
-var cors7, j13, SYS2, FOTO, BILGI, SYS_SITE, HITS, SES_IP, SES_GUN, SES_TOP, SES_TARIF, SES_NOT, SES_CACHE;
+var cors7, j13, SYS2, FOTO, BILGI, SYS_SITE, HITS, SES_IP, SES_GUN, SES_TOP, SES_TARIF, SES_NOT, SES_CACHE, SYS_AJAN;
 var init_yardim = __esm({
   "../supabase/functions/yardim/index.ts"() {
     init_gemini();
@@ -43992,6 +43992,26 @@ Cevab\u0131n\u0131 SADECE \u015Fu JSON bi\xE7iminde ver:
     SES_TARIF = "T\xFCrk\xE7e konu\u015F, do\u011Fal \u0130stanbul T\xFCrk\xE7esi telaffuzuyla. Sen Ayb\xFCke'sin: gen\xE7, s\u0131cak, g\xFCler y\xFCzl\xFC ve kendinden emin bir kad\u0131n ma\u011Faza dan\u0131\u015Fman\u0131. Samimi ve sakin konu\u015F, sanki kar\u015F\u0131ndaki m\xFC\u015Fteriye g\xFCl\xFCmseyerek anlat\u0131yorsun. Ne \xE7ok h\u0131zl\u0131 ne yava\u015F; c\xFCmle aralar\u0131nda do\u011Fal k\u0131sa duraklar ver. Robotik ya da reklam spikeri gibi de\u011Fil, ger\xE7ek bir insan gibi.";
     SES_NOT = "Read this aloud in natural, fluent Istanbul Turkish, in a warm, friendly and relaxed voice, like a smiling young woman chatting with a customer in a shop, not like a robot or an announcer";
     SES_CACHE = /* @__PURE__ */ new Map();
+    SYS_AJAN = `Sen Ayb\xFCke'sin: Wolflano tasar\u0131m st\xFCdyosunda m\xFC\u015Fterinin ki\u015Fisel tasar\u0131m dan\u0131\u015Fman\u0131s\u0131n. M\xFC\u015Fteri parma\u011F\u0131n\u0131 oynatmak istemiyor; ne isterse SEN yapars\u0131n. L\xFCks bir butikteki deneyimli, zarif, kendinden emin dan\u0131\u015Fman gibisin.
+\xDCSLUP: Her zaman "siz" dersin. K\u0131sa, net, sayg\u0131l\u0131 ve s\u0131cak konu\u015Fursun ("Hemen haz\u0131rl\u0131yorum.", "Tamamd\u0131r, ekranda g\xF6r\xFCyorsunuz."). Asla \xF6\u011Fretmez, "\u015Funa bas\u0131n" demezsin; i\u015Fi kendin yapars\u0131n. Kendini tan\u0131tmazs\u0131n, hik\xE2ye anlatmazs\u0131n. Cevap en fazla 2 k\u0131sa c\xFCmle; gerekiyorsa tek bir tercih sorusuyla bitir (renk, beden, adet...). M\xFC\u015Fteri karars\u0131zsa zevkli bir \xF6neriyi kendin se\xE7ip uygulars\u0131n, sonra be\u011Fenip be\u011Fenmedi\u011Fini sorars\u0131n.
+NE YAPAB\u0130L\u0130RS\u0130N (islemler dizisi, s\u0131rayla uygulan\u0131r):
+- {"tip":"urun","urun":"tee|sweat|hood|zip|polo|hat|mug|canvas","kesim":"erkek|kadin|cocuk|std|sub|c3550|c5070"}  (kupa: sub = 20\xD79 saran s\xFCblimasyon, std = iki yanda 8\xD78; canvas: c3550 / c5070)
+- {"tip":"renk","renk":"\xFCr\xFCn rengi ad\u0131 (G\xDCNCEL DURUM'daki renklerden)"}
+- {"tip":"beden","beden":"S|M|L|XL...","adet":1}
+- {"tip":"yuz","yuz":"on|arka|sol_logo|sag_logo"}
+- {"tip":"alan","alan":"a4|a3","yatay":false}
+- {"tip":"yazi","metin":"...","renk":"#rrggbb","font":"yaz\u0131 tipi ad\u0131 (listeden)","boyut":"kucuk|orta|buyuk","konum":"ust|orta|alt"}
+- {"tip":"duzenle","hedef":"nesne id'si ya da secili ya da son","metin":"...","renk":"#rrggbb","font":"...","boyut":"kucuk|orta|buyuk","konum":"ust|orta|alt","dondur":0}  (yaln\u0131z de\u011Fi\u015Fecek alanlar\u0131 yaz)
+- {"tip":"sil","hedef":"nesne id'si | secili | son | hepsi"}
+- {"tip":"sablon","ara":"\u015Fablonu bulacak 1-3 kelime (\xF6r. y\u0131lba\u015F\u0131 kupa 3 foto\u011Fraf, kurt izmir, anneler g\xFCn\xFC)"}
+- {"tip":"wolf","istek":"Wolf'un \xE7izece\u011Fi g\xF6rselin k\u0131sa T\xFCrk\xE7e tarifi"}  (yeni \xE7izim/ill\xFCstrasyon istendi\u011Finde; birka\xE7 saniye s\xFCrer)
+- {"tip":"foto"}  (m\xFC\u015Fterinin kendi foto\u011Fraf\u0131 gerekiyorsa: ekrana "foto\u011Fraf se\xE7" kart\u0131 \xE7\u0131kar; foto\u011Fraf\u0131 yaln\u0131z m\xFC\u015Fteri se\xE7ebilir)
+- {"tip":"arka_plan_sil"}  (se\xE7ili foto\u011Fraf\u0131n arka plan\u0131n\u0131 siler)
+- {"tip":"geri_al"}
+- {"tip":"onizle"}  (bitmi\u015F tasar\u0131m\u0131n \xF6nizlemesini a\xE7ar)
+- {"tip":"sepete_ekle"}  (yaln\u0131z m\xFC\u015Fteri a\xE7\u0131k\xE7a isteyince ya da onaylad\u0131\u011F\u0131nda)
+KURALLAR: Yaln\u0131z G\xDCNCEL DURUM'da olan \xFCr\xFCn, renk, beden ve yaz\u0131 tiplerini kullan. \xDCr\xFCn\xFCn bask\u0131 kurallar\u0131na uy (\xF6r. polo ve fermuarl\u0131da \xF6nde yaln\u0131z logo). Ba\u015Fka markalar\u0131n logosu ve telifli karakterler bas\u0131lmaz; kibarca reddet. Fiyat\u0131 G\xDCNCEL DURUM'dan s\xF6yle, uydurma. Yaz\u0131 rengi \xFCr\xFCn rengiyle iyi kontrast yaps\u0131n. Bir \u015Fey yapam\u0131yorsan bunu k\u0131saca s\xF6yle ve en yak\u0131n \xE7\xF6z\xFCm\xFC uygula.
+Cevab\u0131n\u0131 SADECE \u015Fu JSON bi\xE7iminde ver: {"cevap":"m\xFC\u015Fteriye s\xF6yleyece\u011Fin k\u0131sa c\xFCmleler","islemler":[ ... ]}`;
     Deno.serve(async (req) => {
       if (req.method === "OPTIONS") return new Response("ok", { headers: cors7 });
       try {
@@ -44003,9 +44023,12 @@ Cevab\u0131n\u0131 SADECE \u015Fu JSON bi\xE7iminde ver:
         if (!allow(ip)) return j13({ error: "limit", message: "K\u0131sa s\xFCrede \xE7ok soru geldi. Biraz sonra yeniden dene ya da WhatsApp 0530 764 17 17 \xFCzerinden bize yaz." }, 429);
         const list = Array.isArray(body.messages) ? body.messages.slice(-8) : [];
         if (!list.length) return j13({ error: "empty", message: "Sorunu yaz." }, 400);
-        const site = body.mode === "site";
-        const ctx = String(body.context || "").slice(0, site ? 12e3 : 1200);
-        const msgs = [{ role: "system", content: site ? SYS_SITE + BILGI + FOTO + (ctx ? `
+        const site = body.mode === "site", ajan = body.mode === "ajan";
+        const ctx = String(body.context || "").slice(0, site ? 12e3 : ajan ? 8e3 : 1200);
+        const msgs = [{ role: "system", content: ajan ? SYS_AJAN + BILGI + (ctx ? `
+
+G\xDCNCEL DURUM (st\xFCdyo ekran\u0131, JSON):
+${ctx}` : "") : site ? SYS_SITE + BILGI + FOTO + (ctx ? `
 
 G\xDCNCEL B\u0130LG\u0130 (m\xFC\u015Fterinin bulundu\u011Fu sayfa, \xFCr\xFCn listesi "id | ad | fiyat | not", bask\u0131 \xFCcretleri):
 ${ctx}` : "") : SYS2 + BILGI + FOTO + (ctx ? `
@@ -44018,7 +44041,7 @@ M\xFC\u015Fterinin \u015Fu anki ekran\u0131 ve g\xFCncel \xFCcretler: ${ctx}` : 
         let raw = "";
         if (gKey()) {
           const [sys0, ...rest2] = msgs;
-          const g = await geminiChat(String(sys0.content), rest2.map((m) => ({ role: m.role, text: m.content })), { json: true, maxTokens: 800, timeout: 45e3, env: "GEMINI_HELP_MODEL", fast: true });
+          const g = await geminiChat(String(sys0.content), rest2.map((m) => ({ role: m.role, text: m.content })), { json: true, maxTokens: ajan ? 1200 : 800, timeout: 45e3, env: "GEMINI_HELP_MODEL", fast: true });
           if (!g.ok) return j13({ error: "fail", message: "Asistan \u015Fu an cevap veremedi. Biraz sonra yeniden dene." }, 502);
           raw = g.text;
         } else {
@@ -44051,6 +44074,10 @@ M\xFC\u015Fterinin \u015Fu anki ekran\u0131 ve g\xFCncel \xFCcretler: ${ctx}` : 
         const git = /^(koleksiyon|atolye|studyo|hediye|sepet|whatsapp)$/.test(String(p?.git || "")) ? String(p.git) : "";
         const ac = String(p?.ac || "").slice(0, 80).trim();
         const son = p?.son === true;
+        if (ajan) {
+          const islemler = Array.isArray(p?.islemler) ? p.islemler.filter((x) => x && typeof x === "object" && typeof x.tip === "string").slice(0, 12) : [];
+          return j13({ ok: true, cevap, islemler });
+        }
         return j13({ ok: true, cevap, urunler, git, ac, son });
       } catch (e) {
         console.error("yardim", String(e));

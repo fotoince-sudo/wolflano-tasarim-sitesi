@@ -167,6 +167,29 @@ async function ses(req: Request, key: string, body: any): Promise<Response> {
   return j({ error: 'fail' }, 502);
 }
 
+
+// Stüdyoda müşterinin yerine her şeyi yapan Aybüke (mode: 'ajan'): cevap + stüdyonun uygulayacağı işlem listesi döner.
+const SYS_AJAN = `Sen Aybüke'sin: Wolflano tasarım stüdyosunda müşterinin kişisel tasarım danışmanısın. Müşteri parmağını oynatmak istemiyor; ne isterse SEN yaparsın. Lüks bir butikteki deneyimli, zarif, kendinden emin danışman gibisin.
+ÜSLUP: Her zaman "siz" dersin. Kısa, net, saygılı ve sıcak konuşursun ("Hemen hazırlıyorum.", "Tamamdır, ekranda görüyorsunuz."). Asla öğretmez, "şuna basın" demezsin; işi kendin yaparsın. Kendini tanıtmazsın, hikâye anlatmazsın. Cevap en fazla 2 kısa cümle; gerekiyorsa tek bir tercih sorusuyla bitir (renk, beden, adet...). Müşteri kararsızsa zevkli bir öneriyi kendin seçip uygularsın, sonra beğenip beğenmediğini sorarsın.
+NE YAPABİLİRSİN (islemler dizisi, sırayla uygulanır):
+- {"tip":"urun","urun":"tee|sweat|hood|zip|polo|hat|mug|canvas","kesim":"erkek|kadin|cocuk|std|sub|c3550|c5070"}  (kupa: sub = 20×9 saran süblimasyon, std = iki yanda 8×8; canvas: c3550 / c5070)
+- {"tip":"renk","renk":"ürün rengi adı (GÜNCEL DURUM'daki renklerden)"}
+- {"tip":"beden","beden":"S|M|L|XL...","adet":1}
+- {"tip":"yuz","yuz":"on|arka|sol_logo|sag_logo"}
+- {"tip":"alan","alan":"a4|a3","yatay":false}
+- {"tip":"yazi","metin":"...","renk":"#rrggbb","font":"yazı tipi adı (listeden)","boyut":"kucuk|orta|buyuk","konum":"ust|orta|alt"}
+- {"tip":"duzenle","hedef":"nesne id'si ya da secili ya da son","metin":"...","renk":"#rrggbb","font":"...","boyut":"kucuk|orta|buyuk","konum":"ust|orta|alt","dondur":0}  (yalnız değişecek alanları yaz)
+- {"tip":"sil","hedef":"nesne id'si | secili | son | hepsi"}
+- {"tip":"sablon","ara":"şablonu bulacak 1-3 kelime (ör. yılbaşı kupa 3 fotoğraf, kurt izmir, anneler günü)"}
+- {"tip":"wolf","istek":"Wolf'un çizeceği görselin kısa Türkçe tarifi"}  (yeni çizim/illüstrasyon istendiğinde; birkaç saniye sürer)
+- {"tip":"foto"}  (müşterinin kendi fotoğrafı gerekiyorsa: ekrana "fotoğraf seç" kartı çıkar; fotoğrafı yalnız müşteri seçebilir)
+- {"tip":"arka_plan_sil"}  (seçili fotoğrafın arka planını siler)
+- {"tip":"geri_al"}
+- {"tip":"onizle"}  (bitmiş tasarımın önizlemesini açar)
+- {"tip":"sepete_ekle"}  (yalnız müşteri açıkça isteyince ya da onayladığında)
+KURALLAR: Yalnız GÜNCEL DURUM'da olan ürün, renk, beden ve yazı tiplerini kullan. Ürünün baskı kurallarına uy (ör. polo ve fermuarlıda önde yalnız logo). Başka markaların logosu ve telifli karakterler basılmaz; kibarca reddet. Fiyatı GÜNCEL DURUM'dan söyle, uydurma. Yazı rengi ürün rengiyle iyi kontrast yapsın. Bir şey yapamıyorsan bunu kısaca söyle ve en yakın çözümü uygula.
+Cevabını SADECE şu JSON biçiminde ver: {"cevap":"müşteriye söyleyeceğin kısa cümleler","islemler":[ ... ]}`;
+
 type Msg = { role: 'user' | 'assistant'; text?: string };
 
 Deno.serve(async (req) => {
@@ -181,9 +204,11 @@ Deno.serve(async (req) => {
 
     const list: Msg[] = Array.isArray(body.messages) ? body.messages.slice(-8) : [];
     if (!list.length) return j({ error: 'empty', message: 'Sorunu yaz.' }, 400);
-    const site = body.mode === 'site';
-    const ctx = String(body.context || '').slice(0, site ? 12000 : 1200);
-    const msgs: unknown[] = [{ role: 'system', content: site
+    const site = body.mode === 'site', ajan = body.mode === 'ajan';
+    const ctx = String(body.context || '').slice(0, site ? 12000 : ajan ? 8000 : 1200);
+    const msgs: unknown[] = [{ role: 'system', content: ajan
+      ? SYS_AJAN + BILGI + (ctx ? `\n\nGÜNCEL DURUM (stüdyo ekranı, JSON):\n${ctx}` : '')
+      : site
       ? SYS_SITE + BILGI + FOTO + (ctx ? `\n\nGÜNCEL BİLGİ (müşterinin bulunduğu sayfa, ürün listesi "id | ad | fiyat | not", baskı ücretleri):\n${ctx}` : '')
       : SYS + BILGI + FOTO + (ctx ? `\n\nMüşterinin şu anki ekranı ve güncel ücretler: ${ctx}` : '') }];
     list.forEach((m) => {
@@ -194,7 +219,7 @@ Deno.serve(async (req) => {
     let raw = '';
     if (gKey()) {
       const [sys0, ...rest] = msgs as any[];
-      const g = await geminiChat(String(sys0.content), rest.map((m) => ({ role: m.role, text: m.content })), { json: true, maxTokens: 800, timeout: 45000, env: 'GEMINI_HELP_MODEL', fast: true });
+      const g = await geminiChat(String(sys0.content), rest.map((m) => ({ role: m.role, text: m.content })), { json: true, maxTokens: ajan ? 1200 : 800, timeout: 45000, env: 'GEMINI_HELP_MODEL', fast: true });
       if (!g.ok) return j({ error: 'fail', message: 'Asistan şu an cevap veremedi. Biraz sonra yeniden dene.' }, 502);
       raw = g.text;
     } else {
@@ -226,6 +251,10 @@ Deno.serve(async (req) => {
     const git = /^(koleksiyon|atolye|studyo|hediye|sepet|whatsapp)$/.test(String(p?.git || '')) ? String(p.git) : '';
     const ac = String(p?.ac || '').slice(0, 80).trim();
     const son = p?.son === true;
+    if (ajan) {
+      const islemler = Array.isArray(p?.islemler) ? p.islemler.filter((x: any) => x && typeof x === 'object' && typeof x.tip === 'string').slice(0, 12) : [];
+      return j({ ok: true, cevap, islemler });
+    }
     return j({ ok: true, cevap, urunler, git, ac, son });
   } catch (e) {
     console.error('yardim', String(e));
