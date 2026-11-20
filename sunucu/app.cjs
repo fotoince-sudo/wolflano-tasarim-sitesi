@@ -17439,7 +17439,8 @@ var require_auth = __commonJS({
         const data = b.data && typeof b.data === "object" && !Array.isArray(b.data) ? b.data : {};
         const ex = await byEmail(email);
         if (ex && ex.email_confirmed_at) {
-          return json(200, { ...userJson(ex), identities: [], user_metadata: {} });
+          const fake = { ...userJson(ex), identities: [], user_metadata: {} };
+          return json(200, { ...fake, user: fake });
         }
         const ph = await hashPw(pw);
         let u;
@@ -17460,7 +17461,7 @@ var require_auth = __commonJS({
           console.error("dogrulama maili", e.message);
           return err(500, "unexpected_failure", "Error sending confirmation email");
         }
-        return json(200, userJson(u));
+        return json(200, { ...userJson(u), user: userJson(u) });
       }
       if (rel === "verify" && method === "GET") {
         const type = params.get("type"), to = safeRedirect(params.get("redirect_to") || ayar2.siteUrl + "/");

@@ -119,7 +119,8 @@ async function auth(rel, req) {
     const ex = await byEmail(email);
     if (ex && ex.email_confirmed_at) {
       // Supabase gibi: hesabın varlığını açığa vurmaz, ama site "identities: []" ile anlar
-      return json(200, { ...userJson(ex), identities: [], user_metadata: {} });
+      const fake = { ...userJson(ex), identities: [], user_metadata: {} };
+      return json(200, { ...fake, user: fake });
     }
     const ph = await hashPw(pw);
     let u;
@@ -137,7 +138,7 @@ async function auth(rel, req) {
     const raw = await newToken(u.id, 'signup', 24 * 3600e3);
     try { await posta.dogrulama(email, verifyLink(raw, 'signup', params.get('redirect_to'))); }
     catch (e) { console.error('dogrulama maili', e.message); return err(500, 'unexpected_failure', 'Error sending confirmation email'); }
-    return json(200, userJson(u));
+    return json(200, { ...userJson(u), user: userJson(u) });
   }
 
   if (rel === 'verify' && method === 'GET') {
