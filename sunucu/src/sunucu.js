@@ -158,9 +158,9 @@ async function geminiDene() {
     else out.liste_hata = temiz(JSON.stringify(j.error || j));
   } catch (e) { out.liste_hata = temiz(e && (e.cause?.code || e.message) || e); }
   try {
-    const r = await disFetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent', {
+    const r = await disFetch('https://generativelanguage.googleapis.com/v1beta/models/' + (process.env.GEMINI_CHAT_MODEL || 'gemini-3.8-flash') + ':generateContent', {
       method: 'POST', headers: { 'x-goog-api-key': key, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ contents: [{ role: 'user', parts: [{ text: 'Sadece "tamam" yaz.' }] }], generationConfig: { maxOutputTokens: 20, thinkingConfig: { thinkingBudget: 0 } } }),
+      body: JSON.stringify({ contents: [{ role: 'user', parts: [{ text: 'Sadece "tamam" yaz.' }] }], generationConfig: { maxOutputTokens: 2000 } }),
       signal: AbortSignal.timeout(30000),
     });
     const j = await r.json().catch(() => ({}));
