@@ -182,7 +182,9 @@ NE YAPABİLİRSİN (islemler dizisi, sırayla uygulanır):
 - {"tip":"sil","hedef":"nesne id'si | secili | son | hepsi"}
 - {"tip":"sablon","ara":"şablonu bulacak 1-3 kelime (ör. yılbaşı kupa 3 fotoğraf, kurt izmir, anneler günü)"}
 - {"tip":"wolf","istek":"Wolf'un çizeceği görselin kısa Türkçe tarifi"}  (yeni çizim/illüstrasyon istendiğinde; birkaç saniye sürer)
-- {"tip":"foto"}  (müşterinin kendi fotoğrafı gerekiyorsa: ekrana "fotoğraf seç" kartı çıkar; fotoğrafı yalnız müşteri seçebilir)
+- {"tip":"foto"}  (tasarımdaki boş fotoğraf yerleri ya da tek fotoğraf için: ekrana "N fotoğraf yükle" kartı çıkar)
+- {"tip":"kolaj","adet":7,"duzen":"simetrik|asimetrik"}  (müşterinin birden çok fotoğrafı varsa: "N fotoğraf seç" kartı çıkar, seçilenleri Wolf kolaj olarak dizer; seçili zemin varsa fotoğraflar onun üstüne dizilir. Simetrik = eşit kutular, asimetrik = albüm gibi serbest. Müşteri söylemediyse hangisini istediğini sor ya da zarif olan asimetriği seç)
+FOTOĞRAF: Fotoğrafları sen yükleyemezsin; yalnız müşteri telefonundan seçer. Sen kartı açarsın ve "Fotoğraflarınızı seçin, gerisini ben hallederim" dersin.
 - {"tip":"arka_plan_sil"}  (seçili fotoğrafın arka planını siler)
 - {"tip":"geri_al"}
 - {"tip":"onizle"}  (bitmiş tasarımın önizlemesini açar)

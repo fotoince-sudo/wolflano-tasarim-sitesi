@@ -2818,14 +2818,15 @@ async function kolajMake(){if(KOLAJ.length<2){toast('Kolaj için en az 2 fotoğr
   var keep=cur().objs.filter(function(o){return !o.kj&&!(o.type==='image'&&KOLAJ.indexOf(o.assetId)>=0);});
   var txt=keep.filter(function(o){return o.type==='text'||o.type==='clip';});
   var lay=KJ_MODE==='duzenli'?await kolajGrid():kolajLayout();
-  cur().objs=(state.product==='canvas'||state.product==='mug'?[kolajBg()]:[]).concat(keep.filter(function(o){return txt.indexOf(o)<0;}),lay,txt);
+  var hasZem=keep.some(function(o){return o.zem||o.oilBg||(o.lock&&o.type==='image');});
+  cur().objs=((state.product==='canvas'||state.product==='mug')&&!hasZem?[kolajBg()]:[]).concat(keep.filter(function(o){return txt.indexOf(o)<0;}),lay,txt);
   select(null);renderAll();layout();pushHist();kolajSync();
   var nf=KOLAJ.filter(function(id){var c=KJ_CROP[id]||id;return (KJ_FACE[c]||[]).length;}).length;
   /* İş bitince panel kapanır ki müşteri tasarımı hemen görsün */
   if(view.tab)closeTab();
   toast('İşlem tamamlandı, kolajın hazır'+(nf?' ('+nf+' fotoğrafta yüzler korundu)':'')+'. Fotoğrafları tek tek taşıyıp döndürebilirsin.');}
 $('#kolajBtn').addEventListener('click',function(){var w=$('#kolajIn');w.hidden=!w.hidden;this.classList.toggle('on',!w.hidden);if(!w.hidden){kolajSync();if(!KOLAJ.length)$('#kolajFile').click();}});
-$('#kolajFile').addEventListener('change',function(){var f=this.files;kolajAdd(f).then(function(){});this.value='';});
+$('#kolajFile').addEventListener('change',function(){var f=this.files;kolajAdd(f).then(function(){if(window.__agKolaj){window.__agKolaj=0;kolajMake();}});this.value='';});
 $('#kolajGo').addEventListener('click',kolajMake);
 document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('[data-kjm]');if(!b)return;KJ_MODE=b.dataset.kjm;$$('#kolajMode [data-kjm]').forEach(function(x){var on=x===b;x.classList.toggle('on',on);x.setAttribute('aria-checked',on?'true':'false');});kolajSync();});
 document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('[data-kjx]');if(!b)return;KOLAJ.splice(+b.dataset.kjx,1);kolajSync();});
@@ -7075,6 +7076,8 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
           if(!best&&ws.length){var sc=T.map(function(tp){var h=tplText(tp);return [tp,ws.filter(function(w){return h.indexOf(w)>=0;}).length];}).sort(function(a,b){return b[1]-a[1];});if(sc[0]&&sc[0][1])best=sc[0][0];}
           if(best){applyTemplate(best,true);var ne=emptySlots().length;if(ne)hzPhotoAsk(ne);}else notes.push('Bu ürüne uygun o konuda hazır şablon bulamadım.');}
         else if(t==='wolf'){var wi=$('#wolfIn');if(wi&&x.istek){wi.value=String(x.istek).slice(0,300);$('#wolfGo').click();}}
+        else if(t==='kolaj'){if(!kolajOn()){notes.push('Bu üründe fotoğraf kolajı yapılamıyor.');}else{KJ_MODE=x.duzen==='simetrik'?'duzenli':'serbest';$$('#kolajMode [data-kjm]').forEach(function(b){var on=b.dataset.kjm===KJ_MODE;b.classList.toggle('on',on);b.setAttribute('aria-checked',on?'true':'false');});
+          KOLAJ=[];try{kolajSync();}catch(_){}var mx=kolajMax(),n=Math.max(2,Math.min(mx,+x.adet||mx));if((+x.adet||0)>mx)notes.push('Bu üründe en fazla '+mx+' fotoğraf oluyor.');agKolajAsk(n,KJ_MODE==='duzenli');}}
         else if(t==='foto'){var ne2=emptySlots().length;if(ne2)hzPhotoAsk(ne2);else agPhotoAsk();}
         else if(t==='arka_plan_sil'){var o4=selObj();if(o4&&o4.type==='image')await removeBg();}
         else if(t==='geri_al'){undo();}
@@ -7084,6 +7087,11 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
     }
     try{renderAll();}catch(_){}try{draftSoon();}catch(_){}
     return notes.join(' ');}
+  /* Kolaj için fotoğraf seçtirme: müşteri seçer, Wolf (kolaj) seçilenleri simetrik ya da serbest dizer */
+  function agKolajAsk(n,sym){var o=document.getElementById('hzAsk');if(o)o.remove();var w=document.createElement('div');w.id='hzAsk';
+    w.style.cssText='position:fixed;left:12px;right:12px;bottom:96px;z-index:9999;background:#fff;border-radius:18px;box-shadow:0 10px 40px #0003;padding:16px;font:500 14px var(--ui);text-align:center;max-width:460px;margin:0 auto';
+    w.innerHTML='<b style="display:block;font-size:16px;margin-bottom:4px">'+n+' fotoğrafınızı seçin</b><span style="display:block;color:#5a625d;font-size:13px;margin-bottom:12px">Wolf hepsini '+(sym?'eşit kutulara simetrik':'albüm gibi serbest')+' dizecek.</span><button type="button" data-ag="go" style="display:block;width:100%;padding:13px;border-radius:12px;border:2px solid #111;background:var(--brand,#3d8b7a);color:#fff;font:700 15px var(--ui);margin-bottom:8px">📷 '+n+' fotoğraf seç</button><button type="button" data-ag="x" style="background:none;border:0;color:#5a625d;font:500 13px var(--ui);padding:4px 10px">Vazgeç</button>';
+    document.body.appendChild(w);w.addEventListener('click',function(e){if(e.target.closest('[data-ag="x"]')){w.remove();return;}if(e.target.closest('[data-ag="go"]')){w.remove();window.__agKolaj=1;try{$('#kolajFile').click();}catch(_){}}});}
   /* Fotoğraf seçtirme kartı: telefon arşivi yalnız dokunuşla açtığı için tek düğme */
   function agPhotoAsk(){var o=document.getElementById('hzAsk');if(o)o.remove();var w=document.createElement('div');w.id='hzAsk';
     w.style.cssText='position:fixed;left:12px;right:12px;bottom:96px;z-index:9999;background:#fff;border-radius:18px;box-shadow:0 10px 40px #0003;padding:16px;font:500 14px var(--ui);text-align:center;max-width:460px;margin:0 auto';
