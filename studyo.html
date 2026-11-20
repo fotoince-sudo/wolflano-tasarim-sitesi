@@ -4657,13 +4657,15 @@ function tplAreaName(t){
 }
 var tplLastGroup='';
 /* Şablonlar sade gruplarda: her ürün yalnız kendi şablonlarını görür; konular birkaç ana grupta toplanır, alt konular yalnız grup seçilince çıkar */
-var TPL_GRPS=[['Tümü',null],['Fotoğraflı',['Yağlı boya','Fotoğraflı tişört','Araba ve motosiklet']],['Özel günler',['Özel günler','Kutlama ve etkinlik','Süslemeler','Aile ve aşk']],
+var TPL_GRPS_ESKI=[['Tümü',null],['Fotoğraflı',['Yağlı boya','Fotoğraflı tişört','Araba ve motosiklet']],['Özel günler',['Özel günler','Kutlama ve etkinlik','Süslemeler','Aile ve aşk']],
   ['Kurt ve Türkiye',['Kurt geziyor','Wolf tasarımları','İmza koleksiyonu','Türkiye','Şehirler ve köklerimiz','Baskı serisi']],['Yazı ve stil',['Yazı ve söz','Minimal','Retro ve arma','Erkek','Kadın','Çocuklar']],
   ['Spor ve ekip',['Spor ve kulüp','Okul ve sınıf','Şirket ve ekip','Doğa ve macera','Müziğin Sesi']],['Zeminler',['Zemin']],['Diğer',[]]];
+/* Sade: yalnız ürünün kendi şablonları ve zeminler (alt konu ayrımı yok) */
+var TPL_GRPS=[['Tümü',null],['Zeminler',['Zemin']],['Diğer',[]]];
 var TPL_HEAD={giyim:'Giyim şablonları',sapka:'Şapka şablonları',kupa:'Kupa şablonları',canvas:'Kanvas şablonları'};
 function tplPhoto(t){return !!(t&&(t.oil||t.mugVehicle||t.petPhoto||t.vehiclePhoto||t.teePhoto||(t.items||[]).some(function(it){return it.t==='ph';})));}
 function tplGrpOf(c){for(var i=1;i<TPL_GRPS.length-1;i++)if(TPL_GRPS[i][1].indexOf(c)>=0)return TPL_GRPS[i][0];return 'Diğer';}
-function tplInGrp(c,t){var g=view.tplGrp||'Tümü';if(g==='Tümü')return true;if(g==='Fotoğraflı'&&tplPhoto(t))return true;return tplGrpOf(c)===g;}
+function tplInGrp(c,t){var g=view.tplGrp||'Tümü';if(g==='Tümü')return c!=='Zemin';if(g==='Fotoğraflı'&&tplPhoto(t))return true;return tplGrpOf(c)===g;}
 function renderTpl(){
   ['Zemin','Yağlı boya','Fotoğraflı tişört','Araba ve motosiklet'].forEach(function(c){if(TPL_CATS.indexOf(c)<0)TPL_CATS.push(c);});
   var h='',cc='',q=normTR(($('#tplQ')&&$('#tplQ').value||'').trim()),n=0,g=tplGroup(),has={},dirs={},measures={};
@@ -4682,10 +4684,10 @@ function renderTpl(){
   var gh={'Tümü':1};Object.keys(has).forEach(function(c){gh[tplGrpOf(c)]=1;});TPLS.forEach(function(t){if(tplFits(t,g)&&tplPhoto(t))gh['Fotoğraflı']=1;});
   if(!gh[view.tplGrp||'Tümü'])view.tplGrp='Tümü';var G=view.tplGrp||'Tümü';
   if(G!=='Tümü'&&view.tplCat!=='Tümü'&&tplGrpOf(view.tplCat)!==G)view.tplCat='Tümü';
-  $('#tplHead').textContent=TPL_HEAD[g]||'Şablonlar';
-  $('#tplGrps').innerHTML=TPL_GRPS.filter(function(x){return gh[x[0]];}).map(function(x){return '<button data-tg="'+x[0]+'"'+(x[0]===G&&!q?' class="on"':'')+'>'+x[0]+'</button>';}).join('');
+  $('#tplHead').hidden=true;
+  $('#tplGrps').innerHTML=[['Tümü',TPL_HEAD[g]||'Şablonlar'],['Zeminler','Zeminler']].map(function(x){return '<button data-tg="'+x[0]+'"'+(x[0]===G&&!q?' class="on"':'')+'>'+x[1]+'</button>';}).join('');
   var subs=TPL_CATS.filter(function(c){return c!=='Tümü'&&has[c]&&G!=='Tümü'&&G!=='Fotoğraflı'&&tplGrpOf(c)===G;});
-  if(subs.length>1)cc='<button data-tc="Tümü"'+(view.tplCat==='Tümü'&&!q?' class="on"':'')+'>Hepsi</button>'+subs.map(function(c){return '<button data-tc="'+c+'"'+(c===view.tplCat&&!q?' class="on"':'')+'>'+c+'</button>';}).join('');
+  subs=[];if(subs.length>1)cc='<button data-tc="Tümü"'+(view.tplCat==='Tümü'&&!q?' class="on"':'')+'>Hepsi</button>'+subs.map(function(c){return '<button data-tc="'+c+'"'+(c===view.tplCat&&!q?' class="on"':'')+'>'+c+'</button>';}).join('');
   $('#tplCats').innerHTML=cc;$('#tplCats').hidden=!cc;
   TPLS.forEach(function(t,i){if(!tplFits(t,g))return;if(view.tplDir&&view.tplDir!=='Tümü'&&tplOrientation(t)!==view.tplDir)return;if(view.tplArea&&view.tplArea!=='Tümü'&&tplAreaName(t)!==view.tplArea)return;if(q){if(!tplMatch(t,q))return;}else if(view.tplCat!=='Tümü'&&t.c!==view.tplCat)return;else if(view.tplCat==='Tümü'&&!tplInGrp(t.c,t))return;n++;h+='<button class="tpl" data-tpl="'+i+'" data-tpl-dir="'+tplOrientation(t)+'"><div class="prev"><div class="in"></div></div><span>'+t.n+'</span></button>';});
   $('#tplGrid').innerHTML=h;tplLastGroup=g;var em=$('#tplEmpty');em.textContent=q?'Bu aramayla eşleşen şablon yok. Başka bir kelime dene.':view.tplCat===TPL_CAT_MUSIC?'Müzik şablonları yakında burada.':'Bu ürünün ('+TPL_GROUP_NAME[g]+') baskı ölçüsüne özel şablonlar hazırlanıyor, çok yakında burada.';em.hidden=n>0;$('#tplQx').hidden=!q;
