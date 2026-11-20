@@ -34,7 +34,7 @@ function limit(key, n, ms) {
   return h.length <= n;
 }
 
-const json = (status, o, headers = {}) => ({ status, headers: { 'Content-Type': 'application/json', ...headers }, body: o === null ? null : JSON.stringify(o) });
+const json = (status, o, headers = {}) => ({ status, headers: { 'Content-Type': 'application/json; charset=utf-8', ...headers }, body: o === null ? null : JSON.stringify(o) });
 const err = (status, code, msg) => json(status, { code: status, error_code: code, msg, error: code, error_description: msg });
 
 function userJson(u) {

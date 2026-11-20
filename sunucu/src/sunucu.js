@@ -65,7 +65,7 @@ function claimsOf(headers) {
   return p;
 }
 
-const jres = (status, o, h = {}) => new Response(o === null ? null : JSON.stringify(o), { status, headers: { 'Content-Type': 'application/json', ...h } });
+const jres = (status, o, h = {}) => new Response(o === null ? null : JSON.stringify(o), { status, headers: { 'Content-Type': 'application/json; charset=utf-8', ...h } });
 
 function toResponse(r) {
   if (r.stream) {
