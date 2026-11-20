@@ -2088,7 +2088,7 @@ var ADX_KIND={taslak:'Taslak',sablon:'Şablon',urun:'Ürün',baski:'Baskı'};
 var ADX_ST=['baskıda','basıldı','kargoda','teslim edildi'];
 function adxRefresh(){if(cur==='yonetim'&&A&&(A.tab==='admtas'||A.tab==='yetki')){var y=window.scrollY;adRender();window.scrollTo(0,y);}}
 /* ---------- Kasa: şirket evrakı, şartnameler, strateji notları. Yalnız site sahibi görür (wf_kasa tablosu + gizli "kasa" dosya alanı) ---------- */
-var KS={rows:null,busy:false,err:'',f:'Hepsi',urls:{},del:null,form:false,up:false,fv:{folder:'Şartnameler',title:'',note:''}},KS_FOLDERS=['Şartnameler','Strateji','Şirket evrakı','Sözleşmeler','Faturalar','Diğer'],KS_TEMPLATE_FOLDERS=['Kupa','Kanvas','Tişört'];
+var KS={rows:null,busy:false,err:'',f:'Hepsi',urls:{},del:null,form:false,up:false,fv:{folder:'Şartnameler',title:'',note:''}},KS_FOLDERS=['Şartnameler','Sözler','Strateji','Şirket evrakı','Sözleşmeler','Faturalar','Diğer'],KS_TEMPLATE_FOLDERS=['Kupa','Kanvas','Tişört'];
 function ksRe(){if(cur==='yonetim'&&A&&A.tab==='kasa'){var y=window.scrollY;adRender();window.scrollTo(0,y);}}
 async function ksLoad(){if(KS.busy)return;KS.busy=true;KS.err='';
   try{var tk=await sbToken();if(!tk){KS.err='Kasa için site sahibi hesabıyla giriş yapmalısın.';KS.rows=[];}
@@ -2103,6 +2103,22 @@ function ksTemplateLink(row){
   var links=String(row.note||'').split('\n');
   return links.find(function(l){return /^https:\/\/chatgpt\.com\/library\?file_id=libfile_[a-f0-9]+&account_id=personal$/.test(l);})||'';
 }
+/* Söz arşivi: dokular/sozler.json (dönem, söz, sahibi, kaynak, not) */
+var KSZ={d:null,busy:false,q:'',don:'Hepsi'};
+async function ksSozLoad(){if(KSZ.busy)return;KSZ.busy=true;try{var r=await fetch('/dokular/sozler.json?v=1',{cache:'no-cache'});KSZ.d=await r.json();}catch(_){KSZ.d={donemler:[],sozler:[],err:1};}KSZ.busy=false;ksRe();}
+function ksSozView(){if(!KSZ.d){ksSozLoad();return '<p class="note">Sözler yükleniyor…</p>';}
+  if(KSZ.d.err)return '<p class="msg">Söz arşivi açılamadı.</p>';
+  var q=KSZ.q.toLocaleLowerCase('tr'),L=KSZ.d.sozler.filter(function(x){return (KSZ.don==='Hepsi'||x.d===KSZ.don)&&(!q||(x.s+' '+x.k+' '+x.y+' '+x.n).toLocaleLowerCase('tr').indexOf(q)>=0);});
+  var h='<div class="aed" style="gap:10px"><label for="kszQ">Ara (söz, kişi, dönem)<input id="kszQ" data-ksz="q" value="'+esc(KSZ.q)+'" placeholder="Örn. kurt, Atatürk, anne"></label>'+
+    '<div class="adx-f">'+['Hepsi'].concat(KSZ.d.donemler).map(function(d){var n=KSZ.d.sozler.filter(function(x){return d==='Hepsi'||x.d===d;}).length;return '<button type="button" data-ks="szd" data-v="'+esc(d)+'"'+(KSZ.don===d?' class="on"':'')+'>'+esc(d)+' <small>'+n+'</small></button>';}).join('')+'</div>'+
+    '<p class="note" style="margin:0">'+esc(KSZ.d.aciklama||'')+'</p></div>';
+  var last='';
+  L.forEach(function(x,i){if(x.d!==last){h+='<p class="note" style="margin:14px 0 4px"><b>'+esc(x.d)+'</b></p>';last=x.d;}
+    h+='<div class="adx-c ksc"><div class="adx-b"><b style="font-size:16px;line-height:1.4">“'+esc(x.s)+'”</b><small class="note" style="margin:0">'+esc(x.k)+(x.y?' · '+esc(x.y):'')+'</small>'+(x.n?'<p class="ksn"'+(/RİVAYET|mal edilir/.test(x.n)?' style="color:#b3261e"':'')+'>'+esc(x.n)+'</p>':'')+
+    '<div class="adx-a"><button type="button" class="btn soft sm" data-ks="szc" data-i="'+KSZ.d.sozler.indexOf(x)+'">Kopyala</button></div></div></div>';});
+  if(!L.length)h+='<p class="note">Bu aramaya uyan söz yok.</p>';
+  return h;}
+document.addEventListener('input',function(e){var t=e.target;if(t&&t.dataset&&t.dataset.ksz==='q'){KSZ.q=t.value;var pos=t.selectionStart;ksRe();var n=document.getElementById('kszQ');if(n){n.focus();try{n.setSelectionRange(pos,pos);}catch(_){}}}});
 function ksView(){if(KS.rows===null&&!KS.busy)ksLoad();
   var h='<div class="alist"><div class="adx-top"><p class="note" style="margin:0;flex:1">Şartnameler, strateji kararları ve şirket evrakı. Yalnız sen görürsün; site ziyaretçileri ve yetkililer göremez.</p><button type="button" class="btn sm" data-ks="form">'+(KS.form?'Vazgeç':'+ Yeni ekle')+'</button><button type="button" class="btn soft sm" data-ks="reload">Yenile</button></div>';
   if(KS.form){var fv=KS.fv;h+='<div class="aed"><b>Kasaya ekle</b><div class="two"><label for="ksF">Klasör<select id="ksF" data-ksv="folder">'+KS_FOLDERS.concat(KS_TEMPLATE_FOLDERS).map(function(f){return '<option'+(f===fv.folder?' selected':'')+'>'+f+'</option>';}).join('')+'</select></label><label for="ksT">Başlık<input id="ksT" data-ksv="title" value="'+esc(fv.title)+'" placeholder="Örn. Vergi levhası 2026"></label></div>'+
@@ -2110,16 +2126,17 @@ function ksView(){if(KS.rows===null&&!KS.busy)ksLoad();
     '<label for="ksFile">Dosya (isteğe bağlı: PDF, fotoğraf, Word, Excel, ZIP; en fazla 25 MB)<input id="ksFile" type="file" accept="application/pdf,image/*,.doc,.docx,.xls,.xlsx,.txt,.zip,application/zip"></label>'+
     '<div><button type="button" class="btn" data-ks="save"'+(KS.up?' disabled':'')+'>'+(KS.up?'Kaydediliyor…':'Kasaya kaydet')+'</button></div></div>';}
   var all=KS.rows||[];
-  h+='<div class="adx-f">'+['Hepsi'].concat(KS_FOLDERS).map(function(f){var n=all.filter(function(r){return ksInFolder(r,f);}).length+((f==='Hepsi'||f==='Şartnameler')?1:0);return '<button type="button" data-ks="f" data-v="'+esc(f)+'"'+(KS.f===f?' class="on"':'')+'>'+f+' <small>'+n+'</small></button>';}).join('')+'</div>';
+  h+='<div class="adx-f">'+['Hepsi'].concat(KS_FOLDERS).map(function(f){var n=all.filter(function(r){return ksInFolder(r,f);}).length+((f==='Hepsi')?2:(f==='Şartnameler'||f==='Sözler')?1:0);return '<button type="button" data-ks="f" data-v="'+esc(f)+'"'+(KS.f===f?' class="on"':'')+'>'+f+' <small>'+n+'</small></button>';}).join('')+'</div>';
   h+='<p class="note" style="margin:0"><b>Şablon Deposu</b></p><div class="adx-f">'+KS_TEMPLATE_FOLDERS.map(function(f){
     var n=all.filter(function(r){return ksInFolder(r,f);}).length;
     return '<button type="button" data-ks="f" data-v="'+esc(f)+'"'+(KS.f===f?' class="on"':'')+'>'+esc(f)+' <small>'+n+'</small></button>';
   }).join('')+'</div>';
   if(KS.f==='Hepsi'||KS.f==='Şartnameler')h+='<div class="adx-c ksc"><div class="adx-b"><div class="adx-t"><b>Güncel teknik şartname</b><span class="adx-k">Şartnameler</span></div><small class="note" style="margin:0">Panelden düzenlenen canlı şartname; her zaman en son hali.</small><div class="adx-a"><button type="button" class="btn soft sm" data-ks="spec">Aç</button><button type="button" class="btn sm" data-ks="specpdf">PDF / Yazdır</button></div></div></div>';
+  if(KS.f==='Hepsi'||KS.f==='Sözler')h+='<div class="adx-c ksc"><div class="adx-b"><div class="adx-t"><b>Söz arşivi</b><span class="adx-k">Sözler</span></div><small class="note" style="margin:0">Orhun Yazıtları\'ndan Atatürk\'e, atasözlerine kadar dönemi ve sahibiyle sözler. Kupa, tişört ve tablo tasarımları için.</small><div class="adx-a"><button type="button" class="btn sm" data-ks="soz">'+(KS.soz?'Kapat':'Aç')+'</button></div></div></div>'+(KS.soz?ksSozView():'');
   if(KS.rows===null)return h+'<p class="note">Yükleniyor…</p></div>';
   if(KS.err)h+='<p class="msg">'+esc(KS.err)+'</p>';
   var L=all.filter(function(r){return ksInFolder(r,KS.f);});
-  if(!L.length&&!KS.err&&KS.f!=='Hepsi'&&KS.f!=='Şartnameler')h+='<p class="note">Bu klasör boş.</p>';
+  if(!L.length&&!KS.err&&KS.f!=='Hepsi'&&KS.f!=='Şartnameler'&&KS.f!=='Sözler')h+='<p class="note">Bu klasör boş.</p>';
   L.forEach(function(x){var link=ksTemplateLink(x),note=link?String(x.note).split('\n').filter(function(l){return l!==link;}).join('\n'):x.note;h+='<div class="adx-c ksc"><div class="adx-b"><div class="adx-t"><b>'+esc(x.title||'Adsız')+'</b><span class="adx-k">'+esc(x.folder)+'</span></div>'+
     '<small class="note" style="margin:0">'+esc(new Date(x.created_at).toLocaleDateString('tr-TR',{day:'numeric',month:'long',year:'numeric'}))+(x.file_name?' · '+esc(x.file_name)+(x.size?' ('+ksSize(x.size)+')':''):'')+'</small>'+
     (note?'<p class="ksn">'+esc(note)+'</p>':'')+
@@ -2131,6 +2148,9 @@ document.addEventListener('click',async function(e){var b=e.target.closest&&e.ta
   if(a==='form'){KS.form=!KS.form;if(KS.form&&KS.f!=='Hepsi')KS.fv.folder=KS.f;ksRe();}
   else if(a==='reload'){KS.rows=null;ksRe();}
   else if(a==='f'){KS.f=b.dataset.v;KS.del=null;ksRe();}
+  else if(a==='soz'){KS.soz=!KS.soz;ksRe();}
+  else if(a==='szd'){KSZ.don=b.dataset.v;ksRe();}
+  else if(a==='szc'){var x=KSZ.d&&KSZ.d.sozler[+b.dataset.i];if(x){var t=x.s+(x.k&&x.k!=='Atasözü'&&x.k!=='Anonim'?' — '+x.k:'');try{await navigator.clipboard.writeText(t);toast('Kopyalandı');}catch(_){toast('Kopyalanamadı');}}}
   else if(a==='spec'){A.tab='sartname';adRender();window.scrollTo(0,0);}
   else if(a==='specpdf'){specPrint(A.draft);}
   else if(a==='save'){if(KS.up)return;var fv=KS.fv,fi=document.getElementById('ksFile'),f=fi&&fi.files&&fi.files[0];
