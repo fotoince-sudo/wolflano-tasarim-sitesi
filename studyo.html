@@ -2394,10 +2394,14 @@ function overflowOf(o,A){
   var hw=(Math.abs(w*c)+Math.abs(h*sn))/2,hh=(Math.abs(w*sn)+Math.abs(h*c))/2;
   return o.x-hw<A.l-1||o.x+hw>A.r+1||o.y-hh<A.t-1||o.y+hh>A.b+1;
 }
+var OVW={};
 function liveWarn(o){
   var ov=$('#ovPill');if(!ov||!o||(g&&g.moved))return;
   var EB=extBox(view.side),AB=areaBox(view.side,cur().area);if(EB)AB={l:Math.min(AB.l,EB.l),t:Math.min(AB.t,EB.t),r:Math.max(AB.r,EB.r),b:Math.max(AB.b,EB.b),w:0,h:0};if(EB){AB.w=AB.r-AB.l;AB.h=AB.b-AB.t;AB.cx=(AB.l+AB.r)/2;AB.cy=(AB.t+AB.b)/2;}
-  ov.hidden=!overflowOf(o,AB);
+  var ovn=overflowOf(o,AB);ov.hidden=!ovn;
+  /* Yazı ya da görsel baskı alanının dışına yeni taştıysa 2 saniyelik kısa uyarı (seçince değil, taşıyınca/büyütünce) */
+  if(ovn&&OVW[o.id]===false){var t=toastEl();t.classList.remove('long');t.textContent='Baskı alanının dışında kalan kısım basılmaz';t.hidden=false;clearTimeout(toastT);toastT=setTimeout(function(){t.hidden=true;},2000);}
+  OVW[o.id]=ovn;
   if(o.type==='image'){var r=qualityOf(o),q=$('#qPill');if(q){q.hidden=!r;if(r){q.className='pill '+r.cls;q.textContent=r.txt;}}}
 }
 function printIssues(){
