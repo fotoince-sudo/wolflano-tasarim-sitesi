@@ -43858,7 +43858,7 @@ async function ses(req, key, body) {
   }
   return j13({ error: "fail" }, 502);
 }
-var cors7, j13, SYS2, FOTO, SYS_SITE, HITS, SES_IP, SES_GUN, SES_TOP, SES_TARIF, SES_NOT, SES_CACHE;
+var cors7, j13, SYS2, FOTO, BILGI, SYS_SITE, HITS, SES_IP, SES_GUN, SES_TOP, SES_TARIF, SES_NOT, SES_CACHE;
 var init_yardim = __esm({
   "../supabase/functions/yardim/index.ts"() {
     init_gemini();
@@ -43911,6 +43911,25 @@ FOTO\u011ERAFLI TASARIM B\u0130LG\u0130S\u0130 (m\xFC\u015Fteri foto\u011Fraf, k
 - \xC7izgi film: "\xC7izgi Filme D\xF6n\xFC\u015Ft\xFCrme \u015Eablonu" se\xE7ilirse foto\u011Fraflar \xF6nce karikat\xFCr g\xF6r\xFCn\xFCm\xFCyle yerle\u015Fir; m\xFC\u015Fteri isterse "Wolf ger\xE7ek \xE7izgi filme \xE7evirsin"e dokunur (\xFCye giri\u015Fi gerekir), Wolf b\xFCt\xFCn foto\u011Fraflar\u0131 birlikte \xE7izer. Tek bir foto\u011Fraf i\xE7in foto\u011Frafa dokunup "Wolf \xE7izsin \xB7 Tarz".
 - Net bask\u0131 i\xE7in foto\u011Fraflar\u0131n b\xFCy\xFCk boyutta (telefonun kendi \xE7ekti\u011Fi orijinal h\xE2li) y\xFCklenmesini \xF6ner.
 - Cevab\u0131n sesli de okunabilir: \xFCr\xFCn kodu, simge ve uzun liste yazma; k\u0131sa, d\xFCz c\xFCmleler kur.`;
+    BILGI = `
+WOLFLANO HAKKINDA B\u0130LMEN GEREKENLER (m\xFC\u015Fteri sorarsa buna g\xF6re, k\u0131sa anlat):
+Kuma\u015F ve kalite: ti\u015F\xF6rt en az 240 g/m\xB2, polo en az 280 g/m\xB2, sweatshirt ve kap\xFC\u015Fonlular en az 380 g/m\xB2. Kal\u0131n, dayan\u0131kl\u0131, \u015Feklini koruyan premium kuma\u015F; "logoya de\u011Fil, kuma\u015Fa para \xF6de".
+Bask\u0131 teknikleri:
+- Giyim (ti\u015F\xF6rt, sweatshirt, kap\xFC\u015Fonlu, polo): Brother GTX dijital tekstil bask\u0131 (DTG). M\xFCrekkep do\u011Frudan kuma\u015Fa i\u015Flenir; su bazl\u0131, sa\u011Fl\u0131\u011Fa zarars\u0131z m\xFCrekkepler. Foto\u011Fraf kalitesinde, s\u0131n\u0131rs\u0131z renk, y\u0131kamaya dayan\u0131kl\u0131; bask\u0131 kuma\u015F\u0131n \xFCst\xFCnde kal\u0131n bir tabaka gibi durmaz, nefes al\u0131r. Uzun \xF6m\xFCr i\xE7in ters \xE7evirip 30 derecede y\u0131ka, bask\u0131n\u0131n \xFCst\xFCne \xFCt\xFC yapma.
+- S\xFCblimasyon: Kupa ve s\xFCblimasyon ti\u015F\xF6rtte kullan\u0131l\u0131r. M\xFCrekkep \u0131s\u0131yla buhar olup y\xFCzeyin i\xE7ine i\u015Fler; \xE7atlamaz, soyulmaz, renkler canl\u0131 kal\u0131r. Yaln\u0131z beyaz ve polyester (ya da kaplamal\u0131) y\xFCzeyde olur; bu y\xFCzden s\xFCblimasyon ti\u015F\xF6rt yaln\u0131z beyazd\u0131r. Uygun fiyatl\u0131, etkinlik, promosyon ve \xE7ok adetli sipari\u015Fler i\xE7in idealdir.
+\xDCr\xFCnler: Wolflano Koleksiyonu (haz\u0131r \xFCr\xFCnler: Kad\u0131n, Erkek, \xC7ocuk; K\u0131z \xE7ocuk ve Erkek \xE7ocuk), Bask\u0131 At\xF6lyesi (kendin tasarla: ti\u015F\xF6rt, sweatshirt, kap\xFC\u015Fonlu, fermuarl\u0131 kap\xFC\u015Fonlu, polo, \u015Fapka, beyaz s\xFCblimasyon ti\u015F\xF6rt), Hediye & Dekor (S\xFCblimasyon kupa, Renkli kupa: i\xE7i ve kulpu renkli, Sihirli kupa: siyaht\u0131r, s\u0131cak su konunca tasar\u0131m g\xF6r\xFCn\xFCr, Logo bask\u0131l\u0131 kupa, Canvas tablo 35 \xD7 50 ve 50 \xD7 70). Kupalar \xFCcretsiz, \xF6zel Wolflano kupa kutusunda gelir. Canvas tabloda bask\u0131 her yanda 4 cm kenarlara sar\u0131l\u0131r, tablo geldi\u011Fi gibi duvara as\u0131l\u0131r.
+Stok: T\xFCkendi yazan \xFCr\xFCn sepete eklenemez; m\xFC\u015Fteri favorilere ekleyip "\xFCr\xFCn gelince haber ver" diyebilir (\xFCye olmas\u0131 gerekir, \xFCr\xFCn gelince haber verilir). Bask\u0131 At\xF6lyesi'nde t\xFCkenmi\u015F \xFCr\xFCne de tasar\u0131m yap\u0131labilir, tasar\u0131m favorilere kaydedilir. Stokta olmayan \xFCr\xFCn\xFC asla "var" deme; g\xFCncel durumu sana verilen listeden al.
+Tasar\u0131m st\xFCdyosunda neler var:
+- "\u015Eablon": haz\u0131r tasar\u0131mlar. Konular: Kurt geziyor (asil Wolflano kurdu \u015Fehirlerde ve y\xF6resel lezzetlerle), \xD6zel g\xFCnler (Y\u0131lba\u015F\u0131, Sevgililer G\xFCn\xFC, Anneler ve Babalar G\xFCn\xFC, \xD6\u011Fretmenler G\xFCn\xFC, 29 Ekim, 10 Kas\u0131m, do\u011Fum g\xFCn\xFC, mezuniyet), Erkek, Kad\u0131n, \xC7ocuk, \u0130mza koleksiyonu, Wolf tasar\u0131mlar\u0131, T\xFCrkiye (T\xFCrk bayra\u011F\u0131 \xE7e\u015Fitleri), \u015Eehirler ve k\xF6klerimiz (\xC7e\u015Fme, Bodrum, Antalya, \u0130stanbul, \u0130zmir, Kapadokya...), Spor ve kul\xFCp, Okul ve s\u0131n\u0131f, \u015Eirket ve ekip, meslekler, Aile ve a\u015Fk, Kutlama ve etkinlik, Do\u011Fa ve macera, Retro ve arma, Yaz\u0131 ve s\xF6z, Minimal, m\xFCzik, araba ve motosiklet, foto\u011Frafl\u0131 tasar\u0131mlar. Her \xFCr\xFCn yaln\u0131z kendi \xF6l\xE7\xFCs\xFCne uygun \u015Fablonlar\u0131 g\xF6r\xFCr (kupa, canvas ve \u015Fapkan\u0131n ayr\u0131 \u015Fablonlar\u0131 var).
+- "S\xFCslemeler": y\u0131ld\u0131z, \u0131\u015F\u0131lt\u0131, kurdele, balon, T\xFCrk bayra\u011F\u0131 gibi s\xFCsler; tasar\u0131ma elle eklenir.
+- "G\xF6rsel" \u2192 "Zeminler": desenler ve zeminler; tasar\u0131ma arka plan olarak ya da yaz\u0131n\u0131n/\u015Feklin i\xE7ine kullan\u0131l\u0131r.
+- "Yaz\u0131y\u0131 giydir": Yaz\u0131 se\xE7iliyken bu d\xFC\u011Fmeye bas\u0131l\u0131r, foto\u011Fraf y\xFCklenir ya da Zeminler'den desen se\xE7ilir; foto\u011Fraf/desen yaln\u0131z harflerin i\xE7inde g\xF6r\xFCn\xFCr (kal\u0131n yaz\u0131 tiplerinde \xE7ok etkileyici olur, \xF6r. isim i\xE7inde aile foto\u011Fraf\u0131 ya da kamuflaj, mermer, \xE7i\xE7ek deseni).
+- "\u015Eekli giydir": Ayn\u0131s\u0131 \u015Fekiller i\xE7in; kalp, y\u0131ld\u0131z, daire gibi bir \u015Feklin i\xE7ine foto\u011Fraf ya da desen yerle\u015Fir.
+- "Yaz\u0131": yaz\u0131 tipi, renk, kontur, e\u011Fik ve kavisli yaz\u0131; "Yaz\u0131y\u0131 ay\u0131r" harfleri tek tek d\xFCzenletir.
+- "Wolf": yapay zek\xE2 tasar\u0131mc\u0131. Foto\u011Fraf\u0131 karikat\xFCr, kalem \xE7izim, ill\xFCstrasyon ya da ya\u011Fl\u0131 boya yapar, fikirden \xE7izim yapar, kolaj dizer. G\xFCnde 3 hak \xFCcretsizdir (\xFCye giri\u015Fiyle).
+Teslimat ve \xF6deme: Kargo ve teslim noktas\u0131 \xFCcretlerini yaln\u0131z G\xDCNCEL B\u0130LG\u0130'den al. Kargo s\xFCresi, iade ve de\u011Fi\u015Fim \u015Fartlar\u0131n\u0131 uydurma; ekibe y\xF6nlendir. Sitedeki fiyatlar KDV dahildir.
+Firmalar: "Wolflano Toptan" sayfas\u0131 yaln\u0131z vergi levhal\u0131 firmalar i\xE7indir (ba\u015Fvuru onayla a\xE7\u0131l\u0131r, adede g\xF6re \xF6zel fiyat). Firma logosu bask\u0131l\u0131 \xFCr\xFCnler ve kurumsal i\u015Fler "Kurumsal" sayfas\u0131ndad\u0131r. Okul, kul\xFCp ve gruplar Bask\u0131 At\xF6lyesi'nde tasarlar ya da toplu teklif i\xE7in WhatsApp'tan yazar.
+Di\u011Fer sayfalar: Hakk\u0131m\u0131zda (markan\u0131n hik\xE2yesi), Kurdun \u0130zinde (T\xFCrk k\xFClt\xFCr\xFC ve k\xF6klerimizden hik\xE2yeler, her hik\xE2yenin alt\u0131nda ilgili tasar\u0131mlar).`;
     SYS_SITE = `Sen Wolflano'nun sitedeki m\xFC\u015Fteri dan\u0131\u015Fman\u0131s\u0131n. Ad\u0131n Ayb\xFCke: Sel\xE7uklu sava\u015F\xE7\u0131 ruhlu, cesur, s\u0131cak ve yard\u0131msever bir gen\xE7 kad\u0131n. Kendini tan\u0131tman gerekirse "Ben Ayb\xFCke, Wolflano'nun dan\u0131\u015Fman\u0131y\u0131m" de. Amac\u0131n m\xFC\u015Fteriye do\u011Fru \xFCr\xFCn\xFC bulup sat\u0131n almas\u0131na yard\u0131m etmek; iyi bir ma\u011Faza dan\u0131\u015Fman\u0131 gibi: ilgili, d\xFCr\xFCst, k\u0131sa. Israr etme, bask\u0131 yapma, abartma.
 
 Wolflano: \u0130zmir'den, sportif-g\xFCnl\xFCk giyim markas\u0131. S\xF6z\xFC: "Logoya de\u011Fil, kuma\u015Fa para \xF6de." Kaliteden \xF6d\xFCn vermez: ti\u015F\xF6rt en az 240 g, polo en az 280 g, sweatshirt en az 380 g kuma\u015F. B\xF6l\xFCmler:
@@ -43956,11 +43975,11 @@ Cevab\u0131n\u0131 SADECE \u015Fu JSON bi\xE7iminde ver:
         const list = Array.isArray(body.messages) ? body.messages.slice(-8) : [];
         if (!list.length) return j13({ error: "empty", message: "Sorunu yaz." }, 400);
         const site = body.mode === "site";
-        const ctx = String(body.context || "").slice(0, site ? 7e3 : 600);
-        const msgs = [{ role: "system", content: site ? SYS_SITE + FOTO + (ctx ? `
+        const ctx = String(body.context || "").slice(0, site ? 12e3 : 1200);
+        const msgs = [{ role: "system", content: site ? SYS_SITE + BILGI + FOTO + (ctx ? `
 
 G\xDCNCEL B\u0130LG\u0130 (m\xFC\u015Fterinin bulundu\u011Fu sayfa, \xFCr\xFCn listesi "id | ad | fiyat | not", bask\u0131 \xFCcretleri):
-${ctx}` : "") : SYS2 + FOTO + (ctx ? `
+${ctx}` : "") : SYS2 + BILGI + FOTO + (ctx ? `
 
 M\xFC\u015Fterinin \u015Fu anki ekran\u0131 ve g\xFCncel \xFCcretler: ${ctx}` : "") }];
         list.forEach((m) => {

@@ -6096,8 +6096,9 @@ var DATA_P=(async function(){
       var cp=h.indexOf('urun-')===0?byId(h.slice(5)):null;c.push('Sayfa: '+(cp?'Ürün sayfası, baktığı ürün: '+cp.id+' '+(cp.name||'')+' '+money(cp.price):(pg[h]||h)));}catch(_){}
     try{var cq=0;for(var k in cart)cq+=cart[k]||0;cq+=scQtyAll();if(cq)c.push('Sepetinde '+cq+' ürün var');}catch(_){}
     try{var tr=(TIERS||[]).filter(function(t){return t[0]>0&&t[1]>0;}).map(function(t){return t[0]+' adet ve üzeri %'+t[1];});if(tr.length)c.push('Adet indirimi: '+tr.join(', '));}catch(_){}
-    try{c.push('Baskısız ürünler (Baskı Atölyesi, fiyat + baskı): '+(BLANKS||[]).filter(function(b){return !out(b);}).slice(0,24).map(function(b){return b.name+' '+money(b.price)+(b.a4?' (logo +'+money(b.logo)+', A4 +'+money(b.a4)+', A3 +'+money(b.a4*(A3_KAT||2))+')':'');}).join('; '));}catch(_){}
-    var L=prods(),s='';L.forEach(function(p){var n='';try{n=pName(p);}catch(_){n=p.name||'';}var r=p.id+' | '+n+(p.color?' '+p.color:'')+' | '+money(p.price)+(p.old&&p.old>p.price?' (eski '+money(p.old)+')':'')+(out(p)?' | Tükendi':'')+'\n';if(s.length+r.length<4600)s+=r;});
+    try{c.push('Baskısız ürünler (Baskı Atölyesi, fiyat + baskı; "Tükendi" olan şu an stokta yok): '+(BLANKS||[]).slice(0,40).map(function(b){return b.name+(b.color?' '+b.color:'')+' '+money(b.price)+(out(b)?' Tükendi':'')+(b.a4?' (logo +'+money(b.logo)+', A4 +'+money(b.a4)+', A3 +'+money(b.a4*(A3_KAT||2))+')':'');}).join('; '));}catch(_){}
+    try{var sh=D.ship||{};c.push('Teslimat: kargo '+(+sh.fee>0?money(+sh.fee):'ücretsiz')+(+sh.free>0?', '+money(+sh.free)+' ve üzeri siparişte kargo ücretsiz':'')+'; İzmir içi teslim noktasından teslim alma '+money(pickFee()));}catch(_){}
+    var L=prods(),s='';L.forEach(function(p){var n='';try{n=pName(p);}catch(_){n=p.name||'';}var r=p.id+' | '+n+(p.color?' '+p.color:'')+' | '+money(p.price)+(p.old&&p.old>p.price?' (eski '+money(p.old)+')':'')+(out(p)?' | Tükendi':'')+'\n';if(s.length+r.length<7000)s+=r;});
     c.push('Ürünler:\n'+s);return c.join('\n');}
   /* Aybüke'nin sesi: önce yapay zekâ sesi (sunucu: yardim, mode: ses; doğal kadın sesi, ücretli, kuruşlar), olmazsa telefonun en iyi Türkçe sesi.
      iPhone sesin çalmasına yalnız dokunuşla izin verir: her dokunuşta (sor, mikrofon, aç) ses kanalı açık tutulur (aysAc). */
