@@ -40,7 +40,7 @@ export async function geminiChat(sys: string, msgs: GMsg[], o: { json?: boolean;
   }
   while (contents.length && contents[0].role !== 'user') contents.shift();
   if (!contents.length) return { ok: false, status: 400, text: '', err: 'empty', model: '' };
-  const models = [Deno.env.get(o.env || 'GEMINI_CHAT_MODEL') || '', 'gemini-3.8-flash', 'gemini-flash-latest', 'gemini-3.5-flash', 'gemini-3.1-flash-lite', 'gemini-flash-lite-latest']
+  const models = [Deno.env.get(o.env || 'GEMINI_CHAT_MODEL') || '', 'gemini-3.5-flash-lite', 'gemini-flash-lite-latest', 'gemini-3.1-flash-lite', 'gemini-3.5-flash']
     .filter((m, i, a) => m && a.indexOf(m) === i);
   let last: GOut = { ok: false, status: 0, text: '', err: '', model: '' };
   for (const model of models) {
@@ -48,13 +48,15 @@ export async function geminiChat(sys: string, msgs: GMsg[], o: { json?: boolean;
     const gc: Record<string, unknown> = { maxOutputTokens: (o.maxTokens || 1200) + (/^gemini-2\.5/.test(model) ? 0 : 3000), temperature: 0.7 };
     if (o.json) gc.responseMimeType = 'application/json';
     if (/^gemini-2\.5-flash/.test(model)) gc.thinkingConfig = { thinkingBudget: 0 };
-    const { r, j } = await call(model, { systemInstruction: { parts: [{ text: sys }] }, contents, generationConfig: gc }, o.timeout || 60000);
+    let r: Response, j: any;
+    try { ({ r, j } = await call(model, { systemInstruction: { parts: [{ text: sys }] }, contents, generationConfig: gc }, Math.min(o.timeout || 60000, 25000))); }
+    catch (e) { console.error('gemini', model, String(e)); last = { ok: false, status: 504, text: '', err: 'timeout', model }; continue; }
     const err = JSON.stringify(j?.error || '').toLowerCase();
     const text = (j?.candidates?.[0]?.content?.parts || []).map((p: any) => p?.text || '').join('').trim();
     last = { ok: r.ok && !!text, status: r.status, text, err, model };
     if (last.ok) { console.log('gemini', model); return last; }
     console.error('gemini', model, r.status, (err || JSON.stringify(j?.promptFeedback || j?.candidates?.[0]?.finishReason || '')).slice(0, 200));
-    if (!skip(r.status, err)) break;
+    if (!(skip(r.status, err) || r.status === 503 || r.status === 429 || r.status >= 500)) break;
   }
   return last;
 }
