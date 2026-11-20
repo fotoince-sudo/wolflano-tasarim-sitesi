@@ -4564,9 +4564,11 @@ function fxTarget(){var o=selObj();if(!o||o.type!=='text'){toast('Önce bir yaz�
 function refreshText(o){updateEl(els[o.id],o);measureText(o);fitText(o);updateSel();renderFxRows();}
 /* Eğilen yazı baskı alanından taşarsa alana sığacak kadar küçülür */
 function fitText(o){var A=areaBox(view.side,cur().area),k=Math.min(A.w*0.96/o.w,A.h*0.96/o.h);if(k<1){o.size*=k;updateEl(els[o.id],o);measureText(o);}}
+/* Şekiller tek listede: yalnız bu dört konu, sırayla ve kategori düğmesi olmadan */
+var CLIP_KEEP=['Özel günler','Süslemeler','Yıldız ve ışıltı','Türk bayrağı'];
 function renderClipGrid(){
-  var h='';
-  CLIPS.forEach(function(c){if(c[2]===view.clipCat)h+='<button class="clipb" data-clip="'+c[0]+'" aria-label="'+c[1]+'">'+clipSVG(c[0])+'</button>';});
+  var h='';try{$('#clipCats').hidden=true;}catch(_){}
+  CLIP_KEEP.forEach(function(k){CLIPS.forEach(function(c){if(c[2]===k)h+='<button class="clipb" data-clip="'+c[0]+'" aria-label="'+c[1]+'">'+clipSVG(c[0])+'</button>';});});
   $('#clipGrid').innerHTML=h;
 }
 function renderUploads(){try{renderZem();}catch(_){}
@@ -5642,7 +5644,7 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
   renderWolf=function(){baseWolf();var g=$('#wfGrid');if(!g)return;var l=(WOLF_CAT&&TPL_ITEMS[WOLF_CAT])||[];
     g.insertAdjacentHTML('afterbegin',l.map(function(it){var u=srcOf(it.img);return '<button class="wcard" data-sitem="'+esc(u)+'"><div class="prev" style="background:'+state.tee+'"><img alt="" src="'+esc(u)+'" loading="lazy" style="position:absolute;left:50%;top:10px;width:139px;height:196px;object-fit:contain;transform:translateX(-50%)"></div><b>'+esc(it.name||'Wolf tasarımı')+'</b><small>A4 dikey · A4 yatay · A3</small></button>';}).join(''));};
   var baseClip=renderClipGrid,baseTpl=renderTpl;
-  renderClipGrid=function(){baseClip();var g=$('#clipGrid');if(g)g.insertAdjacentHTML('beforeend',itemBtns(CLIP_ITEMS[view.clipCat]));};
+  renderClipGrid=function(){baseClip();var g=$('#clipGrid');if(g)CLIP_KEEP.forEach(function(k){if(CLIP_ITEMS[k])g.insertAdjacentHTML('beforeend',itemBtns(CLIP_ITEMS[k]));});};
   renderTpl=function(){
     baseTpl();var g=$('#tplGrid'),q=(($('#tplQ')&&$('#tplQ').value)||'').trim();if(!g)return;
     $$('#tplGrid .tpl').forEach(function(b){var t=TPLS[+b.dataset.tpl];if(t&&HIDE_TPL[t.c])b.remove();});
