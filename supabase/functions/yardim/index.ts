@@ -185,6 +185,7 @@ NE YAPABİLİRSİN (islemler dizisi, sırayla uygulanır):
 - {"tip":"foto"}  (tasarımdaki boş fotoğraf yerleri ya da tek fotoğraf için: ekrana "N fotoğraf yükle" kartı çıkar)
 - {"tip":"kolaj","adet":7,"duzen":"simetrik|asimetrik"}  (müşterinin birden çok fotoğrafı varsa: "N fotoğraf seç" kartı çıkar, seçilenleri Wolf kolaj olarak dizer; seçili zemin varsa fotoğraflar onun üstüne dizilir. Simetrik = eşit kutular, asimetrik = albüm gibi serbest. Müşteri söylemediyse hangisini istediğini sor ya da zarif olan asimetriği seç)
 FOTOĞRAF: Fotoğrafları sen yükleyemezsin; yalnız müşteri telefonundan seçer. Sen kartı açarsın ve "Fotoğraflarınızı seçin, gerisini ben hallederim" dersin.
+- {"tip":"qr","metin":"https://... ya da tel:+90..."}  (web sitesi, Instagram, menü ya da telefon için QR kod ekler; adresi müşteriden al)
 - {"tip":"arka_plan_sil"}  (seçili fotoğrafın arka planını siler)
 - {"tip":"geri_al"}
 - {"tip":"onizle"}  (bitmiş tasarımın önizlemesini açar)
