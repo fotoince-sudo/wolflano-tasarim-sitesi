@@ -17465,7 +17465,7 @@ var require_auth = __commonJS({
       if (rel === "verify" && method === "GET") {
         const type = params.get("type"), to = safeRedirect(params.get("redirect_to") || ayar2.siteUrl + "/");
         const kind = type === "recovery" ? "recovery" : "signup";
-        const uid = await useToken(params.get("token"), kind, true);
+        const uid = await useToken(params.get("token"), kind, false);
         if (!uid) return { status: 303, headers: { Location: to.split("#")[0] + "#error=access_denied&error_code=otp_expired&error_description=Email+link+is+invalid+or+has+expired" }, body: null };
         if (kind === "signup") await owner.query("update public.auth_users set email_confirmed_at = coalesce(email_confirmed_at, now()) where id = $1", [uid]);
         const s4 = await session(await byId(uid));
@@ -17516,7 +17516,8 @@ var require_auth = __commonJS({
           if (b.password !== void 0) {
             const pw = String(b.password);
             if (pw.length < 6 || pw.length > 72) return err(422, "weak_password", "Password should be at least 6 characters.");
-            await owner.query("update public.auth_users set encrypted_password = $2, updated_at = now() where id = $1", [u.id, await hashPw(pw)]);
+            await owner.query("update public.auth_users set encrypted_password = $2, email_confirmed_at = coalesce(email_confirmed_at, now()), updated_at = now() where id = $1", [u.id, await hashPw(pw)]);
+            await owner.query("update public.auth_tokens set used_at = now() where user_id = $1 and kind in ('recovery', 'signup') and used_at is null", [u.id]);
           }
           if (b.data && typeof b.data === "object" && !Array.isArray(b.data)) {
             await owner.query("update public.auth_users set raw_user_meta_data = coalesce(raw_user_meta_data, '{}') || $2::jsonb, updated_at = now() where id = $1", [u.id, JSON.stringify(b.data)]);
