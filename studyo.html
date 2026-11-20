@@ -699,6 +699,7 @@ img{-webkit-touch-callout:none;-webkit-user-drag:none}
       <button data-c="all" data-t="text clip image"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" stroke-dasharray="3 2.4"/><rect x="8" y="8" width="8" height="8" rx="1"/></svg>Tümünü seç</button>
       <button data-c="dup" data-t="text clip image"><svg class="i" viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V6a2 2 0 0 1 2-2h9"/></svg>Kopyala</button>
       <button data-c="lock" data-t="text clip image" id="lockBtn"><svg class="i" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg><span>Kilitle</span></button>
+      <button data-c="giydir" data-t="text" class="aibtn"><svg class="i" viewBox="0 0 24 24"><path d="M4 6V4h16v2M12 4v16M9 20h6"/><path d="M15.5 9.5l2-2 3 3-2 2" /><circle cx="18.5" cy="16.5" r="2.5"/></svg>Yazıyı giydir</button>
       <button data-c="edit" data-t="text"><svg class="i" viewBox="0 0 24 24"><path d="M4 20l4-1 11-11-3-3L5 16z"/></svg>Düzenle</button>
       <button data-c="font" data-t="text"><svg class="i" viewBox="0 0 24 24"><path d="M5 6V4h14v2M12 4v16M9 20h6"/></svg>Yazı tipi</button>
       <button data-c="stroke" data-t="text"><svg class="i" viewBox="0 0 24 24"><rect x="5" y="5" width="14" height="14" rx="3" stroke-dasharray="3 2.4"/></svg>Kontur</button>
@@ -2544,6 +2545,7 @@ function fitMugBackdrop(){
   bg.fitPrintArea=true;bg.x=A.cx;bg.y=A.cy;bg.w=A.w;bg.h=A.h;bg.rot=0;
 }
 function replaceZemLayer(asset,frame,coveredFrame){
+  if(GIYDIR){var gid='a'+(++assetN);assets[gid]=asset;addImageObj(gid);return;}
   var A=areaBox(view.side,cur().area),L=cur().objs,previous=frame||L.find(function(o){return o.zem;});
   var o=previous||newBase('image'),scale=Math.max(A.w/asset.w,A.h/asset.h),id='a'+(++assetN);
   assets[id]=asset;
@@ -2595,12 +2597,12 @@ document.addEventListener('click',function(e){if(e.target.closest&&e.target.clos
 function addImageObj(assetId){
   var A=areaBox(view.side,cur().area),a=assets[assetId],o=newBase('image'),asp=a.w/a.h;
   o.assetId=assetId;o.w=Math.min(A.w*0.8,A.h*0.8*asp);o.h=o.w/asp;
-  cur().objs.push(o);var hf=holeFit(o);renderObjects();select(o.id);pushHist();
+  cur().objs.push(o);if(giydirAfterAdd(o))return;var hf=holeFit(o);renderObjects();select(o.id);pushHist();
   if(hf)toast('Fotoğraf çerçevedeki yerine oturdu. Kaydırıp büyüterek ayarlayabilirsin.');
 }
 function loadFile(file){
   /* Şablonda boş fotoğraf yeri varsa Görsel'den yüklenen fotoğraf da ilk boş yere kendiliğinden oturur */
-  if(!view.aiNext&&emptySlots().length){fillSlot(emptySlots()[0],file).catch(function(){toast('Bu dosya açılamadı. PNG veya JPG dene.');});try{if(view.tab&&innerWidth<700)closeTab();}catch(_){}return;}
+  if(!view.aiNext&&!GIYDIR&&emptySlots().length){fillSlot(emptySlots()[0],file).catch(function(){toast('Bu dosya açılamadı. PNG veya JPG dene.');});try{if(view.tab&&innerWidth<700)closeTab();}catch(_){}return;}
   var url=URL.createObjectURL(file),im=new Image();
   im.onload=async function(){
     url=await uploadedPhotoURL(file,url,im);
@@ -3521,6 +3523,18 @@ function shapeClip(c,sh){if(!sh||sh==='rect')return c;var W=c.width,H=c.height,o
 function crpShape(sh){CRP.s=sh;var el=$('#crpR');if(el){el.className='crp-r'+(sh&&sh!=='rect'?' s-'+sh:'');el.innerHTML=sh==='heart'?'<svg class="crp-hs" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><path d="M50 92C22 70 4 52 4 31 4 15 16 5 29 5c9 0 16 5 21 13C55 10 62 5 71 5c13 0 25 10 25 26 0 21-18 39-46 61z" fill="none" stroke="#fff" stroke-width="2" vector-effect="non-scaling-stroke"/></svg>':'';}
   $$('.crp-sh [data-crs]').forEach(function(x){x.classList.toggle('on',x.dataset.crs===(sh||'rect'));});
   if(sh==='circle'){$$('.crp-f1 [data-crp]').forEach(function(x){x.classList.toggle('on',x.dataset.crp==='sq');});crpAspect(1);}}
+/* ---------- Yazıyı giydir ----------
+   Yazı seçiliyken "Yazıyı giydir": müşteri bir fotoğraf yükler ya da Zeminler'den bir desen seçer; görsel yazıyı kaplayacak
+   büyüklükte yazının üstüne konur ve "Yazının içine" kendiliğinden uygulanır. Böylece özelliği bilmeyen müşteri de bulur. */
+var GIYDIR=null,GIYDIR_AT=0;
+function giydirStart(){var t=selObj();if(!t||t.type!=='text'||t.lock)return;GIYDIR=t.id;GIYDIR_AT=Date.now();openTab('image');
+  longToast('Yazıyı giydir: bir fotoğraf yükle ya da Zeminler\'den bir desen seç; yazının içine yerleştireceğim.');}
+function giydirAfterAdd(o){if(!GIYDIR)return false;var id=GIYDIR;GIYDIR=null;if(Date.now()-GIYDIR_AT>5*60e3)return false;
+  var t=cur().objs.filter(function(q){return q.id===id&&q.type==='text';})[0];if(!t)return false;
+  if(!isWarped(t))measureText(t);var tb=objBB(t),bw=tb.r-tb.l,bh=tb.b-tb.t,asp=(o.w&&o.h)?o.w/o.h:1,w=Math.max(bw,bh*asp)*1.06;
+  o.w=w;o.h=w/asp;o.x=t.x;o.y=t.y;o.rot=0;renderObjects();select(o.id);
+  try{if(view.tab&&innerWidth<700)closeTab();}catch(_){}
+  intextGo();return true;}
 /* ---------- Fotoğraflı yazı ----------
    Fotoğraf bir yazının üstüne konur, "Yazının içine"ye basılır: fotoğrafın yalnız harflerin içinde kalan kısmı görünür, dışı kesilir.
    Yazının konturu varsa harflerin çevresinde kalır. Sonuç tek bir görsel olur; "Yazıyı ayır" ile yazı ve fotoğraf eski hâline döner. */
@@ -4867,6 +4881,7 @@ function ctxClick(e){
   else if(c==='holes')openHoles();
   else if(c==='crop')openCrop();
   else if(c==='intext')intextGo();
+  else if(c==='giydir')giydirStart();
   else if(c==='tsplit')intextSplit();
   else if(c==='wout')showWout();
   else if(c==='fx')showFx();
