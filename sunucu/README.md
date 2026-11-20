@@ -10,6 +10,7 @@ Supabase'in yerine TurkHosting'de (Plesk, Node.js) çalışan sunucu. Site aynı
 | `/functions/v1/...` | `supabase/functions` içindeki 14 fonksiyon, kodu değişmeden |
 | `/wf/durum` | Sunucunun durumu (gizli bilgi içermez) |
 | `/wf/uyan` | Zamanlanmış işleri (stok haberi, doğum günü) kontrol eder |
+| `/wf/ses` | Aybüke'nin sesini dener: kısa bir cümle seslendirir, sonucu yazar |
 
 ## Güvenlik
 - Veritabanına iki kullanıcıyla bağlanır. `wolflano_usr` tabloların sahibidir; kurulum ve sunucu fonksiyonları onu kullanır.

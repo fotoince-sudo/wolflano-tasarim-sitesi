@@ -17993,13 +17993,25 @@ async function geminiChat(sys, msgs, o = {}) {
 async function geminiTts(text, tarif) {
   const models = [Deno.env.get("GEMINI_TTS_MODEL") || "", "gemini-3.8-flash-tts", "gemini-3.1-flash-tts-preview", "gemini-2.5-flash-preview-tts"].filter((m, i, a) => m && a.indexOf(m) === i);
   const voices = [Deno.env.get("GEMINI_TTS_VOICE") || "", "Sulafat", "Kore"].filter((v, i, a) => v && a.indexOf(v) === i);
+  const bitis = Date.now() + 5e4;
   for (const model of models) {
     for (const voice of voices) {
-      const { r, j: j14 } = await call(model, {
-        contents: [{ parts: [{ text: `${tarif}:
+      const kalan = bitis - Date.now();
+      if (kalan < 4e3) {
+        console.error("gemini-tts sure doldu");
+        return null;
+      }
+      let r, j14;
+      try {
+        ({ r, j: j14 } = await call(model, {
+          contents: [{ parts: [{ text: `${tarif}:
 ${text}` }] }],
-        generationConfig: { responseModalities: ["AUDIO"], speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: voice } } } }
-      }, 4e4);
+          generationConfig: { responseModalities: ["AUDIO"], speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: voice } } } }
+        }, Math.min(3e4, kalan)));
+      } catch (e) {
+        console.error("gemini-tts", model, voice, "zaman a\u015F\u0131m\u0131/ba\u011Flant\u0131", String(e).slice(0, 120));
+        break;
+      }
       const part = (j14?.candidates?.[0]?.content?.parts || []).find((p) => p?.inlineData?.data);
       if (r.ok && part) {
         const rate = Number(/rate=(\d+)/.exec(part.inlineData.mimeType || "")?.[1] || 24e3);
@@ -44166,6 +44178,7 @@ async function handle(request, ip) {
     return jres(200, durum());
   }
   if (p === "/wf/gemini") return jres(200, await geminiDene());
+  if (p === "/wf/ses") return jres(200, await sesDene());
   if (p === "/wf/uyan") {
     await hazir;
     zamanla().catch(() => {
@@ -44265,6 +44278,44 @@ async function geminiDene() {
   geminiSonuc = out2;
   return out2;
 }
+var sesSon = 0;
+var sesSonuc = null;
+async function sesDene() {
+  if (sesSonuc && Date.now() - sesSon < 2e4) return sesSonuc;
+  const key = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY || "";
+  const satirlar = [], eski = console.error;
+  console.error = (...a) => {
+    let t = a.map(String).join(" ");
+    if (key) {
+      const lk = key.toLowerCase();
+      let i;
+      while ((i = t.toLowerCase().indexOf(lk)) >= 0) t = t.slice(0, i) + "***" + t.slice(i + key.length);
+    }
+    satirlar.push(t.slice(0, 300));
+    eski(...a);
+  };
+  const t0 = Date.now(), out2 = { gemini: key ? "ayarl\u0131" : "GEMINI_API_KEY girilmedi", tts_model: process.env.GEMINI_TTS_MODEL || "(varsay\u0131lan s\u0131ra)" };
+  try {
+    const fn = fonksiyon("yardim");
+    const r = await fn(new Request(`${ayar.publicUrl}/functions/v1/yardim`, { method: "POST", headers: { "Content-Type": "application/json", "x-forwarded-for": "ses-deneme-" + Date.now() }, body: JSON.stringify({ mode: "ses", text: "Merhaba, ben Ayb\xFCke. Sesim geliyor mu?" }) }));
+    const b = new Uint8Array(await r.arrayBuffer());
+    out2.durum = r.status;
+    out2.tur = r.headers.get("content-type");
+    out2.boyut = b.length;
+    out2.sonuc = r.ok && /audio/.test(out2.tur || "") ? "SES \xC7ALI\u015EIYOR" : "SES GELMED\u0130";
+    if (!r.ok) out2.cevap = new TextDecoder().decode(b).slice(0, 200);
+  } catch (e) {
+    out2.sonuc = "SES GELMED\u0130";
+    out2.hata = String(e && e.message || e).slice(0, 200);
+  } finally {
+    console.error = eski;
+  }
+  out2.sn = (Date.now() - t0) / 1e3;
+  out2.ayrinti = satirlar.slice(-8);
+  sesSon = Date.now();
+  sesSonuc = out2;
+  return out2;
+}
 function durum() {
   return {
     ad: "Wolflano sunucusu",
@@ -44277,7 +44328,7 @@ function durum() {
     kurulum: Object.fromEntries(bilgi.kurulum),
     dosyalar: bilgi.depo,
     eposta: process.env.SMTP_PASS ? "ayarl\u0131" : "SMTP_PASS girilmedi (\xFCyelik ve sipari\u015F e-postalar\u0131 gitmez)",
-    yapay_zeka: process.env.GEMINI_API_KEY ? "Gemini ayarl\u0131 (deneme: /wf/gemini)" : process.env.OPENAI_API_KEY ? "OpenAI ayarl\u0131" : "GEMINI_API_KEY girilmedi (Wolf ve Ayb\xFCke \xE7al\u0131\u015Fmaz)",
+    yapay_zeka: process.env.GEMINI_API_KEY ? "Gemini ayarl\u0131 (deneme: /wf/gemini, ses: /wf/ses)" : process.env.OPENAI_API_KEY ? "OpenAI ayarl\u0131" : "GEMINI_API_KEY girilmedi (Wolf ve Ayb\xFCke \xE7al\u0131\u015Fmaz)",
     fonksiyonlar: ADLAR.length,
     adres: ayar.publicUrl
   };

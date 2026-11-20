@@ -92,6 +92,7 @@ async function handle(request, ip) {
     return jres(200, durum());
   }
   if (p === '/wf/gemini') return jres(200, await geminiDene());
+  if (p === '/wf/ses') return jres(200, await sesDene());
   if (p === '/wf/uyan') { await hazir; zamanla().catch(() => {}); return jres(200, { ok: true }); }
 
   await hazir;
@@ -179,6 +180,28 @@ async function geminiDene() {
   return out;
 }
 
+// Aybüke'nin sesi denemesi: kısa bir cümle seslendirilir, sonuç ve Gemini'nin hata satırları gösterilir (anahtar yazdırılmaz)
+let sesSon = 0, sesSonuc = null;
+async function sesDene() {
+  if (sesSonuc && Date.now() - sesSon < 20000) return sesSonuc;
+  const key = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY || '';
+  const satirlar = [], eski = console.error;
+  console.error = (...a) => { let t = a.map(String).join(' '); if (key) { const lk = key.toLowerCase(); let i; while ((i = t.toLowerCase().indexOf(lk)) >= 0) t = t.slice(0, i) + '***' + t.slice(i + key.length); } satirlar.push(t.slice(0, 300)); eski(...a); };
+  const t0 = Date.now(), out = { gemini: key ? 'ayarlı' : 'GEMINI_API_KEY girilmedi', tts_model: process.env.GEMINI_TTS_MODEL || '(varsayılan sıra)' };
+  try {
+    const fn = fonksiyon('yardim');
+    const r = await fn(new Request(`${ayar.publicUrl}/functions/v1/yardim`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-forwarded-for': 'ses-deneme-' + Date.now() }, body: JSON.stringify({ mode: 'ses', text: 'Merhaba, ben Aybüke. Sesim geliyor mu?' }) }));
+    const b = new Uint8Array(await r.arrayBuffer());
+    out.durum = r.status; out.tur = r.headers.get('content-type'); out.boyut = b.length;
+    out.sonuc = r.ok && /audio/.test(out.tur || '') ? 'SES ÇALIŞIYOR' : 'SES GELMEDİ';
+    if (!r.ok) out.cevap = new TextDecoder().decode(b).slice(0, 200);
+  } catch (e) { out.sonuc = 'SES GELMEDİ'; out.hata = String((e && e.message) || e).slice(0, 200); }
+  finally { console.error = eski; }
+  out.sn = (Date.now() - t0) / 1000; out.ayrinti = satirlar.slice(-8);
+  sesSon = Date.now(); sesSonuc = out;
+  return out;
+}
+
 function durum() {
   return {
     ad: 'Wolflano sunucusu', surum: bilgi.surum, basladi: bilgi.basladi,
@@ -188,7 +211,7 @@ function durum() {
     kurulum: Object.fromEntries(bilgi.kurulum),
     dosyalar: bilgi.depo,
     eposta: process.env.SMTP_PASS ? 'ayarlı' : 'SMTP_PASS girilmedi (üyelik ve sipariş e-postaları gitmez)',
-    yapay_zeka: process.env.GEMINI_API_KEY ? 'Gemini ayarlı (deneme: /wf/gemini)' : process.env.OPENAI_API_KEY ? 'OpenAI ayarlı' : 'GEMINI_API_KEY girilmedi (Wolf ve Aybüke çalışmaz)',
+    yapay_zeka: process.env.GEMINI_API_KEY ? 'Gemini ayarlı (deneme: /wf/gemini, ses: /wf/ses)' : process.env.OPENAI_API_KEY ? 'OpenAI ayarlı' : 'GEMINI_API_KEY girilmedi (Wolf ve Aybüke çalışmaz)',
     fonksiyonlar: ADLAR.length,
     adres: ayar.publicUrl,
   };
