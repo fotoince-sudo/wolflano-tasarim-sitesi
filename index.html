@@ -994,6 +994,10 @@ function mailLink(){var M=(CONTACT&&CONTACT.mail)||'info@wolflano.com.tr';return
 function sellerLine(){var iv=(D&&D.invoice)||{},M=(CONTACT&&CONTACT.mail)||'info@wolflano.com.tr',T=(CONTACT&&CONTACT.tel)||'';
   return [esc(iv.title||'Wolflano'),iv.taxNo?'Vergi no: '+esc(iv.taxNo)+(iv.taxOffice?' ('+esc(iv.taxOffice)+')':''):'',iv.address?esc(iv.address):'İzmir, Türkiye','E-posta: '+esc(M),T?'Telefon: '+esc(T):''].filter(Boolean).join(' · ');}
 if(window.parent!==window&&new URLSearchParams(location.search).get('studioPicker')==='1'){
+  /* Stüdyonun "Ürün seç" penceresinde site yalnız ürün seçme sayfası olarak görünür: menü, üst/alt bölüm ve Aybüke gizli, başka sayfaya gidilmez */
+  try{var pst=document.createElement('style');pst.textContent='header.top,footer,.ayf,.ayb,.ayl,.ayp{display:none!important}';document.head.appendChild(pst);}catch(_){}
+  var pickOk=function(){var h=location.hash||'';if(!/^#(tasarla|bu-)/.test(h))location.replace('#tasarla');};
+  window.addEventListener('hashchange',pickOk);pickOk();
   document.addEventListener('click',function(e){
     var link=e.target.closest&&e.target.closest('a[href]');
     if(!link)return;
