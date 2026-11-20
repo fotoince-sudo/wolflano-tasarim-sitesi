@@ -637,6 +637,7 @@ img{-webkit-touch-callout:none;-webkit-user-drag:none}
 .sidebar .seg button{padding:3px 6px!important;font-size:12px!important}
 /* Renk ve beden Ürün seç sayfasında seçiliyor; stüdyonun üstünde ayrıca gösterilmiyor (yer kaplıyordu) */
 #optBtn{display:none!important}
+#ovPill{display:none!important} /* işlem çubuğunda bilgi yazısı olmaz */
 </style>
 
 <div id="app">
@@ -6892,7 +6893,7 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
      a:'<svg viewBox="0 0 64 64"><path d="M14 22h36l-3 30H17z"/><path d="M24 22v-4a8 8 0 0 1 16 0v4"/><path d="M25 37l5 5 9-10"/></svg>'}
   ];
   var FAQ=[
-    ['Baskı alanı nedir?','Ürünün üzerindeki kesik çizgili kutu baskı yapılacak alandır. Tasarımın dışına taşan kısmı basılmaz; seçim çubuğunda "Taşan kısım basılmaz" uyarısı çıkar.'],
+    ['Baskı alanı nedir?','Ürünün üzerindeki kesik çizgili kutu baskı yapılacak alandır. Tasarımın dışına taşan kısmı basılmaz.'],
     ['Fotoğrafım baskıya uygun mu?','Çoğu fotoğraf uygundur: baskıdan önce fotoğrafını ücretsiz olarak netleştiriyoruz. Fotoğraf çok küçükse (ör. ekran görüntüsü) seni nazikçe uyarırız; daha büyük bir sürümün varsa onu yüklemen yeterli.'],
     ['Fotoğrafın arka planını nasıl silerim?','Görsele dokun, alttaki çubukta "Arka planı sil" düğmesine bas.'],
     ['Hem öne hem arkaya baskı yaptırabilir miyim?','Evet. Alttaki menünün hemen üstündeki Ön, Sol logo, Sağ logo ve Arka düğmeleriyle önde büyük baskı, iki göğüste ayrı logo (ör. firma logosu ve Türk bayrağı) ve arkada ayrı tasarım yapabilirsin. Logo ön baskıyla çakışırsa logo önde kalır.'],
