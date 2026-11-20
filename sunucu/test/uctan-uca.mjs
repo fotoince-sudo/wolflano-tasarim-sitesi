@@ -41,7 +41,7 @@ r = await req('/rest/v1/rpc/is_wf_admin', { method: 'POST', body: {} }); assert.
 // --- üyelik ---
 r = await req('/auth/v1/signup', { method: 'POST', body: { email: 'Yeni@Ornek.com', password: 'gizli123', data: { name: 'Yeni Üye' } } });
 assert.equal(r.s, 200); assert.ok(r.j.access_token); const yeni = r.j; ok('kayıt (e-posta ayarı yokken doğrudan oturum açar)');
-r = await req('/auth/v1/signup', { method: 'POST', body: { email: 'yeni@ornek.com', password: 'baska123' } }); assert.deepEqual(r.j.identities, []); ok('aynı e-posta ikinci kez kaydolamaz');
+r = await req('/auth/v1/signup', { method: 'POST', body: { email: 'yeni@ornek.com', password: 'baska123' } }); assert.deepEqual(r.j.identities, []); assert.deepEqual(r.j.user.identities, []); ok('aynı e-posta ikinci kez kaydolamaz (site "zaten hesap var" der)');
 r = await req('/auth/v1/token?grant_type=password', { method: 'POST', body: { email: 'yeni@ornek.com', password: 'yanlis' } }); assert.equal(r.s, 400); assert.match(r.j.error_description, /Invalid login/); ok('yanlış şifre reddedilir');
 r = await req('/auth/v1/token?grant_type=password', { method: 'POST', body: { email: 'yeni@ornek.com', password: 'gizli123' } }); assert.equal(r.s, 200); const ut = r.j.access_token; ok('giriş');
 r = await req('/auth/v1/user', { token: ut }); assert.equal(r.j.email, 'yeni@ornek.com'); assert.equal(r.j.user_metadata.name, 'Yeni Üye'); ok('kullanıcı bilgisi');
