@@ -17349,7 +17349,7 @@ var require_auth = __commonJS({
       }
       return h.length <= n;
     }
-    var json = (status, o, headers = {}) => ({ status, headers: { "Content-Type": "application/json", ...headers }, body: o === null ? null : JSON.stringify(o) });
+    var json = (status, o, headers = {}) => ({ status, headers: { "Content-Type": "application/json; charset=utf-8", ...headers }, body: o === null ? null : JSON.stringify(o) });
     var err = (status, code, msg) => json(status, { code: status, error_code: code, msg, error: code, error_description: msg });
     function userJson(u) {
       return {
@@ -43847,7 +43847,7 @@ function claimsOf(headers) {
   if (p.role !== "authenticated" && p.role !== "service_role") return { role: "anon" };
   return p;
 }
-var jres = (status, o, h = {}) => new Response(o === null ? null : JSON.stringify(o), { status, headers: { "Content-Type": "application/json", ...h } });
+var jres = (status, o, h = {}) => new Response(o === null ? null : JSON.stringify(o), { status, headers: { "Content-Type": "application/json; charset=utf-8", ...h } });
 function toResponse(r) {
   if (r.stream) {
     const s4 = r.stream();

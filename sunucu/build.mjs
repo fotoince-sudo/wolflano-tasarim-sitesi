@@ -1,6 +1,7 @@
 // Sunucuyu tek dosyaya derler: app.cjs. Sunucuda "npm install" gerekmez; Plesk yalnız bu dosyayı çalıştırır.
 // Supabase fonksiyonlarındaki "npm:paket@sürüm" içe aktarmaları normal paket adlarına çevrilir.
 import { build } from 'esbuild';
+import fs from 'fs';
 
 const npmSpec = {
   name: 'npm-spec',
@@ -27,4 +28,7 @@ await build({
   logLevel: 'warning',
   banner: { js: '// Wolflano sunucusu — derlenmiş dosya. Kaynak: sunucu/src ve supabase/functions. Değiştirmek için kaynağı düzenle, "npm run build" çalıştır.' },
 });
+// Passenger bu dosyanın değiştiğini görünce uygulamayı kendiliğinden yeniden başlatır (Plesk Git dağıtımından sonra)
+fs.mkdirSync('tmp', { recursive: true });
+fs.writeFileSync('tmp/restart.txt', new Date().toISOString() + '\n');
 console.log('app.cjs hazır');
