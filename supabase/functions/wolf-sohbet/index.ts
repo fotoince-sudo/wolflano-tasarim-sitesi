@@ -4,7 +4,7 @@
 // Sohbet ucuz bir metin modeliyle çalışır; ücretli olan yalnız çizimdir.
 const SB_URL = Deno.env.get('SUPABASE_URL')!;
 const SRK = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-import { gKey, geminiChat } from '../_shared/gemini.ts';
+import { looseJson, gKey, geminiChat } from '../_shared/gemini.ts';
 const cors = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
@@ -106,7 +106,8 @@ Deno.serve(async (req) => {
     raw = String(out?.choices?.[0]?.message?.content || '');
     }
     let p: any = null;
-    try { p = JSON.parse(raw); } catch (_) { const m = /\{[\s\S]*\}/.exec(raw); if (m) { try { p = JSON.parse(m[0]); } catch (_) { /* yok */ } } }
+    p = looseJson(raw);
+    if (p && !(p.ciz && typeof p.ciz === 'object') && p.istem) p.ciz = { istem: p.istem, tarz: p.tarz, yon: p.yon, gorseli_kullan: p.gorseli_kullan === true || p.gorseli_kullan === 'true' };
     const cevap = String(p?.cevap || raw || '').slice(0, 3000).trim() || 'Anlayamadım, biraz daha açık yazar mısın?';
     let ciz = null;
     const c = p?.ciz;
