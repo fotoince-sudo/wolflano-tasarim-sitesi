@@ -75,9 +75,16 @@ Nasıl cevap verirsin:
 - Listede olmayan fiyat, stok, kargo süresi, iade şartı uydurma; bunlar ve toplu teklif için "WhatsApp 0530 764 17 17 ya da info@wolflano.com.tr" de.
 - Başka markaların logosu ya da telifli karakterler basılmaz. Konu dışı sorularda kibarca alışverişe dön.
 
+SESLİ SOHBET (GÜNCEL BİLGİ'de "Sesli sohbet: açık" yazıyorsa): Mağazada müşterinin yanında yürüyen bir satış danışmanı gibisin. Müşteri seni duyuyor ve konuşurken ekranda sayfaları görüyor; siteden çıkana kadar ona eşlik edersin.
+- Cevap en fazla 2-3 kısa, doğal konuşma cümlesi. Çoğunlukla sohbeti sürdüren tek kısa bir soruyla bitir (beden, renk, kime, kaç adet...).
+- Bir ürünü göstermek istersen "ac" alanına o ürünün id'sini yaz: site o ürünün sayfasını açar. Bir bölümü göstermek istersen "git"e yaz: site oraya götürür. Götürdüğünde "Şimdi ekranda ... görüyorsunuz" gibi yol göster.
+- Kendi tasarımını yapmak isteyene önce "atolye" (ürün seçme sayfası) göster; ürünü orada seçer, sonra stüdyo açılır.
+- Müşterinin bulunduğu sayfaya göre konuş (ör. ürün sayfasındaysa o ürünün bedenini ve rengini sor, sepete eklemesini öner; sepetteyse ödemeye geçmesine yardım et).
+- Müşteri vedalaşırsa ya da işi bittiyse ("teşekkürler", "bu kadar", "görüşürüz") kısa ve sıcak bir vedayla "son": true yap.
+
 Cevabını SADECE şu JSON biçiminde ver:
-{"cevap":"müşteriye mesajın","urunler":["önerdiğin ürünlerin id'leri, en fazla 3, yoksa boş"],"git":"koleksiyon | atolye | studyo | hediye | whatsapp | boş"}
-"git": müşteriyi götürmek istediğin tek yer (ürün önerdiysen genelde boş bırak).`;
+{"cevap":"müşteriye mesajın","urunler":["önerdiğin ürünlerin id'leri, en fazla 3, yoksa boş"],"git":"koleksiyon | atolye | studyo | hediye | sepet | whatsapp | boş","ac":"ekranda açılacak tek ürünün id'si ya da boş","son":false}
+"git": müşteriyi götürmek istediğin tek yer (ürün önerdiysen genelde boş bırak). "ac" ve "son" çoğunlukla sesli sohbette kullanılır.`;
 
 const HITS = new Map<string, number[]>();
 function allow(ip: string): boolean {
@@ -194,8 +201,10 @@ Deno.serve(async (req) => {
     p = looseJson(raw);
     const cevap = String(p?.cevap || raw || '').slice(0, 2000).trim() || 'Anlayamadım, biraz daha açık yazar mısın?';
     const urunler = Array.isArray(p?.urunler) ? p.urunler.map((x: unknown) => String(x).slice(0, 80)).filter(Boolean).slice(0, 3) : [];
-    const git = /^(koleksiyon|atolye|studyo|hediye|whatsapp)$/.test(String(p?.git || '')) ? String(p.git) : '';
-    return j({ ok: true, cevap, urunler, git });
+    const git = /^(koleksiyon|atolye|studyo|hediye|sepet|whatsapp)$/.test(String(p?.git || '')) ? String(p.git) : '';
+    const ac = String(p?.ac || '').slice(0, 80).trim();
+    const son = p?.son === true;
+    return j({ ok: true, cevap, urunler, git, ac, son });
   } catch (e) {
     console.error('yardim', String(e));
     return j({ error: 'fail', message: 'Asistan şu an cevap veremedi. Biraz sonra yeniden dene.' }, 500);

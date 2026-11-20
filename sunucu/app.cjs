@@ -43927,9 +43927,16 @@ Nas\u0131l cevap verirsin:
 - Listede olmayan fiyat, stok, kargo s\xFCresi, iade \u015Fart\u0131 uydurma; bunlar ve toplu teklif i\xE7in "WhatsApp 0530 764 17 17 ya da info@wolflano.com.tr" de.
 - Ba\u015Fka markalar\u0131n logosu ya da telifli karakterler bas\u0131lmaz. Konu d\u0131\u015F\u0131 sorularda kibarca al\u0131\u015Fveri\u015Fe d\xF6n.
 
+SESL\u0130 SOHBET (G\xDCNCEL B\u0130LG\u0130'de "Sesli sohbet: a\xE7\u0131k" yaz\u0131yorsa): Ma\u011Fazada m\xFC\u015Fterinin yan\u0131nda y\xFCr\xFCyen bir sat\u0131\u015F dan\u0131\u015Fman\u0131 gibisin. M\xFC\u015Fteri seni duyuyor ve konu\u015Furken ekranda sayfalar\u0131 g\xF6r\xFCyor; siteden \xE7\u0131kana kadar ona e\u015Flik edersin.
+- Cevap en fazla 2-3 k\u0131sa, do\u011Fal konu\u015Fma c\xFCmlesi. \xC7o\u011Funlukla sohbeti s\xFCrd\xFCren tek k\u0131sa bir soruyla bitir (beden, renk, kime, ka\xE7 adet...).
+- Bir \xFCr\xFCn\xFC g\xF6stermek istersen "ac" alan\u0131na o \xFCr\xFCn\xFCn id'sini yaz: site o \xFCr\xFCn\xFCn sayfas\u0131n\u0131 a\xE7ar. Bir b\xF6l\xFCm\xFC g\xF6stermek istersen "git"e yaz: site oraya g\xF6t\xFCr\xFCr. G\xF6t\xFCrd\xFC\u011F\xFCnde "\u015Eimdi ekranda ... g\xF6r\xFCyorsunuz" gibi yol g\xF6ster.
+- Kendi tasar\u0131m\u0131n\u0131 yapmak isteyene \xF6nce "atolye" (\xFCr\xFCn se\xE7me sayfas\u0131) g\xF6ster; \xFCr\xFCn\xFC orada se\xE7er, sonra st\xFCdyo a\xE7\u0131l\u0131r.
+- M\xFC\u015Fterinin bulundu\u011Fu sayfaya g\xF6re konu\u015F (\xF6r. \xFCr\xFCn sayfas\u0131ndaysa o \xFCr\xFCn\xFCn bedenini ve rengini sor, sepete eklemesini \xF6ner; sepetteyse \xF6demeye ge\xE7mesine yard\u0131m et).
+- M\xFC\u015Fteri vedala\u015F\u0131rsa ya da i\u015Fi bittiyse ("te\u015Fekk\xFCrler", "bu kadar", "g\xF6r\xFC\u015F\xFCr\xFCz") k\u0131sa ve s\u0131cak bir vedayla "son": true yap.
+
 Cevab\u0131n\u0131 SADECE \u015Fu JSON bi\xE7iminde ver:
-{"cevap":"m\xFC\u015Fteriye mesaj\u0131n","urunler":["\xF6nerdi\u011Fin \xFCr\xFCnlerin id'leri, en fazla 3, yoksa bo\u015F"],"git":"koleksiyon | atolye | studyo | hediye | whatsapp | bo\u015F"}
-"git": m\xFC\u015Fteriyi g\xF6t\xFCrmek istedi\u011Fin tek yer (\xFCr\xFCn \xF6nerdiysen genelde bo\u015F b\u0131rak).`;
+{"cevap":"m\xFC\u015Fteriye mesaj\u0131n","urunler":["\xF6nerdi\u011Fin \xFCr\xFCnlerin id'leri, en fazla 3, yoksa bo\u015F"],"git":"koleksiyon | atolye | studyo | hediye | sepet | whatsapp | bo\u015F","ac":"ekranda a\xE7\u0131lacak tek \xFCr\xFCn\xFCn id'si ya da bo\u015F","son":false}
+"git": m\xFC\u015Fteriyi g\xF6t\xFCrmek istedi\u011Fin tek yer (\xFCr\xFCn \xF6nerdiysen genelde bo\u015F b\u0131rak). "ac" ve "son" \xE7o\u011Funlukla sesli sohbette kullan\u0131l\u0131r.`;
     HITS = /* @__PURE__ */ new Map();
     SES_IP = /* @__PURE__ */ new Map();
     SES_GUN = "";
@@ -43993,8 +44000,10 @@ M\xFC\u015Fterinin \u015Fu anki ekran\u0131 ve g\xFCncel \xFCcretler: ${ctx}` : 
         p = looseJson(raw);
         const cevap = String(p?.cevap || raw || "").slice(0, 2e3).trim() || "Anlayamad\u0131m, biraz daha a\xE7\u0131k yazar m\u0131s\u0131n?";
         const urunler = Array.isArray(p?.urunler) ? p.urunler.map((x) => String(x).slice(0, 80)).filter(Boolean).slice(0, 3) : [];
-        const git = /^(koleksiyon|atolye|studyo|hediye|whatsapp)$/.test(String(p?.git || "")) ? String(p.git) : "";
-        return j13({ ok: true, cevap, urunler, git });
+        const git = /^(koleksiyon|atolye|studyo|hediye|sepet|whatsapp)$/.test(String(p?.git || "")) ? String(p.git) : "";
+        const ac = String(p?.ac || "").slice(0, 80).trim();
+        const son = p?.son === true;
+        return j13({ ok: true, cevap, urunler, git, ac, son });
       } catch (e) {
         console.error("yardim", String(e));
         return j13({ error: "fail", message: "Asistan \u015Fu an cevap veremedi. Biraz sonra yeniden dene." }, 500);
