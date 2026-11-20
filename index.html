@@ -3737,7 +3737,7 @@ function cgShow(c,k,back,fade){var L;try{L=JSON.parse(c.dataset.cg);}catch(_){re
 document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('[data-cgi]');if(!b)return;e.preventDefault();e.stopPropagation();
   var c=b.closest('.cg');if(!c)return;c.dataset.cgman=1;cgShow(c,+b.dataset.cgi,false,false);
 },true);
-var gv=0,accMode='login';
+var gv=0,accMode=accMode||'login'; /* sıfırlama bağlantısı daha önce 'newpw' yapmış olabilir */
 function brandBand(){var b=D.brand||{};return '<section class="band"><div class="wrap" style="display:grid;gap:28px"><div class="claim"><p class="eyebrow">Wolflano Koleksiyonu</p><p class="sl">'+esc(b.slogan||'')+'</p><p class="lead" style="margin:0">'+esc(b.readyText||'')+'</p><a class="link" href="#hazir" style="margin-top:14px;display:inline-flex">Ürünleri gör '+IC.arrow+'</a></div><div><p class="eyebrow">'+esc(b.printTitle||'')+'</p><div class="qs" style="margin-top:8px">'+qItems()+'</div></div></div></section>';}
 var QIC=['<path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M8.5 12l2.5 2.5L16 9.5"/>','<circle cx="12" cy="12" r="4"/><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6L7 7M17 17l1.4 1.4M5.6 18.4L7 17M17 7l1.4-1.4"/>','<path d="M12 3c4 5 6 8 6 11a6 6 0 0 1-12 0c0-3 2-6 6-11z"/>','<path d="M3 9h11a3 3 0 1 0-3-3M3 14h15a3 3 0 1 1-3 3M3 19h7"/>','<path d="M20 4c-9 0-14 5-14 12v4M20 4c0 8-5 13-12 13M9 14l6-6"/>'];
 function qItems(){var b=D.brand||{};return (b.printItems||[]).map(function(x,i){var a=String(x).split('|');return '<div class="q"><span class="dot"><svg class="i" viewBox="0 0 24 24">'+QIC[i%QIC.length]+'</svg></span><div><b>'+esc((a[0]||'').trim())+'</b><span>'+esc((a.slice(1).join('|')||'').trim())+'</span></div></div>';}).join('');}
@@ -3884,7 +3884,8 @@ var VIEWS={
   return '<div class="wrap page"><p class="eyebrow">Hesabım</p><h1 class="h2">Favorilerim</h1>'+(l.length?'<div style="height:28px"></div><div class="grid">'+l.map(card).join('')+'</div>':(sv?'':'<p class="lead">Henüz favori ürünün yok. Ürünlerdeki kalbe dokunarak buraya ekleyebilirsin.</p>'))+sv+'<p style="margin-top:36px"><a class="btn" href="#hazir">Alışverişe devam et '+IC.arrow+'</a></p></div>';
  },
  hesabim:function(){
-  if(ACCOUNT.user)return acctHome();
+  /* şifre sıfırlama bağlantısından gelindiyse oturum açık olsa da yeni şifre formu gösterilir */
+  if(ACCOUNT.user&&accMode!=='newpw')return acctHome();
   var m=accMode;
   var eye='<button type="button" data-eye aria-label="Şifreyi göster" aria-pressed="false"><svg class="i" viewBox="0 0 24 24"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg></button>';
   var body;
