@@ -43138,12 +43138,16 @@ function quoteItems(d, input, ay = null) {
 }
 function shipping(d, sum, method, wholesale2 = false) {
   if (wholesale2) return 0;
-  if (method === "elden") return 0;
-  if (method !== void 0 && method !== "kargo") {
+  if (method !== void 0 && method !== "kargo" && method !== "elden") {
     throw new CheckoutError("Teslimat y\xF6ntemi ge\xE7ersiz.");
   }
-  const fee2 = amount(d.ship?.fee), free = amount(d.ship?.free);
-  return free > 0 && sum >= free ? 0 : money(fee2);
+  const free = amount(d.ship?.free);
+  if (free > 0 && sum >= free) return 0;
+  if (method === "elden") {
+    const p = d.ship?.pickup;
+    return money(p === void 0 || p === null || p === "" ? 50 : amount(p));
+  }
+  return money(amount(d.ship?.fee));
 }
 function requireConsent(body) {
   if (body.onay?.kvkk !== true || body.onay?.sozlesme !== true) {

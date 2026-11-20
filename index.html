@@ -287,6 +287,7 @@ textarea{min-height:120px;resize:vertical}
 .info small{font:500 14px var(--ui);letter-spacing:.06em;color:var(--muted)}
 .info h1{font-size:clamp(31px,6vw,43px)}
 .pbig{font:600 31px var(--serif);font-variant-numeric:tabular-nums}
+.tesh{display:block;font:700 14px var(--ui);margin:4px 0 6px}.sums .seg2c{margin-bottom:10px}
 .izp{position:relative;overflow:hidden;display:grid;gap:8px;width:100%;box-sizing:border-box;margin:14px 0;padding:14px 16px;border-radius:16px;background:linear-gradient(135deg,#13221a,#0c1510 70%);color:#eef5f0;border:1.5px solid #7fd6b4;box-shadow:0 8px 22px rgba(12,21,16,.18)}
 .izp:after{content:"";position:absolute;top:0;left:-60%;width:40%;height:100%;background:linear-gradient(100deg,transparent,rgba(127,214,180,.22),transparent);animation:izsh 3.2s ease-in-out infinite}
 @keyframes izsh{60%,100%{left:130%}}
@@ -3790,7 +3791,13 @@ function printQuality(){var b=D.brand||{};return '<section class="pr" id="kalite
 /* KARGO ENTEGRASYONU: anlaşmalı firma (Yurtiçi, MNG, Aras, PTT, Sürat vb.) bağlanınca provider ve quote doldurulur.
    quote({il,ilce,subtotal}) -> Promise<{fee,days,carrier}> adrese göre kargo ücreti ve süresi döndürür. Gönderi kaydı ödeme onayından sonra sunucuda açılır, order.shipping içinde gider. */
 var CARGO={provider:null,quote:function(q){return Promise.resolve(null);}},shipQuote=null;
-function shipFee(sub){var dm=document.querySelector('input[name=oT]:checked');if(dm&&dm.value==='elden')return 0;var s=D.ship||{fee:0,free:0};if(+s.free>0&&sub>=+s.free)return 0;return (shipQuote&&typeof shipQuote.fee==='number')?shipQuote.fee:(+s.fee||0);}
+/* Teslimat seçimi: kargo ya da İzmir teslim noktası (sepette ve ödemede aynı seçim) */
+var SHIP_M=(function(){try{return localStorage.getItem('wf_tes')==='elden'?'elden':'kargo';}catch(_){return 'kargo';}})();
+function setShipM(v){SHIP_M=v==='elden'?'elden':'kargo';try{localStorage.setItem('wf_tes',SHIP_M);}catch(_){}}
+function pickFee(){var v=(D.ship||{}).pickup;return v===undefined||v===null||v===''?50:(+v||0);}
+function shipM(){var dm=document.querySelector('input[name=oT]:checked');return dm?dm.value:SHIP_M;}
+function tesSeg(nm){var kf=+((D.ship||{}).fee)||0,pf=pickFee();return '<div class="seg2c"><label><input type="radio" name="'+nm+'" value="kargo"'+(SHIP_M!=='elden'?' checked':'')+'><span>Kargo ile teslimat<small>2-4 iş gününde kargoda'+(kf?' · '+tl(kf):'')+'</small></span></label><label><input type="radio" name="'+nm+'" value="elden"'+(SHIP_M==='elden'?' checked':'')+'><span>İzmir teslim noktası<small>Teslim noktasından al · '+(pf?tl(pf):'Ücretsiz')+'</small></span></label></div>';}
+function shipFee(sub){var s=D.ship||{fee:0,free:0};if(+s.free>0&&sub>=+s.free)return 0;if(shipM()==='elden')return pickFee();return (shipQuote&&typeof shipQuote.fee==='number')?shipQuote.fee:(+s.fee||0);}
 /* ---------- Tek sepet: Baskı Atölyesi tasarımları (stüdyo, wf_studio_cart) mağaza sepetiyle birlikte ---------- */
 var SC_TIERS=[[50,.15],[25,.10],[10,.05]];
 /* Beden seçimi gerekmeyen (tek seçenekli) baskı ürünleri sepete en az 1 adetle gelir */
@@ -3958,7 +3965,7 @@ odeme:function(){
   '<div class="two"><label for="oTel">Cep telefonu<input id="oTel" type="tel" inputmode="tel" autocomplete="tel" placeholder="05xx xxx xx xx" required></label><label for="oMail">E-posta<input id="oMail" type="email" autocomplete="email" required></label></div>'+
   '<label for="oAdr">Adres<textarea id="oAdr" rows="2" autocomplete="street-address" required></textarea></label>'+
   '<div class="two"><label for="oIl">İl<input id="oIl" autocomplete="address-level1" required></label><label for="oIlce">İlçe<input id="oIlce" autocomplete="address-level2" required></label></div></div>'+
-  '<div class="panel"><h3>Teslimat ve ödeme</h3><div class="seg2c"><label for="oT1"><input type="radio" name="oT" id="oT1" value="kargo" checked><span>Kargo<small>2-4 iş gününde kargoda</small></span></label><label for="oT2"><input type="radio" name="oT" id="oT2" value="elden"><span>İzmir’de elden<small>Ücretsiz</small></span></label></div>'+
+  '<div class="panel"><h3>Teslimat ve ödeme</h3>'+tesSeg('oT')+
   '<div class="payl"><input type="radio" name="oY" id="oY2" value="havale" checked hidden><b>Ödeme: Havale / EFT</b><span>Banka bilgileri siparişi onaylayınca gösterilir ve e-postana gelir.</span></div></div>'+
   '<details class="panel coex"><summary>Fatura, sipariş notu, indirim, okul siparişi <small>isteğe bağlı</small></summary><div class="coexb">'+
   '<label for="oNot">Sipariş notu<input id="oNot"></label>'+
@@ -4555,7 +4562,7 @@ function goStep(){}
 function coInit(){if(!document.getElementById('coForm'))return;try{syncSpecial();}catch(_){}coBtn();setTimeout(coBtn,600);}
 function coValid1Quiet(){return true;}
 document.addEventListener('input',function(e){if(e.target.closest&&e.target.closest('#coForm'))coBtn();});
-document.addEventListener('change',function(e){var t=e.target;if(!t.closest||!t.closest('#coForm'))return;if(t.id==='oFs'){var fb=document.getElementById('oFab');fb.hidden=t.checked;fb.style.display=t.checked?'none':'grid';}if(t.name==='oT')updShip();coBtn();});
+document.addEventListener('change',function(e){var t=e.target;if(!t.closest||!t.closest('#coForm'))return;if(t.id==='oFs'){var fb=document.getElementById('oFab');fb.hidden=t.checked;fb.style.display=t.checked?'none':'grid';}if(t.name==='oT'){setShipM(t.value);updShip();}coBtn();});
 document.addEventListener('click',function(e){var t=e.target;if(!t.closest)return;var og=t.closest('.sums a[href="#odeme"]');if(og&&scEmpty()>=0){e.preventDefault();toast('Tasarımın için beden ve adet seç.');var g=document.querySelectorAll('.sci .scg2')[scEmpty()];if(g){g.classList.remove('need');void g.offsetWidth;g.classList.add('need');g.scrollIntoView({block:'center',behavior:'smooth'});}return;}if(og){var zp=szMissing();if(zp){e.preventDefault();toast('“'+zp.name+'” için beden seç.');var sl=document.querySelector('[data-csz="'+ckId(Object.keys(cart).filter(function(k){return ckId(k)===zp.id&&!ckSz(k);})[0]||'')+'"]');if(sl){sl.classList.add('need');sl.scrollIntoView({block:'center',behavior:'smooth'});}return;}}var st=t.closest('[data-step]');if(st&&st.closest('#coForm')){e.preventDefault();goStep(+st.dataset.step);return;}var gb=t.closest('.stepbar [data-go],#coForm [data-go]');if(gb){e.preventDefault();var n=+gb.dataset.go;if(n<=coStep())goStep(n);else goStep(n);}});
 function cartRows(){var ids=Object.keys(cart).filter(function(k){return cart[k]>0;}),tot=0,n=0,h='';
   ids.forEach(function(id){var p=ALLP.filter(function(x){return x.id===ckId(id);})[0];if(!p){if(DLOADED)delete cart[id];return;}tot+=p.price*cart[id];n+=cart[id];
@@ -4563,6 +4570,7 @@ function cartRows(){var ids=Object.keys(cart).filter(function(k){return cart[k]>
   var sc=scItems();sc.forEach(function(it,i){var q=scQty(it),t=scTot(it);tot+=t;n+=q;
     h+='<div class="ci sci"><button type="button" class="scimg" data-scview="'+i+'" aria-label="Tasarımı büyüt"><img src="'+esc(it.thumb||'')+'" alt=""><i aria-hidden="true">'+IC.zoom+'</i></button><div><small class="ty">Baskı Atölyesi · Senin tasarımın</small><b>'+esc(it.label||'Tasarım')+'</b><small class="note" style="display:block;margin-top:4px">'+(q?'<b class="scm">'+q+' adet × '+tl(+it.unit||0)+(scDisc(q)?' − %'+Math.round(scDisc(q)*100)+' adet indirimi':'')+' = '+tl(t)+'</b>':((it.szList||[]).length===1?'Adet seç':'Beden ve adet seç'))+'</small>'+scGrid(it,i)+'<div class="qty"><button class="rm" data-scrm="'+i+'" aria-label="Kaldır">Kaldır</button><b class="pz">'+tl(t)+'</b></div></div></div>';});
   return {ids:ids,sc:sc,tot:tot,n:n,h:h};}
+document.addEventListener('change',function(e){var t=e.target;if(t&&t.name==='cT'){setShipM(t.value);if(location.hash==='#sepet'){var y=window.scrollY;$('#main').innerHTML=VIEWS.sepet();window.scrollTo(0,y);}}});
 function openCart(){closeLayer();if(location.hash==='#sepet'){var y=window.scrollY;$('#main').innerHTML=VIEWS.sepet();window.scrollTo(0,y);}else location.hash='#sepet';}
 function sepetView(){var c=cartRows();
   if(!c.ids.length&&!c.sc.length){var l=PRODUCTS.slice(0,4);return '<div class="wrap page emp"><svg viewBox="0 0 48 48" width="64" height="64" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" aria-hidden="true"><path d="M9 16h30l-2.5 26h-25z"/><path d="M17 16v-3a7 7 0 0 1 14 0v3"/></svg><h1>Sepetinde ürün bulunmuyor</h1><p>En çok tercih edilen modellere göz at.</p><a class="btn" href="#hazir">Alışverişe başla</a></div>'+
@@ -4571,7 +4579,7 @@ function sepetView(){var c=cartRows();
   return '<div class="wrap page sep"><h1 class="h2">Sepetim <span>('+c.n+' ürün)</span></h1>'+
   (fr>0?'<div class="fsb"><p>'+(kal>0?'Ücretsiz kargoya <b>'+tl(kal)+'</b> kaldı':'Kargo <b>ücretsiz</b>')+'</p><i><em style="width:'+pc+'%"></em></i></div>':'')+
   '<div class="cil">'+c.h+'</div>'+
-  '<div class="sums"><div class="sumr"><span>Ara toplam</span><span>'+tl(c.tot)+'</span></div><div class="sumr"><span>Kargo</span><span>'+(sh===0?'Ücretsiz':tl(sh))+'</span></div><div class="sumr t"><span>Toplam <small>(KDV dahil)</small></span><span>'+tl(c.tot+sh)+'</span></div>'+
+  '<div class="sums"><b class="tesh">Teslimat</b>'+tesSeg('cT')+'<div class="sumr"><span>Ara toplam</span><span>'+tl(c.tot)+'</span></div><div class="sumr"><span>'+(SHIP_M==='elden'?'Teslim noktası':'Kargo')+'</span><span>'+(sh===0?'Ücretsiz':tl(sh))+'</span></div><div class="sumr t"><span>Toplam <small>(KDV dahil)</small></span><span>'+tl(c.tot+sh)+'</span></div>'+
   aysl('İndirim hakkın olabilir: şehit/gazi yakını, kamu görevlisi, okul ya da toplu sipariş.','Sepetimdeki ürünlerde hangi indirimlerden yararlanabilirim?')+'<a class="btn" href="#odeme">Ödemeye geç '+IC.arrow+'</a><a class="btn soft" href="#hazir">Alışverişe devam et</a></div></div>';}
 
 function copyText(t){
@@ -5299,7 +5307,7 @@ function adminView(){
     h+='<div class="aed" style="max-width:760px"><b>Taban fiyatlar · baskısız ürün</b><p class="note" style="margin:0">Her ürün türünün baskısız fiyatı. Kaydedince atölyedeki ve fiyat tablosuna bağlı bütün ürünlerin fiyatı kendiliğinden güncellenir. Kategoriye dokununca o kategorinin ürünleri açılır.</p><div>'+
       '</div>'+[['erkek','Erkek'],['kadin','Kadın'],['cocuk','Çocuk'],['kupa','Kupa'],['canvas','Kanvas'],['diger','Diğer']].map(function(g){var rows=(d.blanks||[]).map(function(b,i){if(!b||!b.id)return '';var k=(bGen(b)||[])[0]||'diger';if(['erkek','kadin','cocuk','kupa','canvas'].indexOf(k)<0)k='diger';return k===g[0]?fld(esc(b.name||b.id)+(b.show===false?' (gizli)':''),'blanks.'+i+'.price','n'):'';}).filter(Boolean);return rows.length?'<details class="pfg"><summary>'+g[1]+' <small>('+rows.length+')</small></summary><div class="pft">'+rows.join('')+'</div></details>':'';}).join('')+'</div>';
     h+='<div class="aed" style="max-width:760px">'+fld('A3 baskı katsayısı (A3 ücreti boşsa A4 ücreti ile çarpılır)','a3','n')+
-    '<div class="two">'+fld('Kargo ücreti (₺)','ship.fee','n')+fld('Ücretsiz kargo limiti (₺, 0 = yok)','ship.free','n')+'</div>'+(function(){d.bank=d.bank||{};return '<b style="margin-top:8px">Havale / EFT bilgileri</b><p class="note" style="margin:0">Sipariş verilince müşteriye ekranda ve e-postada gösterilir. Boşsa "banka bilgisi sana ayrıca iletilecek" yazar.</p><div class="two">'+fld('Hesap sahibi (ad soyad / unvan)','bank.ad','s')+fld('Banka','bank.banka','s')+'</div>'+fld('IBAN','bank.iban','s','TR00 0000 0000 0000 0000 0000 00');})()+'<div class="three">'+d.tiers.map(function(t,i){return fld((i+1)+'. indirim: adet','tiers.'+i+'.0','n')+fld('İndirim %','tiers.'+i+'.1','n');}).join('')+'</div>'+
+    '<div class="two">'+fld('Kargo ücreti (₺)','ship.fee','n')+fld('Ücretsiz kargo limiti (₺, 0 = yok)','ship.free','n')+'</div>'+fld('İzmir teslim noktası ücreti (₺, boş = 50)','ship.pickup','n','50')+(function(){d.bank=d.bank||{};return '<b style="margin-top:8px">Havale / EFT bilgileri</b><p class="note" style="margin:0">Sipariş verilince müşteriye ekranda ve e-postada gösterilir. Boşsa "banka bilgisi sana ayrıca iletilecek" yazar.</p><div class="two">'+fld('Hesap sahibi (ad soyad / unvan)','bank.ad','s')+fld('Banka','bank.banka','s')+'</div>'+fld('IBAN','bank.iban','s','TR00 0000 0000 0000 0000 0000 00');})()+'<div class="three">'+d.tiers.map(function(t,i){return fld((i+1)+'. indirim: adet','tiers.'+i+'.0','n')+fld('İndirim %','tiers.'+i+'.1','n');}).join('')+'</div>'+
     '<label for="f-note">Fiyatlandırma açıklaması (her satır bir paragraf)<textarea id="f-note" data-bind="note" data-t="lines" style="min-height:200px">'+esc((d.note||[]).join('\n'))+'</textarea></label></div>';
   }else if(A.tab==='depo'){h+=ffView();
   }else if(A.tab==='crm'){h+=crmView().replace(/^<div class="wrap page( crm)?"><p class="eyebrow">Wolflano<\/p><h1 class="h2">Yönetim<\/h1>/,'<div class="crm">');
