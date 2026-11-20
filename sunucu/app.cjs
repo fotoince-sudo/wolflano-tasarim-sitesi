@@ -43923,7 +43923,7 @@ async function handle(request, ip) {
   } catch (e) {
     if (e.badJson) return jres(400, { code: "PGRST102", message: "G\xF6vde ge\xE7erli JSON de\u011Fil", details: null, hint: null });
     console.error("istek", p, e);
-    return jres(500, { message: "Sunucu hatas\u0131" });
+    return jres(500, { message: "Sunucu hatas\u0131", hata: String(e && e.message || e).slice(0, 300) });
   }
   return jres(404, { message: "Bu adres yok." });
 }
@@ -44033,7 +44033,7 @@ var server = http2.createServer(async (req, res) => {
   } catch (e) {
     console.error("http", e);
     if (!res.headersSent) res.writeHead(500, { "Content-Type": "application/json", ...CORS4 });
-    res.end(JSON.stringify({ message: "Sunucu hatas\u0131" }));
+    res.end(JSON.stringify({ message: "Sunucu hatas\u0131", hata: String(e && e.message || e).slice(0, 300), yer: "http" }));
   }
 });
 server.requestTimeout = 18e4;
