@@ -3546,7 +3546,7 @@ async function intextGo(){var im=selObj();if(!im||im.type!=='image'||im.lock)ret
   if(!best){toast('Önce fotoğrafı bir yazının ya da şeklin üstüne sürükle, sonra "İçine giydir"e bas.');return;}
   var isTx=best.type==='text';bgToast(isTx?'Fotoğraf yazının içine yerleştiriliyor…':'Fotoğraf şeklin içine yerleştiriliyor…');
   try{var t=best,pad=isTx?(t.size||20)*(t.stroke?(t.sw||0.1)+0.04:0.06):Math.max(t.w||10,t.h||10)*0.02,tb=objBB(t);tb={l:tb.l-pad,r:tb.r+pad,t:tb.t-pad,b:tb.b+pad};
-    var bw=tb.r-tb.l,bh=tb.b-tb.t,K=Math.min(300/2.54/PPC,4000/Math.max(bw,bh));
+    var bw=tb.r-tb.l,bh=tb.b-tb.t,K=Math.min(300/2.54/PPC,Math.sqrt(15.5e6/Math.max(1,bw*bh)));/* 300 DPI; yalnız telefonun tuval sınırını (≈16 MP) aşarsa düşer */
     var c=document.createElement('canvas');c.width=Math.max(2,Math.round(bw*K));c.height=Math.max(2,Math.round(bh*K));var x=c.getContext('2d');
     var m=JSON.parse(JSON.stringify(t));m.look='fill';m.stroke=null;m.color='#000';
     await drawObj(x,m,K,tb.l,tb.t);
