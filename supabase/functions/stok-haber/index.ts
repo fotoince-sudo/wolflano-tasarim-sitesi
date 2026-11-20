@@ -19,7 +19,12 @@ Deno.serve(async (req) => {
   const { data: sc } = await sb.from("site_content").select("data").eq("id", "main").single();
   const d: any = sc?.data || {};
   const find = (r: any) => (r.kind === "baski" ? (d.blanks || []) : (d.products || [])).find((x: any) => x.id === r.product_id);
-  const due = rows.filter((r: any) => inStock(find(r)));
+  // Boş ürün (Ürün seç) stoğu girilmiş ve 0'dan büyük olmalı; hazır ürün bağlı olduğu boş ürünün stoğuna bakar
+  const has = (p: any) => p && p.stock !== null && p.stock !== undefined && p.stock !== "";
+  const blankOk = (b: any) => b && b.show !== false && has(b) && +b.stock > 0;
+  const linked = (p: any) => { const id = p?.pc?.b || p?.dsg?.bid; return id ? (d.blanks || []).find((b: any) => b.id === id) : null; };
+  const ready = (r: any) => { const x = find(r); if (!x) return false; if (r.kind === "baski") return blankOk(x); const b = linked(x); return b ? x.show !== false && blankOk(b) : inStock(x); };
+  const due = rows.filter(ready);
   if (!due.length) return j({ ok: true, sent: 0 });
 
   const host = Deno.env.get("SMTP_HOST"), user = Deno.env.get("SMTP_USER"), pass = Deno.env.get("SMTP_PASS");

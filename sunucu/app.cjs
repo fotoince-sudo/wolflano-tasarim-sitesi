@@ -43116,7 +43116,9 @@ function quoteItems(d, input, ay = null) {
     if (t <= 0 && !extra.pricePending || t >= 1e7) {
       throw new CheckoutError("\xDCr\xFCn fiyat\u0131 ge\xE7ersiz.", 409);
     }
-    demands.set(p, (demands.get(p) || 0) + q);
+    const lb = !d.blanks?.includes(p) && (p.pc?.b || p.dsg?.bid) ? (d.blanks || []).find((b) => b.id === (p.pc?.b || p.dsg?.bid)) : null;
+    if (lb && (lb.stock === null || lb.stock === void 0 || lb.stock === "")) throw new CheckoutError("\xDCr\xFCn \u015Fu an stokta yok.", 409);
+    demands.set(lb || p, (demands.get(lb || p) || 0) + q);
     return { id: x.id, n: name, q, t, ...extra };
   });
   for (const [p, q] of demands) stock(p, q);
@@ -43514,7 +43516,20 @@ var init_stok_haber = __esm({
       const { data: sc } = await sb.from("site_content").select("data").eq("id", "main").single();
       const d = sc?.data || {};
       const find2 = (r) => (r.kind === "baski" ? d.blanks || [] : d.products || []).find((x) => x.id === r.product_id);
-      const due = rows.filter((r) => inStock(find2(r)));
+      const has = (p) => p && p.stock !== null && p.stock !== void 0 && p.stock !== "";
+      const blankOk = (b) => b && b.show !== false && has(b) && +b.stock > 0;
+      const linked = (p) => {
+        const id = p?.pc?.b || p?.dsg?.bid;
+        return id ? (d.blanks || []).find((b) => b.id === id) : null;
+      };
+      const ready = (r) => {
+        const x = find2(r);
+        if (!x) return false;
+        if (r.kind === "baski") return blankOk(x);
+        const b = linked(x);
+        return b ? x.show !== false && blankOk(b) : inStock(x);
+      };
+      const due = rows.filter(ready);
       if (!due.length) return j10({ ok: true, sent: 0 });
       const host = Deno.env.get("SMTP_HOST"), user = Deno.env.get("SMTP_USER"), pass = Deno.env.get("SMTP_PASS");
       if (!host || !user || !pass) return j10({ ok: false, reason: "SMTP ayarlar\u0131 eksik", due: due.length }, 503);

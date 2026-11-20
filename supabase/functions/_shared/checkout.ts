@@ -314,7 +314,10 @@ export function quoteItems(d: Row, input: unknown, ay: Row | null = null) {
     if ((t <= 0 && !extra.pricePending) || t >= 10_000_000) {
       throw new CheckoutError("Ürün fiyatı geçersiz.", 409);
     }
-    demands.set(p, (demands.get(p) || 0) + q);
+    // Hazır ürün kendi stoğunu tutmaz: bağlı olduğu boş ürünün stoğu düşülür/kontrol edilir
+    const lb = !d.blanks?.includes(p) && (p.pc?.b || p.dsg?.bid) ? (d.blanks || []).find((b: Row) => b.id === (p.pc?.b || p.dsg?.bid)) : null;
+    if (lb && (lb.stock === null || lb.stock === undefined || lb.stock === "")) throw new CheckoutError("Ürün şu an stokta yok.", 409);
+    demands.set(lb || p, (demands.get(lb || p) || 0) + q);
     return { id: x.id, n: name, q, t, ...extra };
   });
   for (const [p, q] of demands) stock(p, q);
