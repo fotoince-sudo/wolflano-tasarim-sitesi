@@ -4658,6 +4658,8 @@ function syncOpt(){var d=$('#optDot'),z=$('#optSz');teeFix();if(!d)return;$('#op
 function renderOpt(){
   var nm='',sw='';
   if(kulpOn()){var kh=kulpHex()||KULP[0][1];KULP.forEach(function(t){if(t[1]===kh)nm=t[0];sw+='<button class="csw'+(t[1]===kh?' on':'')+'" data-kulp="'+t[1]+'" style="background:'+t[1]+'" aria-label="Kulp '+t[0]+'"></button>';});}
+  /* Kupada renk seçilmez: Ürün seç'te seçilen renk tek başına gösterilir */
+  else if(state.product==='mug'){var L0=teeOK(),t0=L0.filter(function(t){return t[1]===state.tee;})[0]||L0[0];nm=teeLabel(t0[0]);sw='<span class="csw on" style="background:'+t0[1]+';cursor:default" aria-label="'+escX(t0[0])+'"></span><span class="note" style="margin:0;align-self:center">Rengi değiştirmek için alttaki <b>Ürün</b>\'den yeniden seç.</span>';}
   else teeOK().forEach(function(t){if(t[1]===state.tee)nm=teeLabel(t[0]);sw+='<button class="csw'+(t[1]===state.tee?' on':'')+'" data-tee="'+t[1]+'" style="background:'+t[1]+'" aria-label="'+t[0]+'"></button>';});
   var ct=$('#optColT');if(ct)ct.textContent=kulpOn()?'Kulp rengi':'Ürün rengi';
   $('#optColors').innerHTML=sw;$('#optColorName').textContent=nm;
