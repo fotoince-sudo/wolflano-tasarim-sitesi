@@ -3645,8 +3645,18 @@ async function aiCall(body){
     if(r.status===401){aiLogin();return null;}
     if(r.status===429||j.error==='limit'){aiPaywall();return null;}
     if(!r.ok||!j.image){longToast(j.message||'Wolf şu an çizemedi. Biraz sonra yeniden dene.');return null;}
-    return j.image;}
+    return j.whitebg?aiKeyWhite(j.image):j.image;}
   catch(e){clearTimeout(tm);aiDone();longToast('Wolf şu an çizemedi. Bağlantını kontrol edip yeniden dene.');return null;}}
+/* Gemini şeffaf arka plan vermez, düz beyaz zeminle çizer: kenarlardan başlayıp beyaz zemini (içerideki beyaz ayrıntılara dokunmadan) siler */
+function aiKeyWhite(dataUrl){return new Promise(function(res){var im=new Image();im.onload=function(){try{
+  var W=im.naturalWidth,H=im.naturalHeight,c=document.createElement('canvas');c.width=W;c.height=H;var x=c.getContext('2d');x.drawImage(im,0,0);var id=x.getImageData(0,0,W,H),d=id.data,N=W*H,seen=new Uint8Array(N),q=new Int32Array(N),qh=0,qt=0;
+  function wd(i){var k=i*4;return 765-(d[k]+d[k+1]+d[k+2]);}
+  function push(i){if(!seen[i]&&wd(i)<60){seen[i]=1;q[qt++]=i;}}
+  for(var X=0;X<W;X++){push(X);push((H-1)*W+X);}for(var Y=0;Y<H;Y++){push(Y*W);push(Y*W+W-1);}
+  while(qh<qt){var i=q[qh++],px=i%W;if(px>0)push(i-1);if(px<W-1)push(i+1);if(i>=W)push(i-W);if(i<N-W)push(i+W);}
+  if(qt<N*0.05)return res(dataUrl);
+  for(var j=0;j<N;j++){if(seen[j]){var w=wd(j);d[j*4+3]=w<24?0:Math.round(255*(w-24)/36);}}
+  x.putImageData(id,0,0);res(c.toDataURL('image/png'));}catch(_){res(dataUrl);}};im.onerror=function(){res(dataUrl);};im.src=dataUrl;});}
 /* Şeffaf PNG'nin boş kenarlarını kırp: seçim kutusu çizimin kendisine otursun */
 function aiTrim(dataUrl){return new Promise(function(res){if(!/^data:image\/png/.test(dataUrl))return res(dataUrl);var im=new Image();im.onload=function(){try{
   var W=im.naturalWidth,H=im.naturalHeight,c=document.createElement('canvas');c.width=W;c.height=H;var x=c.getContext('2d');x.drawImage(im,0,0);var d=x.getImageData(0,0,W,H).data,l=W,t=H,r=-1,b=-1,X,Y;
@@ -6677,7 +6687,7 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
       var ac=new AbortController(),tm=setTimeout(function(){ac.abort();},170000);
       var r=await fetch(SBA.url+'/functions/v1/bz-image',{method:'POST',signal:ac.signal,headers:{'Content-Type':'application/json',apikey:SBA.key,Authorization:'Bearer '+tk},body:JSON.stringify(body)});
       clearTimeout(tm);var j=await r.json().catch(function(){return {};});
-      if(!r.ok||!j.image)throw {msg:j.message||'Wolf şu an çizemedi.'};img=j.image;}
+      if(!r.ok||!j.image)throw {msg:j.message||'Wolf şu an çizemedi.'};img=j.whitebg?await aiKeyWhite(j.image):j.image;}
     catch(e){err=(e&&e.msg)||'Wolf şu an çizemedi. Bağlantını kontrol et.';}
     if(img)WC.msgs.push({role:'assistant',text:'Hazır. Beğendiysen tasarıma ekle; sonra buraya "şablon olarak kaydet" ya da "ürün yap 449 tl" yazabilirsin. Değişiklik istersen söyle.',res:img});
     else{wcUse(-1);a.done=0;WC.msgs.push({role:'assistant',text:err+' Bu deneme sayılmadı; "Çiz" ile yeniden deneyebilirsin.'});}

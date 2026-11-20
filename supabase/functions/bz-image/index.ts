@@ -1,5 +1,6 @@
 const SB_URL = Deno.env.get('SUPABASE_URL')!;
 const SRK = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+import { gKey, geminiImage, aspectOf } from '../_shared/gemini.ts';
 const cors = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
@@ -71,7 +72,7 @@ Deno.serve(async (req) => {
   let taken = false;
   try {
     const key = Deno.env.get('OPENAI_API_KEY');
-    if (!key) return j({ error: 'not_configured', message: 'Tasarım servisi henüz etkinleştirilmedi.' }, 503);
+    if (!key && !gKey()) return j({ error: 'not_configured', message: 'Tasarım servisi henüz etkinleştirilmedi.' }, 503);
 
     const tok = (req.headers.get('Authorization') || '').replace(/^Bearer /i, '');
     const ur = await fetch(`${SB_URL}/auth/v1/user`, { headers: { apikey: SRK, Authorization: `Bearer ${tok}` } });
@@ -229,6 +230,19 @@ Deno.serve(async (req) => {
       prompt = K.join(' ');
     }
 
+    if (gKey()) {
+      // Gemini şeffaf arka plan üretmez: düz beyaz zemin istenir, stüdyo zemini kaldırır
+      const gp = transparent ? prompt.replace(/Isolated artwork on a fully transparent background[^.]*\./, 'Isolated artwork on a plain pure white background.').replace(/Transparent background/g, 'Plain pure white background') : prompt;
+      const g = await geminiImage(gp, img ? [img] : [], aspectOf(size));
+      if (!g.ok) {
+        if (taken) await rpc('bz_refund', { p_uid: uid });
+      if (/safety|prohibited|blocked|image_safety|recitation/.test(g.err)) return j({ error: 'moderation', message: 'Bu istek için görsel üretilemedi. Farklı bir cümle dene.' }, 422);
+      if (g.status === 429 && /free|tier|billing|limit: 0|quota/.test(g.err) || g.status === 403) return j({ error: 'quota', message: 'Görsel üretimi için Google AI Studio hesabında faturalandırma açılmalı (ücretsiz katmanda görsel üretilmiyor).' }, 402);
+      if (g.status === 429) return j({ error: 'rate', message: 'Google kısa süreli yoğunluk dedi, birazdan yeniden dene.' }, 429);
+        return j({ error: 'fail', message: 'Tasarım şu an hazırlanamadı. Biraz sonra yeniden dene.' }, 502);
+      }
+      return j({ ok: true, image: `data:${g.mime};base64,${g.b64}`, orient, transparent: false, whitebg: transparent, admin: isAdm });
+    }
     // OpenAI model adları zamanla değişiyor (gpt-image-1 kaldırıldı): sırayla dene, olmayan modeli atla
     const envModel = Deno.env.get('OPENAI_IMAGE_MODEL') || '';
     const models = [envModel, img ? 'gpt-image-2.5-sunburst' : 'gpt-image-2.5-flare', img ? 'gpt-image-2.5-flare' : 'gpt-image-2.5-sunburst', 'gpt-image-2', 'gpt-image-1.5', 'gpt-image-1']

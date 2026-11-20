@@ -1,6 +1,7 @@
 // Tasarım asistanı: stüdyoda müşterinin "nasıl yaparım?" sorularını cevaplar (herkese açık, giriş gerekmez).
 // Yalnız stüdyonun kullanımı ve baskı kuralları hakkında konuşur; ucuz metin modeliyle çalışır, görsel üretmez.
 // Kötüye kullanıma karşı: kısa mesaj, kısa geçmiş, kısa cevap ve IP başına saatlik sınır (sunucu örneği başına).
+import { gKey, geminiChat, geminiTts } from '../_shared/gemini.ts';
 const cors = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
@@ -109,6 +110,11 @@ async function ses(req: Request, key: string, body: any): Promise<Response> {
   const text = String(body.text || '').replace(/https?:\/\/\S+/g, '').replace(/\b(?=[a-z0-9]*\d)[a-z0-9]{10,}\b/g, '').replace(/₺\s*([\d.,]+)/g, '$1 TL').replace(/([\d.,]+)\s*₺/g, '$1 TL').replace(/[*_#>`|•]/g, '').replace(/\s+/g, ' ').trim().slice(0, 700);
   if (!text) return j({ error: 'empty' }, 400);
   if (!sesAllow(ip)) return j({ error: 'limit' }, 429);
+  if (gKey()) {
+    const w = await geminiTts(text, SES_TARIF);
+    if (w) return new Response(w, { headers: { ...cors, 'Content-Type': 'audio/wav', 'Cache-Control': 'no-store' } });
+    return j({ error: 'fail' }, 502);
+  }
   const model = Deno.env.get('OPENAI_TTS_MODEL') || 'gpt-4o-mini-tts';
   const voices = [Deno.env.get('OPENAI_TTS_VOICE') || '', 'marin', 'coral', 'nova'].filter((v, i, a) => v && a.indexOf(v) === i);
   for (const voice of voices) {
@@ -132,10 +138,10 @@ Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: cors });
   try {
     const key = Deno.env.get('OPENAI_API_KEY');
-    if (!key) return j({ error: 'not_configured', message: 'Asistan şu an kullanılamıyor.' }, 503);
+    if (!key && !gKey()) return j({ error: 'not_configured', message: 'Asistan şu an kullanılamıyor.' }, 503);
     const ip = (req.headers.get('x-forwarded-for') || req.headers.get('cf-connecting-ip') || 'x').split(',')[0].trim();
     const body = await req.json();
-    if (body.mode === 'ses') return await ses(req, key, body);
+    if (body.mode === 'ses') return await ses(req, key || '', body);
     if (!allow(ip)) return j({ error: 'limit', message: 'Kısa sürede çok soru geldi. Biraz sonra yeniden dene ya da WhatsApp 0530 764 17 17 üzerinden bize yaz.' }, 429);
 
     const list: Msg[] = Array.isArray(body.messages) ? body.messages.slice(-8) : [];
@@ -150,6 +156,13 @@ Deno.serve(async (req) => {
       if (t) msgs.push({ role: m.role === 'assistant' ? 'assistant' : 'user', content: t });
     });
 
+    let raw = '';
+    if (gKey()) {
+      const [sys0, ...rest] = msgs as any[];
+      const g = await geminiChat(String(sys0.content), rest.map((m) => ({ role: m.role, text: m.content })), { json: true, maxTokens: 800, timeout: 45000, env: 'GEMINI_HELP_MODEL' });
+      if (!g.ok) return j({ error: 'fail', message: 'Asistan şu an cevap veremedi. Biraz sonra yeniden dene.' }, 502);
+      raw = g.text;
+    } else {
     const envModel = Deno.env.get('OPENAI_HELP_MODEL') || '';
     const models = [envModel, 'gpt-4.1-mini', 'gpt-5-mini', 'gpt-4o-mini'].filter((m, i, a) => m && a.indexOf(m) === i);
     let r: Response | null = null, out: any = null;
@@ -169,7 +182,8 @@ Deno.serve(async (req) => {
       if (!(r.status === 404 || (r.status === 400 && /model/.test(t)))) break;
     }
     if (!r || !r.ok) return j({ error: 'fail', message: 'Asistan şu an cevap veremedi. Biraz sonra yeniden dene.' }, 502);
-    const raw = String(out?.choices?.[0]?.message?.content || '');
+    raw = String(out?.choices?.[0]?.message?.content || '');
+    }
     let p: any = null;
     try { p = JSON.parse(raw); } catch (_) { const m = /\{[\s\S]*\}/.exec(raw); if (m) { try { p = JSON.parse(m[0]); } catch (_) { /* yok */ } } }
     const cevap = String(p?.cevap || raw || '').slice(0, 2000).trim() || 'Anlayamadım, biraz daha açık yazar mısın?';

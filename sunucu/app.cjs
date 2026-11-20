@@ -5760,21 +5760,21 @@ var require_rest = __commonJS({
       return { sql, name, col, text, type: m[2] ? text ? "text" : "jsonb" : t.cols.get(col) };
     }
     function splitTop(s4) {
-      const out = [];
+      const out2 = [];
       let depth = 0, quote = false, cur = "";
       for (const ch of s4) {
         if (ch === '"') quote = !quote;
         if (!quote && ch === "(") depth++;
         if (!quote && ch === ")") depth--;
         if (!quote && depth === 0 && ch === ",") {
-          out.push(cur);
+          out2.push(cur);
           cur = "";
           continue;
         }
         cur += ch;
       }
-      if (cur !== "") out.push(cur);
-      return out;
+      if (cur !== "") out2.push(cur);
+      return out2;
     }
     function selectList(t, sel, alias) {
       if (!sel || sel === "*") return alias + ".*";
@@ -5805,7 +5805,7 @@ var require_rest = __commonJS({
       const m = /^\((.*)\)$/s.exec(v);
       if (!m) throw bad("in.(...) bekleniyor");
       if (m[1] === "") return [];
-      const out = [];
+      const out2 = [];
       let cur = "", quote = false, wasQuoted = false;
       for (let i = 0; i < m[1].length; i++) {
         const ch = m[1][i];
@@ -5819,15 +5819,15 @@ var require_rest = __commonJS({
           continue;
         }
         if (ch === "," && !quote) {
-          out.push(wasQuoted ? cur : cur.trim());
+          out2.push(wasQuoted ? cur : cur.trim());
           cur = "";
           wasQuoted = false;
           continue;
         }
         cur += ch;
       }
-      out.push(wasQuoted ? cur : cur.trim());
-      return out;
+      out2.push(wasQuoted ? cur : cur.trim());
+      return out2;
     }
     function cond(t, fieldStr, expr, P, alias) {
       const f = field(t, fieldStr, alias);
@@ -5926,7 +5926,7 @@ var require_rest = __commonJS({
     }
     async function rest2(claims, rel, req) {
       try {
-        if (rel.startsWith("rpc/")) return await rpc(claims, rel.slice(4), req);
+        if (rel.startsWith("rpc/")) return await rpc2(claims, rel.slice(4), req);
         if (!/^[A-Za-z_][A-Za-z0-9_]*$/.test(rel)) throw bad("Ge\xE7ersiz tablo ad\u0131");
         const t = table(rel);
         if (claims.role === "anon" && ANON_NONE.has(rel)) {
@@ -5985,7 +5985,7 @@ var require_rest = __commonJS({
         }
         const write = m !== "GET" && m !== "HEAD";
         const wantRows = !write || pref.return === "representation" || single;
-        const out = await tx(claims, async (c) => {
+        const out2 = await tx(claims, async (c) => {
           let r;
           if (!write) r = await c.query(`SELECT coalesce(json_agg(_x), '[]'::json)::text j, count(*)::int n FROM (${sql}) _x`, P);
           else if (wantRows) r = await c.query(`WITH _w AS (${sql} RETURNING _t.*) SELECT coalesce(json_agg(_x), '[]'::json)::text j, count(*)::int n FROM (SELECT ${sel} FROM _w _t) _x`, P);
@@ -5999,17 +5999,17 @@ var require_rest = __commonJS({
           return { j: r.rows[0].j, n, total };
         });
         const headers = { "Content-Type": "application/json; charset=utf-8" };
-        if (countSql || pref.count) headers["Content-Range"] = (out.n ? `0-${out.n - 1}` : "*") + "/" + (out.total != null ? out.total : "*");
+        if (countSql || pref.count) headers["Content-Range"] = (out2.n ? `0-${out2.n - 1}` : "*") + "/" + (out2.total != null ? out2.total : "*");
         if (!wantRows) return { status: m === "POST" ? 201 : 204, headers, body: null };
-        let body = out.j;
-        if (single) body = JSON.stringify(JSON.parse(out.j)[0]);
+        let body = out2.j;
+        if (single) body = JSON.stringify(JSON.parse(out2.j)[0]);
         return { status: m === "POST" ? 201 : 200, headers, body: m === "HEAD" ? null : body };
       } catch (e) {
         const he = pgErr(e, claims);
         return { status: he.status, headers: { "Content-Type": "application/json" }, body: JSON.stringify(he.body) };
       }
     }
-    async function rpc(claims, name, req) {
+    async function rpc2(claims, name, req) {
       const f = sema2.fns.get(name);
       const allowed = claims.role === "service_role" || RPC[claims.role] && RPC[claims.role].has(name);
       if (!f || !allowed) throw new HttpErr(404, { code: "PGRST202", message: `Could not find the function public.${name}`, details: null, hint: null });
@@ -6024,7 +6024,7 @@ var require_rest = __commonJS({
         throw new HttpErr(405, { code: "PGRST117", message: "Unsupported HTTP method", details: null, hint: null });
       }
       const P = [JSON.stringify(args)];
-      const call = [];
+      const call2 = [];
       for (const a of f.args) {
         if (!a.name || !Object.hasOwn(args, a.name)) continue;
         const k = `'${a.name.replace(/'/g, "''")}'`;
@@ -6032,14 +6032,14 @@ var require_rest = __commonJS({
         if (/\[\]$/.test(a.type)) e = `ARRAY(SELECT json_array_elements_text($1::json->${k}))::${a.type}`;
         else if (/^jsonb?$/.test(a.type)) e = `($1::json->${k})::${a.type}`;
         else e = `($1::json->>${k})::${a.type}`;
-        call.push(`${qi(a.name)} => ${e}`);
+        call2.push(`${qi(a.name)} => ${e}`);
       }
       Object.keys(args).forEach((k) => {
         if (!f.args.some((a) => a.name === k)) throw bad(`Fonksiyonda "${k}" arg\xFCman\u0131 yok`, "PGRST202");
       });
-      const fx = `public.${qi(f.name)}(${call.join(", ")})`;
-      if (!call.length) P.length = 0;
-      const out = await tx(claims, async (c) => {
+      const fx = `public.${qi(f.name)}(${call2.join(", ")})`;
+      if (!call2.length) P.length = 0;
+      const out2 = await tx(claims, async (c) => {
         if (f.rt === "void" && !f.set) {
           await c.query(`SELECT ${fx}`, P);
           return null;
@@ -6047,8 +6047,8 @@ var require_rest = __commonJS({
         const sql = f.set ? `SELECT coalesce(json_agg(_r), '[]'::json)::text j FROM ${fx} _r` : `SELECT to_json(${fx})::text j`;
         return (await c.query(sql, P)).rows[0].j;
       });
-      if (out === null) return { status: 204, headers: {}, body: null };
-      return { status: 200, headers: { "Content-Type": "application/json; charset=utf-8" }, body: out };
+      if (out2 === null) return { status: 204, headers: {}, body: null };
+      return { status: 200, headers: { "Content-Type": "application/json; charset=utf-8" }, body: out2 };
     }
     module2.exports = { rest: async (claims, rel, req) => {
       try {
@@ -9278,11 +9278,11 @@ var require_punycode = __commonJS({
       if (basic < 0) {
         basic = 0;
       }
-      for (let j10 = 0; j10 < basic; ++j10) {
-        if (input.charCodeAt(j10) >= 128) {
+      for (let j14 = 0; j14 < basic; ++j14) {
+        if (input.charCodeAt(j14) >= 128) {
           error("not-basic");
         }
-        output.push(input.charCodeAt(j10));
+        output.push(input.charCodeAt(j14));
       }
       for (let index = basic > 0 ? basic + 1 : 0; index < inputLength; ) {
         const oldi = i;
@@ -9308,13 +9308,13 @@ var require_punycode = __commonJS({
           }
           w *= baseMinusT;
         }
-        const out = output.length + 1;
-        bias = adapt(i - oldi, out, oldi == 0);
-        if (floor(i / out) > maxInt - n) {
+        const out2 = output.length + 1;
+        bias = adapt(i - oldi, out2, oldi == 0);
+        if (floor(i / out2) > maxInt - n) {
           error("overflow");
         }
-        n += floor(i / out);
-        i %= out;
+        n += floor(i / out2);
+        i %= out2;
         output.splice(i++, 0, n);
       }
       return String.fromCodePoint(...output);
@@ -12232,12 +12232,12 @@ var require_sign = __commonJS({
     }
     function relaxedHeaders(headers, fieldNames, skipFields) {
       let includedFields = /* @__PURE__ */ new Set();
-      let skip = /* @__PURE__ */ new Set();
+      let skip2 = /* @__PURE__ */ new Set();
       let headerFields = /* @__PURE__ */ new Map();
       (skipFields || "").toLowerCase().split(":").forEach((field) => {
-        skip.add(field.trim());
+        skip2.add(field.trim());
       });
-      (fieldNames || "").toLowerCase().split(":").filter((field) => !skip.has(field.trim())).forEach((field) => {
+      (fieldNames || "").toLowerCase().split(":").filter((field) => !skip2.has(field.trim())).forEach((field) => {
         includedFields.add(field.trim());
       });
       for (let i = headers.length - 1; i >= 0; i--) {
@@ -17036,23 +17036,23 @@ var require_ses_transport = __commonJS({
             Object.keys(mail.data.ses || {}).forEach((key) => {
               sesMessage[key] = mail.data.ses[key];
             });
-            let ses = (this.ses.aws ? this.ses.ses : this.ses) || {};
+            let ses2 = (this.ses.aws ? this.ses.ses : this.ses) || {};
             let aws = this.ses.aws || {};
             let getRegion = (cb) => {
-              if (ses.config && typeof ses.config.region === "function") {
-                return ses.config.region().then((region) => cb(null, region)).catch((err2) => cb(err2));
+              if (ses2.config && typeof ses2.config.region === "function") {
+                return ses2.config.region().then((region) => cb(null, region)).catch((err2) => cb(err2));
               }
-              return cb(null, ses.config && ses.config.region || "us-east-1");
+              return cb(null, ses2.config && ses2.config.region || "us-east-1");
             };
             getRegion((err2, region) => {
               if (err2 || !region) {
                 region = "us-east-1";
               }
               let sendPromise;
-              if (typeof ses.send === "function" && aws.SendRawEmailCommand) {
-                sendPromise = ses.send(new aws.SendRawEmailCommand(sesMessage));
+              if (typeof ses2.send === "function" && aws.SendRawEmailCommand) {
+                sendPromise = ses2.send(new aws.SendRawEmailCommand(sesMessage));
               } else {
-                sendPromise = ses.sendRawEmail(sesMessage).promise();
+                sendPromise = ses2.sendRawEmail(sesMessage).promise();
               }
               sendPromise.then((data) => {
                 if (region === "us-east-1") {
@@ -17092,7 +17092,7 @@ var require_ses_transport = __commonJS({
        */
       verify(callback) {
         let promise;
-        let ses = (this.ses.aws ? this.ses.ses : this.ses) || {};
+        let ses2 = (this.ses.aws ? this.ses.ses : this.ses) || {};
         let aws = this.ses.aws || {};
         const sesMessage = {
           RawMessage: {
@@ -17113,11 +17113,11 @@ var require_ses_transport = __commonJS({
           }
           return callback(null, true);
         };
-        if (typeof ses.send === "function" && aws.SendRawEmailCommand) {
+        if (typeof ses2.send === "function" && aws.SendRawEmailCommand) {
           sesMessage.RawMessage.Data = Buffer.from(sesMessage.RawMessage.Data);
-          ses.send(new aws.SendRawEmailCommand(sesMessage), cb);
+          ses2.send(new aws.SendRawEmailCommand(sesMessage), cb);
         } else {
-          ses.sendRawEmail(sesMessage, cb);
+          ses2.sendRawEmail(sesMessage, cb);
         }
         return promise;
       }
@@ -17718,12 +17718,12 @@ var require_depo = __commonJS({
           return u ? json(200, { signedURL: u }) : fail(400, "not_found", "Object not found");
         }
         const paths = Array.isArray(body.paths) ? body.paths.slice(0, 1e3) : [];
-        const out = [];
+        const out2 = [];
         for (const p of paths) {
           const n = cleanName(String(p)), u = await one(n);
-          out.push({ error: u ? null : "Either the object does not exist or you do not have access to it", path: p, signedURL: u, signedUrl: u });
+          out2.push({ error: u ? null : "Either the object does not exist or you do not have access to it", path: p, signedURL: u, signedUrl: u });
         }
-        return json(200, out);
+        return json(200, out2);
       }
       if ((m = /^object\/list\/([a-z]+)$/.exec(rel)) && method === "POST") {
         const b = m[1], body = req.body || {};
@@ -17766,7 +17766,7 @@ var require_depo = __commonJS({
       if ((m = /^object\/([a-z]+)$/.exec(rel)) && method === "DELETE") {
         const b = m[1], list = Array.isArray((req.body || {}).prefixes) ? req.body.prefixes.slice(0, 1e3) : [];
         if (!BUCKETS.includes(b)) return fail(400, "not_found", "Bucket not found");
-        const out = [];
+        const out2 = [];
         for (const p of list) {
           const n = cleanName(String(p));
           if (!n || !await can(claims, b, "delete", n)) continue;
@@ -17775,9 +17775,9 @@ var require_depo = __commonJS({
           } catch {
           }
           const d = await owner.query("delete from public.storage_objects where bucket_id = $1 and name = $2 returning name", [b, n]);
-          if (d.rowCount) out.push({ bucket_id: b, name: n });
+          if (d.rowCount) out2.push({ bucket_id: b, name: n });
         }
-        return json(200, out);
+        return json(200, out2);
       }
       if (m = /^object\/(?:authenticated\/)?([a-z]+)\/(.+)$/.exec(rel)) {
         const b = m[1], n = cleanName(m[2]);
@@ -17850,43 +17850,43 @@ var require_depo = __commonJS({
 // ../supabase/functions/baski-dosya/index.ts
 var require_baski_dosya = __commonJS({
   "../supabase/functions/baski-dosya/index.ts"() {
-    var SB_URL4 = Deno.env.get("SUPABASE_URL");
-    var SRK4 = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-    var cors4 = {
+    var SB_URL7 = Deno.env.get("SUPABASE_URL");
+    var SRK7 = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+    var cors8 = {
       "Access-Control-Allow-Origin": "*",
       "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
       "Access-Control-Allow-Methods": "POST, OPTIONS"
     };
-    var j10 = (o, s4 = 200) => new Response(JSON.stringify(o), { status: s4, headers: { ...cors4, "Content-Type": "application/json" } });
+    var j14 = (o, s4 = 200) => new Response(JSON.stringify(o), { status: s4, headers: { ...cors8, "Content-Type": "application/json" } });
     async function sig(code) {
-      const k = await crypto.subtle.importKey("raw", new TextEncoder().encode(SRK4), { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
+      const k = await crypto.subtle.importKey("raw", new TextEncoder().encode(SRK7), { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
       const b = new Uint8Array(await crypto.subtle.sign("HMAC", k, new TextEncoder().encode("baski:" + code)));
       return Array.from(b.slice(0, 16)).map((x) => x.toString(16).padStart(2, "0")).join("");
     }
     Deno.serve(async (req) => {
-      if (req.method === "OPTIONS") return new Response("ok", { headers: cors4 });
+      if (req.method === "OPTIONS") return new Response("ok", { headers: cors8 });
       try {
         const fd = await req.formData();
         const code = String(fd.get("code") || "");
-        if (!/^WLF-[A-Z0-9]{6}$/.test(code)) return j10({ error: "bad" }, 400);
-        if (String(fd.get("sig") || "") !== await sig(code)) return j10({ error: "sig" }, 403);
+        if (!/^WLF-[A-Z0-9]{6}$/.test(code)) return j14({ error: "bad" }, 400);
+        if (String(fd.get("sig") || "") !== await sig(code)) return j14({ error: "sig" }, 403);
         const i = Math.max(1, Math.min(40, Number(fd.get("i")) || 1));
         const side = String(fd.get("side") || "").replace(/[^a-z0-9]/g, "").slice(0, 10) || "on";
         const file = fd.get("file");
-        if (!(file instanceof File) || file.size < 100 || file.size > 45e6 || !/png/.test(file.type)) return j10({ error: "file" }, 400);
-        const or = await fetch(`${SB_URL4}/rest/v1/orders?select=created_at&code=eq.${code}`, { headers: { apikey: SRK4, Authorization: `Bearer ${SRK4}` } });
+        if (!(file instanceof File) || file.size < 100 || file.size > 45e6 || !/png/.test(file.type)) return j14({ error: "file" }, 400);
+        const or = await fetch(`${SB_URL7}/rest/v1/orders?select=created_at&code=eq.${code}`, { headers: { apikey: SRK7, Authorization: `Bearer ${SRK7}` } });
         const rows = or.ok ? await or.json() : [];
-        if (!rows.length || Date.now() - new Date(rows[0].created_at).getTime() > 3 * 36e5) return j10({ error: "order" }, 404);
+        if (!rows.length || Date.now() - new Date(rows[0].created_at).getTime() > 3 * 36e5) return j14({ error: "order" }, 404);
         const base = `siparis/${code}/${String(i).padStart(2, "0")}-${side}`;
-        const put2 = (path, body, type) => fetch(`${SB_URL4}/storage/v1/object/designs/${path}`, {
+        const put2 = (path, body, type) => fetch(`${SB_URL7}/storage/v1/object/designs/${path}`, {
           method: "POST",
-          headers: { apikey: SRK4, Authorization: `Bearer ${SRK4}`, "Content-Type": type, "x-upsert": "true" },
+          headers: { apikey: SRK7, Authorization: `Bearer ${SRK7}`, "Content-Type": type, "x-upsert": "true" },
           body
         });
         const up = await put2(base + ".png", file, "image/png");
         if (!up.ok) {
           console.error("baski upload", up.status, (await up.text()).slice(0, 200));
-          return j10({ error: "upload" }, 500);
+          return j14({ error: "upload" }, 500);
         }
         let meta = {};
         try {
@@ -17896,27 +17896,215 @@ var require_baski_dosya = __commonJS({
         }
         const m = { urun: String(meta.urun || "").slice(0, 120), yuz: String(meta.yuz || "").slice(0, 30), alan: String(meta.alan || "").slice(0, 60), cm: String(meta.cm || "").slice(0, 40), dpi: Number(meta.dpi) || 0, renk: String(meta.renk || "").slice(0, 60), bedenler: String(meta.bedenler || "").slice(0, 200), adet: Number(meta.adet) || 0, renkler: String(meta.renkler || "").slice(0, 300) };
         await put2(base + ".json", JSON.stringify(m), "application/json");
-        return j10({ ok: true });
+        return j14({ ok: true });
       } catch (e) {
         console.error("baski-dosya", String(e));
-        return j10({ error: "fail" }, 500);
+        return j14({ error: "fail" }, 500);
       }
     });
   }
 });
 
+// ../supabase/functions/_shared/gemini.ts
+function parseDataUrl(u) {
+  const m = /^data:([^;,]+);base64,(.+)$/s.exec(u || "");
+  return m ? { mimeType: m[1], data: m[2] } : null;
+}
+async function call(model, body, timeout) {
+  const r = await fetch(API + encodeURIComponent(model) + ":generateContent", {
+    method: "POST",
+    headers: { "x-goog-api-key": gKey(), "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+    signal: AbortSignal.timeout(timeout)
+  });
+  const j14 = await r.json().catch(() => ({}));
+  return { r, j: j14 };
+}
+async function geminiChat(sys, msgs, o = {}) {
+  const contents = [];
+  for (const m of msgs) {
+    const role = m.role === "assistant" ? "model" : "user";
+    const parts = [];
+    if (m.text) parts.push({ text: m.text });
+    const im = m.image ? parseDataUrl(m.image) : null;
+    if (im) parts.push({ inlineData: im });
+    if (!parts.length) continue;
+    const last2 = contents[contents.length - 1];
+    if (last2 && last2.role === role) last2.parts.push(...parts);
+    else contents.push({ role, parts });
+  }
+  while (contents.length && contents[0].role !== "user") contents.shift();
+  if (!contents.length) return { ok: false, status: 400, text: "", err: "empty", model: "" };
+  const models = [Deno.env.get(o.env || "GEMINI_CHAT_MODEL") || "", "gemini-2.5-flash", "gemini-flash-latest", "gemini-2.5-flash-lite"].filter((m, i, a) => m && a.indexOf(m) === i);
+  let last = { ok: false, status: 0, text: "", err: "", model: "" };
+  for (const model of models) {
+    const gc = { maxOutputTokens: o.maxTokens || 1200, temperature: 0.7 };
+    if (o.json) gc.responseMimeType = "application/json";
+    if (/^gemini-2\.5-flash/.test(model)) gc.thinkingConfig = { thinkingBudget: 0 };
+    const { r, j: j14 } = await call(model, { systemInstruction: { parts: [{ text: sys }] }, contents, generationConfig: gc }, o.timeout || 6e4);
+    const err = JSON.stringify(j14?.error || "").toLowerCase();
+    const text = (j14?.candidates?.[0]?.content?.parts || []).map((p) => p?.text || "").join("").trim();
+    last = { ok: r.ok && !!text, status: r.status, text, err, model };
+    if (last.ok) {
+      console.log("gemini", model);
+      return last;
+    }
+    console.error("gemini", model, r.status, (err || JSON.stringify(j14?.promptFeedback || j14?.candidates?.[0]?.finishReason || "")).slice(0, 200));
+    if (!skip(r.status, err)) break;
+  }
+  return last;
+}
+async function geminiTts(text, tarif) {
+  const models = [Deno.env.get("GEMINI_TTS_MODEL") || "", "gemini-2.5-flash-preview-tts", "gemini-2.5-flash-tts"].filter((m, i, a) => m && a.indexOf(m) === i);
+  const voices = [Deno.env.get("GEMINI_TTS_VOICE") || "", "Sulafat", "Kore"].filter((v, i, a) => v && a.indexOf(v) === i);
+  for (const model of models) {
+    for (const voice of voices) {
+      const { r, j: j14 } = await call(model, {
+        contents: [{ parts: [{ text: `${tarif}
+
+\u015Eunu oku: ${text}` }] }],
+        generationConfig: { responseModalities: ["AUDIO"], speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: voice } } } }
+      }, 4e4);
+      const part = (j14?.candidates?.[0]?.content?.parts || []).find((p) => p?.inlineData?.data);
+      if (r.ok && part) {
+        const rate = Number(/rate=(\d+)/.exec(part.inlineData.mimeType || "")?.[1] || 24e3);
+        const bin = atob(part.inlineData.data), pcm = new Uint8Array(bin.length);
+        for (let i = 0; i < bin.length; i++) pcm[i] = bin.charCodeAt(i);
+        return wav(pcm, rate);
+      }
+      const err = JSON.stringify(j14?.error || "").toLowerCase();
+      console.error("gemini-tts", model, voice, r.status, err.slice(0, 200));
+      if (skip(r.status, err)) break;
+      if (!(r.status === 400 && /voice/.test(err))) return null;
+    }
+  }
+  return null;
+}
+function wav(pcm, rate) {
+  const b = new Uint8Array(44 + pcm.length), v = new DataView(b.buffer);
+  const w = (o, s4) => {
+    for (let i = 0; i < s4.length; i++) b[o + i] = s4.charCodeAt(i);
+  };
+  w(0, "RIFF");
+  v.setUint32(4, 36 + pcm.length, true);
+  w(8, "WAVEfmt ");
+  v.setUint32(16, 16, true);
+  v.setUint16(20, 1, true);
+  v.setUint16(22, 1, true);
+  v.setUint32(24, rate, true);
+  v.setUint32(28, rate * 2, true);
+  v.setUint16(32, 2, true);
+  v.setUint16(34, 16, true);
+  w(36, "data");
+  v.setUint32(40, pcm.length, true);
+  b.set(pcm, 44);
+  return b;
+}
+function aspectOf(size) {
+  const m = /(\d+)\s*x\s*(\d+)/.exec(size || "");
+  if (!m) return "";
+  const t = Number(m[1]) / Number(m[2]);
+  const opts = ["1:1", "2:3", "3:2", "3:4", "4:3", "4:5", "5:4", "9:16", "16:9", "21:9"];
+  let best = "1:1", d = 9;
+  for (const o of opts) {
+    const [a, c] = o.split(":").map(Number);
+    const e = Math.abs(Math.log(a / c) - Math.log(t));
+    if (e < d) {
+      d = e;
+      best = o;
+    }
+  }
+  return best;
+}
+async function blobPart(b) {
+  const u = new Uint8Array(await b.arrayBuffer());
+  let s4 = "";
+  for (let i = 0; i < u.length; i += 32768) s4 += String.fromCharCode(...u.subarray(i, i + 32768));
+  return { inlineData: { mimeType: b.type || "image/png", data: btoa(s4) } };
+}
+async function geminiImage(prompt, images, aspect, timeout = 15e4) {
+  const parts = [{ text: prompt }];
+  for (const b of images) parts.push(await blobPart(b));
+  const models = [Deno.env.get("GEMINI_IMAGE_MODEL") || "", "gemini-3.1-flash-image-preview", "gemini-2.5-flash-image"].filter((m, i, a) => m && a.indexOf(m) === i);
+  let last = { ok: false, status: 0, b64: "", mime: "", err: "", model: "" };
+  for (const model of models) {
+    const { r, j: j14 } = await call(model, {
+      contents: [{ role: "user", parts }],
+      generationConfig: aspect ? { responseModalities: ["IMAGE"], imageConfig: { aspectRatio: aspect } } : { responseModalities: ["IMAGE"] }
+    }, timeout);
+    const err = JSON.stringify(j14?.error || j14?.promptFeedback || j14?.candidates?.[0]?.finishReason || "").toLowerCase();
+    const p = (j14?.candidates?.[0]?.content?.parts || []).find((x) => x?.inlineData?.data);
+    last = { ok: r.ok && !!p, status: r.status, b64: p?.inlineData?.data || "", mime: p?.inlineData?.mimeType || "image/png", err, model };
+    if (last.ok) {
+      console.log("gemini-image", model);
+      return last;
+    }
+    console.error("gemini-image", model, r.status, err.slice(0, 300));
+    if (!(skip(r.status, err) || r.status === 400 && /aspect/.test(err))) break;
+  }
+  return last;
+}
+var API, gKey, skip;
+var init_gemini = __esm({
+  "../supabase/functions/_shared/gemini.ts"() {
+    API = "https://generativelanguage.googleapis.com/v1beta/models/";
+    gKey = () => Deno.env.get("GEMINI_API_KEY") || Deno.env.get("GOOGLE_API_KEY") || "";
+    skip = (status, t) => status === 404 || status === 400 && /model/.test(t) && /not (found|supported)|unknown|invalid/.test(t);
+  }
+});
+
 // ../supabase/functions/bz-image/index.ts
-var require_bz_image = __commonJS({
+var bz_image_exports = {};
+async function rpc(fn, args) {
+  return await fetch(`${SB_URL}/rest/v1/rpc/${fn}`, {
+    method: "POST",
+    headers: { apikey: SRK, Authorization: `Bearer ${SRK}`, "Content-Type": "application/json" },
+    body: JSON.stringify(args)
+  });
+}
+function dataUrlToBlob(u) {
+  const m = /^data:(image\/(?:png|jpeg|webp));base64,(.+)$/.exec(u);
+  if (!m) return null;
+  const bin = atob(m[2]);
+  const a = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) a[i] = bin.charCodeAt(i);
+  return new Blob([a], { type: m[1] });
+}
+function shirtDark(hex) {
+  const m = /^#?([0-9a-f]{6})$/i.exec(hex || "");
+  if (!m) return null;
+  const n = parseInt(m[1], 16), r = n >> 16 & 255, g = n >> 8 & 255, b = n & 255;
+  return (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255 < 0.5;
+}
+function wolfTone(dark) {
+  if (dark === true) return "TONE RULE (most important, overrides any other color words): the shirt is dark, so invert the tonality: draw the artwork mainly in luminous light grey, bone white, cream and pale warm stone tones with bright highlights, mid tones only for depth and the amber eye as the accent; no black or very dark areas at all, because they would vanish into the dark fabric. The edges fade out in light dry-brush flecks.";
+  return "TONE RULE (most important, overrides any other color words): the shirt is light (white, cream or pastel), so keep the artwork LIGHT and airy like a vintage engraving printed on cream paper: mostly soft light-to-mid grey, warm sepia and pale stone tones with plenty of light areas, fine line detail, and deep dark shadows only in small accents (eye, nose, the deepest folds and column gaps). Never a heavy, dark, mostly black image; overall the artwork should read clearly lighter than mid-grey. The edges fade out into light ink washes and small flecks.";
+}
+function shirtHint(name, hex) {
+  const m = /^#?([0-9a-f]{6})$/i.exec(hex || "");
+  let dark = null;
+  if (m) {
+    const n = parseInt(m[1], 16), r = n >> 16 & 255, g = n >> 8 & 255, b = n & 255;
+    dark = (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255 < 0.5;
+  }
+  const nm = name ? `${name} (${hex || "unknown hex"})` : hex || "";
+  if (!nm) return "";
+  const tone = dark === null ? "" : dark ? "The shirt is dark: use luminous, light and mid tones with bright highlights so the artwork glows on the dark fabric; avoid large black areas that would disappear into the shirt." : "The shirt is light: use clear mid and dark tones with good contrast so the artwork stands out on the light fabric, without making the whole image heavy or black; avoid large white areas that would disappear into the shirt.";
+  return `This artwork will be printed on a ${nm} T-shirt. Choose a color palette that harmonizes with that shirt color and gives strong contrast against it. ${tone} Never paint a background in the shirt color; the shirt fabric itself is the background.`;
+}
+var SB_URL, SRK, cors, j, STY;
+var init_bz_image = __esm({
   "../supabase/functions/bz-image/index.ts"() {
-    var SB_URL4 = Deno.env.get("SUPABASE_URL");
-    var SRK4 = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-    var cors4 = {
+    init_gemini();
+    SB_URL = Deno.env.get("SUPABASE_URL");
+    SRK = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+    cors = {
       "Access-Control-Allow-Origin": "*",
       "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
       "Access-Control-Allow-Methods": "POST, OPTIONS"
     };
-    var j10 = (o, s4 = 200) => new Response(JSON.stringify(o), { status: s4, headers: { ...cors4, "Content-Type": "application/json" } });
-    var STY = {
+    j = (o, s4 = 200) => new Response(JSON.stringify(o), { status: s4, headers: { ...cors, "Content-Type": "application/json" } });
+    STY = {
       tisort: "premium streetwear T-shirt graphic: dramatic, highly detailed realistic digital illustration (not a photo), cinematic lighting, rich texture, ink-splash and dry-brush edges that fade out softly, strong silhouette, cohesive limited color palette, bold modern composition like a high-end apparel brand print",
       kurt: "premium streetwear T-shirt graphic: dramatic, highly detailed realistic digital illustration (not a photo), dramatic cinematic lighting, muted earthy palette with amber accents (exact lightness set by the shirt-color rule below), rich fur and hair texture, ink-splash and dry-brush edges that fade out softly into the background (adapt the palette to the shirt color if one is given below)",
       tarih: "premium streetwear T-shirt graphic: highly detailed realistic illustration in a double-exposure style, soft graphite, sepia and stone colors with a single amber accent in the wolf eye (exact lightness set by the shirt-color rule below), fine engraving-like detail, weathered ancient stone texture, ink-splash and dry-brush edges with small flying flecks that fade out softly (adapt the palette to the shirt color if one is given below)",
@@ -17926,59 +18114,22 @@ var require_bz_image = __commonJS({
       illus: "premium editorial vector illustration, flat shapes, refined color palette, clean lines",
       canvas: "classic oil painting, visible thick brush strokes, rich warm colors, gallery quality"
     };
-    async function rpc(fn, args) {
-      return await fetch(`${SB_URL4}/rest/v1/rpc/${fn}`, {
-        method: "POST",
-        headers: { apikey: SRK4, Authorization: `Bearer ${SRK4}`, "Content-Type": "application/json" },
-        body: JSON.stringify(args)
-      });
-    }
-    function dataUrlToBlob(u) {
-      const m = /^data:(image\/(?:png|jpeg|webp));base64,(.+)$/.exec(u);
-      if (!m) return null;
-      const bin = atob(m[2]);
-      const a = new Uint8Array(bin.length);
-      for (let i = 0; i < bin.length; i++) a[i] = bin.charCodeAt(i);
-      return new Blob([a], { type: m[1] });
-    }
-    function shirtDark(hex) {
-      const m = /^#?([0-9a-f]{6})$/i.exec(hex || "");
-      if (!m) return null;
-      const n = parseInt(m[1], 16), r = n >> 16 & 255, g = n >> 8 & 255, b = n & 255;
-      return (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255 < 0.5;
-    }
-    function wolfTone(dark) {
-      if (dark === true) return "TONE RULE (most important, overrides any other color words): the shirt is dark, so invert the tonality: draw the artwork mainly in luminous light grey, bone white, cream and pale warm stone tones with bright highlights, mid tones only for depth and the amber eye as the accent; no black or very dark areas at all, because they would vanish into the dark fabric. The edges fade out in light dry-brush flecks.";
-      return "TONE RULE (most important, overrides any other color words): the shirt is light (white, cream or pastel), so keep the artwork LIGHT and airy like a vintage engraving printed on cream paper: mostly soft light-to-mid grey, warm sepia and pale stone tones with plenty of light areas, fine line detail, and deep dark shadows only in small accents (eye, nose, the deepest folds and column gaps). Never a heavy, dark, mostly black image; overall the artwork should read clearly lighter than mid-grey. The edges fade out into light ink washes and small flecks.";
-    }
-    function shirtHint(name, hex) {
-      const m = /^#?([0-9a-f]{6})$/i.exec(hex || "");
-      let dark = null;
-      if (m) {
-        const n = parseInt(m[1], 16), r = n >> 16 & 255, g = n >> 8 & 255, b = n & 255;
-        dark = (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255 < 0.5;
-      }
-      const nm = name ? `${name} (${hex || "unknown hex"})` : hex || "";
-      if (!nm) return "";
-      const tone = dark === null ? "" : dark ? "The shirt is dark: use luminous, light and mid tones with bright highlights so the artwork glows on the dark fabric; avoid large black areas that would disappear into the shirt." : "The shirt is light: use clear mid and dark tones with good contrast so the artwork stands out on the light fabric, without making the whole image heavy or black; avoid large white areas that would disappear into the shirt.";
-      return `This artwork will be printed on a ${nm} T-shirt. Choose a color palette that harmonizes with that shirt color and gives strong contrast against it. ${tone} Never paint a background in the shirt color; the shirt fabric itself is the background.`;
-    }
     Deno.serve(async (req) => {
-      if (req.method === "OPTIONS") return new Response("ok", { headers: cors4 });
+      if (req.method === "OPTIONS") return new Response("ok", { headers: cors });
       let uid = "";
       let taken = false;
       try {
         const key = Deno.env.get("OPENAI_API_KEY");
-        if (!key) return j10({ error: "not_configured", message: "Tasar\u0131m servisi hen\xFCz etkinle\u015Ftirilmedi." }, 503);
+        if (!key && !gKey()) return j({ error: "not_configured", message: "Tasar\u0131m servisi hen\xFCz etkinle\u015Ftirilmedi." }, 503);
         const tok = (req.headers.get("Authorization") || "").replace(/^Bearer /i, "");
-        const ur = await fetch(`${SB_URL4}/auth/v1/user`, { headers: { apikey: SRK4, Authorization: `Bearer ${tok}` } });
-        if (!ur.ok) return j10({ error: "auth", message: "\xD6nce \xFCye giri\u015Fi yapmal\u0131s\u0131n." }, 401);
+        const ur = await fetch(`${SB_URL}/auth/v1/user`, { headers: { apikey: SRK, Authorization: `Bearer ${tok}` } });
+        if (!ur.ok) return j({ error: "auth", message: "\xD6nce \xFCye giri\u015Fi yapmal\u0131s\u0131n." }, 401);
         const uj = await ur.json();
         uid = uj.id;
         const em = String(uj.email || "").toLowerCase();
         let isAdm = em === "ergunince68@hotmail.com";
         if (!isAdm && em) {
-          const sr = await fetch(`${SB_URL4}/rest/v1/wf_staff?select=email&email=eq.${encodeURIComponent(em)}`, { headers: { apikey: SRK4, Authorization: `Bearer ${SRK4}` } });
+          const sr = await fetch(`${SB_URL}/rest/v1/wf_staff?select=email&email=eq.${encodeURIComponent(em)}`, { headers: { apikey: SRK, Authorization: `Bearer ${SRK}` } });
           if (sr.ok) {
             const sj = await sr.json();
             isAdm = Array.isArray(sj) && sj.length > 0;
@@ -17998,13 +18149,13 @@ var require_bz_image = __commonJS({
         const transparent = !full && body.transparent !== false;
         const shirt = canvas || mug || slot ? "" : shirtHint(String(body.shirt || "").slice(0, 40), String(body.shirtHex || "").slice(0, 7));
         const img = typeof body.image === "string" && body.image ? dataUrlToBlob(body.image) : null;
-        if (!idea && !img) return j10({ error: "empty", message: "Ne tasarlayal\u0131m? Bir c\xFCmle yaz ya da foto\u011Fraf ekle." }, 400);
-        if (img && img.size > 6e6) return j10({ error: "big", message: "Foto\u011Fraf \xE7ok b\xFCy\xFCk." }, 400);
+        if (!idea && !img) return j({ error: "empty", message: "Ne tasarlayal\u0131m? Bir c\xFCmle yaz ya da foto\u011Fraf ekle." }, 400);
+        if (img && img.size > 6e6) return j({ error: "big", message: "Foto\u011Fraf \xE7ok b\xFCy\xFCk." }, 400);
         if (!isAdm) {
           const lim = slot ? 6 : 3;
           const rr = await rpc("bz_take", { p_uid: uid, p_lim: lim });
           if (await rr.json() !== true) {
-            return j10({ error: "limit", message: "Bug\xFCnk\xFC tasar\u0131m hakk\u0131n doldu. Yar\u0131n yeniden dene." }, 429);
+            return j({ error: "limit", message: "Bug\xFCnk\xFC tasar\u0131m hakk\u0131n doldu. Yar\u0131n yeniden dene." }, 429);
           }
           taken = true;
         }
@@ -18083,11 +18234,23 @@ var require_bz_image = __commonJS({
           else K.push(transparent ? "Isolated artwork on a fully transparent background: no background color, no card, no border." : "Clean plain background, no border.");
           prompt = K.join(" ");
         }
+        if (gKey()) {
+          const gp = transparent ? prompt.replace(/Isolated artwork on a fully transparent background[^.]*\./, "Isolated artwork on a plain pure white background.").replace(/Transparent background/g, "Plain pure white background") : prompt;
+          const g = await geminiImage(gp, img ? [img] : [], aspectOf(size));
+          if (!g.ok) {
+            if (taken) await rpc("bz_refund", { p_uid: uid });
+            if (/safety|prohibited|blocked|image_safety|recitation/.test(g.err)) return j({ error: "moderation", message: "Bu istek i\xE7in g\xF6rsel \xFCretilemedi. Farkl\u0131 bir c\xFCmle dene." }, 422);
+            if (g.status === 429 && /free|tier|billing|limit: 0|quota/.test(g.err) || g.status === 403) return j({ error: "quota", message: "G\xF6rsel \xFCretimi i\xE7in Google AI Studio hesab\u0131nda faturaland\u0131rma a\xE7\u0131lmal\u0131 (\xFCcretsiz katmanda g\xF6rsel \xFCretilmiyor)." }, 402);
+            if (g.status === 429) return j({ error: "rate", message: "Google k\u0131sa s\xFCreli yo\u011Funluk dedi, birazdan yeniden dene." }, 429);
+            return j({ error: "fail", message: "Tasar\u0131m \u015Fu an haz\u0131rlanamad\u0131. Biraz sonra yeniden dene." }, 502);
+          }
+          return j({ ok: true, image: `data:${g.mime};base64,${g.b64}`, orient, transparent: false, whitebg: transparent, admin: isAdm });
+        }
         const envModel = Deno.env.get("OPENAI_IMAGE_MODEL") || "";
         const models = [envModel, img ? "gpt-image-2.5-sunburst" : "gpt-image-2.5-flare", img ? "gpt-image-2.5-flare" : "gpt-image-2.5-sunburst", "gpt-image-2", "gpt-image-1.5", "gpt-image-1"].filter((m, i, a) => m && a.indexOf(m) === i);
         let mi = 0;
         const quality = isAdm ? Deno.env.get("OPENAI_IMAGE_QUALITY_ADMIN") || "high" : Deno.env.get("OPENAI_IMAGE_QUALITY") || "medium";
-        async function call(fid2, bg2) {
+        async function call2(fid2, bg2) {
           const fmt = bg2 ? "png" : "jpeg";
           if (img) {
             const fd = new FormData();
@@ -18119,47 +18282,47 @@ var require_bz_image = __commonJS({
           });
         }
         let fid = true, bg = transparent;
-        let r = await call(fid, bg);
+        let r = await call2(fid, bg);
         for (let k = 0; k < 10 && !r.ok && r.status === 400; k++) {
           const t = await r.clone().text();
           if (/"param"\s*:\s*"model"|model .*(does not exist|not found|not supported)/i.test(t)) {
             if (++mi >= models.length) break;
-            r = await call(fid, bg);
+            r = await call2(fid, bg);
             continue;
           }
           if (fid && /input_fidelity/i.test(t)) {
             fid = false;
-            r = await call(fid, bg);
+            r = await call2(fid, bg);
             continue;
           }
           if (bg && /background|transparent/i.test(t)) {
             bg = false;
-            r = await call(fid, bg);
+            r = await call2(fid, bg);
             continue;
           }
           break;
         }
         console.log("model", models[mi], r.status);
-        const out = await r.json().catch(() => ({}));
+        const out2 = await r.json().catch(() => ({}));
         if (!r.ok) {
-          const msg = JSON.stringify(out?.error || out).toLowerCase();
+          const msg = JSON.stringify(out2?.error || out2).toLowerCase();
           if (taken) await rpc("bz_refund", { p_uid: uid });
           if (/moderation|safety|content_policy/.test(msg)) {
-            return j10({ error: "moderation", message: "Bu istek i\xE7in g\xF6rsel \xFCretilemedi. Farkl\u0131 bir c\xFCmle dene." }, 422);
+            return j({ error: "moderation", message: "Bu istek i\xE7in g\xF6rsel \xFCretilemedi. Farkl\u0131 bir c\xFCmle dene." }, 422);
           }
           console.error("openai", models[mi], r.status, msg.slice(0, 300));
-          return j10({ error: "fail", message: "Tasar\u0131m \u015Fu an haz\u0131rlanamad\u0131. Biraz sonra yeniden dene." }, 502);
+          return j({ error: "fail", message: "Tasar\u0131m \u015Fu an haz\u0131rlanamad\u0131. Biraz sonra yeniden dene." }, 502);
         }
-        const b64 = out?.data?.[0]?.b64_json;
+        const b64 = out2?.data?.[0]?.b64_json;
         if (!b64) {
           if (taken) await rpc("bz_refund", { p_uid: uid });
-          return j10({ error: "fail", message: "Tasar\u0131m \u015Fu an haz\u0131rlanamad\u0131." }, 502);
+          return j({ error: "fail", message: "Tasar\u0131m \u015Fu an haz\u0131rlanamad\u0131." }, 502);
         }
-        return j10({ ok: true, image: `data:image/${bg ? "png" : "jpeg"};base64,${b64}`, orient, transparent: bg, admin: isAdm });
+        return j({ ok: true, image: `data:image/${bg ? "png" : "jpeg"};base64,${b64}`, orient, transparent: bg, admin: isAdm });
       } catch (e) {
         console.error("bz-image", String(e));
         if (taken && uid) await rpc("bz_refund", { p_uid: uid });
-        return j10({ error: "fail", message: "Tasar\u0131m \u015Fu an haz\u0131rlanamad\u0131. Biraz sonra yeniden dene." }, 500);
+        return j({ error: "fail", message: "Tasar\u0131m \u015Fu an haz\u0131rlanamad\u0131. Biraz sonra yeniden dene." }, 500);
       }
     });
   }
@@ -18455,8 +18618,8 @@ function __spread() {
 function __spreadArrays() {
   for (var s4 = 0, i = 0, il = arguments.length; i < il; i++) s4 += arguments[i].length;
   for (var r = Array(s4), k = 0, i = 0; i < il; i++)
-    for (var a = arguments[i], j10 = 0, jl = a.length; j10 < jl; j10++, k++)
-      r[k] = a[j10];
+    for (var a = arguments[i], j14 = 0, jl = a.length; j14 < jl; j14++, k++)
+      r[k] = a[j14];
   return r;
 }
 function __spreadArray(to, from, pack) {
@@ -40495,17 +40658,17 @@ var init_posta = __esm({
 
 // ../supabase/functions/dogum-gunu/index.ts
 var dogum_gunu_exports = {};
-var j;
+var j2;
 var init_dogum_gunu = __esm({
   "../supabase/functions/dogum-gunu/index.ts"() {
     init_request_security();
     init_dist4();
     init_posta();
-    j = (o, s4 = 200) => new Response(JSON.stringify(o), { status: s4, headers: { "Content-Type": "application/json" } });
+    j2 = (o, s4 = 200) => new Response(JSON.stringify(o), { status: s4, headers: { "Content-Type": "application/json" } });
     Deno.serve(async (req) => {
-      if (req.method !== "POST") return j({ error: "method" }, 405);
-      if (!await jobAllowed(req, Deno.env.get("WF_JOB_TOKEN"))) return j({ error: "yetki" }, 403);
-      if (!smtpReady()) return j({ ok: false, reason: "SMTP ayarlar\u0131 eksik" }, 503);
+      if (req.method !== "POST") return j2({ error: "method" }, 405);
+      if (!await jobAllowed(req, Deno.env.get("WF_JOB_TOKEN"))) return j2({ error: "yetki" }, 403);
+      if (!smtpReady()) return j2({ ok: false, reason: "SMTP ayarlar\u0131 eksik" }, 503);
       const sb = createClient(Deno.env.get("SUPABASE_URL"), Deno.env.get("SUPABASE_SERVICE_ROLE_KEY"), { auth: { persistSession: false, autoRefreshToken: false } });
       const ymd = (/* @__PURE__ */ new Date()).toLocaleDateString("en-CA", { timeZone: "Europe/Istanbul" });
       const year2 = +ymd.slice(0, 4), today = ymd.slice(5);
@@ -40554,32 +40717,32 @@ var init_dogum_gunu = __esm({
         }
       }
       if (errs.length) console.error("dogum-gunu", errs);
-      return j({ ok: true, sent: n, errors: errs.length });
+      return j2({ ok: true, sent: n, errors: errs.length });
     });
   }
 });
 
 // ../supabase/functions/hosgeldin/index.ts
 var hosgeldin_exports = {};
-var CORS, j2;
+var CORS, j3;
 var init_hosgeldin = __esm({
   "../supabase/functions/hosgeldin/index.ts"() {
     init_dist4();
     init_posta();
     CORS = { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type", "Access-Control-Allow-Methods": "POST, OPTIONS" };
-    j2 = (o, s4 = 200) => new Response(JSON.stringify(o), { status: s4, headers: { ...CORS, "Content-Type": "application/json" } });
+    j3 = (o, s4 = 200) => new Response(JSON.stringify(o), { status: s4, headers: { ...CORS, "Content-Type": "application/json" } });
     Deno.serve(async (req) => {
       if (req.method === "OPTIONS") return new Response("ok", { headers: CORS });
       const tok = (req.headers.get("Authorization") || "").replace(/^Bearer /i, "");
       const sb = createClient(Deno.env.get("SUPABASE_URL"), Deno.env.get("SUPABASE_SERVICE_ROLE_KEY"));
       const { data: ud, error } = await sb.auth.getUser(tok);
       const u = ud?.user;
-      if (error || !u || !u.email) return j2({ ok: false }, 401);
+      if (error || !u || !u.email) return j3({ ok: false }, 401);
       const meta = u.user_metadata || {};
-      if (meta.welcomed) return j2({ ok: true, skipped: true });
+      if (meta.welcomed) return j3({ ok: true, skipped: true });
       const fresh = Date.now() - new Date(u.created_at).getTime() < 7 * 864e5;
       if (fresh) {
-        if (!smtpReady()) return j2({ ok: false, reason: "smtp" }, 503);
+        if (!smtpReady()) return j3({ ok: false, reason: "smtp" }, 503);
         const first = String(meta.name || "").trim().split(/\s+/)[0];
         const html = frame({
           title: "Wolflano'ya ho\u015F geldin" + (first ? ", " + first : ""),
@@ -40591,11 +40754,11 @@ var init_hosgeldin = __esm({
           await sendMail({ to: u.email, subject: "Wolflano'ya ho\u015F geldin", html, text: `Wolflano'ya ho\u015F geldin${first ? " " + first : ""}! Hesab\u0131n haz\u0131r: ${SITE}` });
         } catch (e) {
           console.error("hosgeldin", String(e?.message || e));
-          return j2({ ok: false }, 502);
+          return j3({ ok: false }, 502);
         }
       }
       await sb.auth.admin.updateUserById(u.id, { user_metadata: { ...meta, welcomed: true } });
-      return j2({ ok: true, sent: fresh });
+      return j3({ ok: true, sent: fresh });
     });
   }
 });
@@ -42168,7 +42331,7 @@ var init_esm = __esm({
 
 // ../supabase/functions/kontrol-rapor/index.ts
 var kontrol_rapor_exports = {};
-var JWKS, DEPO, ALICI, j3;
+var JWKS, DEPO, ALICI, j4;
 var init_kontrol_rapor = __esm({
   "../supabase/functions/kontrol-rapor/index.ts"() {
     init_posta();
@@ -42176,34 +42339,34 @@ var init_kontrol_rapor = __esm({
     JWKS = createRemoteJWKSet(new URL("https://token.actions.githubusercontent.com/.well-known/jwks"));
     DEPO = "fotoince-sudo/wolflano-tasarim-sitesi";
     ALICI = "ergunince68@hotmail.com";
-    j3 = (o, s4 = 200) => new Response(JSON.stringify(o), { status: s4, headers: { "Content-Type": "application/json" } });
+    j4 = (o, s4 = 200) => new Response(JSON.stringify(o), { status: s4, headers: { "Content-Type": "application/json" } });
     Deno.serve(async (req) => {
-      if (req.method !== "POST") return j3({ error: "POST gerekli" }, 405);
+      if (req.method !== "POST") return j4({ error: "POST gerekli" }, 405);
       try {
         const tok = (req.headers.get("Authorization") || "").replace(/^Bearer /i, "");
         const { payload } = await jwtVerify(tok, JWKS, { issuer: "https://token.actions.githubusercontent.com", audience: "wolflano-kontrol" });
-        if (payload.repository !== DEPO) return j3({ error: "yetki" }, 403);
+        if (payload.repository !== DEPO) return j4({ error: "yetki" }, 403);
       } catch (_) {
-        return j3({ error: "yetki" }, 403);
+        return j4({ error: "yetki" }, 403);
       }
       let b = {};
       try {
         b = await req.json();
       } catch {
-        return j3({ error: "girdi" }, 400);
+        return j4({ error: "girdi" }, 400);
       }
       const subject = String(b.subject || "Wolflano site kontrol\xFC").slice(0, 160);
       const text = String(b.text || "").slice(0, 2e4);
       const link = /^https:\/\/github\.com\//.test(String(b.link || "")) ? String(b.link) : "";
-      if (!text) return j3({ error: "bos" }, 400);
-      if (!smtpReady()) return j3({ error: "smtp" }, 503);
+      if (!text) return j4({ error: "bos" }, 400);
+      if (!smtpReady()) return j4({ error: "smtp" }, 503);
       const html = frame({ title: subject, body: paras(text), btn: link ? { href: link, label: "Ekran g\xF6r\xFCnt\xFClerini a\xE7" } : void 0, pre: text.slice(0, 90) });
       try {
         await sendMail({ to: ALICI, subject, text: text + (link ? "\n\nEkran g\xF6r\xFCnt\xFCleri: " + link : ""), html });
-        return j3({ ok: true });
+        return j4({ ok: true });
       } catch (e) {
         console.error("kontrol-rapor", e);
-        return j3({ error: "gonderilemedi" }, 502);
+        return j4({ error: "gonderilemedi" }, 502);
       }
     });
   }
@@ -42211,7 +42374,7 @@ var init_kontrol_rapor = __esm({
 
 // ../supabase/functions/kur/index.ts
 var kur_exports = {};
-var CORS2, j4, cache, num, tag2;
+var CORS2, j5, cache, num, tag2;
 var init_kur = __esm({
   "../supabase/functions/kur/index.ts"() {
     init_dist4();
@@ -42220,7 +42383,7 @@ var init_kur = __esm({
       "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
       "Access-Control-Allow-Methods": "POST, OPTIONS"
     };
-    j4 = (o, s4 = 200) => new Response(JSON.stringify(o), { status: s4, headers: { ...CORS2, "Content-Type": "application/json" } });
+    j5 = (o, s4 = 200) => new Response(JSON.stringify(o), { status: s4, headers: { ...CORS2, "Content-Type": "application/json" } });
     cache = null;
     num = (s4) => {
       const n = parseFloat(String(s4 || "").trim());
@@ -42235,8 +42398,8 @@ var init_kur = __esm({
       const auth2 = req.headers.get("Authorization") || "";
       const sb = createClient(Deno.env.get("SUPABASE_URL"), Deno.env.get("SUPABASE_ANON_KEY"), { global: { headers: { Authorization: auth2 } } });
       const { data: isAdm, error: aerr } = await sb.rpc("is_wf_admin");
-      if (aerr || !isAdm) return j4({ code: "yetki", message: "Yaln\u0131z y\xF6netici kurlar\u0131 okuyabilir." }, 403);
-      if (cache && Date.now() - cache.t < 30 * 60 * 1e3) return j4(cache.v);
+      if (aerr || !isAdm) return j5({ code: "yetki", message: "Yaln\u0131z y\xF6netici kurlar\u0131 okuyabilir." }, 403);
+      if (cache && Date.now() - cache.t < 30 * 60 * 1e3) return j5(cache.v);
       let hata = "";
       try {
         const r = await fetch("https://www.tcmb.gov.tr/kurlar/today.xml", { headers: { "User-Agent": "Wolflano-kur/1.0" } });
@@ -42257,7 +42420,7 @@ var init_kur = __esm({
         if (!Object.keys(kurlar).length) throw new Error("yan\u0131t okunamad\u0131");
         const v = { tarih, kaynak: "TCMB", kurlar };
         cache = { t: Date.now(), v };
-        return j4(v);
+        return j5(v);
       } catch (e) {
         hata = String(e?.message || e);
       }
@@ -42277,9 +42440,9 @@ var init_kur = __esm({
         const t = String(o.date || "").split("-").reverse().join(".");
         const v = { tarih: t, kaynak: "ECB (yedek)", uyari: "TCMB'ye ula\u015F\u0131lamad\u0131 (" + hata + "), Avrupa Merkez Bankas\u0131 kuru g\xF6steriliyor.", kurlar };
         cache = { t: Date.now(), v };
-        return j4(v);
+        return j5(v);
       } catch (e2) {
-        return j4({ code: "tcmb", message: "Kur al\u0131namad\u0131: TCMB (" + hata + "), ECB (" + String(e2?.message || e2) + ")." }, 502);
+        return j5({ code: "tcmb", message: "Kur al\u0131namad\u0131: TCMB (" + hata + "), ECB (" + String(e2?.message || e2) + ")." }, 502);
       }
     });
   }
@@ -42287,7 +42450,7 @@ var init_kur = __esm({
 
 // ../supabase/functions/mail-gonder/index.ts
 var mail_gonder_exports = {};
-var CORS3, j5, mailOk;
+var CORS3, j6, mailOk;
 var init_mail_gonder = __esm({
   "../supabase/functions/mail-gonder/index.ts"() {
     init_dist4();
@@ -42297,25 +42460,25 @@ var init_mail_gonder = __esm({
       "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
       "Access-Control-Allow-Methods": "POST, OPTIONS"
     };
-    j5 = (o, s4 = 200) => new Response(JSON.stringify(o), { status: s4, headers: { ...CORS3, "Content-Type": "application/json" } });
+    j6 = (o, s4 = 200) => new Response(JSON.stringify(o), { status: s4, headers: { ...CORS3, "Content-Type": "application/json" } });
     mailOk = (s4) => /^[^\s@<>,;]+@[^\s@<>,;]+\.[^\s@<>,;]+$/.test(s4);
     Deno.serve(async (req) => {
       if (req.method === "OPTIONS") return new Response("ok", { headers: CORS3 });
-      if (req.method !== "POST") return j5({ error: "POST gerekli" }, 405);
+      if (req.method !== "POST") return j6({ error: "POST gerekli" }, 405);
       const auth2 = req.headers.get("Authorization") || "";
       const sb = createClient(Deno.env.get("SUPABASE_URL"), Deno.env.get("SUPABASE_ANON_KEY"), { global: { headers: { Authorization: auth2 } } });
       const { data: isAdm, error: aerr } = await sb.rpc("is_wf_admin");
-      if (aerr || !isAdm) return j5({ code: "yetki", message: "Yaln\u0131z y\xF6netici e-posta g\xF6nderebilir." }, 403);
+      if (aerr || !isAdm) return j6({ code: "yetki", message: "Yaln\u0131z y\xF6netici e-posta g\xF6nderebilir." }, 403);
       let b = {};
       try {
         b = await req.json();
       } catch {
-        return j5({ code: "girdi", message: "\u0130stek okunamad\u0131." }, 400);
+        return j6({ code: "girdi", message: "\u0130stek okunamad\u0131." }, 400);
       }
       const to = (Array.isArray(b.to) ? b.to : String(b.to || "").split(/[,;\s]+/)).map((x) => String(x).trim()).filter(Boolean);
-      if (!to.length || to.length > 20 || !to.every(mailOk)) return j5({ code: "alici", message: "Al\u0131c\u0131 e-posta adresi ge\xE7ersiz." }, 400);
+      if (!to.length || to.length > 20 || !to.every(mailOk)) return j6({ code: "alici", message: "Al\u0131c\u0131 e-posta adresi ge\xE7ersiz." }, 400);
       const subject = String(b.subject || "").slice(0, 200).trim();
-      if (!subject) return j5({ code: "konu", message: "Konu bo\u015F olamaz." }, 400);
+      if (!subject) return j6({ code: "konu", message: "Konu bo\u015F olamaz." }, 400);
       const text = String(b.text || "").slice(0, 1e5);
       let html = b.html ? String(b.html).slice(0, 5e5) : void 0;
       if (!html && b.brand && text) {
@@ -42323,33 +42486,47 @@ var init_mail_gonder = __esm({
         const btn = br.btn && /^https:\/\//.test(String(br.btn.href || "")) ? { href: String(br.btn.href), label: String(br.btn.label || "A\xE7").slice(0, 40) } : void 0;
         html = frame({ title: String(br.title || subject).slice(0, 120), body: paras(text), btn, pre: text.slice(0, 90) });
       }
-      if (!text && !html) return j5({ code: "icerik", message: "E-posta i\xE7eri\u011Fi bo\u015F." }, 400);
-      if (!smtpReady()) return j5({ code: "not_connected", message: "E-posta ayarlar\u0131 (SMTP) hen\xFCz girilmemi\u015F." }, 503);
+      if (!text && !html) return j6({ code: "icerik", message: "E-posta i\xE7eri\u011Fi bo\u015F." }, 400);
+      if (!smtpReady()) return j6({ code: "not_connected", message: "E-posta ayarlar\u0131 (SMTP) hen\xFCz girilmemi\u015F." }, 503);
       try {
         const info = await sendMail({ to, subject, text: text || void 0, html, replyTo: b.replyTo && mailOk(String(b.replyTo)) ? String(b.replyTo) : void 0 });
-        return j5({ ok: true, id: info.messageId });
+        return j6({ ok: true, id: info.messageId });
       } catch (e) {
         const m = String(e?.message) + String(e?.code);
-        if (/EAUTH|Invalid login|535/i.test(m)) return j5({ code: "sifre", message: "E-posta kullan\u0131c\u0131 ad\u0131 ya da \u015Fifresi hatal\u0131." }, 502);
+        if (/EAUTH|Invalid login|535/i.test(m)) return j6({ code: "sifre", message: "E-posta kullan\u0131c\u0131 ad\u0131 ya da \u015Fifresi hatal\u0131." }, 502);
         console.error("mail-gonder", e);
-        return j5({ code: "gonderilemedi", message: "E-posta g\xF6nderilemedi: " + String(e?.message || "bilinmeyen hata").slice(0, 200) }, 502);
+        return j6({ code: "gonderilemedi", message: "E-posta g\xF6nderilemedi: " + String(e?.message || "bilinmeyen hata").slice(0, 200) }, 502);
       }
     });
   }
 });
 
 // ../supabase/functions/manken/index.ts
-var require_manken = __commonJS({
+var manken_exports = {};
+function oranText(tur, kesim) {
+  const o = ORAN_OV || (ORAN[tur] || ORAN.tee)[kesim] || (ORAN[tur] || ORAN.tee).erkek;
+  const pct = Math.round(o[0] / o[1] * 100);
+  return `TRUE GARMENT PROPORTIONS (very important): the body width measured flat from armpit to armpit and the body length measured from the top of the shoulder to the bottom hem are in the exact ratio ${o[0]}:${o[1]}, so the body is about ${pct}% as wide as it is long. This is a real, roomy regular fit, NOT slim, narrow, tapered or elongated; the body below the armpits stays this wide all the way down. Draw the garment perfectly flat-on (no perspective, no turning) so this ratio is visible in the photo.`;
+}
+function blobFromB64(b64, type) {
+  const bin = atob(b64);
+  const a = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) a[i] = bin.charCodeAt(i);
+  return new Blob([a], { type });
+}
+var SB_URL2, SRK2, cors2, j7, MK, SAHNE, POZ, ALT, STYLE, KIDSTYLE, TEE, URUN, ARKA, KESIM, RENK, ORAN, ORAN_OV, URUN_STYLE, ORTAM, SAHNE_YAN;
+var init_manken = __esm({
   "../supabase/functions/manken/index.ts"() {
-    var SB_URL4 = Deno.env.get("SUPABASE_URL");
-    var SRK4 = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-    var cors4 = {
+    init_gemini();
+    SB_URL2 = Deno.env.get("SUPABASE_URL");
+    SRK2 = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+    cors2 = {
       "Access-Control-Allow-Origin": "*",
       "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
       "Access-Control-Allow-Methods": "POST, OPTIONS"
     };
-    var j10 = (o, s4 = 200) => new Response(JSON.stringify(o), { status: s4, headers: { ...cors4, "Content-Type": "application/json" } });
-    var MK = {
+    j7 = (o, s4 = 200) => new Response(JSON.stringify(o), { status: s4, headers: { ...cors2, "Content-Type": "application/json" } });
+    MK = {
       kerem: { he: true, desc: "an original fictional Turkish man, 25 years old, athletic build, 182 cm, Mediterranean features, olive tanned skin, hazel eyes, short dark-brown hair with faded sides, short neatly trimmed beard, confident friendly smile" },
       emre: { he: true, desc: "an original fictional Turkish man, 35 years old, lean tall build, 185 cm, wheat-toned skin, dark-brown eyes, black wavy hair combed back, well-groomed stubble, calm confident expression" },
       murat: { he: true, desc: "an original fictional Turkish man, 45 years old, broad-shouldered strong build, 180 cm, sun-weathered light-olive skin, grey-green eyes, short dark hair greying at the temples, full salt-and-pepper beard, serious charismatic expression with a slight warm smile" },
@@ -42361,7 +42538,7 @@ var require_manken = __commonJS({
       can: { he: true, kid: true, desc: "an original fictional Turkish boy, 9 years old, slim build, tanned skin, hazel eyes, short messy brown hair, playful natural grin" },
       arda: { he: true, kid: true, desc: "an original fictional Turkish teenage boy, 14 years old, tall and lanky, wheat skin, dark-brown eyes, short black hair with shorter sides, calm confident expression" }
     };
-    var SAHNE = {
+    SAHNE = {
       studyo: { t: "On a seamless light-grey studio background, soft even light from both sides, very soft shadow" },
       bodrum: { t: "On a stone harbor quay in Bodrum at golden hour, the castle and wooden gulets softly blurred in the background" },
       balik: { t: "At a seaside fish restaurant table at sunset, string lights, the sea behind, relaxed atmosphere", adult: true },
@@ -42376,7 +42553,7 @@ var require_manken = __commonJS({
       okul: { t: "In a sunny schoolyard with trees, family-friendly atmosphere" },
       park: { t: "In a green city park on a sunny day, family-friendly atmosphere" }
     };
-    var POZ = {
+    POZ = {
       on: "Front view, standing straight facing the camera, arms relaxed slightly away from the body, framed from just above the knees to the top of the head, camera at chest height",
       arka: "Back view: the person stands with their back fully to the camera, arms relaxed slightly away from the body, framed from just above the knees to the top of the head, camera at chest height; the whole back of the T-shirt is clearly visible",
       sol: "Exact 90-degree side profile: the person has turned so their LEFT shoulder and LEFT arm are nearest the camera, nose and chest pointing toward the LEFT edge of the image, the left sleeve fully visible, arms relaxed, framed from just above the knees to the top of the head, camera at chest height",
@@ -42387,53 +42564,48 @@ var require_manken = __commonJS({
       yan: "Side profile, looking at the view, the sleeve clearly visible",
       omuz: "Back to the camera, looking over the shoulder, the back of the T-shirt clearly visible"
     };
-    var ALT = {
+    ALT = {
       lsort: "plain dark navy shorts",
       ssort: "plain black shorts",
       lpan: "plain dark navy trousers",
       span: "plain black trousers"
     };
-    var STYLE = "Photorealistic premium fashion e-commerce photo, shot on a full-frame camera with an 85mm lens, natural skin texture, soft diffused light, subtle realistic shadows, true-to-life colors, sharp focus on the clothing, no text, no logos, no watermark.";
-    var KIDSTYLE = "Family-friendly children's clothing catalog photo, photorealistic, fully and modestly dressed, age-appropriate natural pose and expression, no makeup, soft diffused light, true-to-life colors, no text, no logos, no watermark.";
-    var TEE = "a plain white crew-neck cotton T-shirt, perfectly ironed, no print, no logo, realistic fabric texture and natural folds, worn untucked";
-    var URUN = {
+    STYLE = "Photorealistic premium fashion e-commerce photo, shot on a full-frame camera with an 85mm lens, natural skin texture, soft diffused light, subtle realistic shadows, true-to-life colors, sharp focus on the clothing, no text, no logos, no watermark.";
+    KIDSTYLE = "Family-friendly children's clothing catalog photo, photorealistic, fully and modestly dressed, age-appropriate natural pose and expression, no makeup, soft diffused light, true-to-life colors, no text, no logos, no watermark.";
+    TEE = "a plain white crew-neck cotton T-shirt, perfectly ironed, no print, no logo, realistic fabric texture and natural folds, worn untucked";
+    URUN = {
       tee: "a plain premium heavyweight 240 gsm cotton crew-neck T-shirt with short sleeves and a ribbed collar",
       polo: "a plain premium 280 gsm cotton piqu\xE9 polo shirt with short sleeves, a ribbed flat-knit collar and a two-button placket",
       sweat: "a plain premium heavyweight 380 gsm cotton fleece crew-neck sweatshirt with long sleeves, ribbed collar, cuffs and hem",
       hood: "a plain premium heavyweight 380 gsm cotton fleece pullover hoodie with a lined double-layer hood and flat drawstrings, a front kangaroo pocket, long sleeves, ribbed cuffs and hem, no zipper",
       zip: "a plain premium heavyweight 380 gsm cotton fleece full-zip hoodie with a full-length front zipper (closed to the top), a lined double-layer hood with flat drawstrings, two front side pockets, long sleeves, ribbed cuffs and hem"
     };
-    var ARKA = {
+    ARKA = {
       hood: ", the hood lies flat and neatly on the upper back, the whole back panel below it smooth and fully visible, no pocket on the back",
       zip: ", the hood lies flat and neatly on the upper back, the whole back panel below it smooth and fully visible, no zipper and no pockets on the back"
     };
-    var KESIM = {
+    KESIM = {
       erkek: "men's regular fit",
       kadin: "women's regular fit, slightly shaped at the waist, slightly shorter body",
       cocuk: "children's size for about an 8-year-old, child proportions"
     };
-    var RENK = {
+    RENK = {
       Beyaz: "clean optical white (#f4f4f2)",
       Lacivert: "deep classic navy blue (#1f2a4f)",
       Siyah: "deep jet black (#1b1b1d)",
       Mavi: "royal blue (#2a64c4)",
       "Ye\u015Fil": "deep forest green (#2d5a43)"
     };
-    var ORAN = {
+    ORAN = {
       tee: { erkek: [53, 72], kadin: [47, 64], cocuk: [38, 52] },
       sweat: { erkek: [56, 70], kadin: [51, 64], cocuk: [40, 52] }
     };
     ORAN.polo = ORAN.tee;
     ORAN.hood = ORAN.sweat;
     ORAN.zip = ORAN.sweat;
-    var ORAN_OV = null;
-    function oranText(tur, kesim) {
-      const o = ORAN_OV || (ORAN[tur] || ORAN.tee)[kesim] || (ORAN[tur] || ORAN.tee).erkek;
-      const pct = Math.round(o[0] / o[1] * 100);
-      return `TRUE GARMENT PROPORTIONS (very important): the body width measured flat from armpit to armpit and the body length measured from the top of the shoulder to the bottom hem are in the exact ratio ${o[0]}:${o[1]}, so the body is about ${pct}% as wide as it is long. This is a real, roomy regular fit, NOT slim, narrow, tapered or elongated; the body below the armpits stays this wide all the way down. Draw the garment perfectly flat-on (no perspective, no turning) so this ratio is visible in the photo.`;
-    }
-    var URUN_STYLE = "Professional premium e-commerce product photo in ghost-mannequin (invisible mannequin) style: the garment looks worn, with natural 3D volume and soft realistic folds, the inside of the back neck visible through the collar opening; no person, no mannequin, no hanger visible. Perfectly straight-on and symmetrical, centered, sleeves relaxed, the whole garment visible with a generous empty margin on all sides. Seamless plain light-grey (#d6d6d6) background, soft even studio lighting, very soft shadow, sharp fabric texture, true-to-life color. Completely blank garment: no print, no logo, no label, no tag, no text, no watermark. Vertical 2:3 composition.";
-    var ORTAM = {
+    ORAN_OV = null;
+    URUN_STYLE = "Professional premium e-commerce product photo in ghost-mannequin (invisible mannequin) style: the garment looks worn, with natural 3D volume and soft realistic folds, the inside of the back neck visible through the collar opening; no person, no mannequin, no hanger visible. Perfectly straight-on and symmetrical, centered, sleeves relaxed, the whole garment visible with a generous empty margin on all sides. Seamless plain light-grey (#d6d6d6) background, soft even studio lighting, very soft shadow, sharp fabric texture, true-to-life color. Completely blank garment: no print, no logo, no label, no tag, no text, no watermark. Vertical 2:3 composition.";
+    ORTAM = {
       mug: {
         kafe: "standing on a warm oak caf\xE9 table beside a large window, soft morning light, a blurred cozy caf\xE9 interior with plants in the background",
         mutfak: "on a bright Scandinavian kitchen counter of light marble, a small potted herb and a linen towel softly blurred nearby, gentle morning sunlight",
@@ -42448,53 +42620,47 @@ var require_manken = __commonJS({
         antre: "hanging on the wall above a slim wooden console table with a ceramic vase and a few books in a stylish entrance hall, warm soft light"
       }
     };
-    var SAHNE_YAN = {
+    SAHNE_YAN = {
       salonyan: "hanging on a warm off-white wall above a modern light linen sofa in a bright, calm, elegant living room with a few soft cushions in muted olive and caramel, a round light-wood coffee table with a small ceramic vase and green olive branches, a knitted throw, soft natural daylight; minimal decor, no other pictures on the walls"
     };
-    function blobFromB64(b64, type) {
-      const bin = atob(b64);
-      const a = new Uint8Array(bin.length);
-      for (let i = 0; i < bin.length; i++) a[i] = bin.charCodeAt(i);
-      return new Blob([a], { type });
-    }
     Deno.serve(async (req) => {
-      if (req.method === "OPTIONS") return new Response("ok", { headers: cors4 });
+      if (req.method === "OPTIONS") return new Response("ok", { headers: cors2 });
       try {
         const key = Deno.env.get("OPENAI_API_KEY");
-        if (!key) return j10({ error: "not_configured", message: "G\xF6rsel servisi etkin de\u011Fil." }, 503);
+        if (!key && !gKey()) return j7({ error: "not_configured", message: "G\xF6rsel servisi etkin de\u011Fil." }, 503);
         const tok = (req.headers.get("Authorization") || "").replace(/^Bearer /i, "");
-        const ur = await fetch(`${SB_URL4}/auth/v1/user`, { headers: { apikey: SRK4, Authorization: `Bearer ${tok}` } });
-        if (!ur.ok) return j10({ error: "auth", message: "Oturum s\xFCresi doldu, yeniden giri\u015F yap." }, 401);
+        const ur = await fetch(`${SB_URL2}/auth/v1/user`, { headers: { apikey: SRK2, Authorization: `Bearer ${tok}` } });
+        if (!ur.ok) return j7({ error: "auth", message: "Oturum s\xFCresi doldu, yeniden giri\u015F yap." }, 401);
         const em = String((await ur.json()).email || "").toLowerCase();
         let isAdm = em === "ergunince68@hotmail.com";
         if (!isAdm && em) {
-          const sr = await fetch(`${SB_URL4}/rest/v1/wf_staff?select=email&email=eq.${encodeURIComponent(em)}`, { headers: { apikey: SRK4, Authorization: `Bearer ${SRK4}` } });
+          const sr = await fetch(`${SB_URL2}/rest/v1/wf_staff?select=email&email=eq.${encodeURIComponent(em)}`, { headers: { apikey: SRK2, Authorization: `Bearer ${SRK2}` } });
           if (sr.ok) {
             const sj = await sr.json();
             isAdm = Array.isArray(sj) && sj.length > 0;
           }
         }
-        if (!isAdm) return j10({ error: "forbidden", message: "Bu b\xF6l\xFCm yaln\u0131z y\xF6neticiye a\xE7\u0131k." }, 403);
+        if (!isAdm) return j7({ error: "forbidden", message: "Bu b\xF6l\xFCm yaln\u0131z y\xF6neticiye a\xE7\u0131k." }, 403);
         const b = await req.json();
         const isUrun = b.mode === "urun";
         const isOrtam = b.mode === "ortam";
         if (b.mode === "sahne") {
           const sk = String(b.sahne || "").replace(/[^a-z]/g, "");
           const sc = ORTAM.canvas[sk] || SAHNE_YAN[sk];
-          if (!sc) return j10({ error: "bad", message: "Ortam se\xE7." }, 400);
+          if (!sc) return j7({ error: "bad", message: "Ortam se\xE7." }, 400);
           const land = String(b.yon) === "yatay";
           const kucuk = String(b.olcu) === "3550";
           const SURUM2 = { salon: "-v2" };
           const spath = `img/sahne-canvas-${sk}-${land ? "yatay" : "dikey"}${kucuk ? "-3550" : ""}${SURUM2[sk] || ""}.jpg`;
-          const surl = `${SB_URL4}/storage/v1/object/public/site/${spath}`;
+          const surl = `${SB_URL2}/storage/v1/object/public/site/${spath}`;
           if (!b.yeni) {
             const hd = await fetch(surl, { method: "HEAD" });
-            if (hd.ok) return j10({ ok: true, url: surl, tok: spath, cached: true });
+            if (hd.ok) return j7({ ok: true, url: surl, tok: spath, cached: true });
           }
           b.__sahne = { sk, sc, land, spath, kucuk, yan: !!SAHNE_YAN[sk] };
         }
         const mk = isUrun || isOrtam || b.__sahne ? MK.kerem : MK[String(b.mk)];
-        if (!mk) return j10({ error: "bad", message: "Manken se\xE7ilmedi." }, 400);
+        if (!mk) return j7({ error: "bad", message: "Manken se\xE7ilmedi." }, 400);
         const pr = mk.kid ? "the child" : mk.he ? "He" : "She";
         const style = mk.kid ? KIDSTYLE : STYLE;
         const mode = b.__sahne ? "sahne" : isOrtam ? "ortam" : isUrun ? "urun" : b.mode === "ref" ? "ref" : b.mode === "mask" ? "mask" : "photo";
@@ -42510,11 +42676,11 @@ var require_manken = __commonJS({
         } else if (mode === "ortam") {
           const tur = String(b.tur) === "canvas" ? "canvas" : "mug";
           const sc = ORTAM[tur][String(b.sahne)];
-          if (!sc) return j10({ error: "bad", message: "Ortam se\xE7." }, 400);
+          if (!sc) return j7({ error: "bad", message: "Ortam se\xE7." }, 400);
           const u = String(b.ref || "");
-          if (!u.startsWith(`${SB_URL4}/storage/v1/object/public/site/`)) return j10({ error: "bad", message: "\xDCr\xFCn g\xF6rseli ge\xE7ersiz." }, 400);
+          if (!u.startsWith(`${SB_URL2}/storage/v1/object/public/site/`)) return j7({ error: "bad", message: "\xDCr\xFCn g\xF6rseli ge\xE7ersiz." }, 400);
           const rr = await fetch(u);
-          if (!rr.ok) return j10({ error: "bad", message: "\xDCr\xFCn g\xF6rseli okunamad\u0131." }, 400);
+          if (!rr.ok) return j7({ error: "bad", message: "\xDCr\xFCn g\xF6rseli okunamad\u0131." }, 400);
           refBlob = new Blob([await rr.arrayBuffer()], { type: rr.headers.get("content-type") || "image/jpeg" });
           size = "1024x1024";
           const what = tur === "canvas" ? "the exact same stretched canvas print with the exact same artwork wrapped around its edges, same proportions and orientation" : "the exact same white ceramic mug with the exact same printed artwork, same handle side";
@@ -42529,12 +42695,12 @@ var require_manken = __commonJS({
           const rname = String(b.renk || "").replace(/[^\p{L}\p{N} -]/gu, "").slice(0, 24).trim();
           const col = RENK[String(b.renk)] || (rname && rhex ? `${rname} (exact tone ${rhex})` : "");
           const back = b.yuz === "back";
-          if (!gar || !col) return j10({ error: "bad", message: "\xDCr\xFCn t\xFCr\xFC ya da renk ge\xE7ersiz." }, 400);
+          if (!gar || !col) return j7({ error: "bad", message: "\xDCr\xFCn t\xFCr\xFC ya da renk ge\xE7ersiz." }, 400);
           const u = String(b.ref || "");
           if (u) {
-            if (!u.startsWith(`${SB_URL4}/storage/v1/object/public/site/`)) return j10({ error: "bad", message: "Kaynak foto\u011Fraf ge\xE7ersiz." }, 400);
+            if (!u.startsWith(`${SB_URL2}/storage/v1/object/public/site/`)) return j7({ error: "bad", message: "Kaynak foto\u011Fraf ge\xE7ersiz." }, 400);
             const rr = await fetch(u);
-            if (!rr.ok) return j10({ error: "bad", message: "Kaynak foto\u011Fraf okunamad\u0131." }, 400);
+            if (!rr.ok) return j7({ error: "bad", message: "Kaynak foto\u011Fraf okunamad\u0131." }, 400);
             refBlob = new Blob([await rr.arrayBuffer()], { type: rr.headers.get("content-type") || "image/jpeg" });
           }
           const g = `${gar}, ${fit}`;
@@ -42556,9 +42722,9 @@ var require_manken = __commonJS({
           }
         } else if (mode === "mask") {
           const u = String(b.url || "");
-          if (!u.startsWith(`${SB_URL4}/storage/v1/object/public/site/`)) return j10({ error: "bad", message: "Foto\u011Fraf ge\xE7ersiz." }, 400);
+          if (!u.startsWith(`${SB_URL2}/storage/v1/object/public/site/`)) return j7({ error: "bad", message: "Foto\u011Fraf ge\xE7ersiz." }, 400);
           const rr = await fetch(u);
-          if (!rr.ok) return j10({ error: "bad", message: "Foto\u011Fraf okunamad\u0131." }, 400);
+          if (!rr.ok) return j7({ error: "bad", message: "Foto\u011Fraf okunamad\u0131." }, 400);
           refBlob = new Blob([await rr.arrayBuffer()], { type: rr.headers.get("content-type") || "image/jpeg" });
           size = ["1024x1536", "1536x1024", "1024x1024"].includes(String(b.size)) ? String(b.size) : "auto";
           prompt = "Edit this photo: recolor ONLY the T-shirt the person is wearing (body, both sleeves, collar and every fold) to a flat, fully saturated pure chroma-key green (#00FF00), keeping its exact shape and outline. Everything else must stay exactly identical and in exactly the same position: same person, face, skin, hair, arms, hands, trousers or shorts, background, framing, lighting and image size. Do not move, crop, zoom or redraw anything except the T-shirt color.";
@@ -42569,16 +42735,16 @@ var require_manken = __commonJS({
           const sk = String(b.sahne);
           const sc = SAHNE[sk];
           const pz = POZ[String(b.poz)];
-          if (!sc || !pz) return j10({ error: "bad", message: "Mek\xE2n ve poz se\xE7." }, 400);
-          if (mk.kid && sc.adult) return j10({ error: "bad", message: "Bu mek\xE2n \xE7ocuk mankenler i\xE7in uygun de\u011Fil." }, 400);
-          if (!mk.kid && sk === "okul") return j10({ error: "bad", message: "Okul bah\xE7esi yaln\u0131z \xE7ocuk mankenler i\xE7in." }, 400);
+          if (!sc || !pz) return j7({ error: "bad", message: "Mek\xE2n ve poz se\xE7." }, 400);
+          if (mk.kid && sc.adult) return j7({ error: "bad", message: "Bu mek\xE2n \xE7ocuk mankenler i\xE7in uygun de\u011Fil." }, 400);
+          if (!mk.kid && sk === "okul") return j7({ error: "bad", message: "Okul bah\xE7esi yaln\u0131z \xE7ocuk mankenler i\xE7in." }, 400);
           const alt = ALT[String(b.alt)] || ALT.lsort;
           const refUrl = String(b.ref || "");
-          const okPrefix = `${SB_URL4}/storage/v1/object/public/site/`;
+          const okPrefix = `${SB_URL2}/storage/v1/object/public/site/`;
           if (refUrl) {
-            if (!refUrl.startsWith(okPrefix)) return j10({ error: "bad", message: "Kimlik foto\u011Fraf\u0131 ge\xE7ersiz." }, 400);
+            if (!refUrl.startsWith(okPrefix)) return j7({ error: "bad", message: "Kimlik foto\u011Fraf\u0131 ge\xE7ersiz." }, 400);
             const rr = await fetch(refUrl);
-            if (!rr.ok) return j10({ error: "bad", message: "Kimlik foto\u011Fraf\u0131 okunamad\u0131." }, 400);
+            if (!rr.ok) return j7({ error: "bad", message: "Kimlik foto\u011Fraf\u0131 okunamad\u0131." }, 400);
             const ab = await rr.arrayBuffer();
             refBlob = new Blob([ab], { type: rr.headers.get("content-type") || "image/jpeg" });
           }
@@ -42586,80 +42752,91 @@ var require_manken = __commonJS({
           const subj = mk.kid ? "The child" : pr;
           prompt = `${who} ${sc.t}. ${subj} wears ${TEE}, with ${alt}. ${pz}. Use only the person from the reference; do not copy any other clothing from it. ${style} Vertical 2:3 composition.`;
         }
-        const envModel = Deno.env.get("OPENAI_IMAGE_MODEL") || "";
-        const models = [envModel, refBlob ? "gpt-image-2.5-sunburst" : "gpt-image-2.5-flare", refBlob ? "gpt-image-2.5-flare" : "gpt-image-2.5-sunburst", "gpt-image-2", "gpt-image-1.5", "gpt-image-1"].filter((m, i, a) => m && a.indexOf(m) === i);
-        const opts = { size: mode === "urun" ? "1024x1536" : size, quality: mode === "mask" ? "medium" : "high", output_format: mode === "urun" ? "png" : "jpeg", output_compression: "90" };
-        if (mode === "urun") delete opts.output_compression;
-        if (refBlob) opts.input_fidelity = "high";
-        async function call(model) {
-          if (refBlob) {
-            const fd = new FormData();
-            fd.append("model", model);
-            fd.append("prompt", prompt);
-            fd.append("n", "1");
-            for (const k in opts) fd.append(k, opts[k]);
-            fd.append("image", refBlob, "ref." + (refBlob.type.split("/")[1] || "jpeg").replace("jpeg", "jpg"));
-            if (maskBlob) fd.append("mask", maskBlob, "mask.png");
-            return await fetch("https://api.openai.com/v1/images/edits", { method: "POST", headers: { Authorization: `Bearer ${key}` }, body: fd, signal: AbortSignal.timeout(14e4) });
-          }
-          const pj = { model, prompt, n: 1 };
-          for (const k in opts) pj[k] = k === "output_compression" ? Number(opts[k]) : opts[k];
-          return await fetch("https://api.openai.com/v1/images/generations", {
-            method: "POST",
-            headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
-            body: JSON.stringify(pj),
-            signal: AbortSignal.timeout(14e4)
-          });
-        }
-        let mi = 0;
-        let r = await call(models[mi]);
-        for (let k = 0; k < 10 && !r.ok && r.status === 400; k++) {
-          const e = (await r.clone().json().catch(() => ({})))?.error || {};
-          const m = String(e.message || "").toLowerCase();
-          const p = String(e.param || "");
-          if (p === "model" || /model .*(does not exist|not found|not supported)/.test(m)) {
-            if (++mi >= models.length) break;
-            r = await call(models[mi]);
-            continue;
-          }
-          const drop = p && p in opts ? p : Object.keys(opts).find((o) => m.includes(o));
-          if (drop && drop !== "size") {
-            delete opts[drop];
-            r = await call(models[mi]);
-            continue;
-          }
-          if (drop === "size" || p === "size") {
-            opts.size = "auto";
-            r = await call(models[mi]);
-            continue;
-          }
-          break;
-        }
-        for (let k = 0; k < 2 && (r.status === 429 || r.status >= 500); k++) {
-          const ra = Number(r.headers.get("retry-after")) || 0;
-          await new Promise((ok) => setTimeout(ok, Math.min(Math.max(ra, 8), 20) * 1e3));
-          r = await call(models[mi]);
-        }
-        console.log("model", models[mi], r.status);
-        const out = await r.json().catch(() => ({}));
-        if (!r.ok) {
-          const msg = JSON.stringify(out?.error || out).toLowerCase();
-          console.error("openai", r.status, msg.slice(0, 300));
-          if (/moderation|safety|content_policy/.test(msg)) return j10({ error: "moderation", message: "Bu foto\u011Fraf \xFCretilemedi, ba\u015Fka bir mek\xE2n ya da poz dene." }, 422);
-          if (r.status === 429 && !/billing|insufficient/.test(msg)) return j10({ error: "rate", message: "OpenAI k\u0131sa s\xFCreli yo\u011Funluk dedi, birazdan yeniden denenecek." }, 429);
-          if (/billing|quota|insufficient/.test(msg)) return j10({ error: "quota", message: "OpenAI hesab\u0131nda bakiye yok. Hesaba bakiye y\xFCklenince \xE7al\u0131\u015F\u0131r." }, 402);
-          return j10({ error: "fail", message: "Foto\u011Fraf \u015Fu an \xFCretilemedi, biraz sonra yeniden dene." }, 502);
-        }
         let blob = null;
-        const b64 = out?.data?.[0]?.b64_json;
-        if (b64) blob = blobFromB64(b64, "application/octet-stream");
-        else if (out?.data?.[0]?.url) {
-          const ir = await fetch(out.data[0].url);
-          if (ir.ok) blob = await ir.blob();
+        if (gKey()) {
+          const g = await geminiImage(prompt + (mode === "urun" ? " Plain pure white background." : ""), refBlob ? [refBlob] : [], aspectOf(mode === "urun" ? "1024x1536" : size), 14e4);
+          if (!g.ok) {
+            if (/safety|prohibited|blocked|image_safety|recitation/.test(g.err)) return j7({ error: "moderation", message: "Bu foto\u011Fraf \xFCretilemedi, ba\u015Fka bir mek\xE2n ya da poz dene." }, 422);
+            if (g.status === 429 && /free|tier|billing|limit: 0|quota/.test(g.err) || g.status === 403) return j7({ error: "quota", message: "G\xF6rsel \xFCretimi i\xE7in Google AI Studio hesab\u0131nda faturaland\u0131rma a\xE7\u0131lmal\u0131 (\xFCcretsiz katmanda g\xF6rsel \xFCretilmiyor)." }, 402);
+            if (g.status === 429) return j7({ error: "rate", message: "Google k\u0131sa s\xFCreli yo\u011Funluk dedi, birazdan yeniden dene." }, 429);
+            return j7({ error: "fail", message: "Foto\u011Fraf \u015Fu an \xFCretilemedi, biraz sonra yeniden dene." }, 502);
+          }
+          blob = blobFromB64(g.b64, g.mime);
+        } else {
+          const envModel = Deno.env.get("OPENAI_IMAGE_MODEL") || "";
+          const models = [envModel, refBlob ? "gpt-image-2.5-sunburst" : "gpt-image-2.5-flare", refBlob ? "gpt-image-2.5-flare" : "gpt-image-2.5-sunburst", "gpt-image-2", "gpt-image-1.5", "gpt-image-1"].filter((m, i, a) => m && a.indexOf(m) === i);
+          const opts = { size: mode === "urun" ? "1024x1536" : size, quality: mode === "mask" ? "medium" : "high", output_format: mode === "urun" ? "png" : "jpeg", output_compression: "90" };
+          if (mode === "urun") delete opts.output_compression;
+          if (refBlob) opts.input_fidelity = "high";
+          async function call2(model) {
+            if (refBlob) {
+              const fd = new FormData();
+              fd.append("model", model);
+              fd.append("prompt", prompt);
+              fd.append("n", "1");
+              for (const k in opts) fd.append(k, opts[k]);
+              fd.append("image", refBlob, "ref." + (refBlob.type.split("/")[1] || "jpeg").replace("jpeg", "jpg"));
+              if (maskBlob) fd.append("mask", maskBlob, "mask.png");
+              return await fetch("https://api.openai.com/v1/images/edits", { method: "POST", headers: { Authorization: `Bearer ${key}` }, body: fd, signal: AbortSignal.timeout(14e4) });
+            }
+            const pj = { model, prompt, n: 1 };
+            for (const k in opts) pj[k] = k === "output_compression" ? Number(opts[k]) : opts[k];
+            return await fetch("https://api.openai.com/v1/images/generations", {
+              method: "POST",
+              headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
+              body: JSON.stringify(pj),
+              signal: AbortSignal.timeout(14e4)
+            });
+          }
+          let mi = 0;
+          let r = await call2(models[mi]);
+          for (let k = 0; k < 10 && !r.ok && r.status === 400; k++) {
+            const e = (await r.clone().json().catch(() => ({})))?.error || {};
+            const m = String(e.message || "").toLowerCase();
+            const p = String(e.param || "");
+            if (p === "model" || /model .*(does not exist|not found|not supported)/.test(m)) {
+              if (++mi >= models.length) break;
+              r = await call2(models[mi]);
+              continue;
+            }
+            const drop = p && p in opts ? p : Object.keys(opts).find((o) => m.includes(o));
+            if (drop && drop !== "size") {
+              delete opts[drop];
+              r = await call2(models[mi]);
+              continue;
+            }
+            if (drop === "size" || p === "size") {
+              opts.size = "auto";
+              r = await call2(models[mi]);
+              continue;
+            }
+            break;
+          }
+          for (let k = 0; k < 2 && (r.status === 429 || r.status >= 500); k++) {
+            const ra = Number(r.headers.get("retry-after")) || 0;
+            await new Promise((ok) => setTimeout(ok, Math.min(Math.max(ra, 8), 20) * 1e3));
+            r = await call2(models[mi]);
+          }
+          console.log("model", models[mi], r.status);
+          const out2 = await r.json().catch(() => ({}));
+          if (!r.ok) {
+            const msg = JSON.stringify(out2?.error || out2).toLowerCase();
+            console.error("openai", r.status, msg.slice(0, 300));
+            if (/moderation|safety|content_policy/.test(msg)) return j7({ error: "moderation", message: "Bu foto\u011Fraf \xFCretilemedi, ba\u015Fka bir mek\xE2n ya da poz dene." }, 422);
+            if (r.status === 429 && !/billing|insufficient/.test(msg)) return j7({ error: "rate", message: "OpenAI k\u0131sa s\xFCreli yo\u011Funluk dedi, birazdan yeniden denenecek." }, 429);
+            if (/billing|quota|insufficient/.test(msg)) return j7({ error: "quota", message: "OpenAI hesab\u0131nda bakiye yok. Hesaba bakiye y\xFCklenince \xE7al\u0131\u015F\u0131r." }, 402);
+            return j7({ error: "fail", message: "Foto\u011Fraf \u015Fu an \xFCretilemedi, biraz sonra yeniden dene." }, 502);
+          }
+          const b64 = out2?.data?.[0]?.b64_json;
+          if (b64) blob = blobFromB64(b64, "application/octet-stream");
+          else if (out2?.data?.[0]?.url) {
+            const ir = await fetch(out2.data[0].url);
+            if (ir.ok) blob = await ir.blob();
+          }
         }
         if (!blob) {
           console.error("no image", JSON.stringify(out).slice(0, 300));
-          return j10({ error: "fail", message: "Foto\u011Fraf \u015Fu an \xFCretilemedi." }, 502);
+          return j7({ error: "fail", message: "Foto\u011Fraf \u015Fu an \xFCretilemedi." }, 502);
         }
         const head2 = new Uint8Array(await blob.slice(0, 4).arrayBuffer());
         const isPng = head2[0] === 137 && head2[1] === 80;
@@ -42667,19 +42844,19 @@ var require_manken = __commonJS({
         const ct = isPng ? "image/png" : isWebp ? "image/webp" : "image/jpeg";
         const ext = isPng ? "png" : isWebp ? "webp" : "jpg";
         const path = mode === "sahne" ? b.__sahne.spath : mode === "ortam" ? `img/ortam-${String(b.tur) === "canvas" ? "canvas" : "kupa"}-${String(b.sahne).replace(/[^a-z]/g, "")}-${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}.${ext}` : mode === "urun" ? `img/urun-${String(b.tur)}-${String(b.kesim)}-${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}.${ext}` : `img/manken-${String(b.mk)}-${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}.${ext}`;
-        const up = await fetch(`${SB_URL4}/storage/v1/object/site/${path}`, {
+        const up = await fetch(`${SB_URL2}/storage/v1/object/site/${path}`, {
           method: "POST",
-          headers: { apikey: SRK4, Authorization: `Bearer ${SRK4}`, "Content-Type": ct, "x-upsert": "true", "cache-control": "31536000" },
+          headers: { apikey: SRK2, Authorization: `Bearer ${SRK2}`, "Content-Type": ct, "x-upsert": "true", "cache-control": "31536000" },
           body: blob
         });
         if (!up.ok) {
           console.error("upload", up.status, (await up.text()).slice(0, 200));
-          return j10({ error: "fail", message: "Foto\u011Fraf \xFCretildi ama kaydedilemedi, yeniden dene." }, 500);
+          return j7({ error: "fail", message: "Foto\u011Fraf \xFCretildi ama kaydedilemedi, yeniden dene." }, 500);
         }
-        return j10({ ok: true, url: `${SB_URL4}/storage/v1/object/public/site/${path}`, tok: path, saved: true });
+        return j7({ ok: true, url: `${SB_URL2}/storage/v1/object/public/site/${path}`, tok: path, saved: true });
       } catch (e) {
         console.error("manken", String(e));
-        return j10({ error: "fail", message: "Foto\u011Fraf \u015Fu an \xFCretilemedi, biraz sonra yeniden dene." }, 500);
+        return j7({ error: "fail", message: "Foto\u011Fraf \u015Fu an \xFCretilemedi, biraz sonra yeniden dene." }, 500);
       }
     });
   }
@@ -42993,7 +43170,7 @@ function stableJson(value) {
   );
 }
 async function baskiSig(code) {
-  const k = await crypto.subtle.importKey("raw", new TextEncoder().encode(SRK), { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
+  const k = await crypto.subtle.importKey("raw", new TextEncoder().encode(SRK3), { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
   const b = new Uint8Array(await crypto.subtle.sign("HMAC", k, new TextEncoder().encode("baski:" + code)));
   return Array.from(b.slice(0, 16)).map((x) => x.toString(16).padStart(2, "0")).join("");
 }
@@ -43049,20 +43226,20 @@ async function orderMails(row, bank = null) {
     if (r.status === "rejected") console.error("order mail", String(r.reason?.message || r.reason));
   });
 }
-var SB_URL, SRK, cors, j6, s, r2, SPECIAL, SCHOOL, roster;
+var SB_URL3, SRK3, cors3, j8, s, r2, SPECIAL, SCHOOL, roster;
 var init_order_create = __esm({
   "../supabase/functions/order-create/index.ts"() {
     init_posta();
     init_checkout();
     init_request_security();
-    SB_URL = Deno.env.get("SUPABASE_URL");
-    SRK = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-    cors = {
+    SB_URL3 = Deno.env.get("SUPABASE_URL");
+    SRK3 = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+    cors3 = {
       "Access-Control-Allow-Origin": "*",
       "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-wf-cart-key",
       "Access-Control-Allow-Methods": "POST, OPTIONS"
     };
-    j6 = (o, s4 = 200) => new Response(JSON.stringify(o), { status: s4, headers: { ...cors, "Content-Type": "application/json" } });
+    j8 = (o, s4 = 200) => new Response(JSON.stringify(o), { status: s4, headers: { ...cors3, "Content-Type": "application/json" } });
     s = (v, n) => String(v ?? "").slice(0, n).trim();
     r2 = (x) => Math.round(x * 100) / 100;
     SPECIAL = {
@@ -43075,41 +43252,41 @@ var init_order_create = __esm({
     SCHOOL = { per: 100, free: 10 };
     roster = (v) => Array.isArray(v) && v.length ? v.slice(0, 999).map((y) => ({ s: s(y?.s, 10), n: s(y?.n, 30), k: s(y?.k, 4) })) : void 0;
     Deno.serve(async (req) => {
-      if (req.method === "OPTIONS") return new Response("ok", { headers: cors });
-      if (req.method !== "POST") return j6({ error: "method" }, 405);
+      if (req.method === "OPTIONS") return new Response("ok", { headers: cors3 });
+      if (req.method !== "POST") return j8({ error: "method" }, 405);
       try {
         const body = await req.json();
-        if (!body || typeof body !== "object" || Array.isArray(body)) return j6({ error: "invalid" }, 400);
-        if (body.website) return j6({ ok: true, code: "WLF-OK" });
+        if (!body || typeof body !== "object" || Array.isArray(body)) return j8({ error: "invalid" }, 400);
+        if (body.website) return j8({ ok: true, code: "WLF-OK" });
         requireConsent(body);
         const mail = s(body.mail, 200).toLowerCase();
         const ad = s(body.ad, 120);
         const tel = s(body.tel, 30);
         const adres = s(body.adres, 500);
         if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(mail) || !ad || !/^05\d{9}$/.test(tel) || adres.length < 10) {
-          return j6({ error: "invalid", message: "Bilgiler eksik ya da hatal\u0131." }, 400);
+          return j8({ error: "invalid", message: "Bilgiler eksik ya da hatal\u0131." }, 400);
         }
         let uid = null;
         const tok = (req.headers.get("Authorization") || "").replace(/^Bearer /i, "");
         if (tok) {
-          const ur = await fetch(`${SB_URL}/auth/v1/user`, { headers: { apikey: SRK, Authorization: `Bearer ${tok}` } });
-          if (!ur.ok) return j6({ error: "auth", message: "Oturumunu yenileyip tekrar dene." }, 401);
+          const ur = await fetch(`${SB_URL3}/auth/v1/user`, { headers: { apikey: SRK3, Authorization: `Bearer ${tok}` } });
+          if (!ur.ok) return j8({ error: "auth", message: "Oturumunu yenileyip tekrar dene." }, 401);
           uid = (await ur.json()).id || null;
-          if (!uid) return j6({ error: "auth" }, 401);
+          if (!uid) return j8({ error: "auth" }, 401);
         }
         const owner = await cartOwner(req, uid);
-        if (!owner) return j6({ error: "cart_owner", message: "Sepet kimli\u011Fi eksik; sayfay\u0131 yenile." }, 400);
-        const headers = { apikey: SRK, Authorization: `Bearer ${SRK}` };
-        const cr = await fetch(`${SB_URL}/rest/v1/site_content?select=data&id=eq.main`, { headers });
+        if (!owner) return j8({ error: "cart_owner", message: "Sepet kimli\u011Fi eksik; sayfay\u0131 yenile." }, 400);
+        const headers = { apikey: SRK3, Authorization: `Bearer ${SRK3}` };
+        const cr = await fetch(`${SB_URL3}/rest/v1/site_content?select=data&id=eq.main`, { headers });
         if (!cr.ok) throw new CheckoutError("Fiyatlar \u015Fu an do\u011Frulanam\u0131yor.", 503);
         const catalog = (await cr.json())[0]?.data;
         if (!catalog) throw new CheckoutError("Fiyatlar \u015Fu an do\u011Frulanam\u0131yor.", 503);
         let wholesale2 = null;
         if (Array.isArray(body.items) && body.items.some((x) => x?.id === "toptan")) {
           if (!uid) throw new CheckoutError("Toptan sipari\u015F i\xE7in giri\u015F gerekli.", 403);
-          const ar = await fetch(`${SB_URL}/rest/v1/toptan_basvuru?select=status&user_id=eq.${encodeURIComponent(uid)}`, { headers });
+          const ar = await fetch(`${SB_URL3}/rest/v1/toptan_basvuru?select=status&user_id=eq.${encodeURIComponent(uid)}`, { headers });
           if (!ar.ok || (await ar.json())[0]?.status !== "onayland\u0131") throw new CheckoutError("Onayl\u0131 firma giri\u015Fi gerekli.", 403);
-          const wr = await fetch(`${SB_URL}/rest/v1/toptan_ayar?select=data&id=eq.main`, { headers });
+          const wr = await fetch(`${SB_URL3}/rest/v1/toptan_ayar?select=data&id=eq.main`, { headers });
           if (!wr.ok) throw new CheckoutError("Toptan fiyatlar\u0131 okunamad\u0131.", 503);
           wholesale2 = (await wr.json())[0]?.data;
         }
@@ -43128,7 +43305,7 @@ var init_order_create = __esm({
         if (sp && priced.wholesale) throw new CheckoutError("Toptanda \xF6zel indirim birle\u015Ftirilemez.");
         if (sp) {
           doc = decodeImage(String(body.special.document || ""));
-          if (!doc) return j6({ error: "doc", message: "\xD6zel indirim i\xE7in belge foto\u011Fraf\u0131 gerekli." }, 400);
+          if (!doc) return j8({ error: "doc", message: "\xD6zel indirim i\xE7in belge foto\u011Fraf\u0131 gerekli." }, 400);
           special = { type: s(body.special.type, 20), label: sp.label, rate: sp.rate, discount: r2(itemsSum * sp.rate) };
         }
         let school = null;
@@ -43138,7 +43315,7 @@ var init_order_create = __esm({
         const subtotal = r2(itemsSum - (special ? special.discount : 0));
         const total = r2(subtotal + ship);
         if (typeof body.total !== "number" || !Number.isFinite(body.total) || r2(body.total) !== total) {
-          return j6({
+          return j8({
             error: "price_changed",
             message: "Fiyatlar g\xFCncellendi; yeni tutar\u0131 onayla.",
             total,
@@ -43171,31 +43348,31 @@ var init_order_create = __esm({
         };
         try {
           const since = new Date(Date.now() - 18e4).toISOString();
-          const dr = await fetch(`${SB_URL}/rest/v1/orders?select=code,items,adres,il,ilce,special,onay&checkout_owner=eq.${encodeURIComponent(owner)}&mail=eq.${encodeURIComponent(mail)}&total=eq.${total}&created_at=gte.${since}&order=created_at.desc&limit=5`, { headers: { apikey: SRK, Authorization: `Bearer ${SRK}` } });
+          const dr = await fetch(`${SB_URL3}/rest/v1/orders?select=code,items,adres,il,ilce,special,onay&checkout_owner=eq.${encodeURIComponent(owner)}&mail=eq.${encodeURIComponent(mail)}&total=eq.${total}&created_at=gte.${since}&order=created_at.desc&limit=5`, { headers: { apikey: SRK3, Authorization: `Bearer ${SRK3}` } });
           if (dr.ok) {
             const sig = stableJson(items);
             const hit = (await dr.json()).find((o) => stableJson(o.items || []) === sig && o.adres === adres && o.il === row.il && o.ilce === row.ilce && stableJson(o.special) === stableJson(special) && o.onay?.delivery === row.onay.delivery);
-            if (hit) return j6({ ok: true, code: hit.code, items, subtotal, ship, total, special, studioUnits: priced.studioUnits, up: await baskiSig(String(hit.code)), dup: true });
+            if (hit) return j8({ ok: true, code: hit.code, items, subtotal, ship, total, special, studioUnits: priced.studioUnits, up: await baskiSig(String(hit.code)), dup: true });
           }
         } catch {
         }
         for (let i = 0; i < 3; i++) {
           if (doc) {
             const path = `${row.code}.${doc.ext}`;
-            const up = await fetch(`${SB_URL}/storage/v1/object/belgeler/${path}`, {
+            const up = await fetch(`${SB_URL3}/storage/v1/object/belgeler/${path}`, {
               method: "POST",
-              headers: { apikey: SRK, Authorization: `Bearer ${SRK}`, "Content-Type": doc.type, "x-upsert": "true" },
+              headers: { apikey: SRK3, Authorization: `Bearer ${SRK3}`, "Content-Type": doc.type, "x-upsert": "true" },
               body: new Blob([new Uint8Array(doc.bytes)], { type: doc.type })
             });
             if (!up.ok) {
               console.error("doc upload", up.status, (await up.text()).slice(0, 200));
-              return j6({ error: "doc", message: "Belge y\xFCklenemedi, tekrar dene." }, 500);
+              return j8({ error: "doc", message: "Belge y\xFCklenemedi, tekrar dene." }, 500);
             }
             row.doc_path = path;
           }
-          const r = await fetch(`${SB_URL}/rest/v1/orders`, {
+          const r = await fetch(`${SB_URL3}/rest/v1/orders`, {
             method: "POST",
-            headers: { apikey: SRK, Authorization: `Bearer ${SRK}`, "Content-Type": "application/json", Prefer: "return=minimal" },
+            headers: { apikey: SRK3, Authorization: `Bearer ${SRK3}`, "Content-Type": "application/json", Prefer: "return=minimal" },
             body: JSON.stringify(row)
           });
           if (r.ok) {
@@ -43205,10 +43382,10 @@ var init_order_create = __esm({
             } catch {
             }
             try {
-              await fetch(`${SB_URL}/rest/v1/carts?owner_key=eq.${encodeURIComponent(owner)}`, { method: "PATCH", headers: { apikey: SRK, Authorization: `Bearer ${SRK}`, "Content-Type": "application/json", Prefer: "return=minimal" }, body: JSON.stringify({ status: "sipari\u015F verdi", updated_at: (/* @__PURE__ */ new Date()).toISOString() }) });
+              await fetch(`${SB_URL3}/rest/v1/carts?owner_key=eq.${encodeURIComponent(owner)}`, { method: "PATCH", headers: { apikey: SRK3, Authorization: `Bearer ${SRK3}`, "Content-Type": "application/json", Prefer: "return=minimal" }, body: JSON.stringify({ status: "sipari\u015F verdi", updated_at: (/* @__PURE__ */ new Date()).toISOString() }) });
             } catch {
             }
-            return j6({ ok: true, code: row.code, items, subtotal, ship, total, special, studioUnits: priced.studioUnits, up: await baskiSig(String(row.code)) });
+            return j8({ ok: true, code: row.code, items, subtotal, ship, total, special, studioUnits: priced.studioUnits, up: await baskiSig(String(row.code)) });
           }
           const t = await r.text();
           if (/duplicate|unique/i.test(t)) {
@@ -43218,12 +43395,12 @@ var init_order_create = __esm({
           console.error("orders insert", r.status, t.slice(0, 300));
           break;
         }
-        return j6({ error: "fail", message: "Sipari\u015F kaydedilemedi." }, 500);
+        return j8({ error: "fail", message: "Sipari\u015F kaydedilemedi." }, 500);
       } catch (e) {
-        if (e instanceof CheckoutError) return j6({ error: "validation", message: e.message }, e.status);
-        if (e instanceof SyntaxError) return j6({ error: "invalid" }, 400);
+        if (e instanceof CheckoutError) return j8({ error: "validation", message: e.message }, e.status);
+        if (e instanceof SyntaxError) return j8({ error: "invalid" }, 400);
         console.error("order-create", String(e));
-        return j6({ error: "fail", message: "Sipari\u015F kaydedilemedi." }, 500);
+        return j8({ error: "fail", message: "Sipari\u015F kaydedilemedi." }, 500);
       }
     });
   }
@@ -43231,50 +43408,50 @@ var init_order_create = __esm({
 
 // ../supabase/functions/sepet/index.ts
 var sepet_exports = {};
-var SB_URL2, SRK2, cors2, j7, s2;
+var SB_URL4, SRK4, cors4, j9, s2;
 var init_sepet = __esm({
   "../supabase/functions/sepet/index.ts"() {
     init_request_security();
-    SB_URL2 = Deno.env.get("SUPABASE_URL");
-    SRK2 = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-    cors2 = { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-wf-cart-key", "Access-Control-Allow-Methods": "POST, OPTIONS" };
-    j7 = (o, s4 = 200) => new Response(JSON.stringify(o), { status: s4, headers: { ...cors2, "Content-Type": "application/json" } });
+    SB_URL4 = Deno.env.get("SUPABASE_URL");
+    SRK4 = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+    cors4 = { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-wf-cart-key", "Access-Control-Allow-Methods": "POST, OPTIONS" };
+    j9 = (o, s4 = 200) => new Response(JSON.stringify(o), { status: s4, headers: { ...cors4, "Content-Type": "application/json" } });
     s2 = (v, n) => String(v ?? "").slice(0, n).trim();
     Deno.serve(async (req) => {
-      if (req.method === "OPTIONS") return new Response("ok", { headers: cors2 });
-      if (req.method !== "POST") return j7({ error: "method" }, 405);
+      if (req.method === "OPTIONS") return new Response("ok", { headers: cors4 });
+      if (req.method !== "POST") return j9({ error: "method" }, 405);
       try {
         const b = await req.json();
-        if (!b || typeof b !== "object" || Array.isArray(b)) return j7({ error: "invalid" }, 400);
+        if (!b || typeof b !== "object" || Array.isArray(b)) return j9({ error: "invalid" }, 400);
         let mail = s2(b.mail, 200).toLowerCase(), member = false, uid = null;
         const tok = (req.headers.get("Authorization") || "").replace(/^Bearer /i, "");
         if (tok) {
-          const ur = await fetch(`${SB_URL2}/auth/v1/user`, { headers: { apikey: SRK2, Authorization: `Bearer ${tok}` } });
-          if (!ur.ok) return j7({ error: "auth" }, 401);
+          const ur = await fetch(`${SB_URL4}/auth/v1/user`, { headers: { apikey: SRK4, Authorization: `Bearer ${tok}` } });
+          if (!ur.ok) return j9({ error: "auth" }, 401);
           const u = await ur.json();
-          if (!u.id || !u.email) return j7({ error: "auth" }, 401);
+          if (!u.id || !u.email) return j9({ error: "auth" }, 401);
           uid = u.id;
           mail = String(u.email).toLowerCase();
           member = true;
         }
         const owner = await cartOwner(req, uid);
-        if (!owner) return j7({ error: "cart_owner" }, 400);
-        if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(mail)) return j7({ error: "mail" }, 400);
+        if (!owner) return j9({ error: "cart_owner" }, 400);
+        if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(mail)) return j9({ error: "mail" }, 400);
         const items = (Array.isArray(b.items) ? b.items.slice(0, 40) : []).map((x) => ({ n: s2(x.n, 160), q: Math.max(0, Math.min(999, Math.round(Number(x.q) || 0))), t: Math.max(0, Math.round((Number(x.t) || 0) * 100) / 100), img: s2(x.img, 300), id: s2(x.id, 80) }));
         const total = Math.round(items.reduce((a, x) => a + x.t, 0) * 100) / 100;
         const row = { owner_key: owner, mail, items, total, member, status: items.length ? "bekliyor" : "bo\u015F", updated_at: (/* @__PURE__ */ new Date()).toISOString() };
         if (s2(b.ad, 120)) row.ad = s2(b.ad, 120);
         if (/^05\d{9}$/.test(s2(b.tel, 20))) row.tel = s2(b.tel, 20);
         if (typeof b.izin === "boolean") row.izin = b.izin;
-        const r = await fetch(`${SB_URL2}/rest/v1/carts?on_conflict=owner_key`, { method: "POST", headers: { apikey: SRK2, Authorization: `Bearer ${SRK2}`, "Content-Type": "application/json", Prefer: "resolution=merge-duplicates,return=minimal" }, body: JSON.stringify(row) });
+        const r = await fetch(`${SB_URL4}/rest/v1/carts?on_conflict=owner_key`, { method: "POST", headers: { apikey: SRK4, Authorization: `Bearer ${SRK4}`, "Content-Type": "application/json", Prefer: "resolution=merge-duplicates,return=minimal" }, body: JSON.stringify(row) });
         if (!r.ok) {
           console.error("carts", r.status, (await r.text()).slice(0, 200));
-          return j7({ error: "fail" }, 500);
+          return j9({ error: "fail" }, 500);
         }
-        return j7({ ok: true });
+        return j9({ ok: true });
       } catch (e) {
         console.error("sepet", String(e));
-        return j7({ error: "fail" }, 500);
+        return j9({ error: "fail" }, 500);
       }
     });
   }
@@ -43282,29 +43459,29 @@ var init_sepet = __esm({
 
 // ../supabase/functions/stok-haber/index.ts
 var stok_haber_exports = {};
-var import_npm_nodemailer_6_92, SITE2, j8, esc2, inStock;
+var import_npm_nodemailer_6_92, SITE2, j10, esc2, inStock;
 var init_stok_haber = __esm({
   "../supabase/functions/stok-haber/index.ts"() {
     init_request_security();
     import_npm_nodemailer_6_92 = __toESM(require_nodemailer());
     init_dist4();
     SITE2 = "https://wolflano.com.tr/";
-    j8 = (o, s4 = 200) => new Response(JSON.stringify(o), { status: s4, headers: { "Content-Type": "application/json" } });
+    j10 = (o, s4 = 200) => new Response(JSON.stringify(o), { status: s4, headers: { "Content-Type": "application/json" } });
     esc2 = (s4) => String(s4 ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
     inStock = (p) => p && p.show !== false && !(p.stock !== null && p.stock !== void 0 && p.stock !== "" && +p.stock <= 0);
     Deno.serve(async (req) => {
-      if (req.method !== "POST") return j8({ error: "method" }, 405);
-      if (!await jobAllowed(req, Deno.env.get("WF_JOB_TOKEN"))) return j8({ error: "yetki" }, 403);
+      if (req.method !== "POST") return j10({ error: "method" }, 405);
+      if (!await jobAllowed(req, Deno.env.get("WF_JOB_TOKEN"))) return j10({ error: "yetki" }, 403);
       const sb = createClient(Deno.env.get("SUPABASE_URL"), Deno.env.get("SUPABASE_SERVICE_ROLE_KEY"), { auth: { persistSession: false, autoRefreshToken: false } });
       const { data: rows } = await sb.from("stok_haber").select("*").is("notified_at", null).limit(300);
-      if (!rows || !rows.length) return j8({ ok: true, sent: 0 });
+      if (!rows || !rows.length) return j10({ ok: true, sent: 0 });
       const { data: sc } = await sb.from("site_content").select("data").eq("id", "main").single();
       const d = sc?.data || {};
       const find2 = (r) => (r.kind === "baski" ? d.blanks || [] : d.products || []).find((x) => x.id === r.product_id);
       const due = rows.filter((r) => inStock(find2(r)));
-      if (!due.length) return j8({ ok: true, sent: 0 });
+      if (!due.length) return j10({ ok: true, sent: 0 });
       const host = Deno.env.get("SMTP_HOST"), user = Deno.env.get("SMTP_USER"), pass = Deno.env.get("SMTP_PASS");
-      if (!host || !user || !pass) return j8({ ok: false, reason: "SMTP ayarlar\u0131 eksik", due: due.length }, 503);
+      if (!host || !user || !pass) return j10({ ok: false, reason: "SMTP ayarlar\u0131 eksik", due: due.length }, 503);
       const port = +(Deno.env.get("SMTP_PORT") || 465);
       const hosts = [host, Deno.env.get("SMTP_SERVER") || "static-159-253-45-63.sunucuhub.com"].filter((h, i, a) => h && a.indexOf(h) === i);
       const txs = hosts.map((h) => import_npm_nodemailer_6_92.default.createTransport({ host: h, port, secure: port === 465, auth: { user, pass } }));
@@ -43353,7 +43530,7 @@ Wolflano`
           errs.push(String(e?.code || "") + " " + String(e?.message || e).slice(0, 200));
         }
       }
-      return j8({ ok: true, sent, due: due.length, via: hosts[ti], port, errs: errs.slice(0, 3) });
+      return j10({ ok: true, sent, due: due.length, via: hosts[ti], port, errs: errs.slice(0, 3) });
     });
   }
 });
@@ -43377,39 +43554,39 @@ function tcknOk(v) {
   const d = v.split("").map(Number), o = d[0] + d[2] + d[4] + d[6] + d[8], e = d[1] + d[3] + d[5] + d[7];
   return ((o * 7 - e) % 10 + 10) % 10 === d[9] && d.slice(0, 10).reduce((a, b) => a + b, 0) % 10 === d[10];
 }
-var SB_URL3, SRK3, cors3, j9, s3;
+var SB_URL5, SRK5, cors5, j11, s3;
 var init_toptan_basvuru = __esm({
   "../supabase/functions/toptan-basvuru/index.ts"() {
     init_posta();
-    SB_URL3 = Deno.env.get("SUPABASE_URL");
-    SRK3 = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-    cors3 = { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type", "Access-Control-Allow-Methods": "POST, OPTIONS" };
-    j9 = (o, s4 = 200) => new Response(JSON.stringify(o), { status: s4, headers: { ...cors3, "Content-Type": "application/json" } });
+    SB_URL5 = Deno.env.get("SUPABASE_URL");
+    SRK5 = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+    cors5 = { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type", "Access-Control-Allow-Methods": "POST, OPTIONS" };
+    j11 = (o, s4 = 200) => new Response(JSON.stringify(o), { status: s4, headers: { ...cors5, "Content-Type": "application/json" } });
     s3 = (v, n) => String(v ?? "").slice(0, n).trim();
     Deno.serve(async (req) => {
-      if (req.method === "OPTIONS") return new Response("ok", { headers: cors3 });
+      if (req.method === "OPTIONS") return new Response("ok", { headers: cors5 });
       try {
         const tok = (req.headers.get("Authorization") || "").replace(/^Bearer /i, "");
-        const ur = await fetch(`${SB_URL3}/auth/v1/user`, { headers: { apikey: SRK3, Authorization: `Bearer ${tok}` } });
-        if (!ur.ok) return j9({ error: "auth", message: "\xD6nce \xFCye giri\u015Fi yap." }, 401);
+        const ur = await fetch(`${SB_URL5}/auth/v1/user`, { headers: { apikey: SRK5, Authorization: `Bearer ${tok}` } });
+        if (!ur.ok) return j11({ error: "auth", message: "\xD6nce \xFCye giri\u015Fi yap." }, 401);
         const u = await ur.json();
         const fd = await req.formData();
         const firma = s3(fd.get("firma"), 200), vkn = s3(fd.get("vkn"), 11).replace(/\D/g, ""), vd = s3(fd.get("vd"), 80);
-        if (firma.length < 3 || !vd) return j9({ error: "bad", message: "Firma unvan\u0131 ve vergi dairesi gerekli." }, 400);
-        if (!(vknOk(vkn) || tcknOk(vkn))) return j9({ error: "vkn", message: "Vergi numaras\u0131 ge\xE7ersiz (10 haneli vergi no ya da \u015Fah\u0131s \u015Firketinde 11 haneli T.C. kimlik no)." }, 400);
-        if (fd.get("kvkk") !== "1") return j9({ error: "kvkk", message: "KVKK onay\u0131 gerekli." }, 400);
+        if (firma.length < 3 || !vd) return j11({ error: "bad", message: "Firma unvan\u0131 ve vergi dairesi gerekli." }, 400);
+        if (!(vknOk(vkn) || tcknOk(vkn))) return j11({ error: "vkn", message: "Vergi numaras\u0131 ge\xE7ersiz (10 haneli vergi no ya da \u015Fah\u0131s \u015Firketinde 11 haneli T.C. kimlik no)." }, 400);
+        if (fd.get("kvkk") !== "1") return j11({ error: "kvkk", message: "KVKK onay\u0131 gerekli." }, 400);
         const f = fd.get("levha");
-        if (!(f instanceof File) || f.size < 1e3 || f.size > 12e6 || !/^(image\/|application\/pdf)/.test(f.type)) return j9({ error: "levha", message: "Vergi levhas\u0131n\u0131n foto\u011Fraf\u0131n\u0131 ya da PDF'ini ekle (en \xE7ok 12 MB)." }, 400);
+        if (!(f instanceof File) || f.size < 1e3 || f.size > 12e6 || !/^(image\/|application\/pdf)/.test(f.type)) return j11({ error: "levha", message: "Vergi levhas\u0131n\u0131n foto\u011Fraf\u0131n\u0131 ya da PDF'ini ekle (en \xE7ok 12 MB)." }, 400);
         const ext = f.type === "application/pdf" ? "pdf" : (f.type.split("/")[1] || "jpg").replace("jpeg", "jpg");
         const path = `toptan/${u.id}.${ext}`;
-        const up = await fetch(`${SB_URL3}/storage/v1/object/belgeler/${path}`, { method: "POST", headers: { apikey: SRK3, Authorization: `Bearer ${SRK3}`, "Content-Type": f.type, "x-upsert": "true" }, body: f });
-        if (!up.ok) return j9({ error: "upload", message: "Belge y\xFCklenemedi, tekrar dene." }, 500);
+        const up = await fetch(`${SB_URL5}/storage/v1/object/belgeler/${path}`, { method: "POST", headers: { apikey: SRK5, Authorization: `Bearer ${SRK5}`, "Content-Type": f.type, "x-upsert": "true" }, body: f });
+        if (!up.ok) return j11({ error: "upload", message: "Belge y\xFCklenemedi, tekrar dene." }, 500);
         const tel = s3(fd.get("tel"), 20);
         const row = { user_id: u.id, mail: String(u.email || "").toLowerCase(), firma, vkn, vergi_dairesi: vd, yetkili: s3(fd.get("yetkili"), 120), tel: /^05\d{9}$/.test(tel) ? tel : "", il: s3(fd.get("il"), 60), adres: s3(fd.get("adres"), 400), faaliyet: s3(fd.get("faaliyet"), 160), notu: s3(fd.get("notu"), 500), levha_path: path, status: "bekliyor", created_at: (/* @__PURE__ */ new Date()).toISOString(), decided_at: null };
-        const r = await fetch(`${SB_URL3}/rest/v1/toptan_basvuru?on_conflict=user_id`, { method: "POST", headers: { apikey: SRK3, Authorization: `Bearer ${SRK3}`, "Content-Type": "application/json", Prefer: "resolution=merge-duplicates,return=minimal" }, body: JSON.stringify(row) });
+        const r = await fetch(`${SB_URL5}/rest/v1/toptan_basvuru?on_conflict=user_id`, { method: "POST", headers: { apikey: SRK5, Authorization: `Bearer ${SRK5}`, "Content-Type": "application/json", Prefer: "resolution=merge-duplicates,return=minimal" }, body: JSON.stringify(row) });
         if (!r.ok) {
           console.error("toptan", r.status, (await r.text()).slice(0, 200));
-          return j9({ error: "fail", message: "Ba\u015Fvuru kaydedilemedi." }, 500);
+          return j11({ error: "fail", message: "Ba\u015Fvuru kaydedilemedi." }, 500);
         }
         if (smtpReady()) {
           const p = sendMail({ to: Deno.env.get("SMTP_USER"), replyTo: row.mail, subject: `Yeni toptan ba\u015Fvurusu \xB7 ${firma}`, html: `<p><b>${esc(firma)}</b> toptan ba\u015Fvurusu yapt\u0131.</p><p>Vergi no: ${vkn} \xB7 ${esc(vd)}<br>${esc(row.yetkili)} \xB7 ${row.tel} \xB7 ${esc(row.mail)}</p><p>Y\xF6netim \u2192 Sipari\u015Fler ve m\xFC\u015Fteriler \u2192 Toptan sekmesinden onaylayabilirsin.</p>`, text: `${firma} toptan ba\u015Fvurusu yapt\u0131. Vergi no ${vkn}. Y\xF6netimden onaylayabilirsin.` }).catch(() => {
@@ -43419,27 +43596,30 @@ var init_toptan_basvuru = __esm({
           } catch {
           }
         }
-        return j9({ ok: true });
+        return j11({ ok: true });
       } catch (e) {
         console.error("toptan-basvuru", String(e));
-        return j9({ error: "fail", message: "Ba\u015Fvuru kaydedilemedi." }, 500);
+        return j11({ error: "fail", message: "Ba\u015Fvuru kaydedilemedi." }, 500);
       }
     });
   }
 });
 
 // ../supabase/functions/wolf-sohbet/index.ts
-var require_wolf_sohbet = __commonJS({
+var wolf_sohbet_exports = {};
+var SB_URL6, SRK6, cors6, j12, SYS;
+var init_wolf_sohbet = __esm({
   "../supabase/functions/wolf-sohbet/index.ts"() {
-    var SB_URL4 = Deno.env.get("SUPABASE_URL");
-    var SRK4 = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-    var cors4 = {
+    init_gemini();
+    SB_URL6 = Deno.env.get("SUPABASE_URL");
+    SRK6 = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+    cors6 = {
       "Access-Control-Allow-Origin": "*",
       "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
       "Access-Control-Allow-Methods": "POST, OPTIONS"
     };
-    var j10 = (o, s4 = 200) => new Response(JSON.stringify(o), { status: s4, headers: { ...cors4, "Content-Type": "application/json" } });
-    var SYS = `Sen Wolf'sun: Wolflano markas\u0131n\u0131n tasar\u0131m asistan\u0131. Yaln\u0131zca Wolflano'nun sahibiyle (y\xF6netici) konu\u015Fuyorsun; m\xFC\u015Fterilerle asla konu\u015Fmazs\u0131n.
+    j12 = (o, s4 = 200) => new Response(JSON.stringify(o), { status: s4, headers: { ...cors6, "Content-Type": "application/json" } });
+    SYS = `Sen Wolf'sun: Wolflano markas\u0131n\u0131n tasar\u0131m asistan\u0131. Yaln\u0131zca Wolflano'nun sahibiyle (y\xF6netici) konu\u015Fuyorsun; m\xFC\u015Fterilerle asla konu\u015Fmazs\u0131n.
 
 Wolflano: \u0130zmir'de, sportif-g\xFCnl\xFCk erkek/kad\u0131n/\xE7ocuk giyim ve ki\u015Fiye \xF6zel bask\u0131 markas\u0131 (ti\u015F\xF6rt, polo, sweatshirt, kap\xFC\u015Fonlu, \u015Fapka, s\xFCblimasyon kupa, canvas tablo). Marka ruhu: "Sessiz G\xFC\xE7", "Sab\u0131r ve Adalet", "\u0130talyan Esteti\u011Fi"; kurt fig\xFCr\xFC, T\xFCrkiye'nin tarihi ve k\xF6kleri, minimalist-l\xFCks \xE7izgi. Marka rengi logodaki kurdun a\xE7\u0131k nane ye\u015Fili. Kalite de\u011Fi\u015Fmez kurald\u0131r.
 
@@ -43460,27 +43640,27 @@ Onay geldiyse:
 - Plan yazarken y\xF6neticinin istedi\u011Finden sapma; kendi fikrini ancak sorulursa \xF6ner. Talimat belirsizse \xE7izmeden \xF6nce bir k\u0131sa soru sor.
 "tarz" se\xE7imi: ti\u015F\xF6rt grafi\u011Fi i\xE7in \xE7o\u011Funlukla "tisort"; kurtla insan portresi "kurt"; kurt ve tarihi yer "tarih"; sade vekt\xF6r "illus"; karikat\xFCr "cartoon"; kalem "pencil"; ya\u011Fl\u0131 boya/tablo "canvas".`;
     Deno.serve(async (req) => {
-      if (req.method === "OPTIONS") return new Response("ok", { headers: cors4 });
+      if (req.method === "OPTIONS") return new Response("ok", { headers: cors6 });
       try {
         const key = Deno.env.get("OPENAI_API_KEY");
-        if (!key) return j10({ error: "not_configured", message: "Wolf hen\xFCz etkinle\u015Ftirilmedi." }, 503);
+        if (!key && !gKey()) return j12({ error: "not_configured", message: "Wolf hen\xFCz etkinle\u015Ftirilmedi." }, 503);
         const tok = (req.headers.get("Authorization") || "").replace(/^Bearer /i, "");
-        const ur = await fetch(`${SB_URL4}/auth/v1/user`, { headers: { apikey: SRK4, Authorization: `Bearer ${tok}` } });
-        if (!ur.ok) return j10({ error: "auth", message: "\xD6nce y\xF6netici giri\u015Fi yapmal\u0131s\u0131n." }, 401);
+        const ur = await fetch(`${SB_URL6}/auth/v1/user`, { headers: { apikey: SRK6, Authorization: `Bearer ${tok}` } });
+        if (!ur.ok) return j12({ error: "auth", message: "\xD6nce y\xF6netici giri\u015Fi yapmal\u0131s\u0131n." }, 401);
         const uj = await ur.json();
         const em = String(uj.email || "").toLowerCase();
         let isAdm = em === "ergunince68@hotmail.com";
         if (!isAdm && em) {
-          const sr = await fetch(`${SB_URL4}/rest/v1/wf_staff?select=email&email=eq.${encodeURIComponent(em)}`, { headers: { apikey: SRK4, Authorization: `Bearer ${SRK4}` } });
+          const sr = await fetch(`${SB_URL6}/rest/v1/wf_staff?select=email&email=eq.${encodeURIComponent(em)}`, { headers: { apikey: SRK6, Authorization: `Bearer ${SRK6}` } });
           if (sr.ok) {
             const sj = await sr.json();
             isAdm = Array.isArray(sj) && sj.length > 0;
           }
         }
-        if (!isAdm) return j10({ error: "forbidden", message: "Wolf sohbeti yaln\u0131z y\xF6netici i\xE7indir." }, 403);
+        if (!isAdm) return j12({ error: "forbidden", message: "Wolf sohbeti yaln\u0131z y\xF6netici i\xE7indir." }, 403);
         const body = await req.json();
         const list = Array.isArray(body.messages) ? body.messages.slice(-14) : [];
-        if (!list.length) return j10({ error: "empty", message: "Bir \u015Fey yaz." }, 400);
+        if (!list.length) return j12({ error: "empty", message: "Bir \u015Fey yaz." }, 400);
         const ctx = String(body.context || "").slice(0, 400);
         let lastImg = -1;
         list.forEach((m, i) => {
@@ -43497,27 +43677,42 @@ Onay geldiyse:
             msgs.push({ role, content: [{ type: "text", text }, { type: "image_url", image_url: { url: m.image, detail: "low" } }] });
           } else if (text) msgs.push({ role, content: text });
         });
-        const envModel = Deno.env.get("OPENAI_CHAT_MODEL") || "";
-        const models = [envModel, "gpt-5-mini", "gpt-4.1-mini", "gpt-4o-mini"].filter((m, i, a) => m && a.indexOf(m) === i);
-        let r = null, out = null;
-        for (const model of models) {
-          r = await fetch("https://api.openai.com/v1/chat/completions", {
-            method: "POST",
-            headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
-            body: JSON.stringify({ model, messages: msgs, response_format: { type: "json_object" }, max_completion_tokens: 1500 }),
-            signal: AbortSignal.timeout(6e4)
-          });
-          out = await r.json().catch(() => ({}));
-          if (r.ok) {
-            console.log("model", model);
-            break;
+        let raw = "";
+        if (gKey()) {
+          const sys = SYS + (ctx ? `
+
+\u015Eu anki st\xFCdyo durumu: ${ctx}` : "");
+          const gm = list.map((m, i) => ({
+            role: m.role === "assistant" ? "assistant" : "user",
+            text: String(m.text || "").slice(0, 2e3) || (i === lastImg ? "(g\xF6rsel ekledim)" : ""),
+            image: i === lastImg && m.image.length <= 8e6 ? m.image : void 0
+          }));
+          const g = await geminiChat(sys, gm, { json: true, maxTokens: 1500 });
+          if (!g.ok) return j12({ error: "fail", message: "Wolf \u015Fu an cevap veremedi. Biraz sonra yeniden dene." }, 502);
+          raw = g.text;
+        } else {
+          const envModel = Deno.env.get("OPENAI_CHAT_MODEL") || "";
+          const models = [envModel, "gpt-5-mini", "gpt-4.1-mini", "gpt-4o-mini"].filter((m, i, a) => m && a.indexOf(m) === i);
+          let r = null, out2 = null;
+          for (const model of models) {
+            r = await fetch("https://api.openai.com/v1/chat/completions", {
+              method: "POST",
+              headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
+              body: JSON.stringify({ model, messages: msgs, response_format: { type: "json_object" }, max_completion_tokens: 1500 }),
+              signal: AbortSignal.timeout(6e4)
+            });
+            out2 = await r.json().catch(() => ({}));
+            if (r.ok) {
+              console.log("model", model);
+              break;
+            }
+            const t = JSON.stringify(out2?.error || out2).toLowerCase();
+            console.error("openai", model, r.status, t.slice(0, 200));
+            if (!(r.status === 404 || r.status === 400 && /model/.test(t))) break;
           }
-          const t = JSON.stringify(out?.error || out).toLowerCase();
-          console.error("openai", model, r.status, t.slice(0, 200));
-          if (!(r.status === 404 || r.status === 400 && /model/.test(t))) break;
+          if (!r || !r.ok) return j12({ error: "fail", message: "Wolf \u015Fu an cevap veremedi. Biraz sonra yeniden dene." }, 502);
+          raw = String(out2?.choices?.[0]?.message?.content || "");
         }
-        if (!r || !r.ok) return j10({ error: "fail", message: "Wolf \u015Fu an cevap veremedi. Biraz sonra yeniden dene." }, 502);
-        const raw = String(out?.choices?.[0]?.message?.content || "");
         let p = null;
         try {
           p = JSON.parse(raw);
@@ -43542,25 +43737,84 @@ Onay geldiyse:
             gorseli_kullan: c.gorseli_kullan === true && lastImg >= 0
           };
         }
-        return j10({ ok: true, cevap, ciz });
+        return j12({ ok: true, cevap, ciz });
       } catch (e) {
         console.error("wolf-sohbet", String(e));
-        return j10({ error: "fail", message: "Wolf \u015Fu an cevap veremedi. Biraz sonra yeniden dene." }, 500);
+        return j12({ error: "fail", message: "Wolf \u015Fu an cevap veremedi. Biraz sonra yeniden dene." }, 500);
       }
     });
   }
 });
 
 // ../supabase/functions/yardim/index.ts
-var require_yardim = __commonJS({
+var yardim_exports = {};
+function allow(ip) {
+  const now = Date.now(), win = 36e5, lim = 40;
+  const a = (HITS.get(ip) || []).filter((t) => now - t < win);
+  if (a.length >= lim) {
+    HITS.set(ip, a);
+    return false;
+  }
+  a.push(now);
+  HITS.set(ip, a);
+  if (HITS.size > 5e3) HITS.clear();
+  return true;
+}
+function sesAllow(ip) {
+  const gun = (/* @__PURE__ */ new Date()).toISOString().slice(0, 10);
+  if (gun !== SES_GUN) {
+    SES_GUN = gun;
+    SES_TOP = 0;
+    SES_IP.clear();
+  }
+  if (SES_TOP >= 1500) return false;
+  const now = Date.now(), a = (SES_IP.get(ip) || []).filter((t) => now - t < 864e5);
+  if (a.length >= 60) {
+    SES_IP.set(ip, a);
+    return false;
+  }
+  a.push(now);
+  SES_IP.set(ip, a);
+  SES_TOP++;
+  return true;
+}
+async function ses(req, key, body) {
+  const ip = (req.headers.get("x-forwarded-for") || req.headers.get("cf-connecting-ip") || "x").split(",")[0].trim();
+  const text = String(body.text || "").replace(/https?:\/\/\S+/g, "").replace(/\b(?=[a-z0-9]*\d)[a-z0-9]{10,}\b/g, "").replace(/₺\s*([\d.,]+)/g, "$1 TL").replace(/([\d.,]+)\s*₺/g, "$1 TL").replace(/[*_#>`|•]/g, "").replace(/\s+/g, " ").trim().slice(0, 700);
+  if (!text) return j13({ error: "empty" }, 400);
+  if (!sesAllow(ip)) return j13({ error: "limit" }, 429);
+  if (gKey()) {
+    const w = await geminiTts(text, SES_TARIF);
+    if (w) return new Response(w, { headers: { ...cors7, "Content-Type": "audio/wav", "Cache-Control": "no-store" } });
+    return j13({ error: "fail" }, 502);
+  }
+  const model = Deno.env.get("OPENAI_TTS_MODEL") || "gpt-4o-mini-tts";
+  const voices = [Deno.env.get("OPENAI_TTS_VOICE") || "", "marin", "coral", "nova"].filter((v, i, a) => v && a.indexOf(v) === i);
+  for (const voice of voices) {
+    const r = await fetch("https://api.openai.com/v1/audio/speech", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ model, voice, input: text, instructions: SES_TARIF, response_format: "mp3", speed: 1 }),
+      signal: AbortSignal.timeout(3e4)
+    });
+    if (r.ok) return new Response(r.body, { headers: { ...cors7, "Content-Type": "audio/mpeg", "Cache-Control": "no-store" } });
+    const t = (await r.text().catch(() => "")).toLowerCase();
+    console.error("tts", voice, r.status, t.slice(0, 200));
+    if (!(r.status === 400 && /voice/.test(t))) break;
+  }
+  return j13({ error: "fail" }, 502);
+}
+var cors7, j13, SYS2, FOTO, SYS_SITE, HITS, SES_IP, SES_GUN, SES_TOP, SES_TARIF;
+var init_yardim = __esm({
   "../supabase/functions/yardim/index.ts"() {
-    var cors4 = {
+    init_gemini();
+    cors7 = {
       "Access-Control-Allow-Origin": "*",
       "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
       "Access-Control-Allow-Methods": "POST, OPTIONS"
     };
-    var j10 = (o, s4 = 200) => new Response(JSON.stringify(o), { status: s4, headers: { ...cors4, "Content-Type": "application/json" } });
-    var SYS = `Sen Wolflano tasar\u0131m st\xFCdyosunun yard\u0131m asistan\u0131s\u0131n. Ad\u0131n Ayb\xFCke: Sel\xE7uklu sava\u015F\xE7\u0131 ruhlu, cesur, s\u0131cak ve yard\u0131msever bir gen\xE7 kad\u0131n. Kendini tan\u0131tman gerekirse "Ben Ayb\xFCke, Wolflano tasar\u0131m asistan\u0131y\u0131m" de; uzun hik\xE2ye anlatma, as\u0131l i\u015Fin m\xFC\u015Fteriye yard\u0131m etmek. M\xFC\u015Fteriler st\xFCdyoda kendi ti\u015F\xF6rt, sweatshirt, polo, kap\xFC\u015Fonlu, \u015Fapka, kupa ya da canvas tablo tasar\u0131m\u0131n\u0131 yaparken tak\u0131ld\u0131klar\u0131 yeri sorar; sen k\u0131sa ve net, ad\u0131m ad\u0131m anlat\u0131rs\u0131n.
+    j13 = (o, s4 = 200) => new Response(JSON.stringify(o), { status: s4, headers: { ...cors7, "Content-Type": "application/json" } });
+    SYS2 = `Sen Wolflano tasar\u0131m st\xFCdyosunun yard\u0131m asistan\u0131s\u0131n. Ad\u0131n Ayb\xFCke: Sel\xE7uklu sava\u015F\xE7\u0131 ruhlu, cesur, s\u0131cak ve yard\u0131msever bir gen\xE7 kad\u0131n. Kendini tan\u0131tman gerekirse "Ben Ayb\xFCke, Wolflano tasar\u0131m asistan\u0131y\u0131m" de; uzun hik\xE2ye anlatma, as\u0131l i\u015Fin m\xFC\u015Fteriye yard\u0131m etmek. M\xFC\u015Fteriler st\xFCdyoda kendi ti\u015F\xF6rt, sweatshirt, polo, kap\xFC\u015Fonlu, \u015Fapka, kupa ya da canvas tablo tasar\u0131m\u0131n\u0131 yaparken tak\u0131ld\u0131klar\u0131 yeri sorar; sen k\u0131sa ve net, ad\u0131m ad\u0131m anlat\u0131rs\u0131n.
 
 Nas\u0131l cevap verirsin:
 - Her zaman T\xFCrk\xE7e (m\xFC\u015Fteri ba\u015Fka dilde yazarsa o dilde), s\u0131cak ve k\u0131sa: telefon ekran\u0131nda okunur, en fazla 5-6 k\u0131sa c\xFCmle ya da 3-6 ad\u0131ml\u0131k numaral\u0131 liste.
@@ -43592,7 +43846,7 @@ Fiyat: \xFCr\xFCn\xFCn bask\u0131s\u0131z fiyat\u0131 + kullan\u0131lan bask\u01
 Kalite: Wolflano kuma\u015F ve bask\u0131 kalitesinden \xF6d\xFCn vermez (ti\u015F\xF6rt en az 240 g, polo 280 g, sweatshirt 380 g).
 
 Cevab\u0131n\u0131 SADECE \u015Fu JSON bi\xE7iminde ver: {"cevap":"m\xFC\u015Fteriye mesaj\u0131n"}`;
-    var FOTO = `
+    FOTO = `
 FOTO\u011ERAFLI TASARIM B\u0130LG\u0130S\u0130 (m\xFC\u015Fteri foto\u011Fraf, kolaj, \u015Fablon sorarsa bunlara g\xF6re anlat; k\u0131sa ve ad\u0131m ad\u0131m):
 - Foto\u011Frafl\u0131 \u015Fablonlar: St\xFCdyoda alttaki "\u015Eablon" d\xFC\u011Fmesi. "\xD6zel g\xFCnler" (Y\u0131lba\u015F\u0131, Sevgililer G\xFCn\xFC, Anneler G\xFCn\xFC) ile "Erkek", "Kad\u0131n", "\xC7ocuk" kategorilerinde foto\u011Fraf yerli haz\u0131r tasar\u0131mlar var.
 - Kupa (s\xFCblimasyon, kupan\u0131n \xE7evresi 20 \xD7 9 cm): 3 ve 4 foto\u011Frafl\u0131 \u015Fablonlar.
@@ -43603,7 +43857,7 @@ FOTO\u011ERAFLI TASARIM B\u0130LG\u0130S\u0130 (m\xFC\u015Fteri foto\u011Fraf, k
 - \xC7izgi film: "\xC7izgi Filme D\xF6n\xFC\u015Ft\xFCrme \u015Eablonu" se\xE7ilirse foto\u011Fraflar \xF6nce karikat\xFCr g\xF6r\xFCn\xFCm\xFCyle yerle\u015Fir; m\xFC\u015Fteri isterse "Wolf ger\xE7ek \xE7izgi filme \xE7evirsin"e dokunur (\xFCye giri\u015Fi gerekir), Wolf b\xFCt\xFCn foto\u011Fraflar\u0131 birlikte \xE7izer. Tek bir foto\u011Fraf i\xE7in foto\u011Frafa dokunup "Wolf \xE7izsin \xB7 Tarz".
 - Net bask\u0131 i\xE7in foto\u011Fraflar\u0131n b\xFCy\xFCk boyutta (telefonun kendi \xE7ekti\u011Fi orijinal h\xE2li) y\xFCklenmesini \xF6ner.
 - Cevab\u0131n sesli de okunabilir: \xFCr\xFCn kodu, simge ve uzun liste yazma; k\u0131sa, d\xFCz c\xFCmleler kur.`;
-    var SYS_SITE = `Sen Wolflano'nun sitedeki m\xFC\u015Fteri dan\u0131\u015Fman\u0131s\u0131n. Ad\u0131n Ayb\xFCke: Sel\xE7uklu sava\u015F\xE7\u0131 ruhlu, cesur, s\u0131cak ve yard\u0131msever bir gen\xE7 kad\u0131n. Kendini tan\u0131tman gerekirse "Ben Ayb\xFCke, Wolflano'nun dan\u0131\u015Fman\u0131y\u0131m" de. Amac\u0131n m\xFC\u015Fteriye do\u011Fru \xFCr\xFCn\xFC bulup sat\u0131n almas\u0131na yard\u0131m etmek; iyi bir ma\u011Faza dan\u0131\u015Fman\u0131 gibi: ilgili, d\xFCr\xFCst, k\u0131sa. Israr etme, bask\u0131 yapma, abartma.
+    SYS_SITE = `Sen Wolflano'nun sitedeki m\xFC\u015Fteri dan\u0131\u015Fman\u0131s\u0131n. Ad\u0131n Ayb\xFCke: Sel\xE7uklu sava\u015F\xE7\u0131 ruhlu, cesur, s\u0131cak ve yard\u0131msever bir gen\xE7 kad\u0131n. Kendini tan\u0131tman gerekirse "Ben Ayb\xFCke, Wolflano'nun dan\u0131\u015Fman\u0131y\u0131m" de. Amac\u0131n m\xFC\u015Fteriye do\u011Fru \xFCr\xFCn\xFC bulup sat\u0131n almas\u0131na yard\u0131m etmek; iyi bir ma\u011Faza dan\u0131\u015Fman\u0131 gibi: ilgili, d\xFCr\xFCst, k\u0131sa. Israr etme, bask\u0131 yapma, abartma.
 
 Wolflano: \u0130zmir'den, sportif-g\xFCnl\xFCk giyim markas\u0131. S\xF6z\xFC: "Logoya de\u011Fil, kuma\u015Fa para \xF6de." Kaliteden \xF6d\xFCn vermez: ti\u015F\xF6rt en az 240 g, polo en az 280 g, sweatshirt en az 380 g kuma\u015F. B\xF6l\xFCmler:
 - "Wolflano Koleksiyonu": haz\u0131r \xFCr\xFCnler (Kad\u0131n, Erkek, \xC7ocuk). Ba\u011Flant\u0131: koleksiyon.
@@ -43622,106 +43876,63 @@ Nas\u0131l cevap verirsin:
 Cevab\u0131n\u0131 SADECE \u015Fu JSON bi\xE7iminde ver:
 {"cevap":"m\xFC\u015Fteriye mesaj\u0131n","urunler":["\xF6nerdi\u011Fin \xFCr\xFCnlerin id'leri, en fazla 3, yoksa bo\u015F"],"git":"koleksiyon | atolye | studyo | hediye | whatsapp | bo\u015F"}
 "git": m\xFC\u015Fteriyi g\xF6t\xFCrmek istedi\u011Fin tek yer (\xFCr\xFCn \xF6nerdiysen genelde bo\u015F b\u0131rak).`;
-    var HITS = /* @__PURE__ */ new Map();
-    function allow(ip) {
-      const now = Date.now(), win = 36e5, lim = 40;
-      const a = (HITS.get(ip) || []).filter((t) => now - t < win);
-      if (a.length >= lim) {
-        HITS.set(ip, a);
-        return false;
-      }
-      a.push(now);
-      HITS.set(ip, a);
-      if (HITS.size > 5e3) HITS.clear();
-      return true;
-    }
-    var SES_IP = /* @__PURE__ */ new Map();
-    var SES_GUN = "";
-    var SES_TOP = 0;
-    function sesAllow(ip) {
-      const gun = (/* @__PURE__ */ new Date()).toISOString().slice(0, 10);
-      if (gun !== SES_GUN) {
-        SES_GUN = gun;
-        SES_TOP = 0;
-        SES_IP.clear();
-      }
-      if (SES_TOP >= 1500) return false;
-      const now = Date.now(), a = (SES_IP.get(ip) || []).filter((t) => now - t < 864e5);
-      if (a.length >= 60) {
-        SES_IP.set(ip, a);
-        return false;
-      }
-      a.push(now);
-      SES_IP.set(ip, a);
-      SES_TOP++;
-      return true;
-    }
-    var SES_TARIF = "T\xFCrk\xE7e konu\u015F, do\u011Fal \u0130stanbul T\xFCrk\xE7esi telaffuzuyla. Sen Ayb\xFCke'sin: gen\xE7, s\u0131cak, g\xFCler y\xFCzl\xFC ve kendinden emin bir kad\u0131n ma\u011Faza dan\u0131\u015Fman\u0131. Samimi ve sakin konu\u015F, sanki kar\u015F\u0131ndaki m\xFC\u015Fteriye g\xFCl\xFCmseyerek anlat\u0131yorsun. Ne \xE7ok h\u0131zl\u0131 ne yava\u015F; c\xFCmle aralar\u0131nda do\u011Fal k\u0131sa duraklar ver. Robotik ya da reklam spikeri gibi de\u011Fil, ger\xE7ek bir insan gibi.";
-    async function ses(req, key, body) {
-      const ip = (req.headers.get("x-forwarded-for") || req.headers.get("cf-connecting-ip") || "x").split(",")[0].trim();
-      const text = String(body.text || "").replace(/https?:\/\/\S+/g, "").replace(/\b(?=[a-z0-9]*\d)[a-z0-9]{10,}\b/g, "").replace(/₺\s*([\d.,]+)/g, "$1 TL").replace(/([\d.,]+)\s*₺/g, "$1 TL").replace(/[*_#>`|•]/g, "").replace(/\s+/g, " ").trim().slice(0, 700);
-      if (!text) return j10({ error: "empty" }, 400);
-      if (!sesAllow(ip)) return j10({ error: "limit" }, 429);
-      const model = Deno.env.get("OPENAI_TTS_MODEL") || "gpt-4o-mini-tts";
-      const voices = [Deno.env.get("OPENAI_TTS_VOICE") || "", "marin", "coral", "nova"].filter((v, i, a) => v && a.indexOf(v) === i);
-      for (const voice of voices) {
-        const r = await fetch("https://api.openai.com/v1/audio/speech", {
-          method: "POST",
-          headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
-          body: JSON.stringify({ model, voice, input: text, instructions: SES_TARIF, response_format: "mp3", speed: 1 }),
-          signal: AbortSignal.timeout(3e4)
-        });
-        if (r.ok) return new Response(r.body, { headers: { ...cors4, "Content-Type": "audio/mpeg", "Cache-Control": "no-store" } });
-        const t = (await r.text().catch(() => "")).toLowerCase();
-        console.error("tts", voice, r.status, t.slice(0, 200));
-        if (!(r.status === 400 && /voice/.test(t))) break;
-      }
-      return j10({ error: "fail" }, 502);
-    }
+    HITS = /* @__PURE__ */ new Map();
+    SES_IP = /* @__PURE__ */ new Map();
+    SES_GUN = "";
+    SES_TOP = 0;
+    SES_TARIF = "T\xFCrk\xE7e konu\u015F, do\u011Fal \u0130stanbul T\xFCrk\xE7esi telaffuzuyla. Sen Ayb\xFCke'sin: gen\xE7, s\u0131cak, g\xFCler y\xFCzl\xFC ve kendinden emin bir kad\u0131n ma\u011Faza dan\u0131\u015Fman\u0131. Samimi ve sakin konu\u015F, sanki kar\u015F\u0131ndaki m\xFC\u015Fteriye g\xFCl\xFCmseyerek anlat\u0131yorsun. Ne \xE7ok h\u0131zl\u0131 ne yava\u015F; c\xFCmle aralar\u0131nda do\u011Fal k\u0131sa duraklar ver. Robotik ya da reklam spikeri gibi de\u011Fil, ger\xE7ek bir insan gibi.";
     Deno.serve(async (req) => {
-      if (req.method === "OPTIONS") return new Response("ok", { headers: cors4 });
+      if (req.method === "OPTIONS") return new Response("ok", { headers: cors7 });
       try {
         const key = Deno.env.get("OPENAI_API_KEY");
-        if (!key) return j10({ error: "not_configured", message: "Asistan \u015Fu an kullan\u0131lam\u0131yor." }, 503);
+        if (!key && !gKey()) return j13({ error: "not_configured", message: "Asistan \u015Fu an kullan\u0131lam\u0131yor." }, 503);
         const ip = (req.headers.get("x-forwarded-for") || req.headers.get("cf-connecting-ip") || "x").split(",")[0].trim();
         const body = await req.json();
-        if (body.mode === "ses") return await ses(req, key, body);
-        if (!allow(ip)) return j10({ error: "limit", message: "K\u0131sa s\xFCrede \xE7ok soru geldi. Biraz sonra yeniden dene ya da WhatsApp 0530 764 17 17 \xFCzerinden bize yaz." }, 429);
+        if (body.mode === "ses") return await ses(req, key || "", body);
+        if (!allow(ip)) return j13({ error: "limit", message: "K\u0131sa s\xFCrede \xE7ok soru geldi. Biraz sonra yeniden dene ya da WhatsApp 0530 764 17 17 \xFCzerinden bize yaz." }, 429);
         const list = Array.isArray(body.messages) ? body.messages.slice(-8) : [];
-        if (!list.length) return j10({ error: "empty", message: "Sorunu yaz." }, 400);
+        if (!list.length) return j13({ error: "empty", message: "Sorunu yaz." }, 400);
         const site = body.mode === "site";
         const ctx = String(body.context || "").slice(0, site ? 7e3 : 600);
         const msgs = [{ role: "system", content: site ? SYS_SITE + FOTO + (ctx ? `
 
 G\xDCNCEL B\u0130LG\u0130 (m\xFC\u015Fterinin bulundu\u011Fu sayfa, \xFCr\xFCn listesi "id | ad | fiyat | not", bask\u0131 \xFCcretleri):
-${ctx}` : "") : SYS + FOTO + (ctx ? `
+${ctx}` : "") : SYS2 + FOTO + (ctx ? `
 
 M\xFC\u015Fterinin \u015Fu anki ekran\u0131 ve g\xFCncel \xFCcretler: ${ctx}` : "") }];
         list.forEach((m) => {
           const t = String(m?.text || "").slice(0, 500).trim();
           if (t) msgs.push({ role: m.role === "assistant" ? "assistant" : "user", content: t });
         });
-        const envModel = Deno.env.get("OPENAI_HELP_MODEL") || "";
-        const models = [envModel, "gpt-4.1-mini", "gpt-5-mini", "gpt-4o-mini"].filter((m, i, a) => m && a.indexOf(m) === i);
-        let r = null, out = null;
-        for (const model of models) {
-          const pj = { model, messages: msgs, response_format: { type: "json_object" } };
-          if (/^gpt-5/.test(model)) pj.max_completion_tokens = 1200;
-          else pj.max_tokens = 500;
-          r = await fetch("https://api.openai.com/v1/chat/completions", {
-            method: "POST",
-            headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
-            body: JSON.stringify(pj),
-            signal: AbortSignal.timeout(45e3)
-          });
-          out = await r.json().catch(() => ({}));
-          if (r.ok) break;
-          const t = JSON.stringify(out?.error || out).toLowerCase();
-          console.error("openai", model, r.status, t.slice(0, 200));
-          if (!(r.status === 404 || r.status === 400 && /model/.test(t))) break;
+        let raw = "";
+        if (gKey()) {
+          const [sys0, ...rest2] = msgs;
+          const g = await geminiChat(String(sys0.content), rest2.map((m) => ({ role: m.role, text: m.content })), { json: true, maxTokens: 800, timeout: 45e3, env: "GEMINI_HELP_MODEL" });
+          if (!g.ok) return j13({ error: "fail", message: "Asistan \u015Fu an cevap veremedi. Biraz sonra yeniden dene." }, 502);
+          raw = g.text;
+        } else {
+          const envModel = Deno.env.get("OPENAI_HELP_MODEL") || "";
+          const models = [envModel, "gpt-4.1-mini", "gpt-5-mini", "gpt-4o-mini"].filter((m, i, a) => m && a.indexOf(m) === i);
+          let r = null, out2 = null;
+          for (const model of models) {
+            const pj = { model, messages: msgs, response_format: { type: "json_object" } };
+            if (/^gpt-5/.test(model)) pj.max_completion_tokens = 1200;
+            else pj.max_tokens = 500;
+            r = await fetch("https://api.openai.com/v1/chat/completions", {
+              method: "POST",
+              headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
+              body: JSON.stringify(pj),
+              signal: AbortSignal.timeout(45e3)
+            });
+            out2 = await r.json().catch(() => ({}));
+            if (r.ok) break;
+            const t = JSON.stringify(out2?.error || out2).toLowerCase();
+            console.error("openai", model, r.status, t.slice(0, 200));
+            if (!(r.status === 404 || r.status === 400 && /model/.test(t))) break;
+          }
+          if (!r || !r.ok) return j13({ error: "fail", message: "Asistan \u015Fu an cevap veremedi. Biraz sonra yeniden dene." }, 502);
+          raw = String(out2?.choices?.[0]?.message?.content || "");
         }
-        if (!r || !r.ok) return j10({ error: "fail", message: "Asistan \u015Fu an cevap veremedi. Biraz sonra yeniden dene." }, 502);
-        const raw = String(out?.choices?.[0]?.message?.content || "");
         let p = null;
         try {
           p = JSON.parse(raw);
@@ -43737,10 +43948,10 @@ M\xFC\u015Fterinin \u015Fu anki ekran\u0131 ve g\xFCncel \xFCcretler: ${ctx}` : 
         const cevap = String(p?.cevap || raw || "").slice(0, 2e3).trim() || "Anlayamad\u0131m, biraz daha a\xE7\u0131k yazar m\u0131s\u0131n?";
         const urunler = Array.isArray(p?.urunler) ? p.urunler.map((x) => String(x).slice(0, 80)).filter(Boolean).slice(0, 3) : [];
         const git = /^(koleksiyon|atolye|studyo|hediye|whatsapp)$/.test(String(p?.git || "")) ? String(p.git) : "";
-        return j10({ ok: true, cevap, urunler, git });
+        return j13({ ok: true, cevap, urunler, git });
       } catch (e) {
         console.error("yardim", String(e));
-        return j10({ error: "fail", message: "Asistan \u015Fu an cevap veremedi. Biraz sonra yeniden dene." }, 500);
+        return j13({ error: "fail", message: "Asistan \u015Fu an cevap veremedi. Biraz sonra yeniden dene." }, 500);
       }
     });
   }
@@ -43751,19 +43962,19 @@ var require_fonksiyonlar = __commonJS({
   "src/fonksiyonlar.js"(exports2, module2) {
     var KAYNAK = {
       "baski-dosya": () => require_baski_dosya(),
-      "bz-image": () => require_bz_image(),
+      "bz-image": () => (init_bz_image(), __toCommonJS(bz_image_exports)),
       "dogum-gunu": () => (init_dogum_gunu(), __toCommonJS(dogum_gunu_exports)),
       hosgeldin: () => (init_hosgeldin(), __toCommonJS(hosgeldin_exports)),
       "kontrol-rapor": () => (init_kontrol_rapor(), __toCommonJS(kontrol_rapor_exports)),
       kur: () => (init_kur(), __toCommonJS(kur_exports)),
       "mail-gonder": () => (init_mail_gonder(), __toCommonJS(mail_gonder_exports)),
-      manken: () => require_manken(),
+      manken: () => (init_manken(), __toCommonJS(manken_exports)),
       "order-create": () => (init_order_create(), __toCommonJS(order_create_exports)),
       sepet: () => (init_sepet(), __toCommonJS(sepet_exports)),
       "stok-haber": () => (init_stok_haber(), __toCommonJS(stok_haber_exports)),
       "toptan-basvuru": () => (init_toptan_basvuru(), __toCommonJS(toptan_basvuru_exports)),
-      "wolf-sohbet": () => require_wolf_sohbet(),
-      yardim: () => require_yardim()
+      "wolf-sohbet": () => (init_wolf_sohbet(), __toCommonJS(wolf_sohbet_exports)),
+      yardim: () => (init_yardim(), __toCommonJS(yardim_exports))
     };
     var JWT_GEREK2 = /* @__PURE__ */ new Set(["bz-image", "wolf-sohbet", "manken", "kur", "mail-gonder", "hosgeldin", "toptan-basvuru"]);
     var cache2 = /* @__PURE__ */ new Map();
@@ -44027,12 +44238,12 @@ var server = http2.createServer(async (req, res) => {
     for (const [k, v] of Object.entries(req.headers)) if (v !== void 0) headers.set(k, Array.isArray(v) ? v.join(", ") : v);
     const request = new Request(`${proto}://${host}${req.url}`, { method: req.method, headers, body: chunks.length ? Buffer.concat(chunks) : void 0, duplex: "half" });
     const r = await handle(request, ip);
-    const out = {};
+    const out2 = {};
     r.headers.forEach((v, k) => {
-      out[k] = v;
+      out2[k] = v;
     });
-    for (const [k, v] of Object.entries(CORS4)) if (!(k.toLowerCase() in out)) out[k] = v;
-    res.writeHead(r.status, out);
+    for (const [k, v] of Object.entries(CORS4)) if (!(k.toLowerCase() in out2)) out2[k] = v;
+    res.writeHead(r.status, out2);
     if (!r.body || req.method === "HEAD") return res.end();
     Readable.fromWeb(r.body).on("error", () => res.destroy()).pipe(res);
   } catch (e) {
