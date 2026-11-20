@@ -6857,7 +6857,7 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
   ];
   var el=document.getElementById('guide'),i=0,mode='';
   function seen(){try{localStorage.setItem('wf_studio_guide','1');}catch(_){}}
-  function close(){voiceSession=false;micStop();aysStop();el.hidden=true;el.innerHTML='';seen();var hb=document.getElementById('helpBtn');if(hb&&mode)try{hb.focus();}catch(_){}mode='';}
+  function close(){voiceSession=false;micStop();aysStop();miniOff();el.hidden=true;el.innerHTML='';seen();var hb=document.getElementById('helpBtn');if(hb&&mode)try{hb.focus();}catch(_){}mode='';}
   function tour(n){
     mode='tour';i=Math.max(0,Math.min(GD.length-1,n||0));var d=GD[i],last=i===GD.length-1;
     el.innerHTML='<div class="gd-card" id="gdCard"><div class="gd-art" aria-hidden="true">'+d.a+'</div><div class="gd-step">Adım '+(i+1)+' / '+GD.length+'</div><h2 id="gdTitle">'+d.t+'</h2><p>'+d.p+'</p>'+
@@ -6874,7 +6874,7 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
       '<ol class="gd-list">'+GD.map(function(d,k){return '<li><span class="n">'+(k+1)+'</span><span><b>'+d.t+'</b>'+d.p+'</span></li>';}).join('')+'</ol>'+
       '<h3>Sık sorulanlar</h3><div class="gd-faq">'+FAQ.map(function(q){return '<details><summary>'+q[0]+'</summary><p>'+q[1]+'</p></details>';}).join('')+'</div>'+
       '<div class="gd-nav"><button type="button" class="gd-skip" data-gd="tour">Tanıtımı yeniden izle</button><button type="button" class="primary" data-gd="skip">Tamam</button></div></div>';
-    el.hidden=false;showAybukeDesign().catch(function(){});
+    el.hidden=false;miniOff();showAybukeDesign().catch(function(){});
   }
   /* Asistan: sorular stüdyonun kurallarını bilen yardım asistanına (sunucu: yardim) gider; konuşma yalnız bu cihazda tutulur */
   /* Asistanın görseli: assets/aybuke içinde aybuke.webp/png/jpg varsa o, yoksa çizim (aybuke.svg) */
@@ -6889,27 +6889,50 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
   function aysStop(){AYS_SEQ++;try{if(AYS_SRC)AYS_SRC.stop();}catch(_){}AYS_SRC=null;try{speechSynthesis.cancel();}catch(_){}}
   function aysVoice(){try{var v=speechSynthesis.getVoices().filter(function(x){return /^tr/i.test(x.lang);});var sc=function(x){var n=x.name||'';return (/premium/i.test(n)?4:0)+(/enhanced|geli[sş]mi[sş]|geli[sş]tirilmi[sş]|natural|neural/i.test(n)?3:0)+(/yelda|female|kad[iı]n|seda|filiz|emel/i.test(n)?1:0);};v.sort(function(a,b){return sc(b)-sc(a);});return v[0]||null;}catch(_){return null;}}
   function aysLocal(t,done){try{speechSynthesis.cancel();var v=aysVoice(),chunks=(String(t).replace(/["“”*]/g,'').replace(/\s*\n+\s*/g,'. ').match(/[^.!?…:]+[.!?…:]*/g)||[]).map(function(c){return c.trim();}).filter(Boolean);chunks.forEach(function(c,idx){var u=new SpeechSynthesisUtterance(c);u.lang='tr-TR';if(v)u.voice=v;u.rate=0.97;u.pitch=1.02;if(idx===chunks.length-1)u.onend=done;speechSynthesis.speak(u);});}catch(_){}}
-  async function aysSay(t){t=String(t||'').trim();if(!t)return;aysStop();var my=AYS_SEQ,done=function(){if(my===AYS_SEQ&&voiceSession&&mode==='help'&&!el.hidden&&!askBusy&&!micOn)listen();};
-    try{if(!AYS_AC)throw 0;var r=await fetch(SB.url+'/functions/v1/yardim',{method:'POST',headers:{'Content-Type':'application/json',apikey:SB.key},body:JSON.stringify({mode:'ses',text:t})});
-      if(!r.ok||!/audio/.test(r.headers.get('content-type')||''))throw 0;var buf=await r.arrayBuffer();if(my!==AYS_SEQ)return;
-      var ab=await new Promise(function(ok,no){AYS_AC.decodeAudioData(buf,ok,no);});if(my!==AYS_SEQ)return;if(AYS_AC.state==='suspended')await AYS_AC.resume();
-      var s=AYS_AC.createBufferSource();s.buffer=ab;s.connect(AYS_AC.destination);s.onended=done;s.start(0);AYS_SRC=s;}
-    catch(_){/* Sunucu sesi gelmezse telefonun robotik sesi kullanılmaz; yazı ekranda kalır */if(my===AYS_SEQ)done();}}
-  function say(t){if(!t)return;if(TTS&&(ttsOn||voiceSession))aysSay(t);else if(voiceSession&&!el.hidden&&!micOn)listen();}
+  /* Sesli konuşmada pencere küçülür: üstte ince bir Aybüke çubuğu kalır, tasarım ekranı görünür, konuşma sürer */
+  var mini=false,bar=document.createElement('div');bar.id='ayMini';bar.hidden=true;
+  bar.style.cssText='position:fixed;left:8px;right:8px;top:calc(env(safe-area-inset-top,0px) + 6px);z-index:9998;background:#fff;border-radius:16px;box-shadow:0 6px 24px #0003;padding:8px 10px;display:flex;align-items:center;gap:9px;font:500 13.5px var(--ui);max-width:520px;margin:0 auto';
+  document.body.appendChild(bar);
+  function act(){return mode==='help'&&(!el.hidden||mini);}
+  function miniSt(t){if(!mini)return;var k=bar.querySelector('[data-mt]');if(k&&t!=null)k.textContent=t;}
+  function miniOn(){if(mini)return;mini=true;el.hidden=true;
+    bar.innerHTML='<img src="'+AYB+'" alt="" width="38" height="38" data-mb="dokun" style="border-radius:50%;object-fit:cover;box-shadow:0 0 0 2px var(--green,#30703f);flex:0 0 38px"><span data-mb="dokun" style="flex:1;min-width:0"><b style="display:block">Aybüke</b><small data-mt style="display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;color:#5a625d;line-height:1.3">Dinliyorum…</small></span>'+
+      '<button type="button" data-mb="ac" style="border:1.5px solid var(--green,#30703f);background:#fff;border-radius:10px;padding:7px 10px;font:600 13px var(--ui)">Sohbet</button><button type="button" data-mb="bitir" style="border:1.5px solid #111;background:#c4584a;color:#fff;border-radius:10px;padding:7px 10px;font:600 13px var(--ui)">Bitir</button>';
+    try{var hd=document.querySelector('header.top');bar.style.top=(hd?Math.round(hd.getBoundingClientRect().bottom)+6:6)+'px';}catch(_){}
+    bar.hidden=false;}
+  function miniOff(){mini=false;bar.hidden=true;}
+  bar.addEventListener('click',function(e){var b=e.target.closest('[data-mb]');if(!b)return;aysAc();var k=b.dataset.mb;
+    if(k==='bitir'){voiceSession=false;micStop();aysStop();miniOff();mode='';el.innerHTML='';return;}
+    if(k==='ac'){miniOff();el.hidden=false;askPaint();return;}
+    if(!voiceSession){voiceSession=true;aysStop();listen();}else if(!micOn&&!askBusy){aysStop();listen();}});
+  /* Ses parça parça istenir: ilk cümle hemen okunur, geri kalanı o sırada hazırlanır. Sunucu sesi gelmezse telefonun sesi okur (Aybüke susmaz). */
+  function aysParts(t){var S=(t.match(/[^.!?…]+[.!?…]*\s*/g)||[t]).map(function(x){return x.trim();}).filter(Boolean),first='',i=0;
+    while(i<S.length&&(first.length<30||i===0)&&first.length+S[i].length<=170){first+=(first?' ':'')+S[i];i++;}if(!first){first=S[0]||t;i=1;}
+    var rest=S.slice(i).join(' ').trim();return rest?[first,rest]:[first];}
+  function aysFetch(t){return fetch(SB.url+'/functions/v1/yardim',{method:'POST',headers:{'Content-Type':'application/json',apikey:SB.key},body:JSON.stringify({mode:'ses',text:t})})
+    .then(function(r){return r.ok&&/audio/.test(r.headers.get('content-type')||'')?r.arrayBuffer():null;}).catch(function(){return null;});}
+  function aysPlay(buf,my){return new Promise(function(ok){new Promise(function(a,b){AYS_AC.decodeAudioData(buf,a,b);}).then(function(ab){if(my!==AYS_SEQ)return ok(true);if(AYS_AC.state==='suspended')AYS_AC.resume();
+      var s=AYS_AC.createBufferSource();s.buffer=ab;s.connect(AYS_AC.destination);s.onended=function(){ok(true);};s.start(0);AYS_SRC=s;}).catch(function(){ok(false);});});}
+  function aysLocalP(t){return new Promise(function(ok){if(!window.speechSynthesis)return ok();var fin=false,f=function(){if(!fin){fin=true;ok();}};aysLocal(t,f);setTimeout(f,Math.max(4000,t.length*120));});}
+  async function aysSay(t){t=String(t||'').replace(/[*_#>`|•]/g,' ').replace(/\s+/g,' ').trim();if(!t)return;aysStop();var my=AYS_SEQ;
+    var P=aysParts(t),req=P.map(function(x){return AYS_AC?aysFetch(x):Promise.resolve(null);});
+    for(var i=0;i<P.length;i++){var buf=await req[i];if(my!==AYS_SEQ)return;var ok=buf?await aysPlay(buf,my):false;if(my!==AYS_SEQ)return;if(!ok)await aysLocalP(P[i]);if(my!==AYS_SEQ)return;}
+    if(voiceSession&&act()&&!askBusy&&!micOn)listen();else miniSt('Devam etmek için bana dokun');}
+  function say(t){if(!t)return;if(TTS&&(ttsOn||voiceSession))aysSay(t);else if(voiceSession&&act()&&!micOn)listen();}
   function micStop(){micOn=false;try{if(rec)rec.stop();}catch(_){}var m=document.querySelector('.gd-mic');if(m){m.classList.toggle('on',voiceSession);m.setAttribute('aria-pressed',String(voiceSession));m.setAttribute('aria-label',voiceSession?'Sesli konuşmayı durdur':'Aybüke ile konuş');}var i2=document.getElementById('gdAsk');if(i2)i2.placeholder='Örn. Logoyu sağ göğse nasıl koyarım?';}
-  function micStart(){if(!SR)return;aysAc();if(voiceSession){voiceSession=false;micStop();aysStop();return;}voiceSession=true;aysStop();listen();}
-  function listen(){if(!SR||el.hidden||mode!=='help')return;
+  function micStart(){if(!SR)return;aysAc();if(voiceSession){voiceSession=false;micStop();aysStop();return;}voiceSession=true;aysStop();miniOn();listen();}
+  function listen(){if(!SR||!act())return;
     rec=new SR();rec.lang='tr-TR';rec.interimResults=true;rec.continuous=false;rec.maxAlternatives=1;var fin='';
     rec.onresult=function(e){var t='';for(var k=e.resultIndex;k<e.results.length;k++){if(e.results[k].isFinal)fin+=e.results[k][0].transcript;else t+=e.results[k][0].transcript;}var i2=document.getElementById('gdAsk');if(i2)i2.value=(fin+t).trim();};
     rec.onerror=function(e){voiceSession=false;micStop();if(e&&/not-allowed|service-not-allowed/.test(e.error))toast('Mikrofon izni verilmedi. Telefonun ayarlarından bu siteye mikrofon izni ver.');};
-    rec.onend=function(){var was=micOn;micStop();var v=(fin||'').trim();if(was&&!v){voiceSession=false;micStop();}if(was&&v){var i2=document.getElementById('gdAsk');if(i2)i2.value='';askSend(v);}};
-    try{rec.start();micOn=true;var m=document.querySelector('.gd-mic');if(m){m.classList.add('on');m.setAttribute('aria-pressed','true');m.setAttribute('aria-label','Sesli konuşmayı durdur');}var i3=document.getElementById('gdAsk');if(i3){i3.value='';i3.placeholder='Dinliyorum, konuş…';}}catch(_){voiceSession=false;micStop();}}
+    rec.onend=function(){var was=micOn;micStop();var v=(fin||'').trim();if(was&&!v){voiceSession=false;micStop();miniSt('Konuşmak için bana dokun');}if(was&&v){var i2=document.getElementById('gdAsk');if(i2)i2.value='';askSend(v);}};
+    try{rec.start();micOn=true;miniSt('Dinliyorum…');var m=document.querySelector('.gd-mic');if(m){m.classList.add('on');m.setAttribute('aria-pressed','true');m.setAttribute('aria-label','Sesli konuşmayı durdur');}var i3=document.getElementById('gdAsk');if(i3){i3.value='';i3.placeholder='Dinliyorum, konuş…';}}catch(_){voiceSession=false;micStop();}}
   if(TTS)try{speechSynthesis.getVoices();speechSynthesis.onvoiceschanged=function(){};}catch(_){}
   var ASK=[],askBusy=false;try{ASK=JSON.parse(sessionStorage.getItem('wf_ask')||'[]')||[];}catch(_){ASK=[];}
   function askEsc(t){return String(t).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}).replace(/\n/g,'<br>');}
   function askHtml(){return ASK.map(function(m){return m.role==='user'?'<p class="gd-m me">'+askEsc(m.text)+'</p>':'<div class="gd-row"><img src="'+AYB+'" alt="Aybüke" width="26" height="26"><p class="gd-m as">'+askEsc(m.text)+'</p></div>';}).join('')+(askBusy?'<p class="gd-m as wait">Aybüke yazıyor…</p>':'');}
   function askPaint(){var b=document.getElementById('gdMsgs');if(b){b.innerHTML=askHtml();b.scrollTop=b.scrollHeight;}}
-  function askCtx(){var c=[];try{c.push('Ürün: '+productLabel());c.push('Açık yüz: '+(SIDE_NAME[view.side]||view.side)+', alan: '+AREAS[cur().area].name);
+  function askCtx(){var c=[];if(voiceSession)c.push('Sesli konuşma açık: cevabın en fazla 2 kısa, doğal cümle olsun; kendini tanıtma');try{c.push('Ürün: '+productLabel());c.push('Açık yüz: '+(SIDE_NAME[view.side]||view.side)+', alan: '+AREAS[cur().area].name);
     var fe=function(k){try{return Math.round(areaFee(k));}catch(_){return null;}};c.push('Ürünün baskısız fiyatı: '+Math.round(basePrice())+' TL');
     c.push('Baskı ücretleri: logo '+fe('logo')+' TL (her logo), A4 '+fe('a4')+' TL, A3 '+fe('a3')+' TL'+(state.product==='hat'?', şapka '+fe('hat')+' TL':''));
     c.push('Şu anki toplam: '+Math.round(priceInfo().unit)+' TL / adet');
@@ -6935,7 +6958,7 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
     });
   }
   function ayFinish(a){
-    ASK.push({role:'assistant',text:a});askBusy=false;say(a);
+    ASK.push({role:'assistant',text:a});askBusy=false;miniSt(a);say(a);
     try{sessionStorage.setItem('wf_ask',JSON.stringify(ASK.slice(-16)));}catch(_){}
     askPaint();
   }
@@ -7004,7 +7027,7 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
       ayFinish('Fotoğrafı kupanın iki yüzüne yerleştirdim. İstersen üstüne bir isim yazabilir veya zemini değiştirebilirim.');
     }catch(_){ayFinish('Fotoğrafı hazırlayamadım. Aracın tamamının net göründüğü bir fotoğraf deneyebilirsin.');}
   });
-  async function askSend(t){t=String(t||'').trim();if(!t||askBusy)return;ASK.push({role:'user',text:t});ASK=ASK.slice(-16);askBusy=true;askPaint();
+  async function askSend(t){t=String(t||'').trim();if(!t||askBusy)return;ASK.push({role:'user',text:t});ASK=ASK.slice(-16);askBusy=true;askPaint();miniSt('Düşünüyorum…');
     var a='';
     try{a=await ayAction(t);}catch(_){a='İşlemi tamamlayamadım. Biraz sonra yeniden deneyebilirsin.';}
     if(a){ayFinish(a);return;}
