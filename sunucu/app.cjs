@@ -43020,17 +43020,19 @@ function totalsRows(row) {
   const sp = row.special, pricePending = row.items.some((x) => x.pricePending);
   return (sp ? `<tr><td style="padding:6px 0">\xD6zel indirim (${esc(sp.label)})</td><td align="right">\u2212${tl(sp.discount)}</td></tr>` : "") + `<tr><td style="padding:6px 0">Kargo</td><td align="right">${row.ship ? tl(row.ship) : "\xDCcretsiz"}</td></tr><tr><td style="padding:8px 0;font-weight:bold;font-size:16px">Toplam</td><td align="right" style="font-weight:bold;font-size:16px"> ${pricePending ? row.total ? tl(row.total) + " + fiyat\u0131 belirlenecek kalemler" : "Fiyat belirlenecek" : tl(row.total)}</td></tr>`;
 }
-async function orderMails(row) {
+async function orderMails(row, bank = null) {
   if (!smtpReady()) return;
   const table = `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:14px 0;font-size:14px">${itemRows(row.items)}${totalsRows(row)}</table>`;
   const sp = row.special, sc = row.school;
   const wholesale2 = row.onay?.delivery === "toptan";
   const notes = (sp ? `<p style="margin:0 0 10px;color:#6b746e;font-size:13px">\xD6zel indirim belgen kontrol edildikten sonra sipari\u015Fin haz\u0131rlanmaya ba\u015Flar.</p>` : "") + (sc && sc.free ? `<p style="margin:0 0 10px;color:#6b746e;font-size:13px">Okul sipari\u015Fi: ${sc.free} adet \xFCcretsiz \xFCr\xFCn ihtiya\xE7 sahibi \xF6\u011Frenciler i\xE7in eklenecek.</p>` : "");
   const legal = `<p style="margin:14px 0 0;color:#6b746e;font-size:12px">Sipari\u015Fini onaylarken kabul etti\u011Fin <a href="${SITE}#mesafeli">\xD6n Bilgilendirme Formu ve Mesafeli Sat\u0131\u015F S\xF6zle\u015Fmesi</a>, <a href="${SITE}#iade">Cayma ve \u0130ade Ko\u015Fullar\u0131</a> ve <a href="${SITE}#kvkk">KVKK Ayd\u0131nlatma Metni</a> bu ba\u011Flant\u0131larda; bu e-posta s\xF6zle\u015Fmenin bir \xF6rne\u011Fidir. Ki\u015Fiye \xF6zel bask\u0131l\u0131 \xFCr\xFCnlerde yasa gere\u011Fi cayma hakk\u0131 yoktur.</p>`;
+  const iban = String(bank?.iban || "").replace(/\s+/g, "").toUpperCase();
+  const bankHtml = wholesale2 ? "" : iban ? `<div style="margin:14px 0;padding:14px 16px;border:1px solid #dde5df;border-radius:12px;background:#f6f9f7"><p style="margin:0 0 8px;font-weight:bold">\xD6deme: Havale / EFT</p>` + (bank?.ad ? `<p style="margin:0 0 4px">Al\u0131c\u0131: ${esc(bank.ad)}</p>` : "") + (bank?.banka ? `<p style="margin:0 0 4px">Banka: ${esc(bank.banka)}</p>` : "") + `<p style="margin:0 0 4px">IBAN: <b style="font-family:monospace">${esc(iban.replace(/(.{4})/g, "$1 ").trim())}</b></p><p style="margin:0 0 4px">Tutar: <b>${tl(row.total)}</b></p><p style="margin:0;color:#6b746e;font-size:13px">A\xE7\u0131klamaya sipari\u015F numaran <b>${esc(row.code)}</b> yazmay\u0131 unutma. Sipari\u015Fin \xF6deme gelince haz\u0131rlanmaya ba\u015Flar.</p></div>` : `<p style="margin:0 0 12px;color:#6b746e;font-size:13px">\xD6deme: Havale / EFT. Banka bilgilerimiz sana ayr\u0131ca iletilecek; a\xE7\u0131klamaya sipari\u015F numaran <b>${esc(row.code)}</b> yazman yeterli.</p>`;
   const cust = frame({
     title: wholesale2 ? "Toptan sipari\u015F talebini ald\u0131k" : "Sipari\u015Fini ald\u0131k",
     pre: `${row.code} numaral\u0131 sipari\u015Fin al\u0131nd\u0131.`,
-    body: `<p style="margin:0 0 12px">Merhaba ${esc(row.ad)},</p><p style="margin:0 0 12px">Wolflano'yu se\xE7ti\u011Fin i\xE7in te\u015Fekk\xFCrler. <b>${esc(row.code)}</b> numaral\u0131 sipari\u015Fin elimize ula\u015Ft\u0131. ${wholesale2 ? "Toptan sipari\u015F talebin i\xE7in seninle ileti\u015Fime ge\xE7ece\u011Fiz." : "Sipari\u015Fler 2-4 i\u015F g\xFCn\xFCnde kargoya verilir; kargoya verildi\u011Finde takip numaras\u0131n\u0131 ayr\u0131ca g\xF6nderece\u011Fiz."}</p>${table}${notes}<p style="margin:0 0 4px;color:#6b746e;font-size:13px">Teslimat adresi</p><p style="margin:0 0 12px">${esc(row.adres)}${row.ilce || row.il ? "<br>" + esc([row.ilce, row.il].filter(Boolean).join(" / ")) : ""}</p><p style="margin:0;color:#6b746e;font-size:13px">Sorun olursa bu e-postay\u0131 yan\u0131tlaman ya da WhatsApp'tan yazman yeterli.</p>` + legal,
+    body: `<p style="margin:0 0 12px">Merhaba ${esc(row.ad)},</p><p style="margin:0 0 12px">Wolflano'yu se\xE7ti\u011Fin i\xE7in te\u015Fekk\xFCrler. <b>${esc(row.code)}</b> numaral\u0131 sipari\u015Fin elimize ula\u015Ft\u0131. ${wholesale2 ? "Toptan sipari\u015F talebin i\xE7in seninle ileti\u015Fime ge\xE7ece\u011Fiz." : "\xD6demen ula\u015Ft\u0131ktan sonra sipari\u015Fin 2-4 i\u015F g\xFCn\xFCnde kargoya verilir; kargoya verildi\u011Finde takip numaras\u0131n\u0131 ayr\u0131ca g\xF6nderece\u011Fiz."}</p>${bankHtml}${table}${notes}<p style="margin:0 0 4px;color:#6b746e;font-size:13px">Teslimat adresi</p><p style="margin:0 0 12px">${esc(row.adres)}${row.ilce || row.il ? "<br>" + esc([row.ilce, row.il].filter(Boolean).join(" / ")) : ""}</p><p style="margin:0;color:#6b746e;font-size:13px">Sorun olursa bu e-postay\u0131 yan\u0131tlaman ya da WhatsApp'tan yazman yeterli.</p>` + legal,
     btn: { href: SITE, label: "Wolflano'ya d\xF6n" }
   });
   const adm = frame({
@@ -43197,7 +43199,7 @@ var init_order_create = __esm({
             body: JSON.stringify(row)
           });
           if (r.ok) {
-            const p = orderMails(row).catch((e) => console.error("order mails", String(e)));
+            const p = orderMails(row, catalog.bank).catch((e) => console.error("order mails", String(e)));
             try {
               globalThis.EdgeRuntime?.waitUntil(p);
             } catch {
