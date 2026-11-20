@@ -2,6 +2,23 @@
 // Model adları zamanla değişiyor: sırayla denenir, olmayan model (404) atlanır. Ortam değişkeniyle değiştirilebilir.
 const API = 'https://generativelanguage.googleapis.com/v1beta/models/';
 
+/** Modelin JSON cevabı: bozuksa (kaçışsız tırnak vb.) alanlar tek tek kurtarılır */
+export function looseJson(raw: string): any {
+  try { return JSON.parse(raw); } catch (_) { /* aşağıda */ }
+  const m = /\{[\s\S]*\}/.exec(raw);
+  if (m) { try { return JSON.parse(m[0]); } catch (_) { /* aşağıda */ } }
+  const src = m ? m[0] : raw, out: any = {};
+  const keys = [...src.matchAll(/"([a-zA-Z_]+)"\s*:/g)].map((x) => ({ k: x[1], i: x.index!, e: x.index! + x[0].length }));
+  if (!keys.length) return null;
+  keys.forEach((k, n) => {
+    const end = n + 1 < keys.length ? keys[n + 1].i : src.length;
+    let v = src.slice(k.e, end).trim().replace(/[,}\s]+$/, '');
+    if (/^"/.test(v)) out[k.k] = v.replace(/^"|"$/g, '').replace(/\\n/g, '\n').replace(/\\"/g, '"');
+    else { try { out[k.k] = JSON.parse(v); } catch (_) { out[k.k] = v; } }
+  });
+  return out;
+}
+
 export const gKey = () => Deno.env.get('GEMINI_API_KEY') || Deno.env.get('GOOGLE_API_KEY') || '';
 
 type GMsg = { role: 'user' | 'assistant'; text?: string; image?: string };

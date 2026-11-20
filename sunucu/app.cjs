@@ -17906,6 +17906,35 @@ var require_baski_dosya = __commonJS({
 });
 
 // ../supabase/functions/_shared/gemini.ts
+function looseJson(raw) {
+  try {
+    return JSON.parse(raw);
+  } catch (_) {
+  }
+  const m = /\{[\s\S]*\}/.exec(raw);
+  if (m) {
+    try {
+      return JSON.parse(m[0]);
+    } catch (_) {
+    }
+  }
+  const src = m ? m[0] : raw, out2 = {};
+  const keys = [...src.matchAll(/"([a-zA-Z_]+)"\s*:/g)].map((x) => ({ k: x[1], i: x.index, e: x.index + x[0].length }));
+  if (!keys.length) return null;
+  keys.forEach((k, n) => {
+    const end = n + 1 < keys.length ? keys[n + 1].i : src.length;
+    let v = src.slice(k.e, end).trim().replace(/[,}\s]+$/, "");
+    if (/^"/.test(v)) out2[k.k] = v.replace(/^"|"$/g, "").replace(/\\n/g, "\n").replace(/\\"/g, '"');
+    else {
+      try {
+        out2[k.k] = JSON.parse(v);
+      } catch (_) {
+        out2[k.k] = v;
+      }
+    }
+  });
+  return out2;
+}
 function parseDataUrl(u) {
   const m = /^data:([^;,]+);base64,(.+)$/s.exec(u || "");
   return m ? { mimeType: m[1], data: m[2] } : null;
@@ -43721,17 +43750,8 @@ Onay geldiyse:
           raw = String(out2?.choices?.[0]?.message?.content || "");
         }
         let p = null;
-        try {
-          p = JSON.parse(raw);
-        } catch (_) {
-          const m = /\{[\s\S]*\}/.exec(raw);
-          if (m) {
-            try {
-              p = JSON.parse(m[0]);
-            } catch (_2) {
-            }
-          }
-        }
+        p = looseJson(raw);
+        if (p && !(p.ciz && typeof p.ciz === "object") && p.istem) p.ciz = { istem: p.istem, tarz: p.tarz, yon: p.yon, gorseli_kullan: p.gorseli_kullan === true || p.gorseli_kullan === "true" };
         const cevap = String(p?.cevap || raw || "").slice(0, 3e3).trim() || "Anlayamad\u0131m, biraz daha a\xE7\u0131k yazar m\u0131s\u0131n?";
         let ciz = null;
         const c = p?.ciz;
@@ -43941,17 +43961,7 @@ M\xFC\u015Fterinin \u015Fu anki ekran\u0131 ve g\xFCncel \xFCcretler: ${ctx}` : 
           raw = String(out2?.choices?.[0]?.message?.content || "");
         }
         let p = null;
-        try {
-          p = JSON.parse(raw);
-        } catch (_) {
-          const m = /\{[\s\S]*\}/.exec(raw);
-          if (m) {
-            try {
-              p = JSON.parse(m[0]);
-            } catch (_2) {
-            }
-          }
-        }
+        p = looseJson(raw);
         const cevap = String(p?.cevap || raw || "").slice(0, 2e3).trim() || "Anlayamad\u0131m, biraz daha a\xE7\u0131k yazar m\u0131s\u0131n?";
         const urunler = Array.isArray(p?.urunler) ? p.urunler.map((x) => String(x).slice(0, 80)).filter(Boolean).slice(0, 3) : [];
         const git = /^(koleksiyon|atolye|studyo|hediye|whatsapp)$/.test(String(p?.git || "")) ? String(p.git) : "";

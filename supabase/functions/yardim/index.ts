@@ -1,7 +1,7 @@
 // Tasarım asistanı: stüdyoda müşterinin "nasıl yaparım?" sorularını cevaplar (herkese açık, giriş gerekmez).
 // Yalnız stüdyonun kullanımı ve baskı kuralları hakkında konuşur; ucuz metin modeliyle çalışır, görsel üretmez.
 // Kötüye kullanıma karşı: kısa mesaj, kısa geçmiş, kısa cevap ve IP başına saatlik sınır (sunucu örneği başına).
-import { gKey, geminiChat, geminiTts } from '../_shared/gemini.ts';
+import { looseJson, gKey, geminiChat, geminiTts } from '../_shared/gemini.ts';
 const cors = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
@@ -185,7 +185,7 @@ Deno.serve(async (req) => {
     raw = String(out?.choices?.[0]?.message?.content || '');
     }
     let p: any = null;
-    try { p = JSON.parse(raw); } catch (_) { const m = /\{[\s\S]*\}/.exec(raw); if (m) { try { p = JSON.parse(m[0]); } catch (_) { /* yok */ } } }
+    p = looseJson(raw);
     const cevap = String(p?.cevap || raw || '').slice(0, 2000).trim() || 'Anlayamadım, biraz daha açık yazar mısın?';
     const urunler = Array.isArray(p?.urunler) ? p.urunler.map((x: unknown) => String(x).slice(0, 80)).filter(Boolean).slice(0, 3) : [];
     const git = /^(koleksiyon|atolye|studyo|hediye|whatsapp)$/.test(String(p?.git || '')) ? String(p.git) : '';
