@@ -6114,17 +6114,26 @@ var DATA_P=(async function(){
   function aysStop(){AYS_SEQ++;try{if(AYS_EL)AYS_EL.pause();}catch(_){}try{if(AYS_SRC)AYS_SRC.stop();}catch(_){}AYS_SRC=null;try{speechSynthesis.cancel();}catch(_){}}
   function aysVoice(){try{var v=speechSynthesis.getVoices().filter(function(x){return /^tr/i.test(x.lang);});var sc=function(x){var n=x.name||'';return (/premium/i.test(n)?4:0)+(/enhanced|geli[sş]mi[sş]|geli[sş]tirilmi[sş]|natural|neural/i.test(n)?3:0)+(/yelda|female|kad[iı]n|seda|filiz|emel/i.test(n)?1:0);};v.sort(function(a,b){return sc(b)-sc(a);});return v[0]||null;}catch(_){return null;}}
   function aysLocal(t,done){try{speechSynthesis.cancel();var u=new SpeechSynthesisUtterance(t),v=aysVoice();u.lang='tr-TR';if(v)u.voice=v;u.rate=.97;u.pitch=1.02;u.onend=done;u.onerror=done;speechSynthesis.speak(u);}catch(_){if(done)done();}}
+  /* Sesi parça parça ister: ilk cümle hemen seslendirilip çalınırken geri kalanı hazırlanır (bekleme kısalır) */
+  function aysParts(t){var S=t.match(/[^.!?…]+[.!?…]*\s*/g)||[t],first='',i=0;S=S.map(function(x){return x.trim();}).filter(Boolean);
+    while(i<S.length&&(first.length<30||i===0)&&first.length+S[i].length<=170){first+=(first?' ':'')+S[i];i++;}if(!first){first=S[0];i=1;}
+    var rest=S.slice(i).join(' ').trim();return rest?[first,rest]:[first];}
+  function aysFetch(t){return fetch(SB.url+'/functions/v1/yardim',{method:'POST',headers:{'Content-Type':'application/json',apikey:SB.key},body:JSON.stringify({mode:'ses',text:t})})
+    .then(function(r){if(!r.ok||!/audio/.test(r.headers.get('content-type')||''))return null;return r.blob();}).catch(function(){return null;});}
+  function aysPlay(bl,my){return new Promise(function(ok){var fin=function(){ok(true);};
+    try{var el=AYS_EL;if(el&&el.dataset.ok){if(el._u)URL.revokeObjectURL(el._u);el._u=URL.createObjectURL(bl);el.src=el._u;el.onended=fin;el.onerror=function(){ok(false);};var pp=el.play();if(pp&&pp.catch)pp.catch(function(){ok(false);});return;}}catch(_){}
+    bl.arrayBuffer().then(function(buf){return new Promise(function(a,b){AYS_AC.decodeAudioData(buf,a,b);});}).then(function(ab){if(my!==AYS_SEQ)return ok(true);if(AYS_AC.state==='suspended')AYS_AC.resume();
+      var s=AYS_AC.createBufferSource();s.buffer=ab;s.connect(AYS_AC.destination);s.onended=fin;s.start(0);AYS_SRC=s;}).catch(function(){ok(false);});});}
+  function aysLocalP(t){return new Promise(function(ok){if(window.speechSynthesis)aysLocal(t,function(){ok();});else ok();});}
   async function aysSay(t){t=aysTxt(t);if(!t)return;aysStop();var my=AYS_SEQ,done=function(){if(my!==AYS_SEQ)return;
       if(byeAfter){byeAfter=false;endLive();return;}if(goAfter){var u=goAfter;goAfter='';location.href=u;return;}
       if(voiceSession&&!document.hidden&&!busy&&!micOn)listen();else if(live)barSt();};
     if(voiceSession)barSt('konus','Konuşuyor…');
-    try{if(!AYS_AC&&!AYS_EL)throw 0;var r=await fetch(SB.url+'/functions/v1/yardim',{method:'POST',headers:{'Content-Type':'application/json',apikey:SB.key},body:JSON.stringify({mode:'ses',text:t})});
-      if(!r.ok||!/audio/.test(r.headers.get('content-type')||''))throw 0;var bl=await r.blob();if(my!==AYS_SEQ)return;
-      var el=AYS_EL;if(el&&el.dataset.ok){try{if(el._u)URL.revokeObjectURL(el._u);el._u=URL.createObjectURL(bl);el.src=el._u;el.onended=done;await el.play();return;}catch(_){}}
-      var buf=await bl.arrayBuffer();if(my!==AYS_SEQ)return;
-      var ab=await new Promise(function(ok,no){AYS_AC.decodeAudioData(buf,ok,no);});if(my!==AYS_SEQ)return;if(AYS_AC.state==='suspended')await AYS_AC.resume();
-      var s=AYS_AC.createBufferSource();s.buffer=ab;s.connect(AYS_AC.destination);s.onended=done;s.start(0);AYS_SRC=s;}
-    catch(_){/* Sunucu sesi gelmezse Aybüke susmasın: telefonun en iyi Türkçe sesiyle okur */if(my===AYS_SEQ){if(window.speechSynthesis)aysLocal(t,done);else done();}}}
+    var P=aysParts(t),can=!!(AYS_AC||AYS_EL),req=P.map(function(x){return can?aysFetch(x):Promise.resolve(null);});
+    for(var i=0;i<P.length;i++){var bl=await req[i];if(my!==AYS_SEQ)return;
+      /* Sunucu sesi gelmezse Aybüke susmasın: o parçayı telefonun en iyi Türkçe sesiyle okur */
+      var ok=bl?await aysPlay(bl,my):false;if(my!==AYS_SEQ)return;if(!ok)await aysLocalP(P[i]);if(my!==AYS_SEQ)return;}
+    done();}
   function say(t){if(!t||document.hidden||(pn.hidden&&!voiceSession))return;if(TTS&&(ttsOn||voiceSession))aysSay(t);else if(voiceSession&&!micOn)listen();}
   async function send(t){t=String(t||'').trim();if(!t||busy)return;M.push({role:'user',text:t});M=M.slice(-16);busy=true;paint();
     micStop();if(voiceSession)barSt('dusun','Düşünüyorum…');var a='',ur=[],g='',ac='',son=false;try{var r=await fetch(SB.url+'/functions/v1/yardim',{method:'POST',headers:{'Content-Type':'application/json',apikey:SB.key},body:JSON.stringify({mode:'site',messages:M.slice(-8).map(function(m){return {role:m.role,text:m.text};}),context:ctx()})});
