@@ -6868,7 +6868,7 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
   function help(){
     mode='help';
     el.innerHTML='<div class="gd-card gd-help"><div class="gd-top"><h2 id="gdTitle">Nasıl kullanılır?</h2><button type="button" class="ib" data-gd="skip" aria-label="Kapat"><svg class="i" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>'+
-      '<div class="gd-ask"><div class="gd-ah"><img src="'+AYB+'" alt="" width="44" height="44"><span><b>Aybüke\'ye sor</b><small>Ben Aybüke, tasarım asistanın. Ne hazırlayalım? Örneğin, babamın arabasıyla bir kupa yap.</small></span></div><div class="gd-msgs" id="gdMsgs">'+askHtml()+'</div><div id="gdDesign"><label id="gdUploadLabel" hidden>Araç fotoğrafını yükle <input id="gdPhoto" type="file" accept="image/*"></label><div id="gdMugViews" aria-label="Kupada sağ ve sol görünüm" style="display:flex"></div><img id="gdPreview" hidden alt="Kupanın iki yüzünün baskı önizlemesi" style="width:100%;max-height:180px;object-fit:contain"></div>'+
+      '<div class="gd-ask"><div class="gd-ah"><img src="'+AYB+'" alt="" width="44" height="44"><span><b>Aybüke\'ye sor</b><small>Ne istediğinizi söyleyin, ben hazırlayayım. Örneğin: "Siyah erkek tişört, önüne altın renkle WOLF yaz."</small></span></div><div class="gd-msgs" id="gdMsgs">'+askHtml()+'</div><div id="gdDesign"><label id="gdUploadLabel" hidden>Araç fotoğrafını yükle <input id="gdPhoto" type="file" accept="image/*"></label><div id="gdMugViews" aria-label="Kupada sağ ve sol görünüm" style="display:flex"></div><img id="gdPreview" hidden alt="Kupanın iki yüzünün baskı önizlemesi" style="width:100%;max-height:180px;object-fit:contain"></div>'+
       '<form class="gd-in" id="gdAskF">'+(SR?'<button type="button" class="gd-mic'+(micOn?' on':'')+'" data-gd="mic" aria-label="Aybüke ile konuş"><svg class="i" viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></button>':'')+'<input id="gdAsk" maxlength="400" placeholder="'+(micOn?'Dinliyorum, konuş…':'Örn. Logoyu sağ göğse nasıl koyarım?')+'" autocomplete="off" enterkeyhint="send"><button type="submit" class="primary" aria-label="Gönder">Sor</button></form>'+
       (TTS?'<label class="gd-tts"><input type="checkbox" data-gdtts="1"'+(ttsOn?' checked':'')+'> Aybüke cevapları sesli okusun</label>':'')+'</div>'+
       '<ol class="gd-list">'+GD.map(function(d,k){return '<li><span class="n">'+(k+1)+'</span><span><b>'+d.t+'</b>'+d.p+'</span></li>';}).join('')+'</ol>'+
@@ -7031,9 +7031,64 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
     var a='';
     try{a=await ayAction(t);}catch(_){a='İşlemi tamamlayamadım. Biraz sonra yeniden deneyebilirsin.';}
     if(a){ayFinish(a);return;}
-    try{var r=await fetch(SB.url+'/functions/v1/yardim',{method:'POST',headers:{'Content-Type':'application/json',apikey:SB.key},body:JSON.stringify({messages:ASK.slice(-8),context:askCtx()})});
-      var jj=await r.json().catch(function(){return {};});a=jj.cevap||jj.message||'';}catch(_){}
-    ayFinish(a||'Şu an cevap veremedim. Biraz sonra yeniden dene ya da WhatsApp 0530 764 17 17 üzerinden bize yaz.');}
+    /* Aybüke müşterinin yerine yapar: sunucu (mode: ajan) cevap + işlem listesi döner, işlemler burada sırayla uygulanır */
+    var L=[];try{var r=await fetch(SB.url+'/functions/v1/yardim',{method:'POST',headers:{'Content-Type':'application/json',apikey:SB.key},body:JSON.stringify({mode:'ajan',messages:ASK.slice(-8),context:agCtx()})});
+      var jj=await r.json().catch(function(){return {};});a=jj.cevap||jj.message||'';L=Array.isArray(jj.islemler)?jj.islemler:[];}catch(_){}
+    var note='';if(L.length){try{note=await agRun(L);}catch(_){}}
+    ayFinish((a||'Şu an cevap veremedim. Biraz sonra yeniden deneyelim ya da WhatsApp 0530 764 17 17 üzerinden bize yazın.')+(note?' '+note:''));}
+  /* ---- Aybüke'nin elleri: stüdyonun durumu ve uygulanabilir işlemler ---- */
+  function agColors(){var cs=[];try{cs=phColors(phBlank(state.product,state.cut))||[];}catch(_){}if(!cs.length)cs=TEES.map(function(t){return {name:t[0],hex:t[1]};});return cs;}
+  function agCtx(){var o={};try{
+    o.urun=state.product;o.urun_adi=productLabel();o.kesim=state.cut;o.urunler=PRODUCT_ORDER.map(function(k){return k+' ('+PRODUCTS[k].name+': '+PRODUCTS[k].cuts.join('/')+')';}).join(', ');
+    o.kural=P().rule;o.renk=colorNameOf(state.tee)||state.tee;o.renkler=agColors().map(function(c){return c.name;});
+    o.bedenler=sizeList()||[];o.beden=curSize();o.yuz=SIDE_NAME[view.side]||view.side;o.yuzler=sidesOf().map(function(x){return SIDE_NAME[x]||x;});
+    o.alan=AREAS[cur().area].name;o.alanlar=areasFor(view.side).map(function(k){return k+' ('+AREAS[k].name+')';});
+    o.nesneler=cur().objs.filter(function(q){return !q.lock;}).slice(-12).map(function(q){return {id:q.id,tip:q.type==='text'?'yazi':q.slot?(q.phEmpty?'bos_foto_yeri':'foto'):q.type==='image'?'gorsel':'sekil',metin:q.type==='text'?String(q.value||'').slice(0,60):undefined,renk:q.color||undefined,font:q.font||undefined};});
+    o.secili=view.sel||null;o.fiyat=Math.round(priceInfo().unit)+' TL / adet (KDV hariç)';
+    o.yazi_tipleri=FONTS.map(function(f){return f[0];});o.sablon_konulari=TPL_CATS.filter(function(c){return c!=='Tümü';});
+    o.sepette=(cartItems||[]).length;if(voiceSession)o.not='Sesli konuşma: cevabın en fazla 2 kısa cümle.';}catch(_){}return JSON.stringify(o);}
+  function agTarget(h){var a=cur().objs.filter(function(q){return !q.lock;});if(h==null||h===''||h==='secili')return selObj()||a[a.length-1]||null;if(h==='son')return a[a.length-1]||null;var n=+h;return a.filter(function(q){return q.id===n||String(q.id)===String(h);})[0]||null;}
+  function agFont(n){if(!n)return null;var k=normTR(n);var f=FONTS.filter(function(x){return normTR(x[0])===k;})[0]||FONTS.filter(function(x){return normTR(x[0]).indexOf(k)>=0||k.indexOf(normTR(x[0]))>=0;})[0];return f?f[0]:null;}
+  function agHex(c){c=String(c||'').trim();return /^#[0-9a-f]{3}([0-9a-f]{3})?$/i.test(c)?c:null;}
+  function agStyle(o,x){var A=areaBox(view.side,cur().area);
+    if(x.metin!=null&&o.type==='text')o.value=String(x.metin).slice(0,120);
+    var hx=agHex(x.renk);if(hx)o.color=hx;var f=agFont(x.font);if(f&&o.type==='text')o.font=f;
+    if(x.boyut&&o.type==='text'){o.size=A.w*({kucuk:.09,orta:.14,buyuk:.22}[x.boyut]||.14);}
+    if(x.dondur!=null&&isFinite(+x.dondur))o.rot=+x.dondur;
+    renderObjects();if(o.type==='text'){try{measureText(o);}catch(_){}if(o.w>A.w*0.92){o.size=o.size*A.w*0.92/o.w;updateEl(els[o.id],o);try{measureText(o);}catch(_){}}}
+    if(x.konum){var hh=o.h||A.h*0.2;o.x=A.cx;o.y=x.konum==='ust'?A.t+hh/2+A.h*0.04:x.konum==='alt'?A.b-hh/2-A.h*0.04:A.cy;}
+    renderObjects();}
+  async function agRun(L){var notes=[];
+    for(var i=0;i<L.length;i++){var x=L[i]||{},t=String(x.tip||'');
+      try{
+        if(t==='urun'&&PRODUCTS[x.urun]){var c=PRODUCTS[x.urun].cuts.indexOf(x.kesim)>=0?x.kesim:(PRODUCTS[x.urun].cuts.indexOf(state.cut)>=0?state.cut:PRODUCTS[x.urun].cuts[0]);chooseProduct(x.urun,c);}
+        else if(t==='renk'){var k=normTR(x.renk||''),cc=agColors().filter(function(q){return normTR(q.name)===k;})[0]||agColors().filter(function(q){return normTR(q.name).indexOf(k)>=0;})[0];
+          if(cc){teeSwap(cc.hex);renderShirt();renderObjects();syncOpt();renderOpt();pushHist();}else notes.push('Bu üründe o renk yok.');}
+        else if(t==='beden'){var l=sizeList()||[],z=String(x.beden||'').toUpperCase();if(l.indexOf(z)>=0){state.sizes={};state.sizes[z]=Math.max(1,Math.min(500,+x.adet||1));PH.want=z;renderSizes();renderPrice();renderShirt();layout();syncOpt();renderOpt();pushHist();}}
+        else if(t==='yuz'){var sm={on:'front',arka:'back',sol_logo:'logo',sag_logo:'logo2'}[x.yuz];if(sm&&sidesOf().indexOf(sm)>=0)switchSide(sm);}
+        else if(t==='alan'){if(areasFor(view.side).indexOf(x.alan)>=0)selectArea(x.alan,!!x.yatay);}
+        else if(t==='yazi'){addText(String(x.metin||'').slice(0,120)||'Yazı');var o=selObj();if(o){if(!agHex(x.renk))x.renk=autoInk();if(!x.boyut)x.boyut='orta';agStyle(o,x);select(o.id);pushHist();}}
+        else if(t==='duzenle'){var o2=agTarget(x.hedef);if(o2){agStyle(o2,x);select(o2.id);pushHist();}}
+        else if(t==='sil'){if(x.hedef==='hepsi'){cur().objs=cur().objs.filter(function(q){return q.lock;});view.sel=null;renderAll();pushHist();}else{var o3=agTarget(x.hedef);if(o3){select(o3.id);deleteSel();}}}
+        else if(t==='sablon'){var q=normTR(String(x.ara||'')).trim(),ws=q.split(/\s+/).filter(Boolean),T=TPLS.filter(function(tp){return !tplHid(tp)&&tplFits(tp);});
+          var best=T.filter(function(tp){return tplMatch(tp,q);})[0];
+          if(!best&&ws.length){var sc=T.map(function(tp){var h=tplText(tp);return [tp,ws.filter(function(w){return h.indexOf(w)>=0;}).length];}).sort(function(a,b){return b[1]-a[1];});if(sc[0]&&sc[0][1])best=sc[0][0];}
+          if(best){applyTemplate(best,true);var ne=emptySlots().length;if(ne)hzPhotoAsk(ne);}else notes.push('Bu ürüne uygun o konuda hazır şablon bulamadım.');}
+        else if(t==='wolf'){var wi=$('#wolfIn');if(wi&&x.istek){wi.value=String(x.istek).slice(0,300);$('#wolfGo').click();}}
+        else if(t==='foto'){var ne2=emptySlots().length;if(ne2)hzPhotoAsk(ne2);else agPhotoAsk();}
+        else if(t==='arka_plan_sil'){var o4=selObj();if(o4&&o4.type==='image')await removeBg();}
+        else if(t==='geri_al'){undo();}
+        else if(t==='onizle'){setTimeout(function(){try{openOrder();}catch(_){}},400);}
+        else if(t==='sepete_ekle'){if(!await addToCart(true))notes.push('Sepete eklenemedi.');}
+      }catch(_){}
+    }
+    try{renderAll();}catch(_){}try{draftSoon();}catch(_){}
+    return notes.join(' ');}
+  /* Fotoğraf seçtirme kartı: telefon arşivi yalnız dokunuşla açtığı için tek düğme */
+  function agPhotoAsk(){var o=document.getElementById('hzAsk');if(o)o.remove();var w=document.createElement('div');w.id='hzAsk';
+    w.style.cssText='position:fixed;left:12px;right:12px;bottom:96px;z-index:9999;background:#fff;border-radius:18px;box-shadow:0 10px 40px #0003;padding:16px;font:500 14px var(--ui);text-align:center;max-width:460px;margin:0 auto';
+    w.innerHTML='<b style="display:block;font-size:16px;margin-bottom:10px">Fotoğrafınızı seçin, gerisini ben yaparım</b><button type="button" data-ag="go" style="display:block;width:100%;padding:13px;border-radius:12px;border:2px solid #111;background:var(--brand,#3d8b7a);color:#fff;font:700 15px var(--ui);margin-bottom:8px">📷 Fotoğraf seç</button><button type="button" data-ag="x" style="background:none;border:0;color:#5a625d;font:500 13px var(--ui);padding:4px 10px">Vazgeç</button>';
+    document.body.appendChild(w);w.addEventListener('click',function(e){if(e.target.closest('[data-ag="x"]')){w.remove();return;}if(e.target.closest('[data-ag="go"]')){w.remove();try{$('#fileIn').click();}catch(_){}}});}
   el.addEventListener('change',function(e){var t=e.target;if(!t||!t.dataset||!t.dataset.gdtts)return;ttsOn=t.checked;try{localStorage.setItem('wf_ask_tts',ttsOn?'1':'0');}catch(_){}aysAc();if(!ttsOn)aysStop();else say('Merhaba, ben Aybüke. Cevaplarımı sesli okuyacağım.');});
   el.addEventListener('submit',function(e){var f=e.target;if(!f||f.id!=='gdAskF')return;e.preventDefault();aysAc();var i2=document.getElementById('gdAsk');var v=i2.value;i2.value='';askSend(v);});
   el.addEventListener('click',function(e){
