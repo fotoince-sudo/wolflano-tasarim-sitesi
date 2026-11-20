@@ -633,7 +633,7 @@ img{-webkit-touch-callout:none;-webkit-user-drag:none}
 .stagebar{bottom:4px!important;padding:3px!important;gap:3px!important;border-radius:11px!important}
 .stagebar button{height:28px!important;padding:0 9px!important;font-size:12px!important;gap:4px!important;border-radius:8px!important}
 .stagebar svg.i{width:15px!important;height:15px!important}
-.sidebar{padding:3px 8px!important}
+.sidebar{padding:3px 8px!important;border-top:0!important;border-bottom:1px solid var(--line)!important}
 .sidebar .seg button{padding:3px 6px!important;font-size:12px!important}
 </style>
 
@@ -661,6 +661,7 @@ img{-webkit-touch-callout:none;-webkit-user-drag:none}
       <button class="ib" id="fitBtn" aria-label="Baskı alanına yakınlaş"><svg class="i" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6"/><path d="M20 20l-4.2-4.2"/><path class="pl" d="M11 8.5v5M8.5 11h5"/></svg></button>
     </div>
   </div>
+  <div class="sidebar" id="sideBar"><div class="seg" id="sideSeg"><button id="sideF" class="on">Ön</button><button id="sideL" hidden>Sol logo</button><button id="sideL2" hidden>Sağ logo</button><button id="sideB">Arka</button></div></div>
 
   <main class="stagewrap" id="wrap">
     <div id="stage">
@@ -823,7 +824,6 @@ img{-webkit-touch-callout:none;-webkit-user-drag:none}
     </div>
   </section>
 
-  <div class="sidebar" id="sideBar"><div class="seg" id="sideSeg"><button id="sideF" class="on">Ön</button><button id="sideL" hidden>Sol logo</button><button id="sideL2" hidden>Sağ logo</button><button id="sideB">Arka</button></div></div>
   <nav class="tabs" id="tabs">
     <button data-tab="tee"><svg class="i" viewBox="0 0 24 24" stroke-linejoin="round" stroke-linecap="round"><path d="M9 3.6c.7 1.3 1.7 1.9 3 1.9s2.3-.6 3-1.9l4.6 2 1.7 4.3-3 1.3-1.1-1.8V20.5H6.8V9.4l-1.1 1.8-3-1.3 1.7-4.3z"/><path d="M9 3.6c.4 2.2 1.4 3.2 3 3.2s2.6-1 3-3.2"/></svg>Ürün</button>
     <button data-tab="text"><svg class="i" viewBox="0 0 24 24"><path d="M5 6V4h14v2M12 4v16M9 20h6"/></svg>Yazı</button>
@@ -6915,7 +6915,7 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
   function miniOn(){if(mini)return;mini=true;el.hidden=true;
     bar.innerHTML='<img src="'+AYB+'" alt="" width="38" height="38" data-mb="dokun" style="border-radius:50%;object-fit:cover;box-shadow:0 0 0 2px var(--green,#30703f);flex:0 0 38px"><span data-mb="dokun" style="flex:1;min-width:0"><b style="display:block">Aybüke</b><small data-mt style="display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;color:#5a625d;line-height:1.3">Dinliyorum…</small></span>'+
       '<button type="button" data-mb="ac" style="border:1.5px solid var(--green,#30703f);background:#fff;border-radius:10px;padding:7px 10px;font:600 13px var(--ui)">Sohbet</button><button type="button" data-mb="bitir" style="border:1.5px solid #111;background:#c4584a;color:#fff;border-radius:10px;padding:7px 10px;font:600 13px var(--ui)">Bitir</button>';
-    try{var hd=document.querySelector('header.top');bar.style.top=(hd?Math.round(hd.getBoundingClientRect().bottom)+6:6)+'px';}catch(_){}
+    try{var hd=document.getElementById('sideBar');if(!hd||!hd.getBoundingClientRect().height)hd=document.querySelector('.sub')||document.querySelector('header.top');bar.style.top=(hd?Math.round(hd.getBoundingClientRect().bottom)+6:6)+'px';}catch(_){}
     bar.hidden=false;}
   function miniOff(){mini=false;bar.hidden=true;}
   bar.addEventListener('click',function(e){var b=e.target.closest('[data-mb]');if(!b)return;aysAc();var k=b.dataset.mb;
