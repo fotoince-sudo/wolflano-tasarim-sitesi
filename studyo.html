@@ -1890,8 +1890,26 @@ window.phSite=function(d){PH.site=d;PH.media=d.media||'';try{if(d.ship&&+d.ship.
   try{renderAll();}catch(_){}
   /* Hazır baskılı ürün: müşteri aynı tasarımı açıp ismini ekleyebilir, yazıyı ya da rengi değiştirebilir */
   try{var hz=new URLSearchParams(location.search).get('hazir');if(hz&&!PH.hzDone){var hp=(d.products||[]).filter(function(x){return x.id===hz;})[0];
-    if(hp&&hp.dsg){PH.hzDone=1;var go=function(n){if(window.wfApplyDesign){try{window.wfApplyDesign(hp.dsg,true);if(new URLSearchParams(location.search).get('baski'))setTimeout(baskiPanel,600,hp);else toast('"'+(hp.name||'Tasarım')+'" açıldı. İsmini ekleyebilir, istediğini değiştirebilirsin.');}catch(_){toast('Tasarım açılamadı');}}else if(n<20)setTimeout(function(){go(n+1);},150);};go(0);}}}catch(_){}
+    if(hp&&hp.dsg){PH.hzDone=1;var go=function(n){if(window.wfApplyDesign){try{window.wfApplyDesign(hp.dsg,true);if(new URLSearchParams(location.search).get('baski'))setTimeout(baskiPanel,600,hp);
+        /* Müşteriye örnek fotoğraflar gelmez: fotoğraf yerleri boş açılır, hemen "N fotoğraf yükle" sorulur */
+        else{var nb=hzBlankPhotos();if(nb)hzPhotoAsk(nb);else toast('"'+(hp.name||'Tasarım')+'" açıldı. İsmini ekleyebilir, istediğini değiştirebilirsin.');}}catch(_){toast('Tasarım açılamadı');}}else if(n<20)setTimeout(function(){go(n+1);},150);};go(0);}}}catch(_){}
 };
+/* Hazır üründen açılan tasarım: içindeki örnek (vitrin) fotoğraflar çıkarılır, fotoğraf yerleri boş kalır. Kaç yer boşaldıysa onu döndürür. */
+function hzBlankPhotos(){var n=0;['front','logo','logo2','back'].forEach(function(sd){var S=state[sd];if(!S||!S.objs)return;
+  S.objs.forEach(function(o){if(!(o.slot||o.oilSlot||o.teePhoto||o.mugVehicleFace))return;if(o.phEmpty){n++;return;}
+    if(o.mugVehicleFace){try{mugVehicleUploads.delete(S);}catch(_){}}
+    delete o.base;delete o.crop;delete o.phs;delete o.aiOk;o.phEmpty=1;o.assetId=phAsset(o.edge||'none',Math.max(1,o.w)/Math.max(1,o.h));n++;});});
+  if(n){view.sel=null;renderAll();try{hist=[];hpos=-1;pushHist();}catch(_){}}
+  return n;}
+/* "N fotoğraf yükle" kartı: telefon dosya seçiciyi yalnız dokunuşla açtığı için düğmeyle sorulur */
+function hzPhotoAsk(n){var o=document.getElementById('hzAsk');if(o)o.remove();var w=document.createElement('div');w.id='hzAsk';
+  w.style.cssText='position:fixed;left:12px;right:12px;bottom:96px;z-index:9999;background:#fff;border-radius:18px;box-shadow:0 10px 40px #0003;padding:16px;font:500 14px var(--ui);text-align:center;max-width:460px;margin:0 auto';
+  w.innerHTML='<b style="display:block;font-size:16px;margin-bottom:4px">Bu tasarımda '+n+' fotoğraf yeri var</b><span style="display:block;color:#5a625d;font-size:13px;margin-bottom:12px">Arşivinden '+n+' fotoğraf seç, sırayla kendiliğinden yerleşsin.</span>'+
+    '<button type="button" data-hzgo style="display:block;width:100%;padding:13px;border-radius:12px;border:2px solid #111;background:var(--brand,#3d8b7a);color:#fff;font:700 15px var(--ui);margin-bottom:8px">📷 '+n+' fotoğraf yükle</button>'+
+    '<button type="button" data-hzx style="background:none;border:0;color:#5a625d;font:500 13px var(--ui);padding:4px 10px">Sonra eklerim</button>';
+  document.body.appendChild(w);
+  w.addEventListener('click',function(e){if(e.target.closest('[data-hzx]')){w.remove();toast('Fotoğraf yerine dokunarak istediğin zaman ekleyebilirsin.');return;}
+    if(e.target.closest('[data-hzgo]')){w.remove();var E=emptySlots();if(!E.length){var sd=['front','back','logo','logo2'].filter(function(x){return state[x]&&state[x].objs&&state[x].objs.some(function(q){return q.phEmpty;});})[0];if(sd){try{switchSide(sd);}catch(_){}}}slotPick();}});}
 /* Yönetim → Siparişler → "Baskı dosyası": hazır baskılı ürünün tasarımı açılır, her yüz için 300 dpi baskı dosyası indirilir */
 function baskiPanel(hp){try{[].slice.call(document.querySelectorAll('button')).filter(function(b){return b.textContent.trim()==='Geç';}).forEach(function(b){b.click();});}catch(_){}var ss=sidesOf().filter(function(x){return state[x]&&state[x].objs&&state[x].objs.length;});var w=document.createElement('div');
   w.style.cssText='position:fixed;left:12px;right:12px;bottom:90px;z-index:9999;background:#fff;border-radius:16px;box-shadow:0 10px 40px #0003;padding:14px;font:500 14px var(--ui)';
@@ -6792,7 +6810,7 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
     var dq=new URLSearchParams(location.search).get('depo');if(dq)useDepo(dq,true);
     /* Yayındaki ürünü düzenleme: "Stüdyoda düzenle" (duzenle=) ya da yönetici "Bu tasarımı düzenle" (hazir=) ile açınca her zaman Güncelle çıkar;
        eski ürünlerde admin_designs kaydı yoksa ürünün kendi tasarımı (dsg) açılır, kayıt aynı ürünün üzerine yapılır */
-    var qz=new URLSearchParams(location.search),dz=qz.get('duzenle'),hzA=!dz&&qz.get('hazir');dz=dz||hzA;
+    var qz=new URLSearchParams(location.search),dz=qz.get('duzenle'),hzA=false; /* hazir= artık müşteri gibi açılır (örnek fotoğraflar boşaltılır); ürünü güncellemek için "✎ Stüdyoda düzenle" (duzenle=) */
     if(dz){var dp=((ADM.site&&ADM.site.products)||[]).filter(function(x){return x.id===dz;})[0];
       var editOn=function(t){ADM.edit={pid:dp.id,title:dp.name||t||'Ürün'};mode='guncelle';var db0=$('#doneBtn');if(db0)db0.textContent='Güncelle';
         setTimeout(function(){longToast('"'+ADM.edit.title+'" düzenleniyor. Bitince Güncelle\'ye bas; aynı ürünün üzerine kaydedilir.');},400);};
