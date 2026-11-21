@@ -4805,10 +4805,11 @@ function renderTpl(){
   if($('#tplFilters').hidden)view.tplDir='Tümü';
   $('#tplFilters').innerHTML=fc;
   var gh={'Tümü':1};Object.keys(has).forEach(function(c){gh[tplGrpOf(c)]=1;});TPLS.forEach(function(t){if(tplFits(t,g)&&tplPhoto(t))gh['Fotoğraflı']=1;});
-  if(!gh[view.tplGrp||'Tümü'])view.tplGrp='Tümü';var G=view.tplGrp||'Tümü';
+  /* Zeminler sekmesi kaldırıldı: zeminler alttaki "Zemini değiştir" düğmesinden seçiliyor, burada boş sekme kafa karıştırıyordu */
+  if(!gh[view.tplGrp||'Tümü']||view.tplGrp==='Zeminler'){view.tplGrp='Tümü';if(view.tplCat==='Zemin')view.tplCat='Tümü';}var G=view.tplGrp||'Tümü';
   if(G!=='Tümü'&&view.tplCat!=='Tümü'&&tplGrpOf(view.tplCat)!==G)view.tplCat='Tümü';
   $('#tplHead').hidden=true;
-  $('#tplGrps').innerHTML=[['Tümü',TPL_HEAD[g]||'Şablonlar'],['Zeminler','Zeminler']].map(function(x){return '<button data-tg="'+x[0]+'"'+(x[0]===G&&!q?' class="on"':'')+'>'+x[1]+'</button>';}).join('');
+  $('#tplGrps').innerHTML=[['Tümü',TPL_HEAD[g]||'Şablonlar']].map(function(x){return '<button data-tg="'+x[0]+'"'+(x[0]===G&&!q?' class="on"':'')+'>'+x[1]+'</button>';}).join('');
   var subs=TPL_CATS.filter(function(c){return c!=='Tümü'&&has[c]&&G!=='Tümü'&&G!=='Fotoğraflı'&&tplGrpOf(c)===G;});
   subs=[];if(subs.length>1)cc='<button data-tc="Tümü"'+(view.tplCat==='Tümü'&&!q?' class="on"':'')+'>Hepsi</button>'+subs.map(function(c){return '<button data-tc="'+c+'"'+(c===view.tplCat&&!q?' class="on"':'')+'>'+c+'</button>';}).join('');
   $('#tplCats').innerHTML=cc;$('#tplCats').hidden=!cc;
