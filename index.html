@@ -2845,10 +2845,15 @@ function bankPanel(o){
 }
 document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('[data-copy]');if(!b)return;e.preventDefault();var v=b.dataset.copy;
   (navigator.clipboard&&navigator.clipboard.writeText?navigator.clipboard.writeText(v):Promise.reject()).then(function(){toast('Kopyalandı');},function(){window.prompt('Kopyala:',v);});});
+/* Google Ads / Analytics satış takibi: sipariş onay sayfası açılınca bir kez "purchase" gönderilir (çerez onayı yoksa hiçbir şey gitmez) */
+function gaPurchase(o){try{if(!window.__wfGA||!o||!o.code)return;var k='wf_ga_'+o.code;if(localStorage.getItem(k))return;localStorage.setItem(k,'1');
+  var it=(o.items||[]).map(function(x){return {item_id:String(x.id||x.pid||''),item_name:String(x.name||x.title||'Ürün').slice(0,100),quantity:+x.q||1,price:+x.unit||+x.price||0};});
+  var e={transaction_id:String(o.code),value:+o.total||0,currency:'TRY',shipping:+o.ship||0,items:it};
+  window.dataLayer=window.dataLayer||[];dataLayer.push({ecommerce:null});dataLayer.push({event:'purchase',ecommerce:e});if(window.gtag)gtag('event','purchase',e);}catch(_){}}
 function siparisView(){
   var o=lastOrder();
   if(!o)return '<div class="wrap page"><p class="eyebrow">Hesabım</p><h1 class="h2">Siparişlerim</h1><p class="lead">Gösterilecek sipariş yok.</p><p style="margin-top:24px"><a class="btn" href="#hazir">Alışverişe devam et '+IC.arrow+'</a></p></div>';
-  cart={};scSave([]);saveLS();syncCart();
+  cart={};scSave([]);saveLS();syncCart();gaPurchase(o);
   var eye='<button type="button" data-eye aria-label="Şifreyi göster" aria-pressed="false"><svg class="i" viewBox="0 0 24 24"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg></button>';
   var rows=(o.items||[]).map(function(x){return '<div class="sumr"><span>'+orderLineName(x)+' × '+x.q+'</span><span>'+orderLinePrice(x)+'</span></div>';}).join('');
   var has=profile()||ACCOUNT.user;
