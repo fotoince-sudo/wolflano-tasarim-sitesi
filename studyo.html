@@ -7007,6 +7007,8 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
     ['Bütün tasarımı birlikte nasıl büyütürüm?','Bir öğeye dokun, "Tümünü seç" düğmesine bas ve sol üstteki beyaz kareyi çek. Şablon seçtiğinde tasarım zaten bütün halde seçili gelir.'],
     ['Yanlışlıkla bir şeyi sildim.','Üstteki ↶ düğmesiyle geri alabilirsin.']
   ];
+  /* Yapay zekâlı (yazılı/sesli) Aybüke şimdilik kapalı (2026-11-21); profesyonel sesli Aybüke kurulunca true yapılır */
+  var AY_AI=false;
   var el=document.getElementById('guide'),i=0,mode='';
   function seen(){try{localStorage.setItem('wf_studio_guide','1');}catch(_){}}
   function close(){voiceSession=false;micStop();aysStop();miniOff();el.hidden=true;el.innerHTML='';seen();var hb=document.getElementById('helpBtn');if(hb&&mode)try{hb.focus();}catch(_){}mode='';}
@@ -7020,9 +7022,11 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
   function help(){
     mode='help';
     el.innerHTML='<div class="gd-card gd-help"><div class="gd-top"><h2 id="gdTitle">Nasıl kullanılır?</h2><button type="button" class="ib" data-gd="skip" aria-label="Kapat"><svg class="i" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>'+
-      '<div class="gd-ask"><div class="gd-ah"><img src="'+AYB+'" alt="" width="44" height="44"><span><b>Aybüke\'ye sor</b><small>Ne istediğinizi söyleyin, ben hazırlayayım. Örneğin: "Siyah erkek tişört, önüne altın renkle WOLF yaz."</small></span></div><div class="gd-msgs" id="gdMsgs">'+askHtml()+'</div><div id="gdDesign"><label id="gdUploadLabel" hidden>Araç fotoğrafını yükle <input id="gdPhoto" type="file" accept="image/*"></label><div id="gdMugViews" aria-label="Kupada sağ ve sol görünüm" style="display:flex"></div><img id="gdPreview" hidden alt="Kupanın iki yüzünün baskı önizlemesi" style="width:100%;max-height:180px;object-fit:contain"></div>'+
+      (AY_AI?'<div class="gd-ask"><div class="gd-ah"><img src="'+AYB+'" alt="" width="44" height="44"><span><b>Aybüke\'ye sor</b><small>Ne istediğinizi söyleyin, ben hazırlayayım. Örneğin: "Siyah erkek tişört, önüne altın renkle WOLF yaz."</small></span></div><div class="gd-msgs" id="gdMsgs">'+askHtml()+'</div><div id="gdDesign"><label id="gdUploadLabel" hidden>Araç fotoğrafını yükle <input id="gdPhoto" type="file" accept="image/*"></label><div id="gdMugViews" aria-label="Kupada sağ ve sol görünüm" style="display:flex"></div><img id="gdPreview" hidden alt="Kupanın iki yüzünün baskı önizlemesi" style="width:100%;max-height:180px;object-fit:contain"></div>'+
       '<form class="gd-in" id="gdAskF">'+(SR?'<button type="button" class="gd-mic'+(micOn?' on':'')+'" data-gd="mic" aria-label="Aybüke ile konuş"><svg class="i" viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></button>':'')+'<input id="gdAsk" maxlength="400" placeholder="'+(micOn?'Dinliyorum, konuş…':'Örn. Logoyu sağ göğse nasıl koyarım?')+'" autocomplete="off" enterkeyhint="send"><button type="submit" class="primary" aria-label="Gönder">Sor</button></form>'+
-      (TTS?'<label class="gd-tts"><input type="checkbox" data-gdtts="1"'+(ttsOn?' checked':'')+'> Aybüke cevapları sesli okusun</label>':'')+'</div>'+
+      (TTS?'<label class="gd-tts"><input type="checkbox" data-gdtts="1"'+(ttsOn?' checked':'')+'> Aybüke cevapları sesli okusun</label>':'')+'</div>'
+      /* Yapay zekâlı Aybüke kapalıyken: kısa not + WhatsApp (ücretsiz) */
+      :'<div class="gd-ask"><div class="gd-ah"><img src="'+AYB+'" alt="" width="44" height="44"><span><b>Aybüke\'den</b><small>Aşağıda adım adım anlatım ve sık sorulanlar var. Takıldığın yerde bize WhatsApp\'tan yaz, hemen yardımcı olalım.</small></span></div><a class="primary" href="https://wa.me/905307641717?text='+encodeURIComponent('Merhaba, tasarım stüdyosunda yardım istiyorum.')+'" target="_blank" rel="noopener" style="display:inline-block;margin-top:8px;padding:9px 14px;border-radius:12px;text-decoration:none">WhatsApp\'tan yaz</a></div>')+
       '<ol class="gd-list">'+GD.map(function(d,k){return '<li><span class="n">'+(k+1)+'</span><span><b>'+d.t+'</b>'+d.p+'</span></li>';}).join('')+'</ol>'+
       '<h3>Sık sorulanlar</h3><div class="gd-faq">'+FAQ.map(function(q){return '<details><summary>'+q[0]+'</summary><p>'+q[1]+'</p></details>';}).join('')+'</div>'+
       '<div class="gd-nav"><button type="button" class="gd-skip" data-gd="tour">Tanıtımı yeniden izle</button><button type="button" class="primary" data-gd="skip">Tamam</button></div></div>';

@@ -6046,11 +6046,101 @@ var DATA_P=(async function(){
   if(!j){try{var r2=await fetch('data.json',{cache:'no-store'});if(r2.ok)j=await r2.json();}catch(_){}}
   try{var rz=await fetch('zemin/index.json?v='+Math.floor(Date.now()/600000));if(rz.ok){var zm=await rz.json();for(var zk in zm)if(zm[zk])ZEM[zk]=zm[zk];}}catch(_){}
   if(j&&j.v===1){try{cutMerge(j,await loadMan());}catch(_){}D=Object.assign(clone(DEF),j);applyData();SAVEDTOK=usedTokens(D);DLOADED=!CATALOG_BACKUP;if(cur!=='yonetim')route();}
+/* HAZIR CEVAPLI AYBÜKE (ücretsiz, yapay zekâ yok): sağ altta yuvarlak resim; dokununca sayfayı kapatmayan küçük bir kutu açılır.
+   Konu düğmeleri → kısa cevap + ilgili sayfaya giden düğme. Cevabı olmayan her şey WhatsApp'a gider. Yönetimde görünmez. */
+function ayHazir(IMG,FB){
+  var css='.ayf{position:fixed;right:14px;bottom:calc(18px + env(safe-area-inset-bottom,0px));z-index:35;width:58px;height:58px;border-radius:50%;padding:0;border:0;background:none;cursor:pointer;transition:bottom .2s,transform .15s}'+
+  '.ayf img{width:58px;height:58px;border-radius:50%;object-fit:cover;display:block;border:3px solid #7fd6b4;box-shadow:0 0 0 2px #fff,0 6px 18px rgba(0,0,0,.25)}'+
+  '.ayf:active{transform:scale(.94)}.ayf.up{bottom:calc(92px + env(safe-area-inset-bottom,0px))}.ayf[hidden],.ayb[hidden],.ayk[hidden]{display:none!important}'+
+  '.ayb{position:fixed;right:82px;bottom:calc(30px + env(safe-area-inset-bottom,0px));z-index:35;max-width:min(62vw,240px);background:#fff;color:#101a14;border:1px solid #cfe9dd;border-radius:16px 16px 4px 16px;padding:10px 30px 10px 12px;font:500 14px/1.4 var(--ui,system-ui);box-shadow:0 6px 18px rgba(0,0,0,.16);cursor:pointer}'+
+  '.ayb.up{bottom:calc(104px + env(safe-area-inset-bottom,0px))}.ayb b{display:block;font-weight:700}.ayb .x{position:absolute;top:4px;right:6px;border:0;background:none;font-size:18px;line-height:1;color:#596760;padding:4px;cursor:pointer}'+
+  /* Küçük kutu: Aybüke resminin hemen üstünde, sayfanın geri kalanı görünür ve kullanılabilir kalır */
+  '.ayk{position:fixed;right:12px;bottom:calc(86px + env(safe-area-inset-bottom,0px));z-index:40;width:min(calc(100vw - 24px),330px);max-height:min(52vh,400px);display:flex;flex-direction:column;background:#fff;color:#101a14;border:1px solid #cfe9dd;border-radius:16px 16px 4px 16px;box-shadow:0 10px 30px rgba(0,0,0,.22);font:14px/1.45 var(--ui,system-ui);overflow:hidden}'+
+  '.ayk.up{bottom:calc(160px + env(safe-area-inset-bottom,0px))}'+
+  '.ayk-h{display:flex;align-items:center;gap:8px;padding:8px 8px 8px 10px;border-bottom:1px solid #e3efe8;flex:none}.ayk-h img{width:32px;height:32px;border-radius:50%;object-fit:cover;border:2px solid #7fd6b4}.ayk-h b{flex:1;font:700 14.5px var(--ui,system-ui)}'+
+  '.ayk-h button{width:32px;height:32px;border-radius:50%;border:1px solid #dde7e1;background:none;color:inherit;font-size:18px;line-height:1;cursor:pointer}'+
+  '.ayk-b{flex:1;overflow-y:auto;padding:10px 12px 12px;-webkit-overflow-scrolling:touch}'+
+  '.ayk-m{margin:0 0 10px;padding:9px 11px;background:#ebf6f0;border-radius:4px 14px 14px 14px}'+
+  '.ayk-q{display:flex;flex-wrap:wrap;gap:6px}.ayk-q button{border:1px solid #30a46c;background:#fff;color:inherit;border-radius:999px;padding:6px 11px;font:600 13px/1.25 var(--ui,system-ui);cursor:pointer}'+
+  '.ayk-a{display:flex;flex-wrap:wrap;gap:6px;margin-top:2px}.ayk-a a{display:inline-block;padding:8px 12px;border-radius:12px;background:#30a46c;color:#fff;border:1.5px solid #101a14;font:700 13.5px var(--ui,system-ui);text-decoration:none}'+
+  '.ayk-a a.ikinci{background:#fff;color:#101a14;border-color:#30a46c}'+
+  '.ayk-g{display:block;margin-top:10px;border:0;background:none;color:#00723b;font:600 13px var(--ui,system-ui);padding:4px 0;cursor:pointer}'+
+  '.ayk-i{display:flex;gap:6px;padding:8px 10px;border-top:1px solid #e3efe8;flex:none}.ayk-i input{flex:1;min-width:0;height:40px;border:1px solid #dde7e1;border-radius:12px;padding:0 11px;font:16px var(--ui,system-ui);background:#fff;color:#101a14}'+
+  '.ayk-i button{height:40px;padding:0 13px;border-radius:12px;background:#30a46c;color:#fff;border:1.5px solid #101a14;font:700 14px var(--ui,system-ui);cursor:pointer;flex:none}';
+  var st=document.createElement('style');st.textContent=css;document.head.appendChild(st);
+  function im(sz){return '<img src="'+IMG+'" alt="" width="'+sz+'" height="'+sz+'" onerror="this.onerror=null;this.src=\''+FB+'\'">';}
+  function e(t){return String(t==null?'':t).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+  function para(n){try{return tl(n);}catch(_){return Math.round(n)+' TL';}}
+  function wa(m){try{return kurWa(m||'Merhaba, Aybüke yönlendirdi. Bilgi almak istiyorum.');}catch(_){return 'https://wa.me/905307641717';}}
+  function tt(){try{return socURL(CONTACT.tiktok,'https://www.tiktok.com/@')||'https://www.tiktok.com/@wolflano.tr';}catch(_){return 'https://www.tiktok.com/@wolflano.tr';}}
+  function kargo(){try{var s=D.ship||{},f=+s.fee||0,fr=+s.free||0,p=pickFee();
+    return 'Kargo '+(f>0?'ürün başına '+para(f):'ücretsiz')+(fr>0?', '+para(fr)+' ve üzeri siparişlerde ücretsiz':'')+'. İzmir içinde teslim noktasından almak ürün başına '+para(p)+'.';}catch(_){return '';}}
+  function adet(){try{var t=(TIERS||[]).filter(function(x){return x[0]>0&&x[1]>0;}).map(function(x){return x[0]+' adet ve üzeri %'+x[1];});return t.length?'Adet indirimi: '+t.join(', ')+'.':'';}catch(_){return '';}}
+  /* Konular: [soru, cevap (fonksiyon olabilir), düğmeler [[yazı, adres, ikinci?]]] */
+  var K={
+    tasarla:['Nasıl tasarlarım?','Baskı Atölyesi\'nde önce ürünü ve rengini seç. Stüdyoda fotoğraf, yazı ya da hazır şablon ekle, ürünün üzerinde nasıl duracağını anında gör. Bitince "Sepete ekle"ye dokun; istersen başka bir ürün de tasarlayabilirsin.',[['Tasarlamaya başla','#tasarla']]],
+    hediye:['Hediye önerisi','Fotoğraflı kupa ve canvas tablo en sevilen hediyelerimiz. Hazır tasarımlardan birini seçip sadece kendi fotoğrafını eklemen yeterli. Sevdiğin birinin fotoğrafıyla tişört de hazırlayabilirsin.',[['Hediye & Dekor\'a bak','#hediye'],['Tişört tasarla','#tasarla',1]]],
+    urun:['Ürün bulamadım','Hazır ürünlerimiz Koleksiyon\'da, baskı yaptırabileceğin ürünler Baskı Atölyesi\'nde. Aradığını bulamazsan WhatsApp\'tan yaz, birlikte bulalım.',[['Koleksiyona göz at','#hazir'],['WhatsApp\'tan yaz','wa',1]]],
+    fiyat:['Fiyatlar ve kargo',function(){return 'Tüm fiyatlara KDV dahildir. Baskılı ürünlerde fiyat; ürünün fiyatı ile seçtiğin baskının (logo, ön, arka, A3) toplamıdır. '+kargo();},[['Baskı fiyatları','#fiyatlar']]],
+    giydir:['Yazıyı / Şekli giydir nedir?','Stüdyoda kalın harfli bir yazı ya da bir şekil seçip içini fotoğrafınla veya bir desenle doldurabilirsin. Fotoğraf yalnız harflerin ya da şeklin içinde görünür; isimlerde ve özel günlerde çok güzel duruyor.',[['Stüdyoda dene','studyo.html']]],
+    toplu:['Toplu sipariş',function(){return 'Okul, şirket, kulüp ve gruplar için logonuzu ve renklerinizi toplu siparişte basıyoruz. '+adet()+' Okul siparişlerinde her 100 adete ihtiyaç sahibi öğrenciler için 10 adet ücretsiz. Teklif için WhatsApp\'tan logo ve adet bilgisini gönderin.';},[['WhatsApp\'tan teklif al','wa'],['Kurumsal','#kurumsal',1]]],
+    indirim:['İndirimler ve kampanya',function(){return 'TikTok\'ta "Wolf hangi ilçede?" yarışması: 25 Kasım\'dan yılbaşına kadar her sabah yeni bir ilçe. Doğru bilen ilk 100 kişiye kupada %50 indirim kodu; satın alma zorunluluğu yok. Ayrıca şehit ve gazi yakınlarına %20; Silahlı Kuvvetler, emniyet, jandarma, hâkim, savcı ve doktorlara %10 kalıcı indirim var (belgeyle). '+adet();},[['TikTok\'ta takip et','tt'],['WhatsApp\'tan sor','wa',1]]]
+  };
+  var SIRA=['tasarla','hediye','fiyat','giydir','toplu','indirim','urun'];
+  var fab=document.createElement('button');fab.type='button';fab.className='ayf';fab.setAttribute('aria-label','Aybüke: yardım');fab.setAttribute('data-notr','');fab.innerHTML=im(58);
+  var bal=document.createElement('div');bal.className='ayb';bal.hidden=true;bal.setAttribute('data-notr','');bal.setAttribute('role','status');
+  bal.innerHTML='<b>Wolflano’ya hoş geldiniz!</b>Ben Aybüke. Size nasıl yardımcı olabilirim?<button type="button" class="x" aria-label="Kapat">×</button>';
+  var kt=document.createElement('div');kt.className='ayk';kt.hidden=true;kt.setAttribute('data-notr','');kt.setAttribute('data-notr-sk','');kt.setAttribute('role','dialog');kt.setAttribute('aria-label','Aybüke');
+  document.body.appendChild(bal);document.body.appendChild(kt);document.body.appendChild(fab);
+  function bas(govde){kt.innerHTML='<div class="ayk-h">'+im(32)+'<b>Aybüke</b><button type="button" data-ayk="kapat" aria-label="Kapat">×</button></div><div class="ayk-b">'+govde+'</div>'+
+    '<form class="ayk-i"><input maxlength="300" placeholder="Sorunuzu yazın…" autocomplete="off" enterkeyhint="send" aria-label="Sorunuz"><button type="submit">Gönder</button></form>';var b=kt.querySelector('.ayk-b');if(b)b.scrollTop=0;}
+  function menu(){bas('<p class="ayk-m">Size nasıl yardımcı olabilirim?</p><div class="ayk-q">'+SIRA.map(function(k){return '<button type="button" data-ayk-k="'+k+'">'+e(K[k][0])+'</button>';}).join('')+
+    '</div><div class="ayk-a" style="margin-top:10px"><a class="ikinci" href="'+e(wa())+'" target="_blank" rel="noopener">WhatsApp\'tan yaz</a></div>');}
+  function konu(k,soru){var x=K[k];if(!x){menu();return;}var c=typeof x[1]==='function'?x[1]():x[1];
+    var d=(x[2]||[]).map(function(b){var u=b[1]==='wa'?wa():b[1]==='tt'?tt():b[1],dis=/^https?:/.test(u);
+      return '<a'+(b[2]?' class="ikinci"':'')+' href="'+e(u)+'"'+(dis?' target="_blank" rel="noopener"':'')+' data-ayk-git>'+e(b[0])+'</a>';}).join('');
+    if(soru)d+='<a class="ikinci" href="'+e(wa('Merhaba, '+soru))+'" target="_blank" rel="noopener">Sorumu WhatsApp\'tan sor</a>';
+    bas('<p class="ayk-m" style="background:#fff;border:1px solid #cfe9dd;font-weight:600">'+e(soru||x[0])+'</p><p class="ayk-m">'+e(c)+'</p><div class="ayk-a">'+d+'</div><button type="button" class="ayk-g" data-ayk="menu">← Diğer konular</button>');}
+  /* Konusu tanınmayan soru: müşterinin yazdığı metinle WhatsApp'a gider (ücretsiz) */
+  function bilinmeyen(q){bas('<p class="ayk-m" style="background:#fff;border:1px solid #cfe9dd;font-weight:600">'+e(q)+'</p><p class="ayk-m">Bu sorunuzu en iyi ekibimiz cevaplar. Aşağıdaki düğmeye dokunun, sorunuz WhatsApp\'tan bize gelsin; en kısa sürede dönüş yapalım.</p><div class="ayk-a"><a href="'+e(wa('Merhaba, '+q))+'" target="_blank" rel="noopener">WhatsApp\'tan gönder</a></div><button type="button" class="ayk-g" data-ayk="menu">← Diğer konular</button>');}
+  /* Sitedeki "Aybüke'ye sor" satırları: sorudaki kelimeye göre ilgili konu açılır */
+  function bul(q){q=String(q||'').toLocaleLowerCase('tr');
+    if(/giydir|harflerin içine|yazının içine|şeklin içine/.test(q))return 'giydir';
+    if(/okul|şirket|firma|kulüp|forma|toplu|kurum|adet|logo bas/.test(q))return 'toplu';
+    if(/indirim|kampanya|kupon|kod|yarışma|ilçe|tiktok|şehit|gazi|polis|asker|doktor/.test(q))return 'indirim';
+    if(/fiyat|kaç para|kaç lira|ücret|kargo|teslim|kdv|ne kadar/.test(q))return 'fiyat';
+    if(/hediye|kupa|canvas|tablo|sevgili|anneme|babama|doğum günü|yılbaşı/.test(q))return 'hediye';
+    if(/tasarla|tasarım|fikir|nasıl yap|fotoğraf ekle|yazı ekle|şablon|stüdyo/.test(q))return 'tasarla';
+    if(/karar|ürün|öner|bulamadım|arıyorum/.test(q))return 'urun';return '';}
+  function ac(k){hideBal();if(k)konu(k);else menu();kt.hidden=false;sync();}
+  function kapat(){kt.hidden=true;sync();}
+  function hideBal(){bal.hidden=true;try{sessionStorage.setItem('wf_ayb_hi','1');}catch(_){}}
+  fab.addEventListener('click',function(){if(kt.hidden)ac('');else kapat();});
+  bal.addEventListener('click',function(ev){if(ev.target.closest('.x')){hideBal();return;}ac('');});
+  kt.addEventListener('click',function(ev){var t=ev.target,k=t.closest('[data-ayk-k]');if(k){konu(k.getAttribute('data-ayk-k'));return;}
+    var a=t.closest('[data-ayk]');if(a){if(a.dataset.ayk==='kapat')kapat();else menu();return;}
+    var g=t.closest('[data-ayk-git]');if(g&&(g.getAttribute('href')||'').charAt(0)==='#')setTimeout(kapat,30);});
+  document.addEventListener('click',function(ev){var b=ev.target.closest&&ev.target.closest('[data-aysor]');if(!b||kt.contains(b))return;ev.preventDefault();ac(bul(b.getAttribute('data-aysor')));});
+  kt.addEventListener('submit',function(ev){ev.preventDefault();var i=kt.querySelector('.ayk-i input');var q=(i&&i.value||'').trim();if(!q)return;var k=bul(q);if(k)konu(k,q);else bilinmeyen(q);});
+  document.addEventListener('keydown',function(ev){if(ev.key==='Escape'&&!kt.hidden)kapat();});
+  function sync(){var h=(location.hash||'').slice(1),adm=/^(yonetim|crm)/.test(h)||/[?&]admin=/.test(location.search);
+    var bar=!!document.querySelector('.sbar,.cobar');fab.classList.toggle('up',bar);bal.classList.toggle('up',bar);kt.classList.toggle('up',bar);
+    fab.hidden=adm;if(adm){kt.hidden=true;bal.hidden=true;}if(!kt.hidden||/^(odeme)$/.test(h))bal.hidden=true;}
+  window.addEventListener('hashchange',function(){setTimeout(sync,80);});
+  try{var mn=document.getElementById('main');if(mn&&window.MutationObserver)new MutationObserver(function(){sync();}).observe(mn,{childList:true});}catch(_){}
+  sync();setTimeout(sync,600);
+  var seen=false;try{seen=sessionStorage.getItem('wf_ayb_hi')==='1';}catch(_){}
+  if(!seen)setTimeout(function(){var h=(location.hash||'').slice(1);if(fab.hidden||!kt.hidden||/^(odeme|sepet|yonetim|crm)/.test(h))return;bal.hidden=false;try{sessionStorage.setItem('wf_ayb_hi','1');}catch(_){}},3500);
+}
 /* AYBÜKE (sitenin her sayfasında): sağ alttaki yuvarlak resim; müşteriye ürün bulmada yardım edip satışa yönlendirir.
    Cevabı sunucudaki yardım asistanı (yardim, mode: site) verir; ürün listesi ve fiyatlar buradan gider, önerilen ürünler kart olarak gösterilir.
    Ses: telefonun/tarayıcının kendi ses tanıması ve okuması (ücretsiz). Konuşma yalnız bu sekmede tutulur. Yönetimde görünmez. */
 (function(){
   var IMG='assets/aybuke/aybuke.webp',FB='assets/aybuke/aybuke.svg';
+  /* AY_AI: yapay zekâlı (yazılı + sesli) Aybüke. Şimdilik kapalı (2026-11-21): para gerektirmeyen hazır cevaplı Aybüke çalışır.
+     Profesyonel sesli Aybüke kurulunca true yapmak yeterli; aşağıdaki eski kod olduğu gibi duruyor. */
+  var AY_AI=false;
+  if(!AY_AI){ayHazir(IMG,FB);return;}
   var css='.ayf{position:fixed;right:14px;bottom:calc(18px + env(safe-area-inset-bottom,0px));z-index:35;width:58px;height:58px;border-radius:50%;padding:0;border:0;background:none;cursor:pointer;transition:bottom .2s,transform .15s}'+
   '.ayf img{width:58px;height:58px;border-radius:50%;object-fit:cover;display:block;border:3px solid #7fd6b4;box-shadow:0 0 0 2px #fff,0 6px 18px rgba(0,0,0,.25)}'+
   '.ayf:active{transform:scale(.94)}.ayf.up{bottom:calc(92px + env(safe-area-inset-bottom,0px))}.ayf[hidden],.ayb[hidden],.ayp[hidden],.ayq[hidden]{display:none!important}'+
