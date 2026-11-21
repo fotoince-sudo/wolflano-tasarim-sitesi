@@ -342,7 +342,7 @@ svg.i{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stro
 .search input::-webkit-search-cancel-button{display:none}
 .search button{border:0;background:var(--panel);width:30px;height:30px;border-radius:8px;font:700 18px var(--ui);color:var(--muted)}
 .tpl-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(108px,1fr));gap:10px}
-.tplk{grid-column:1/-1;display:flex;align-items:center;gap:12px;text-align:left;border:1.5px solid var(--green,#2f7d5b);background:var(--panel2);border-radius:14px;padding:14px;cursor:pointer;color:inherit}.tplk .i{width:34px;height:34px;flex:none}.tplk span{display:grid;gap:3px}.tplk b{font:700 15px var(--ui)}.tplk small{font:500 12.5px var(--ui);color:var(--muted)}
+.panel[data-p="tpl"]>#tplKj{flex:1 1 100%}#tplKj{margin-bottom:8px}.tplk{width:100%;display:flex;align-items:center;gap:12px;text-align:left;border:1.5px solid var(--green,#2f7d5b);background:var(--panel2);border-radius:14px;padding:14px;cursor:pointer;color:inherit}.tplk .i{width:34px;height:34px;flex:none}.tplk span{display:grid;gap:3px}.tplk b{font:700 15px var(--ui)}.tplk small{font:500 12.5px var(--ui);color:var(--muted)}
 .tpl{border:1px solid var(--line);background:var(--panel2);border-radius:14px;padding:6px 6px 8px;display:flex;flex-direction:column;gap:6px;align-items:stretch}
 .tpl .prev{height:150px;border-radius:10px;overflow:hidden;position:relative}
 .tpl .prev .in{position:absolute;left:50%;top:0;width:139px;height:196px;transform:translateX(-50%) scale(.66);transform-origin:50% 0}
@@ -874,6 +874,7 @@ img{-webkit-touch-callout:none;-webkit-user-drag:none}
       <div class="chips scroll" id="tplGrps" aria-label="Şablon grupları"></div>
       <div class="chips scroll" id="tplCats" aria-label="Şablon konu kategorileri"></div>
       <p class="note" id="tplEmpty" hidden>Bu aramayla eşleşen şablon yok. Başka bir kelime dene.</p>
+      <div id="tplKj"></div>
       <div class="tpl-grid" id="tplGrid"></div>
     </div>
   </section>
@@ -4793,7 +4794,10 @@ function tplGrpOf(c){for(var i=1;i<TPL_GRPS.length-1;i++)if(TPL_GRPS[i][1].index
 var TPL_KAT=[['Fotoğraflı','Fotoğraf ekle'],['Kurt','Kurt teması'],['Grafik','Grafikler']];
 var TPL_KURT_C=['Kurt geziyor','Wolf tasarımları','İmza koleksiyonu','Baskı serisi'];
 function tplKat(t){if(!t||t.c==='Zemin')return '';if(tplPhoto(t))return 'Fotoğraflı';if(TPL_KURT_C.indexOf(t.c)>=0||/kurt|wolf/i.test(String(t.n||'')))return 'Kurt';return 'Grafik';}
-function tplInGrp(c,t){var g=view.tplGrp||'Tümü';if(g==='Tümü')return c!=='Zemin';return tplKat(t)===g;}
+function tplKatAny(c,t){if(t&&t.items)return tplKat(t);
+  if(t&&t.data){var j='';try{j=JSON.stringify(t.data);}catch(_){}if(/"slot":(1|true)|"phEmpty"|"teePhotoBg"|"oilBg"/.test(j)||/foto[gğ]raf/i.test(String(t.title||'')))return 'Fotoğraflı';if(TPL_KURT_C.indexOf(c)>=0||/kurt|wolf/i.test(String(t.title||'')))return 'Kurt';return 'Grafik';}
+  if(c==='Zemin')return '';return (TPL_KURT_C.indexOf(c)>=0||/kurt|wolf/i.test(String(c||'')))?'Kurt':'Grafik';}
+function tplInGrp(c,t){var g=view.tplGrp||'Tümü';if(g==='Tümü')return c!=='Zemin';return tplKatAny(c,t)===g;}
 function renderTpl(){
   ['Zemin','Yağlı boya','Fotoğraflı tişört','Araba ve motosiklet'].forEach(function(c){if(TPL_CATS.indexOf(c)<0)TPL_CATS.push(c);});
   var h='',cc='',q=normTR(($('#tplQ')&&$('#tplQ').value||'').trim()),n=0,g=tplGroup(),has={},dirs={},measures={};
@@ -4820,8 +4824,10 @@ function renderTpl(){
   $('#tplCats').innerHTML=cc;$('#tplCats').hidden=!cc;
   TPLS.forEach(function(t,i){if(!tplFits(t,g))return;if(view.tplDir&&view.tplDir!=='Tümü'&&tplOrientation(t)!==view.tplDir)return;if(view.tplArea&&view.tplArea!=='Tümü'&&tplAreaName(t)!==view.tplArea)return;if(q){if(!tplMatch(t,q))return;}else if(view.tplCat!=='Tümü'&&t.c!==view.tplCat)return;else if(view.tplCat==='Tümü'&&!tplInGrp(t.c,t))return;n++;h+='<button class="tpl" data-tpl="'+i+'" data-tpl-dir="'+tplOrientation(t)+'"><div class="prev"><div class="in"></div></div><span>'+t.n+'</span></button>';});
   /* Fotoğraf kolajı (canvas 35'e kadar, kupa 7, giyim 12 fotoğraf) şablon değil ayrı bir araç: Fotoğraf ekle başlığında en başta kart olarak çıkar */
+  var kjh='';
   if(!q&&(G==='Fotoğraflı'||G==='Tümü')&&kolajOn()){var km=state.product==='canvas'?'35 × 50 tabloya 15, 50 × 70 tabloya 35 fotoğrafa kadar':state.product==='mug'?'Kupaya 7 fotoğrafa kadar':'12 fotoğrafa kadar';
-    h='<button type="button" class="tplk" data-kj="1"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="8" height="10" rx="1" transform="rotate(-6 7 9)"/><rect x="12" y="3" width="9" height="7" rx="1"/><rect x="12" y="13" width="9" height="8" rx="1" transform="rotate(5 16 17)"/></svg><span><b>Fotoğraf kolajı</b><small>Serbest ya da düzenli · '+km+'</small></span></button>'+h;n++;}
+    kjh='<button type="button" class="tplk" data-kj="1"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="8" height="10" rx="1" transform="rotate(-6 7 9)"/><rect x="12" y="3" width="9" height="7" rx="1"/><rect x="12" y="13" width="9" height="8" rx="1" transform="rotate(5 16 17)"/></svg><span><b>Fotoğraf kolajı</b><small>Serbest ya da düzenli · '+km+'</small></span></button>';}
+  var kjb=$('#tplKj');if(kjb){kjb.innerHTML=kjh;kjb.hidden=!kjh;}
   $('#tplGrid').innerHTML=h;tplLastGroup=g;var em=$('#tplEmpty');em.textContent=q?'Bu aramayla eşleşen şablon yok. Başka bir kelime dene.':view.tplCat===TPL_CAT_MUSIC?'Müzik şablonları yakında burada.':'Bu ürünün ('+TPL_GROUP_NAME[g]+') baskı ölçüsüne özel şablonlar hazırlanıyor, çok yakında burada.';em.hidden=n>0;$('#tplQx').hidden=!q;
 }
 function renderTplPreviews(){
@@ -5050,7 +5056,8 @@ $('#tplCats').addEventListener('click',function(e){var b=e.target.closest('[data
 $('#tplQ').addEventListener('input',function(){renderTpl();renderTplPreviews();});
 $('#tplQ').addEventListener('keydown',function(e){if(e.key==='Enter')this.blur();});
 $('#tplQx').addEventListener('click',function(){$('#tplQ').value='';renderTpl();renderTplPreviews();});
-$('#tplGrid').addEventListener('click',function(e){if(e.target.closest('[data-kj]')){openTab('wolf',true);var w=$('#kolajIn');if(w&&w.hidden)$('#kolajBtn').click();return;}var b=e.target.closest('[data-tpl]');if(b)applyTemplate(TPLS[+b.dataset.tpl]);});
+$('#tplKj').addEventListener('click',function(e){if(e.target.closest('[data-kj]')){openTab('wolf',true);var w=$('#kolajIn');if(w&&w.hidden)$('#kolajBtn').click();}});
+$('#tplGrid').addEventListener('click',function(e){var b=e.target.closest('[data-tpl]');if(b)applyTemplate(TPLS[+b.dataset.tpl]);});
 function ctxClick(e){
   var b=e.target.closest('[data-c]');if(!b)return;
   var c=b.dataset.c;
@@ -6961,7 +6968,7 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
     baseTplA();
     var g=$('#tplGrid'),q=(($('#tplQ')&&$('#tplQ').value)||'').trim().toLocaleLowerCase('tr-TR');if(!g)return;if(!ADM.tpls.length){tplAdmMarks();$('#tplEmpty').hidden=g.children.length>0;teeTemplateGroups(g);return;}
     if((view.tplCat===TPL_CAT_ADM||view.tplCat===TPL_CAT_PRIV)&&!q)g.innerHTML='';
-    var l=ADM.tpls.filter(function(t){if(!admFit(t))return false;return q?String(t.title||'').toLocaleLowerCase('tr-TR').indexOf(q)>=0:((view.tplCat==='Tümü'&&tplInGrp(tplCatOf(t)))||view.tplCat===tplCatOf(t)||(view.tplCat===TPL_CAT_PRIV&&!t.published));});
+    var l=ADM.tpls.filter(function(t){if(!admFit(t))return false;return q?String(t.title||'').toLocaleLowerCase('tr-TR').indexOf(q)>=0:((view.tplCat==='Tümü'&&tplInGrp(tplCatOf(t),t))||view.tplCat===tplCatOf(t)||(view.tplCat===TPL_CAT_PRIV&&!t.published));});
     if(l.length)g.insertAdjacentHTML('afterbegin',l.map(function(t){return '<button class="atpl" data-adtpl="'+ea(t.id)+'" data-tpl-dir="'+admTplOrientation(t)+'"><div class="prev" style="background:#eef1ef"><img alt="" src="'+ea(t.thumb||'')+'" loading="lazy" style="width:100%;height:100%;object-fit:cover"></div><span>'+(t.published?'':'🔒 ')+ea(t.title)+'</span></button>';}).join(''));
     tplAdmMarks();
     $('#tplEmpty').hidden=g.children.length>0;
