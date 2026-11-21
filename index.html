@@ -3261,7 +3261,7 @@ function usedTokens(d){var o={};function add(s){if(s&&(s.indexOf('img/')===0||s.
 applyData();
 /* Menü (2026-11-21): önce satış, sonra hikâye. "Kendin Tasarla" doğrudan Ürün seç'e gider; Baskı Atölyesi bilgi sayfası Ürün seç'ten ve alt bilgiden açılır */
 var PAGES=[['ana','Ana Sayfa'],['tasarla','Kendin Tasarla'],['hazir','Koleksiyon'],['kurumsal','Kurumsal'],['hakkimizda','Hakkımızda'],['kurdun','Kurdun İzinde']];
-function pagesNow(){var l=PAGES.map(function(p){var m={hazir:'menuHazir',atolye:'menuAtolye',hakkimizda:'menuAbout'}[p[0]];return [p[0],m?TX(m):p[1]];});
+function pagesNow(){var l=PAGES.map(function(p){var m={hazir:'menuHazir',tasarla:'menuTasarla',hakkimizda:'menuAbout'}[p[0]];return [p[0],m&&TX(m)?TX(m):p[1]];});
   var cp=(D.cpages||[]).filter(function(x){return x&&x.show!==false&&x.menu!==false&&x.title;}).map(function(x){return ['p-'+x.id,x.title];});
   if(cp.length){var tp=cp.filter(function(x){return /toptan/i.test(x[1]);}),ot=cp.filter(function(x){return !/toptan/i.test(x[1]);});var i=l.map(function(x){return x[0];}).indexOf('hakkimizda');if(i<0)i=l.length;l=l.slice(0,i).concat(ot,l.slice(i)).concat(tp);}
   /* "Hediye & Dekor" kategorisi yönetimde "Sitede göster" açılınca menüde Koleksiyon'dan sonra kendiliğinden çıkar */
@@ -5548,7 +5548,7 @@ function adminView(){
     var tx=d.txt=d.txt||clone(DEF.txt);Object.keys(DEF.txt).forEach(function(k){if(tx[k]===undefined)tx[k]=clone(DEF.txt[k]);});
     var ta=function(lb,k,h){return '<label for="'+aid('txt.'+k)+'">'+lb+'<textarea id="'+aid('txt.'+k)+'" data-bind="txt.'+k+'" data-t="s" style="min-height:'+(h||80)+'px">'+esc(tx[k]||'')+'</textarea></label>';};
     var cb=function(lb,k){return '<label><input type="checkbox" data-bind="txt.'+k+'" data-t="b"'+(tx[k]!==false?' checked':'')+'>'+lb+'</label>';};
-    h+='<div class="aed" style="max-width:760px"><b>Menü adları</b><div class="three">'+fld('Koleksiyon','txt.menuHazir')+fld('Baskı Atölyesi','txt.menuAtolye')+fld('Hakkımızda','txt.menuAbout')+'</div></div>';
+    h+='<div class="aed" style="max-width:760px"><b>Menü adları</b><div class="three">'+fld('Koleksiyon','txt.menuHazir')+fld('Kendin Tasarla','txt.menuTasarla')+fld('Hakkımızda','txt.menuAbout')+'</div></div>';
     h+='<div class="aed" style="max-width:760px"><b>Ana sayfa · görselin altı</b>'+fld('Düğme yazısı','txt.heroCta')+fld('Manşet','txt.heroTitle')+ta('Alt başlık','heroSub')+sel('Açıklama yazılarının hizası (ana sayfa, Baskı Atölyesi, Hakkımızda)','txt.txtAlign',['İki yana yaslı','Ortalı','Sola yaslı','Sağa yaslı'],tx.txtAlign||'İki yana yaslı')+fld('Büyük harfli imza satırı (boş = gizli)','txt.heroTag')+'</div>';
     h+='<div class="aed" style="max-width:760px"><b>Ana sayfa · bölümler</b><div class="chk">'+cb('Kategori düğmelerini göster','showCats')+cb('“Neden Wolflano?” bandını göster','showWhy')+cb('Baskı Atölyesi bölümünü göster','showAtolye')+'</div>'+fld('Öne çıkan ürün sayısı (0 = gizli)','txt.featN','n')+
       '<b>“Neden Wolflano?” bandı</b>'+fld('Başlık','txt.whyTitle')+ta('Büyük cümle','whyQuote',60)+ta('Açıklama','whyText',60)+fld('Bağlantı yazısı','txt.whyLink')+
