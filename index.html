@@ -1063,6 +1063,8 @@ body:has(.ttlanding) #ann{display:none!important}
 
 /* Tüm sayfa banner'ları ana sayfayla aynı: logo (üst çubukta zaten var) ve küçük üst satır gösterilmez */
 .kbx .kbw,.kbx .kbe{display:none!important}.kbx .kbtop:empty{display:none}
+
+.tsatl{display:inline-flex;align-items:center;gap:6px;margin:0 0 12px 2px;font:600 14px var(--ui);color:var(--green);text-decoration:none}.tsatl svg{width:14px;height:14px}
 </style>
 
 <header class="top"><div class="wrap">
@@ -1081,7 +1083,7 @@ body:has(.ttlanding) #ann{display:none!important}
 <footer><div class="wrap">
   <div class="fbrand"><a class="brand" href="#ana"><img data-logo alt=""><span class="word">WOLF<b>LANO</b></span></a></div>
   <div class="fmin" id="fdyn"></div>
-  <div class="copy"><span>© 2026 WOLFLANO. Tüm hakları saklıdır.</span><a href="#iletisim">İletişim</a><a href="#yorumlar">Yorumlar</a><a href="#sartlar">Kullanım şartları</a><a href="#mesafeli">Mesafeli satış</a><a href="#iade">İade</a><a href="#kvkk">KVKK</a><a href="#yonetim">Yönetim</a></div>
+  <div class="copy"><span>© 2026 WOLFLANO. Tüm hakları saklıdır.</span><a href="#iletisim">İletişim</a><a href="#atolye">Baskı Atölyesi</a><a href="#yorumlar">Yorumlar</a><a href="#sartlar">Kullanım şartları</a><a href="#mesafeli">Mesafeli satış</a><a href="#iade">İade</a><a href="#kvkk">KVKK</a><a href="#yonetim">Yönetim</a></div>
 </div></footer>
 
 <div id="layer"></div>
@@ -3257,10 +3259,11 @@ function pCut(p){var c=(p.cat||[]).map(function(x){return String(x).toLocaleLowe
 function szBlock(zs,ch){if(!zs.length)return '';return '<div class="szs" data-ch="'+esc(JSON.stringify(ch||{}))+'"><p>Beden: <b id="szT">Seç</b><span id="szM" class="szm"></span></p><div role="radiogroup" aria-label="Beden">'+zs.map(function(z){return '<button type="button" class="sz" role="radio" aria-checked="false" data-sz="'+esc(z)+'">'+esc(z)+'</button>';}).join('')+'</div>'+(ch?'<details class="szt"><summary>Beden tablosu (cm)</summary><table><thead><tr><th>Beden</th><th>En</th><th>Boy</th></tr></thead><tbody>'+Object.keys(ch).map(function(z){return '<tr><td>'+esc(z)+'</td><td>'+ch[z][0]+'</td><td>'+ch[z][1]+'</td></tr>';}).join('')+'</tbody></table><p class="note">En: koltuk altından koltuk altına düz ölçülen göğüs genişliği. Boy: omuz dikişinden etek ucuna. Avrupa standart kalıp; ±1-2 cm fark olabilir.</p></details>':'')+'</div>';}
 function usedTokens(d){var o={};function add(s){if(s&&(s.indexOf('img/')===0||s.indexOf('vid/')===0))o[s]=1;}d.products.forEach(function(p){(p.imgs||[]).forEach(add);add(p.video);});d.blanks.forEach(function(p){(p.imgs||[]).forEach(add);(p.raw||[]).forEach(add);Object.keys(p.rawcut||{}).forEach(function(r){if((p.raw||[]).indexOf(r)>=0)add(p.rawcut[r].file);});add(p.video);(p.colors||[]).forEach(function(c){if(c){add(c.front);add(c.back);}});});add(d.hero);add(d.hero2);add(d.logo);(d.cpages||[]).forEach(function(p){(p.imgs||[]).forEach(add);});((d.kolban||{}).imgs||[]).forEach(add);((d.makine||{}).imgs||[]).forEach(add);['clipCats','tplCats'].forEach(function(k){((d.studio||{})[k]||[]).forEach(function(c){(c.items||[]).forEach(function(it){add(it.img);});});});return o;}
 applyData();
-var PAGES=[['ana','Ana Sayfa'],['hazir','Koleksiyon'],['atolye','Baskı Atölyesi'],['kurumsal','Kurumsal'],['hakkimizda','Hakkımızda'],['kurdun','Kurdun İzinde']];
+/* Menü (2026-11-21): önce satış, sonra hikâye. "Kendin Tasarla" doğrudan Ürün seç'e gider; Baskı Atölyesi bilgi sayfası Ürün seç'ten ve alt bilgiden açılır */
+var PAGES=[['ana','Ana Sayfa'],['tasarla','Kendin Tasarla'],['hazir','Koleksiyon'],['kurumsal','Kurumsal'],['hakkimizda','Hakkımızda'],['kurdun','Kurdun İzinde']];
 function pagesNow(){var l=PAGES.map(function(p){var m={hazir:'menuHazir',atolye:'menuAtolye',hakkimizda:'menuAbout'}[p[0]];return [p[0],m?TX(m):p[1]];});
   var cp=(D.cpages||[]).filter(function(x){return x&&x.show!==false&&x.menu!==false&&x.title;}).map(function(x){return ['p-'+x.id,x.title];});
-  if(cp.length){var i=l.map(function(x){return x[0];}).indexOf('hakkimizda');if(i<0)i=l.length;l=l.slice(0,i).concat(cp,l.slice(i));}
+  if(cp.length){var tp=cp.filter(function(x){return /toptan/i.test(x[1]);}),ot=cp.filter(function(x){return !/toptan/i.test(x[1]);});var i=l.map(function(x){return x[0];}).indexOf('hakkimizda');if(i<0)i=l.length;l=l.slice(0,i).concat(ot,l.slice(i)).concat(tp);}
   /* "Hediye & Dekor" kategorisi yönetimde "Sitede göster" açılınca menüde Koleksiyon'dan sonra kendiliğinden çıkar */
   /* Koleksiyon'da sekme olarak görünmez; menüden kendi sayfasına (Hediye & Dekor) gider */
   var hd=(D.cats||[]).filter(function(c){return c.show!==false&&/hediye|dekor/i.test(c.name||'')&&PRODUCTS.some(function(p){return (p.cat||[]).indexOf(c.id)>=0;});})[0];
@@ -4260,7 +4263,7 @@ yorumlar:function(){return rvPage();},
     it=function(v,name){var on=tsType===v;return '<button type="button" data-tst="'+v+'"'+(on?' class="on" aria-checked="true"':' aria-checked="false"')+' role="menuitemradio"><span>'+esc(name)+'</span>'+(on?OK:'')+'</button>';};
   var dd=types.length>1?'<div class="dd'+(tsOpen?' open':'')+'"><button type="button" class="ddb" data-tsdd aria-haspopup="true" aria-expanded="'+tsOpen+'"><span>'+esc(tsType?tsName(tsType):'Tümü')+'</span><i class="cv">'+CV+'</i></button>'+
     (tsOpen?'<div class="ddl" role="menu">'+it('','Tümü')+types.map(function(t){return it(t,tsName(t));}).join('')+'</div>':'')+'</div>':'';
-  return '<div class="wrap page kolp tsp"><p class="eyebrow">Kendin tasarla</p><h1 class="h2 kolh">Ürün seç</h1>'+pageBan('tasarla',(D.banners||{}).tasarla)+izPromo()+'<div class="catbar">'+
+  return '<div class="wrap page kolp tsp"><p class="eyebrow">Kendin tasarla</p><h1 class="h2 kolh">Ürün seç</h1>'+pageBan('tasarla',(D.banners||{}).tasarla)+'<a class="tsatl" href="#atolye">Baskı teknolojimiz ve fiyatlar '+IC.arrow+'</a>'+izPromo()+'<div class="catbar">'+
   '<div class="chips tsc" role="tablist">'+TS_TABS.map(function(c){var on=tsSel===c[0];return '<button role="tab" data-ts="'+c[0]+'"'+(on?' class="on" aria-selected="true"':'')+'>'+c[1]+'</button>';}).join('')+'</div>'+dd+'</div>'+
   (list.length?'<div class="grid">'+tsExpand(list).map(function(E){return tsCard(E.b,E.kh,E.cj);}).join('')+'</div>':'<p class="empty">Bu grupta henüz baskıya uygun ürün yok.</p>')+
   '</div>';
@@ -4671,7 +4674,7 @@ function route(){
   if(h==='biz'){location.replace('studyo.html?wolf=1');return;}
   if(h==='baski')h='tasarla';if(h==='kurdun-izinde')h='kurdun';if(!VIEWS[h])h='ana';
   var fromUrun=rPrev==='urun',fromBu=rPrev==='bu';if(h!=='hazir'){catOpen='';grpOpen='';}
-  var act=h==='urun'||h==='konu'||h==='ara'?'hazir':h==='bu'?'atolye':h==='cp'?'p-'+pid:(/^(tasarla|biz|fiyatlar)$/.test(h)?'atolye':h);if(katId)act='kat-'+katId;cur=act;
+  var act=h==='urun'||h==='konu'||h==='ara'?'hazir':h==='bu'?'tasarla':h==='cp'?'p-'+pid:(/^(tasarla|biz|fiyatlar|atolye)$/.test(h)?'tasarla':h);if(katId)act='kat-'+katId;cur=act;
   $('#main').innerHTML=VIEWS[h](pid);try{stPage(h);}catch(_){}
   if(h==='tasarla')calc('p');if(h!=='hesabim')accMode='login';if(h==='yonetim'){if(!A||!A.dirty)A=newA();}
   var links=pagesNow().map(function(p){return '<a href="#'+p[0]+'"'+(p[0]===act?' class="on" aria-current="page"':'')+'>'+p[1]+'</a>';}).join('');
