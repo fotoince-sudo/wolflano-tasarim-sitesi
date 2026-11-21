@@ -6252,9 +6252,20 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
       }catch(e){if(e&&e.code==='auth'||!si)throw e;bad.push(q.color||q.name);try{console.error('Renk güncelleme',e);}catch(_){}}}}
     finally{if(sibs.length>1){teeSwap(t0);restoreMusicColors(musicColors);renderShirt();renderObjects();syncMusicInk();try{renderOpt();}catch(_){}}}
     await rq('/rest/v1/site_content?on_conflict=id',{method:'POST',body:{id:'main',data:d,updated_at:new Date().toISOString()},prefer:'resolution=merge-duplicates,return=minimal'});
+    /* Tüm renklerde güncelle işaretliyse ürünün henüz olmayan renkleri de yayınlanır (eskiden yalnız var olan renkler güncelleniyordu) */
+    var added=[];
+    if(all&&all.checked){var have=sibs.map(function(x){var c=phPick(TEES.map(function(t){return {name:t[0],hex:t[1]};}),x.dsg&&x.dsg.tee,x.color);return String(c?c.hex:(x.dsg&&x.dsg.tee)||'').toLowerCase();});
+      have.push(String(t0).toLowerCase());
+      var miss=allCols().filter(function(h){return have.indexOf(String(h).toLowerCase())<0;});
+      if(miss.length){var catId=((p.cat||[])[0]||'')+((p.sub||[]).length?'|'+p.sub.join('|'):''),price=p.pc?defPrice():Math.round((+p.price||0)*vatK('ready')),mc=saveMusicColors();
+        ADM.tTyped=null;
+        try{for(var mi=0;mi<miss.length;mi++){teeSwap(miss[mi],true);renderShirt();renderObjects();await phWait(miss[mi]);renderShirt();renderObjects();await new Promise(function(r){setTimeout(r,120);});
+            var mn=colorName()||miss[mi];if(btn)btn.textContent='Yeni renk ekleniyor: '+mn+' ('+(mi+1)+'/'+miss.length+')…';
+            try{await doProd(p.name,catId,price,false,{type:p.type,color:null,desc:p.desc,tag:p.tag,old:p.old});added.push(mn);}catch(e){if(e&&e.code==='auth')throw e;bad.push(mn);}}}
+        finally{teeSwap(t0);restoreMusicColors(mc);renderShirt();renderObjects();syncMusicInk();try{renderOpt();}catch(_){}}}}
     var nm=p.name||E.title;ADM.edit=null;mode='urun';
     setTimeout(function(){location.href='index.html#urun-'+encodeURIComponent(p.id);},1800);
-    return '"'+nm+'" güncellendi'+(sibs.length>1?' ('+(sibs.length-bad.length)+' renk'+(bad.length?'; güncellenemeyen: '+bad.join(', '):'')+')':'')+'. Ürün sayfasına dönülüyor…';
+    return '"'+nm+'" güncellendi'+(sibs.length>1?' ('+sibs.length+' renk)':'')+(added.length?'. Yeni eklenen renkler: '+added.join(', '):'')+(bad.length?'. Yapılamayan: '+bad.join(', '):'')+'. Ürün sayfasına dönülüyor…';
   }
   /* Eski koleksiyon görsellerini yenile: düz açık zeminde üretilip sonradan taş grisi zemine taşınan görsellerde (beyaz ürünlerde)
      ürünün çevresinde açık bir hale kalıyordu. Her ürün kayıtlı tasarımından (dsg) bugünkü stüdyoyla yeniden çizilir; kod, fiyat,
@@ -6333,6 +6344,10 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
         try{await doProd(title,cat,pr,false,Object.assign({},info,{color:null}));ok.push(cn);}catch(e){if(e&&e.code==='auth')throw e;bad.push(cn);try{console.error('Renk',cn,e);}catch(_){}}}}
     finally{teeSwap(t0);restoreMusicColors(musicColors);renderShirt();renderObjects();syncMusicInk();try{renderOpt();}catch(_){}}
     if(!ok.length)throw {msg:'Hiçbir renk yayınlanamadı. Tekrar dene.'};
+    /* Kayıt kontrolü: sitede bu tasarımın kaç rengi gerçekten duruyor (biri diğerinin üzerine yazdıysa burada görünür) */
+    try{var vr=await rq('/rest/v1/site_content?select=data&id=eq.main'),vd=vr&&vr[0]&&vr[0].data,lp=vd&&(vd.products||[])[0];
+      if(lp&&+lp.wc){var kept=(vd.products||[]).filter(function(x){return +x.wc===+lp.wc&&x.type===lp.type&&(x.cat||[]).join()===(lp.cat||[]).join();}).length;
+        if(kept<ok.length)return 'Dikkat: '+ok.length+' renk gönderildi ama sitede '+kept+' renk görünüyor. Ürünü "Stüdyoda düzenle" ile açıp "Tüm renklerde güncelle" işaretli Güncelle\'ye bas; eksik renkler eklenir.';}}catch(_){}
     return ok.length+' renkte yayınlandı: '+ok.join(', ')+'.'+(bad.length?' Yayınlanamayan: '+bad.join(', ')+' (o rengi tek başına tekrar dene).':'')+' Hepsi aynı tasarım kodunu aldı.';}
   async function doPrint(title,sizes,byWolf){
     var ss=sidesWith();if(!ss.length)throw {msg:'Önce bir tasarım yap.'};
@@ -6645,7 +6660,7 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
     var w=$('#admSheet');
     var tabs=[['sablon','Şablon'],['urun','Ürün yap'],['baski','Baskıya gönder'],['taslak','Taslak']];if(!/^(mug|canvas)$/.test(state.product))tabs.push(['manken','Mankende gör']);else if(mode==='manken')mode='sablon';if(ADM.edit)tabs.unshift(['guncelle','Güncelle']);else if(mode==='guncelle')mode='sablon';
     var body='';
-    if(mode==='guncelle')body='<p class="note">Düzenlenen ürün: <b>'+ea(ADM.edit.title||'')+'</b>. "Ürünü güncelle" yalnız ön ve arka görsellerini yeniler; ürün kodu, fiyat, kategori, açıklama ve stok aynı kalır.</p>'+(allCols().length>1?'<label class="am-all"><input type="checkbox" id="amUAll" checked><span><b>Tüm renklerde güncelle</b><small>Bu tasarımın sitedeki bütün renkleri birlikte yenilenir. Yalnız bu renk için işareti kaldır.</small></span></label>':'')+ortBox();
+    if(mode==='guncelle')body='<p class="note">Düzenlenen ürün: <b>'+ea(ADM.edit.title||'')+'</b>. "Ürünü güncelle" yalnız ön ve arka görsellerini yeniler; ürün kodu, fiyat, kategori, açıklama ve stok aynı kalır.</p>'+(allCols().length>1?'<label class="am-all"><input type="checkbox" id="amUAll" checked><span><b>Tüm renklerde güncelle</b><small>Bu tasarımın sitedeki bütün renkleri birlikte yenilenir, eksik renkler de eklenir. Yalnız bu renk için işareti kaldır.</small></span></label>':'')+ortBox();
     if(mode==='sablon')body='<div class="am-two"><label class="am-f">Kimler görsün<select id="amVis"><option value="herkes"'+(tplVis==='herkes'?' selected':'')+'>Herkes (müşteriler de)</option><option value="ozel"'+(tplVis==='ozel'?' selected':'')+'>Sadece Wolflano</option></select></label>'+
       '<label class="am-f">Kategori<select id="amTCat"><option value="">'+ea(TPL_CAT_ADM)+'</option>'+TPL_CATS.filter(function(c){return c!=='Tümü'&&c!==TPL_CAT_ADM&&c!==TPL_CAT_PRIV&&(c!==TPL_CAT_MUSIC||state.product==='tee');}).map(function(c){return '<option'+(c===tplCat?' selected':'')+'>'+ea(c)+'</option>';}).join('')+'</select></label></div>'+
       '<p class="note">'+(tplVis==='ozel'?'Yalnız sen ve yetkililer Şablon panelinde "'+TPL_CAT_PRIV+'" altında görürsünüz; müşterinin sayfasına hiç yüklenmez.':'Müşteriler Şablon panelinde seçtiğin kategoride görür; seçince kendi ürününe uyarlanır.')+'</p>';
