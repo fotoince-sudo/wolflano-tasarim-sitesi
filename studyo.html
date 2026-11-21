@@ -4813,7 +4813,7 @@ function renderTpl(){
   $('#tplFilters').hidden=!(state.product==='tee'||state.product==='sweat'||state.product==='polo'||state.product==='canvas');
   if($('#tplFilters').hidden)view.tplDir='Tümü';
   $('#tplFilters').innerHTML=fc;
-  var gh={'Tümü':1};TPLS.forEach(function(t){if(tplFits(t,g)){var k=tplKat(t);if(k)gh[k]=1;}});if(kolajOn())gh['Fotoğraflı']=1;
+  var gh={'Tümü':1};TPLS.forEach(function(t){if(tplFits(t,g)){var k=tplKat(t);if(k)gh[k]=1;}});
   /* Zeminler sekmesi kaldırıldı: zeminler alttaki "Zemini değiştir" düğmesinden seçiliyor, burada boş sekme kafa karıştırıyordu */
   if(!gh[view.tplGrp||'Tümü']||view.tplGrp==='Zeminler'){view.tplGrp='Tümü';if(view.tplCat==='Zemin')view.tplCat='Tümü';}var G=view.tplGrp||'Tümü';
   if(G!=='Tümü'&&view.tplCat!=='Tümü'&&tplGrpOf(view.tplCat)!==G)view.tplCat='Tümü';
@@ -4823,10 +4823,7 @@ function renderTpl(){
   subs=[];if(subs.length>1)cc='<button data-tc="Tümü"'+(view.tplCat==='Tümü'&&!q?' class="on"':'')+'>Hepsi</button>'+subs.map(function(c){return '<button data-tc="'+c+'"'+(c===view.tplCat&&!q?' class="on"':'')+'>'+c+'</button>';}).join('');
   $('#tplCats').innerHTML=cc;$('#tplCats').hidden=!cc;
   TPLS.forEach(function(t,i){if(!tplFits(t,g))return;if(view.tplDir&&view.tplDir!=='Tümü'&&tplOrientation(t)!==view.tplDir)return;if(view.tplArea&&view.tplArea!=='Tümü'&&tplAreaName(t)!==view.tplArea)return;if(q){if(!tplMatch(t,q))return;}else if(view.tplCat!=='Tümü'&&t.c!==view.tplCat)return;else if(view.tplCat==='Tümü'&&!tplInGrp(t.c,t))return;n++;h+='<button class="tpl" data-tpl="'+i+'" data-tpl-dir="'+tplOrientation(t)+'"><div class="prev"><div class="in"></div></div><span>'+t.n+'</span></button>';});
-  /* Fotoğraf kolajı (canvas 35'e kadar, kupa 7, giyim 12 fotoğraf) şablon değil ayrı bir araç: Fotoğraf ekle başlığında en başta kart olarak çıkar */
   var kjh='';
-  if(!q&&(G==='Fotoğraflı'||G==='Tümü')&&kolajOn()){var km=state.product==='canvas'?'35 × 50 tabloya 15, 50 × 70 tabloya 35 fotoğrafa kadar':state.product==='mug'?'Kupaya 7 fotoğrafa kadar':'12 fotoğrafa kadar';
-    kjh='<button type="button" class="tplk" data-kj="1"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="8" height="10" rx="1" transform="rotate(-6 7 9)"/><rect x="12" y="3" width="9" height="7" rx="1"/><rect x="12" y="13" width="9" height="8" rx="1" transform="rotate(5 16 17)"/></svg><span><b>Fotoğraf kolajı</b><small>Serbest ya da düzenli · '+km+'</small></span></button>';}
   var kjb=$('#tplKj');if(kjb){kjb.innerHTML=kjh;kjb.hidden=!kjh;}
   $('#tplGrid').innerHTML=h;tplLastGroup=g;var em=$('#tplEmpty');em.textContent=q?'Bu aramayla eşleşen şablon yok. Başka bir kelime dene.':view.tplCat===TPL_CAT_MUSIC?'Müzik şablonları yakında burada.':'Bu ürünün ('+TPL_GROUP_NAME[g]+') baskı ölçüsüne özel şablonlar hazırlanıyor, çok yakında burada.';em.hidden=n>0;$('#tplQx').hidden=!q;
 }
