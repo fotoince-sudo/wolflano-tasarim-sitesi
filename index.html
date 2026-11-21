@@ -1004,7 +1004,7 @@ body:has(.ttlanding) #ann{display:none!important}
 .an-cat b,.an-cat small{padding:0 4px}
 .an-cat{text-decoration:none;color:#101a14;display:flex;flex-direction:column;gap:4px}
 .an-cat i{display:block;aspect-ratio:1/1.08;border-radius:16px;overflow:hidden;background:#cccfcb;margin-bottom:4px}.an-cat img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .3s}.an-cat:hover img{transform:scale(1.04)}
-.an-cat b{font:800 15px var(--ui)}.an-cat small{font:500 13px var(--ui);color:#46534c}
+.an-cat i img{transition:opacity .35s ease}.an-cat b{font:800 15px var(--ui)}.an-cat small{font:500 13px var(--ui);color:#46534c}
 .an-steps{display:flex;flex-direction:column;gap:12px}
 .an-st{display:flex;gap:14px;align-items:flex-start;background:#fff;border:1px solid #e3ebe6;border-radius:16px;padding:16px}
 .an-st em{flex:none;width:40px;height:40px;border-radius:12px;background:#e6f4ec;color:#1d7a4a;display:grid;place-items:center;font:800 17px var(--ui);font-style:normal}
@@ -3597,8 +3597,20 @@ var NAVPREV='';window.addEventListener('hashchange',function(e){try{var o=new UR
 function pdBack(p){var hd=(p.cat||[]).some(isHdCat);return backLink(hd?hdHref():'#hazir',hd?'← Hediye & Dekor':'← Koleksiyon');}
 function backLink(def,lbl){return '<a class="link back" href="'+def+'" data-goback>'+(NAVPREV&&NAVPREV!==def?'← Geri':esc(lbl))+'</a>';}
 document.addEventListener('click',function(e){var a=e.target.closest&&e.target.closest('[data-goback]');if(!a||!NAVPREV)return;e.preventDefault();history.back();});
+/* Ana sayfa ürün kartları: Koleksiyon ve Hediye & Dekor'daki baskılı ürünlerden fotoğraf çekip birkaç saniyede bir değiştirir.
+   Ürün yoksa hazır görsel kalır. Her açılışta karışık sıra, kart başına en fazla 8 fotoğraf. */
+function anaKartPics(kind,def){var out=[];
+  try{var L=PRODUCTS.filter(function(p){if(p.show===false||soldOut(p)||!(p.imgs||[]).length)return false;var pt=ptOf(p),t=String((p.type||'')+' '+(p.name||'')).toLocaleLowerCase('tr-TR');
+      if(kind==='kupa')return pt==='kupa';if(kind==='canvas')return pt==='canvas';if(kind==='sweat')return /sweat|kap[uü][sş]on/.test(t)&&pt!=='kupa'&&pt!=='canvas';
+      return /ti[sş][oö]rt/.test(t)&&!/polo/.test(t)&&pt!=='kupa'&&pt!=='canvas';});
+    for(var i=L.length-1;i>0;i--){var r=Math.floor(Math.random()*(i+1)),x=L[i];L[i]=L[r];L[r]=x;}
+    var seen={};L.forEach(function(p){var u=IMG(p);if(u&&u!==PH&&!seen[u]&&out.length<8){seen[u]=1;out.push(u);}});}catch(_){}
+  if(out.length<2)out.unshift(def);return out;}
+var AKP=null;function akpStart(){if(AKP)return;var rm=false;try{rm=matchMedia('(prefers-reduced-motion: reduce)').matches;}catch(_){}if(rm)return;
+  AKP=setInterval(function(){var L=document.querySelectorAll('img[data-akp]');if(!L.length)return;[].forEach.call(L,function(im,k){setTimeout(function(){var a;try{a=JSON.parse(im.getAttribute('data-akp'));}catch(_){return;}
+    var n=((+im.dataset.k||0)+1)%a.length,pre=new Image();pre.onload=function(){im.style.opacity='0';setTimeout(function(){im.src=a[n];im.dataset.k=n;im.style.opacity='1';},350);};pre.src=a[n];},k*700);});},4200);}
 /* YENİ ANA SAYFA: tek mesaj ve tek düğme, ürünler önde, kurt imza olarak. Görsel yönetimden değişir (Ana görsel). */
-function anaYeni(){
+function anaYeni(){akpStart();
   var ok='<svg viewBox="0 0 24 24" fill="none" stroke="#1d7a4a" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5L20 7"/></svg>';
   var ar='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>';
   var fr=+((D.ship||{}).free)||0;
@@ -3617,7 +3629,7 @@ function anaYeni(){
     '<div class="an-btns"><a class="an-b1" href="#tasarla">Hemen tasarla '+ar+'</a><a class="an-b2" href="#hazir">Hazır koleksiyonu gör</a></div>'+
   '</div></section>'+
   '<section class="an-sec an-wh"><div class="an-w"><div class="an-hd"><h2>Ne tasarlamak istersin?</h2><a href="#tasarla">Tümü</a></div><div class="an-cats">'+
-    cats.map(function(c){return '<a class="an-cat" href="'+c[0]+'"><i><img src="'+c[1]+'" alt="'+esc(c[4])+'" loading="lazy"></i><b>'+c[2]+'</b><small>'+c[3]+'</small></a>';}).join('')+
+    cats.map(function(c,ci){var L=anaKartPics(['tisort','kupa','canvas','sweat'][ci],c[1]);return '<a class="an-cat" href="'+c[0]+'"><i><img src="'+esc(L[0])+'" alt="'+esc(c[2])+'" loading="lazy"'+(L.length>1?' data-akp="'+esc(JSON.stringify(L))+'"':'')+'></i><b>'+c[2]+'</b><small>'+c[3]+'</small></a>';}).join('')+
   '</div></div></section>'+
   '<section class="an-sec"><div class="an-w"><div class="an-hd" style="flex-direction:column;align-items:flex-start;gap:6px"><p class="an-ey">Çok kolay</p><h2>3 adımda hazır</h2></div><div class="an-steps">'+
     '<div class="an-st"><em>1</em><div><b>Ürününü ve rengini seç</b><span>Tişört, sweatshirt, kupa ya da canvas tablo.</span></div></div>'+
