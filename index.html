@@ -1023,6 +1023,10 @@ body:has(.ttlanding) #ann{display:none!important}
 .an-gc{display:flex;flex-direction:column;gap:20px}
 .an-kur{background:#e6f4ec}.an-kur .an-w{display:flex;flex-direction:column;gap:10px}.an-kur .an-lead{color:#2f3d35}
 .an-hero{padding-top:14px}.an-ban .kbx{margin:0}
+/* Ana banner: üstte tam genişlikte teknoloji şeridi, banner'a yapışık */
+.an-tek{background:#1d7a4a;color:#fff;font:700 clamp(13px,3.6vw,16px)/1.3 var(--ui);letter-spacing:.01em;text-align:center;padding:10px 12px;border-radius:16px 16px 0 0}
+.an-ban .an-tek+.kbx{border-top-left-radius:0;border-top-right-radius:0;border-top:0}
+.an-ban .kbtop{display:none!important}
 /* Ana banner: logonun yanında kalite başlığı, diğer yazılar altında */
 .an-ban .kbtop{flex-direction:column;align-items:flex-start;gap:8px}.an-ban .kbw{width:40px;height:40px}
 @media(min-width:600px){.an-ban .kbtop{flex-direction:row;align-items:center;gap:12px}.an-ban .kbw{width:44px;height:44px}}
@@ -1031,6 +1035,14 @@ body:has(.ttlanding) #ann{display:none!important}
 /* Logo üst çubukta zaten var: ana sayfa banner'ında tekrar gösterilmez */
 .an-ban .kbw{display:none!important}.an-ban .kbtop{gap:6px!important}
 .an-ban .kbtek{display:block;max-width:440px;font:500 13.5px/1.45 var(--ui);color:#2f3d35;margin-top:-2px}
+/* Telefonda banner kısa olsun: küçük yazılar, alt satır gizli (ekranın yarısını kaplamasın) */
+@media(max-width:599px){.an-ban .kbt{padding:14px 0 14px 14px!important;gap:5px!important}
+ .an-ban .kbe{font-size:19px!important;line-height:1.1!important}
+ .an-ban .kbtek{font-size:12px!important;line-height:1.38!important;margin-top:0!important}
+ .an-ban .kbx .kbt .kbh,.an-ban .kbx .kbt .kbh.kbh-l{font-size:20px!important;line-height:1.1!important;margin-top:6px!important}
+ .an-ban .kbs{font-size:11px!important;line-height:1.35!important}
+ .an-ban .kbl{display:none!important}
+ .an-ban .kbx{min-height:0!important}}
 @media(min-width:600px){.an-ban .kbtop{flex-wrap:wrap}.an-ban .kbtek{flex-basis:100%;margin:0;font-size:15px}}
 @media(min-width:900px){
  .an h1{font-size:52px}.an h2{font-size:30px}
@@ -3591,7 +3603,7 @@ function anaYeni(){
   var tpl='studyo.html?sablon='+encodeURIComponent('Wolf tasarımları');
   return '<div class="an">'+
   '<section class="an-hero"><div class="an-w">'+
-    '<div class="an-ban">'+wBan((D.banners||{}).ana,anaPics(),WBAN_DEF.ana).replace(/(<span class="kbe">[^<]*<\/span>)/,'$1<span class="kbtek">Dünyanın önde gelen baskı teknolojisi ve sağlığa uygun, su bazlı boyalarla basıyoruz.</span>')+'</div>'+
+    '<div class="an-ban"><div class="an-tek">Dünyanın kabul ettiği teknolojiyi kullanıyoruz</div>'+wBan((D.banners||{}).ana,anaPics(),WBAN_DEF.ana)+'</div>'+
     '<div class="an-btns"><a class="an-b1" href="#tasarla">Hemen tasarla '+ar+'</a><a class="an-b2" href="#hazir">Hazır koleksiyonu gör</a></div>'+
     '<div class="an-tr"><span>'+ok+'KDV dahil fiyat</span><span>'+ok+'2–4 günde kargoda</span><span>'+ok+'Sağlığa uygun baskı</span>'+(fr>0?'<span>'+ok+tl(fr)+' üzeri kargo ücretsiz</span>':'')+'</div>'+
   '</div></section>'+
@@ -3769,7 +3781,7 @@ var WBAN_DEF={
   hazir:{e:'Yeni sezon',t:'Paranı savurma, logo algısına değil kumaşa öde.',x:'240 gr tişört · 280 gr polo · 380 gr sweatshirt',l:'İtalyan estetiği · Wolflano karakteri'},
   hediye:{e:'Wolflano',h1:'Hediye & Dekor',t:'',x:'Anıların, kupada ve duvarda.',l:'Kolajını Wolf hazırlasın'},
   tasarla:{e:'Kendin tasarla',t:'Fikrin senin, kalitesi bizim.',x:'Tişört · Sweatshirt · Şapka · Kupa · Canvas',l:'Wolf seninle tasarlar',anim:true},
-  ana:{e:'Dünya kalitesinde baskı',t:'Fotoğrafın, tasarımın. 2 dakikada ürünün.',x:'Tişört · Sweatshirt · Kupa · Canvas tablo',l:'Ekranda ne görüyorsan onu basıyoruz',anim:true},
+  ana:{e:'',t:'Fotoğrafın, tasarımın. 2 dakikada ürünün.',x:'Tişört · Sweatshirt · Kupa · Canvas tablo',l:'Ekranda ne görüyorsan onu basıyoruz',anim:true},
   sayfa:{e:'Wolflano',t:'',x:'',l:'İtalyan estetiği · Wolflano karakteri'}};
 function wbPics(page){var out=[];
   if(page==='hediye'){var hc=(D.cats||[]).filter(function(c){return /hediye|dekor/i.test(c.name||'');})[0];
