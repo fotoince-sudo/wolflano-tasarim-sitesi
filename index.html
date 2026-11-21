@@ -1025,6 +1025,11 @@ body:has(.ttlanding) #ann{display:none!important}
 .an-gc{display:flex;flex-direction:column;gap:20px}
 .an-kur{background:#e6f4ec}.an-kur .an-w{display:flex;flex-direction:column;gap:10px}.an-kur .an-lead{color:#2f3d35}
 .an-hero{padding-top:14px}.an-ban .kbx{margin:0}
+/* Ana banner: logonun yanında kalite başlığı, diğer yazılar altında */
+.an-ban .kbtop{flex-direction:column;align-items:flex-start;gap:8px}.an-ban .kbw{width:40px;height:40px}
+@media(min-width:600px){.an-ban .kbtop{flex-direction:row;align-items:center;gap:12px}.an-ban .kbw{width:44px;height:44px}}
+.an-ban .kbe{font:800 clamp(18px,4.9vw,24px)/1.15 var(--ui);letter-spacing:-.005em;text-transform:none;color:#101a14}.an-ban .kbe:before{display:none}
+.an-ban .kbh{margin-top:14px}
 @media(min-width:900px){
  .an h1{font-size:52px}.an h2{font-size:30px}
  .an-hero{padding:24px 0 34px}.an-hero .an-w{display:flex;flex-direction:column;gap:18px}.an-btns{max-width:680px}
@@ -3762,7 +3767,7 @@ var WBAN_DEF={
   hazir:{e:'Yeni sezon',t:'Paranı savurma, logo algısına değil kumaşa öde.',x:'240 gr tişört · 280 gr polo · 380 gr sweatshirt',l:'İtalyan estetiği · Wolflano karakteri'},
   hediye:{e:'Wolflano',h1:'Hediye & Dekor',t:'',x:'Anıların, kupada ve duvarda.',l:'Kolajını Wolf hazırlasın'},
   tasarla:{e:'Kendin tasarla',t:'Fikrin senin, kalitesi bizim.',x:'Tişört · Sweatshirt · Şapka · Kupa · Canvas',l:'Wolf seninle tasarlar',anim:true},
-  ana:{e:'Kendin tasarla',t:'Fotoğrafın, tasarımın. 2 dakikada ürünün.',x:'Tişört · Sweatshirt · Kupa · Canvas tablo',l:'Ekranda ne görüyorsan onu basıyoruz',anim:true},
+  ana:{e:'Dünya kalitesinde baskı',t:'Fotoğrafın, tasarımın. 2 dakikada ürünün.',x:'Tişört · Sweatshirt · Kupa · Canvas tablo',l:'Ekranda ne görüyorsan onu basıyoruz',anim:true},
   sayfa:{e:'Wolflano',t:'',x:'',l:'İtalyan estetiği · Wolflano karakteri'}};
 function wbPics(page){var out=[];
   if(page==='hediye'){var hc=(D.cats||[]).filter(function(c){return /hediye|dekor/i.test(c.name||'');})[0];
