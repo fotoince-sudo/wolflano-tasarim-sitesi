@@ -1003,7 +1003,7 @@ body:has(.ttlanding) #ann{display:none!important}
 .an-cats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px 6px;margin:0 -14px}
 .an-cat b,.an-cat small{padding:0 4px}
 .an-cat{text-decoration:none;color:#101a14;display:flex;flex-direction:column;gap:4px}
-.an-cat i{display:block;aspect-ratio:1/1.08;border-radius:16px;overflow:hidden;background:#eef2ef;margin-bottom:4px}.an-cat i img{mix-blend-mode:multiply}.an-cat img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .3s}.an-cat:hover img{transform:scale(1.04)}
+.an-cat i{display:block;aspect-ratio:1/1.08;border-radius:16px;overflow:hidden;background:#cccfcb;margin-bottom:4px}.an-cat img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .3s}.an-cat:hover img{transform:scale(1.04)}
 .an-cat b{font:800 15px var(--ui)}.an-cat small{font:500 13px var(--ui);color:#46534c}
 .an-steps{display:flex;flex-direction:column;gap:12px}
 .an-st{display:flex;gap:14px;align-items:flex-start;background:#fff;border:1px solid #e3ebe6;border-radius:16px;padding:16px}
@@ -3596,10 +3596,10 @@ function anaYeni(){
   var tt='';try{tt=socURL(CONTACT.tiktok,'https://www.tiktok.com/@');}catch(_){}if(!tt)tt='https://www.tiktok.com/@wolflano.tr';
   var tth='@'+String((CONTACT&&CONTACT.tiktok)||'wolflano.tr').replace(/^.*tiktok\.com\/@?/i,'').replace(/[\/?].*$/,'').replace(/^@/,'');
   var wa='#kurumsal';try{wa=kurWa('Merhaba, kurumumuz için toplu baskı teklifi almak istiyoruz.');}catch(_){}
-  var cats=[['#tasarla','urunler/tisort-gunes.jpg','Tişört','Kadın, erkek, çocuk','Güneş baskılı siyah tişört'],
-    ['#hediye','img/ana-kupa-elde.jpg','Kupa','Fotoğraflı, renkli, sihirli','Dolunay kurdu baskılı kupa elde'],
-    ['#hediye','urunler/canvas-50x70.jpg','Canvas tablo','35×50 ve 50×70','Duvarda kurt temalı canvas tablolar'],
-    ['#tasarla','img/ana-sweatshirt.jpg','Sweatshirt','Kapüşonlu, fermuarlı','Retro gün batımı kurt baskılı gri sweatshirt']];
+  var cats=[['#tasarla','img/ana-kart-tisort.jpg','Tişört','Kadın, erkek, çocuk','Güneş baskılı siyah tişört'],
+    ['#hediye','img/ana-kart-kupa.jpg','Kupa','Fotoğraflı, renkli, sihirli','Suluboya kurt baskılı beyaz kupa'],
+    ['#hediye','img/ana-kart-canvas.jpg','Canvas tablo','35×50 ve 50×70','Retro gün batımı kurt canvas tablo'],
+    ['#tasarla','img/ana-kart-sweatshirt.jpg','Sweatshirt','Kapüşonlu, fermuarlı','Retro gün batımı kurt baskılı lacivert sweatshirt']];
   var tps=[['suluboya-kurt.png','Suluboya kurt'],['retro-gunbatimi.png','Retro gün batımı'],['geometrik-kurt.png','Geometrik kurt'],['tribal-kurt.png','Tribal kurt']];
   var tpl='studyo.html?sablon='+encodeURIComponent('Wolf tasarımları');
   return '<div class="an">'+
