@@ -1024,10 +1024,11 @@ body:has(.ttlanding) #ann{display:none!important}
 .an-camp a{align-self:flex-start;margin-top:4px;min-height:44px;padding:0 16px;border-radius:12px;background:#fff;color:#101a14;display:flex;align-items:center;font:800 15px var(--ui);text-decoration:none}
 .an-gc{display:flex;flex-direction:column;gap:20px}
 .an-kur{background:#e6f4ec}.an-kur .an-w{display:flex;flex-direction:column;gap:10px}.an-kur .an-lead{color:#2f3d35}
+.an-hero{padding-top:14px}.an-ban .kbx{margin:0}
 @media(min-width:900px){
  .an h1{font-size:52px}.an h2{font-size:30px}
- .an-hero{padding:48px 0 40px}.an-hero .an-w{display:grid;grid-template-columns:1fr 1fr;grid-template-areas:"t i" "b i" "r i";grid-template-rows:1fr auto 1fr;column-gap:56px;row-gap:22px;align-content:center}
- .an-ht{grid-area:t;align-self:end}.an-hi{grid-area:i;aspect-ratio:auto;height:560px}.an-btns{grid-area:b;flex-direction:row;align-self:start}.an-btns a{flex:1}.an-tr{grid-area:r;justify-content:flex-start;gap:8px 22px;align-self:start}
+ .an-hero{padding:24px 0 34px}.an-hero .an-w{display:flex;flex-direction:column;gap:18px}.an-btns{max-width:680px}
+ .an-ht{grid-area:t;align-self:end}.an-hi{grid-area:i;aspect-ratio:auto;height:560px}.an-btns{flex-direction:row}.an-btns a{flex:1}.an-tr{justify-content:flex-start;gap:8px 22px}
  .an-cats{grid-template-columns:repeat(4,minmax(0,1fr));gap:18px}
  .an-steps{flex-direction:row}.an-st{flex:1}
  .an-tp{overflow:visible;flex-wrap:wrap}.an-tp a{width:calc(25% - 9px)}.an-tp i{height:240px}
@@ -3583,9 +3584,7 @@ function anaYeni(){
   var tpl='studyo.html?sablon='+encodeURIComponent('Wolf tasarımları');
   return '<div class="an">'+
   '<section class="an-hero"><div class="an-w">'+
-    '<div class="an-ht"><p class="an-ey">Kendin tasarla</p><h1>Fotoğrafın, tasarımın.<br>2 dakikada ürünün.</h1>'+
-      '<p class="an-lead">Tişörtten kupaya, kendi fotoğrafını ekle ya da hazır Wolflano tasarımlarından birini seç. Ekranda ne görüyorsan onu basıyoruz.</p></div>'+
-    '<div class="an-hi"><img src="'+esc(D.hero2?src(D.hero2):'img/ana-kupa-kurt.jpg')+'" alt="Kişiye özel baskılı kupa" fetchpriority="high"></div>'+
+    '<div class="an-ban">'+wBan((D.banners||{}).ana,anaPics(),WBAN_DEF.ana)+'</div>'+
     '<div class="an-btns"><a class="an-b1" href="#tasarla">Hemen tasarla '+ar+'</a><a class="an-b2" href="#hazir">Hazır koleksiyonu gör</a></div>'+
     '<div class="an-tr"><span>'+ok+'KDV dahil fiyat</span><span>'+ok+'2–4 günde kargoda</span><span>'+ok+'Sağlığa uygun baskı</span>'+(fr>0?'<span>'+ok+tl(fr)+' üzeri kargo ücretsiz</span>':'')+'</div>'+
   '</div></section>'+
@@ -3763,6 +3762,7 @@ var WBAN_DEF={
   hazir:{e:'Yeni sezon',t:'Paranı savurma, logo algısına değil kumaşa öde.',x:'240 gr tişört · 280 gr polo · 380 gr sweatshirt',l:'İtalyan estetiği · Wolflano karakteri'},
   hediye:{e:'Wolflano',h1:'Hediye & Dekor',t:'',x:'Anıların, kupada ve duvarda.',l:'Kolajını Wolf hazırlasın'},
   tasarla:{e:'Kendin tasarla',t:'Fikrin senin, kalitesi bizim.',x:'Tişört · Sweatshirt · Şapka · Kupa · Canvas',l:'Wolf seninle tasarlar',anim:true},
+  ana:{e:'Kendin tasarla',t:'Fotoğrafın, tasarımın. 2 dakikada ürünün.',x:'Tişört · Sweatshirt · Kupa · Canvas tablo',l:'Ekranda ne görüyorsan onu basıyoruz',anim:true},
   sayfa:{e:'Wolflano',t:'',x:'',l:'İtalyan estetiği · Wolflano karakteri'}};
 function wbPics(page){var out=[];
   if(page==='hediye'){var hc=(D.cats||[]).filter(function(c){return /hediye|dekor/i.test(c.name||'');})[0];
@@ -3798,6 +3798,10 @@ function wbPics(page){var out=[];
     return out.slice(0,8);}
   return kolPicks().map(function(p){return IMG(p);});}
 function pageBan(page,k){return wBan(k,wbPics(page),WBAN_DEF[page]||WBAN_DEF.sayfa);}
+/* Ana sayfa banner'ı: baskılı ürün fotoğrafları karışık döner (kupa, tişört, sweatshirt, tablo); yönetimdeki ana görsel ilk sırada */
+function anaPics(){var out=[D.hero2?src(D.hero2):'img/ana-kupa-kurt.jpg','urunler/tisort-gunes.jpg','img/ana-kupa-elde.jpg','img/ana-sweatshirt.jpg','urunler/canvas-50x70.jpg'];
+  try{wbPics('hediye').concat(kolPicks().map(function(p){return IMG(p);})).forEach(function(u){if(u&&out.indexOf(u)<0)out.push(u);});}catch(_){}
+  return out.slice(0,9);}
 function kolDesign(k){return pageBan('hazir',k);}
 function kolBan(){var k=D.kolban||{};if(k.show===false)return '';var l=(k.imgs||[]).filter(Boolean);if(!l.length)return kolDesign(k);
   var tx=(k.title||k.text)?'<div class="kt">'+(k.title?'<b>'+esc(k.title)+'</b>':'')+(k.text?'<span>'+esc(k.text)+'</span>':'')+'</div>':'';
