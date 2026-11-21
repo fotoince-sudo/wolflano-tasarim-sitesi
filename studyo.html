@@ -4788,7 +4788,11 @@ var TPL_GRPS=[['Tümü',null],['Zeminler',['Zemin']],['Diğer',[]]];
 var TPL_HEAD={giyim:'Giyim şablonları',sapka:'Şapka şablonları',kupa:'Kupa şablonları',canvas:'Kanvas şablonları'};
 function tplPhoto(t){return !!(t&&(t.oil||t.mugVehicle||t.petPhoto||t.vehiclePhoto||t.teePhoto||(t.items||[]).some(function(it){return it.t==='ph';})));}
 function tplGrpOf(c){for(var i=1;i<TPL_GRPS.length-1;i++)if(TPL_GRPS[i][1].indexOf(c)>=0)return TPL_GRPS[i][0];return 'Diğer';}
-function tplInGrp(c,t){var g=view.tplGrp||'Tümü';if(g==='Tümü')return c!=='Zemin';if(g==='Fotoğraflı'&&tplPhoto(t))return true;return tplGrpOf(c)===g;}
+/* Şablon kategorileri (ürünün altında sade üç başlık): Fotoğraf ekle · Kurt teması · Grafikler. İçinde şablon olmayan başlık hiç görünmez. */
+var TPL_KAT=[['Fotoğraflı','Fotoğraf ekle'],['Kurt','Kurt teması'],['Grafik','Grafikler']];
+var TPL_KURT_C=['Kurt geziyor','Wolf tasarımları','İmza koleksiyonu','Baskı serisi'];
+function tplKat(t){if(!t||t.c==='Zemin')return '';if(tplPhoto(t))return 'Fotoğraflı';if(TPL_KURT_C.indexOf(t.c)>=0||/kurt|wolf/i.test(String(t.n||'')))return 'Kurt';return 'Grafik';}
+function tplInGrp(c,t){var g=view.tplGrp||'Tümü';if(g==='Tümü')return c!=='Zemin';return tplKat(t)===g;}
 function renderTpl(){
   ['Zemin','Yağlı boya','Fotoğraflı tişört','Araba ve motosiklet'].forEach(function(c){if(TPL_CATS.indexOf(c)<0)TPL_CATS.push(c);});
   var h='',cc='',q=normTR(($('#tplQ')&&$('#tplQ').value||'').trim()),n=0,g=tplGroup(),has={},dirs={},measures={};
@@ -4804,12 +4808,12 @@ function renderTpl(){
   $('#tplFilters').hidden=!(state.product==='tee'||state.product==='sweat'||state.product==='polo'||state.product==='canvas');
   if($('#tplFilters').hidden)view.tplDir='Tümü';
   $('#tplFilters').innerHTML=fc;
-  var gh={'Tümü':1};Object.keys(has).forEach(function(c){gh[tplGrpOf(c)]=1;});TPLS.forEach(function(t){if(tplFits(t,g)&&tplPhoto(t))gh['Fotoğraflı']=1;});
+  var gh={'Tümü':1};TPLS.forEach(function(t){if(tplFits(t,g)){var k=tplKat(t);if(k)gh[k]=1;}});
   /* Zeminler sekmesi kaldırıldı: zeminler alttaki "Zemini değiştir" düğmesinden seçiliyor, burada boş sekme kafa karıştırıyordu */
   if(!gh[view.tplGrp||'Tümü']||view.tplGrp==='Zeminler'){view.tplGrp='Tümü';if(view.tplCat==='Zemin')view.tplCat='Tümü';}var G=view.tplGrp||'Tümü';
   if(G!=='Tümü'&&view.tplCat!=='Tümü'&&tplGrpOf(view.tplCat)!==G)view.tplCat='Tümü';
   $('#tplHead').hidden=true;
-  $('#tplGrps').innerHTML=[['Tümü',TPL_HEAD[g]||'Şablonlar']].map(function(x){return '<button data-tg="'+x[0]+'"'+(x[0]===G&&!q?' class="on"':'')+'>'+x[1]+'</button>';}).join('');
+  $('#tplGrps').innerHTML=[['Tümü',TPL_HEAD[g]||'Şablonlar']].concat(TPL_KAT.filter(function(x){return gh[x[0]];})).map(function(x){return '<button data-tg="'+x[0]+'"'+(x[0]===G&&!q?' class="on"':'')+'>'+x[1]+'</button>';}).join('');
   var subs=TPL_CATS.filter(function(c){return c!=='Tümü'&&has[c]&&G!=='Tümü'&&G!=='Fotoğraflı'&&tplGrpOf(c)===G;});
   subs=[];if(subs.length>1)cc='<button data-tc="Tümü"'+(view.tplCat==='Tümü'&&!q?' class="on"':'')+'>Hepsi</button>'+subs.map(function(c){return '<button data-tc="'+c+'"'+(c===view.tplCat&&!q?' class="on"':'')+'>'+c+'</button>';}).join('');
   $('#tplCats').innerHTML=cc;$('#tplCats').hidden=!cc;
