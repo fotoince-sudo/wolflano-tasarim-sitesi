@@ -1,6 +1,24 @@
 <!doctype html>
 <html lang="tr">
 <head>
+<script>
+/* Google Analytics (GTM-5BK95W5G): yalnız ziyaretçi "Kabul et" derse yüklenir (KVKK: analiz çerezleri açık rızayla).
+   Yönetim sayfalarında hiç yüklenmez, site sahibinin kendi girişleri sayılmaz. */
+(function(){var ID='GTM-5BK95W5G',K='wf_cerez';
+  function adm(){return /^#(yonetim|crm)/.test(location.hash)||/[?&]admin=/.test(location.search);}
+  function yukle(){if(window.__wfGA||adm())return;window.__wfGA=1;window.dataLayer=window.dataLayer||[];window.gtag=function(){dataLayer.push(arguments);};
+    gtag('js',new Date());var s=document.createElement('script');s.async=true;s.src='https://www.googletagmanager.com/gtag/js?id='+ID;document.head.appendChild(s);}
+  var v=null;try{v=localStorage.getItem(K);}catch(_){}
+  if(v==='evet'){yukle();return;}if(v==='hayir')return;
+  function bant(){if(adm()||document.getElementById('wfCerez'))return;var b=document.createElement('div');b.id='wfCerez';b.setAttribute('role','region');b.setAttribute('aria-label','Çerez tercihi');b.setAttribute('data-notr','');
+    b.style.cssText='position:fixed;left:12px;bottom:calc(12px + env(safe-area-inset-bottom,0px));z-index:60;max-width:min(calc(100vw - 96px),420px);background:#101a14;color:#fff;border-radius:14px;padding:12px 14px;font:13.5px/1.45 Manrope,system-ui,sans-serif;box-shadow:0 8px 24px rgba(0,0,0,.28)';
+    b.innerHTML='Siteyi geliştirmek için Google Analytics çerezleriyle ziyaret istatistiği tutmak istiyoruz. <a href="#kvkk" style="color:#7fd6b4">Ayrıntılar</a><div style="display:flex;gap:8px;margin-top:10px"><button type="button" data-c="evet" style="flex:1;height:40px;border-radius:10px;border:0;background:#7fd6b4;color:#101a14;font:800 14px Manrope,system-ui,sans-serif;cursor:pointer">Kabul et</button><button type="button" data-c="hayir" style="flex:1;height:40px;border-radius:10px;border:1px solid #7fd6b4;background:none;color:#fff;font:700 14px Manrope,system-ui,sans-serif;cursor:pointer">Reddet</button></div>';
+    b.addEventListener('click',function(e){var t=e.target.closest('[data-c]');if(!t)return;try{localStorage.setItem(K,t.getAttribute('data-c'));}catch(_){}b.remove();if(t.getAttribute('data-c')==='evet')yukle();});
+    document.body.appendChild(b);}
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(bant,1200);});else setTimeout(bant,1200);
+})();
+</script>
+
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#f8fbf9">
@@ -4149,7 +4167,7 @@ odeme:function(){
   '<h2>4. Aktarım</h2><p>Verilerin yalnız gerektiği kadarıyla; kargo firmasına (teslimat), ödeme kuruluşuna (ödeme), e-fatura hizmet sağlayıcısına (fatura), e-posta ve barındırma/veritabanı altyapı hizmeti sağlayıcılarına ve yetkili kamu kurumlarına aktarılır. Altyapı hizmet sağlayıcılarımızın sunucuları yurt dışında bulunabilir; bu aktarım KVKK m.9\'a uygun olarak ve onayınla yapılır.</p>'+
   '<h2>5. Saklama süresi</h2><p>Sipariş ve fatura kayıtları yasal saklama süreleri (vergi mevzuatı gereği 10 yıla kadar) boyunca, sepet kayıtları en çok 1 yıl, pazarlama izni geri alınana kadar saklanır; süre bitince silinir ya da anonim hale getirilir.</p>'+
   '<h2>6. Hakların</h2><p>KVKK m.11 gereğince verilerinin işlenip işlenmediğini öğrenme, bilgi isteme, düzeltilmesini, silinmesini isteme, aktarıldığı kişileri öğrenme, itiraz etme ve zararın giderilmesini isteme haklarına sahipsin. Başvurularını '+mailLink()+' adresine iletebilirsin; en geç 30 gün içinde yanıtlarız.</p>'+
-  '<h2>7. Çerezler ve tarayıcı deposu</h2><p>Site, sepetini, favorilerini ve tasarımlarını tarayıcının kendi deposunda tutar. Ziyaretçi istatistikleri çerezsiz ve kişisel veri içermeden sayılır; reklam çerezi kullanılmaz.</p>');},
+  '<h2>7. Çerezler ve tarayıcı deposu</h2><p>Site, sepetini, favorilerini ve tasarımlarını tarayıcının kendi deposunda tutar. Sitenin kendi ziyaretçi sayacı çerezsizdir ve kişisel veri içermez. Ayrıca, yalnız izin verirsen, siteyi geliştirmek için Google Analytics çerezleriyle hangi sayfaların ziyaret edildiğine dair istatistik tutulur; bu veriler Google tarafından işlenir. İznini sayfanın altında çıkan bantla verirsin; tarayıcının site verilerini silerek her zaman geri alabilirsin. Reklam çerezi kullanılmaz.</p>');},
 hakkimizda:function(){return aboutHTML();},
 yorumlar:function(){return rvPage();},
  sepet:function(){return sepetView();},
@@ -6226,7 +6244,7 @@ function ayHazir(IMG,FB){
   try{var mn=document.getElementById('main');if(mn&&window.MutationObserver)new MutationObserver(function(){sync();}).observe(mn,{childList:true});}catch(_){}
   sync();setTimeout(sync,600);
   var seen=false;try{seen=sessionStorage.getItem('wf_ayb_hi')==='1';}catch(_){}
-  if(!seen)setTimeout(function(){var h=(location.hash||'').slice(1);if(fab.hidden||!kt.hidden||/^(odeme|sepet|yonetim|crm)/.test(h))return;bal.hidden=false;try{sessionStorage.setItem('wf_ayb_hi','1');}catch(_){}},3500);
+  if(!seen)setTimeout(function hi(){if(document.getElementById('wfCerez')){setTimeout(hi,1500);return;}var h=(location.hash||'').slice(1);if(fab.hidden||!kt.hidden||/^(odeme|sepet|yonetim|crm)/.test(h))return;bal.hidden=false;try{sessionStorage.setItem('wf_ayb_hi','1');}catch(_){}},3500);
 }
 /* AYBÜKE (sitenin her sayfasında): sağ alttaki yuvarlak resim; müşteriye ürün bulmada yardım edip satışa yönlendirir.
    Cevabı sunucudaki yardım asistanı (yardim, mode: site) verir; ürün listesi ve fiyatlar buradan gider, önerilen ürünler kart olarak gösterilir.

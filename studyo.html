@@ -1,4 +1,21 @@
-<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover"><style>html,body{touch-action:manipulation}:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}
+<!doctype html><html><head><script>
+/* Google Analytics (GTM-5BK95W5G): yalnız ziyaretçi "Kabul et" derse yüklenir (KVKK: analiz çerezleri açık rızayla).
+   Yönetim sayfalarında hiç yüklenmez, site sahibinin kendi girişleri sayılmaz. */
+(function(){var ID='GTM-5BK95W5G',K='wf_cerez';
+  function adm(){return /^#(yonetim|crm)/.test(location.hash)||/[?&]admin=/.test(location.search);}
+  function yukle(){if(window.__wfGA||adm())return;window.__wfGA=1;window.dataLayer=window.dataLayer||[];window.gtag=function(){dataLayer.push(arguments);};
+    gtag('js',new Date());var s=document.createElement('script');s.async=true;s.src='https://www.googletagmanager.com/gtag/js?id='+ID;document.head.appendChild(s);}
+  var v=null;try{v=localStorage.getItem(K);}catch(_){}
+  if(v==='evet'){yukle();return;}if(v==='hayir')return;
+  function bant(){if(adm()||document.getElementById('wfCerez'))return;var b=document.createElement('div');b.id='wfCerez';b.setAttribute('role','region');b.setAttribute('aria-label','Çerez tercihi');b.setAttribute('data-notr','');
+    b.style.cssText='position:fixed;left:12px;bottom:calc(12px + env(safe-area-inset-bottom,0px));z-index:60;max-width:min(calc(100vw - 96px),420px);background:#101a14;color:#fff;border-radius:14px;padding:12px 14px;font:13.5px/1.45 Manrope,system-ui,sans-serif;box-shadow:0 8px 24px rgba(0,0,0,.28)';
+    b.innerHTML='Siteyi geliştirmek için Google Analytics çerezleriyle ziyaret istatistiği tutmak istiyoruz. <a href="#kvkk" style="color:#7fd6b4">Ayrıntılar</a><div style="display:flex;gap:8px;margin-top:10px"><button type="button" data-c="evet" style="flex:1;height:40px;border-radius:10px;border:0;background:#7fd6b4;color:#101a14;font:800 14px Manrope,system-ui,sans-serif;cursor:pointer">Kabul et</button><button type="button" data-c="hayir" style="flex:1;height:40px;border-radius:10px;border:1px solid #7fd6b4;background:none;color:#fff;font:700 14px Manrope,system-ui,sans-serif;cursor:pointer">Reddet</button></div>';
+    b.addEventListener('click',function(e){var t=e.target.closest('[data-c]');if(!t)return;try{localStorage.setItem(K,t.getAttribute('data-c'));}catch(_){}b.remove();if(t.getAttribute('data-c')==='evet')yukle();});
+    document.body.appendChild(b);}
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(bant,1200);});else setTimeout(bant,1200);
+})();
+</script>
+<meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover"><style>html,body{touch-action:manipulation}:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}
 /* Wolf paneli: 3 adım ve Tasarla düğmesi kaydırmadan görünsün */
 #sheet.tall{height:clamp(330px,62%,500px)}
 /* Yardım düğmesi: "?" yerine Aybüke'nin profil resmi (dikkat çeker, ne olduğu anlaşılır) */
