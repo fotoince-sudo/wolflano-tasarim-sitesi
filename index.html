@@ -3140,7 +3140,7 @@ function applyData(){stdcSync(D);seedBlanks();autoSub(D);if(!D.vat)D.vat={mode:'
  CATS=(D.cats||[]).filter(function(c){if(c.show===false)return false;if(/hediye|dekor/i.test(c.name||''))return false;return true;}).map(function(c){return [c.id,c.name||'Adsız'];});
  /* Koleksiyon sırası: Erkek, Kadın, Çocuk (diğerleri sonra) */
  (function(){var O=function(c){var n=String(c[1]).toLocaleLowerCase('tr');return /^erkek/.test(n)?0:/^kad/.test(n)?1:/^çocuk|^cocuk/.test(n)?2:3;};CATS=CATS.map(function(c,i){return [c,i];}).sort(function(x,y){return O(x[0])-O(y[0])||x[1]-y[1];}).map(function(x){return x[0];});})();if(catSel&&!CATS.some(function(c){return c[0]===catSel;})){catSel='';subSel='';}
- BLANKS=D.blanks.filter(function(b){return b.show!==false;}).map(function(b){return Object.assign({},b,{price:vp(b.price,'blank'),old:vp(b.old,'blank'),a4:vp(b.a4,'print'),logo:vp(b.logo,'print'),hat:vp(b.hat,'print'),wrap:vp(b.wrap,'print')});});
+ BLANKS=D.blanks.filter(function(b){return b.show!==false;}).map(function(b){var uni=/unisex|uniseks/i.test(String(b.name||'')+' '+String(b.cuts||''));return Object.assign({},b,uni?{uni:1,name:String(b.name||'').replace(/\s*\((unisex|uniseks)\)/ig,'').trim(),cuts:String(b.cuts||'').replace(/\s*(unisex|uniseks)\s*/ig,' ').replace(/^\s*\(?|\)?\s*$/g,'').trim()}:{},{price:vp(b.price,'blank'),old:vp(b.old,'blank'),a4:vp(b.a4,'print'),logo:vp(b.logo,'print'),hat:vp(b.hat,'print'),wrap:vp(b.wrap,'print')});});
  A3_KAT=+D.a3||2;TIERS=D.tiers;setTimeout(function(){if(window.seoUpdate)seoUpdate();},0);PRICE_NOTE=(D.note||[]).concat(['Tüm fiyatlara KDV dahildir.']);CONTACT=D.contact;applyLogo();bzMerge();}
 /* Kupa: KDV hariç fiyat büyük, hemen altında KDV dahil fiyat (Fiyatlandırma'daki boş ürün KDV oranıyla) */
 function kdvNet(x){var r=parseFloat((D.vat||{}).blank);if(isNaN(r))r=20;return Math.round(x.price/(1+r/100)*100)/100;}
@@ -4464,6 +4464,8 @@ var GENS=['erkek','kadin','cocuk'];
 function bGen(b){var t=b.p||b.id,n=String(b.name||'').toLocaleLowerCase('tr');
   /* Kupa ve canvas kendi sekmelerinde; giyim ve şapka Kadın / Erkek / Çocuk sekmelerinde */
   if(t==='mug'||/kupa|bardak|termos/.test(n))return ['kupa'];if(t==='canvas'||/canvas|tablo/.test(n))return ['canvas'];
+  /* Unisex ürün (ör. süblimasyon tişört) hem Erkek hem Kadın sekmesinde görünür */
+  if(b.uni&&b.cut!=='cocuk'&&b.gen!=='cocuk')return ['erkek','kadin'];
   if(b.gen&&b.gen!=='kupa'&&b.gen!=='canvas')return b.gen==='hepsi'?GENS.slice():[b.gen];if(GENS.indexOf(b.cut)>=0)return [b.cut];
   var c=String(b.cuts||'').toLocaleLowerCase('tr'),r=[];if(/erkek/.test(c))r.push('erkek');if(/kadın|kadin/.test(c))r.push('kadin');if(/çocuk|cocuk/.test(c))r.push('cocuk');if(r.length)return r;
   if(/kadın|kadin/.test(n))return ['kadin'];if(/çocuk|cocuk/.test(n))return ['cocuk'];return ['erkek'];}
