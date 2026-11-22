@@ -2702,7 +2702,9 @@ function zemWide(w,h){return w/h>1.5;}
 function legacyTplFrame(L){
   return L.some(function(o){return o.slot;})?L.find(function(o){return o.type==='image'&&o.lock&&o.thru&&!o.oilBg&&!o.teePhotoBg;}):null;
 }
-function tplFrame(){var L=cur().objs;return L.find(function(o){return o.oilBg||o.teePhotoBg;})||legacyTplFrame(L)||null;}
+/* Hazır PNG tasarımlarının çerçeveleri (sablon/web/…) boyanmaz: zemin bütün baskı alanına, tasarımın arkasına konur */
+function ownArt(o){var a=o&&assets[o.assetId];return !!(a&&/sablon\/web\//.test(String(a.url||'')));}
+function tplFrame(){var L=cur().objs;var f=L.find(function(o){return o.oilBg||o.teePhotoBg;})||legacyTplFrame(L)||null;return f&&ownArt(f)?null:f;}
 /* Mankenler (yönetici): sunucudaki manken fotoğrafları; şablon önizlemesi ve ürün görseli doldurmak için */
 var MK=null;
 async function renderMk(){var g=$('#mkGrid');if(!g||MK)return;MK=[];
