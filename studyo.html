@@ -801,7 +801,7 @@ img{-webkit-touch-callout:none;-webkit-user-drag:none}
       <label class="fld rng" id="warpAmtWrap" hidden><span>Eğim <b id="warpAmtOut"></b></span><input type="range" id="warpAmt" min="10" max="100" step="1" value="50"></label>
       <div class="mini-title">Görünüm</div>
       <div class="fxrow" id="lookRow"></div>
-      <p class="note" id="lookNote" hidden style="margin:2px 0 12px">Gölge ve 3D derinlik rengini Kontur düğmesinden değiştirebilirsin.</p>
+      <p class="note" id="lookNote" hidden style="margin:2px 0 12px">Gölge, 3D ve çıkartma kenar rengini Kontur düğmesinden değiştirebilirsin.</p>
       <div class="mini-title" id="inceT">İnce ayar</div>
       <label class="fld rng" id="syWrap" hidden><span>Yazı yüksekliği <b id="syOut"></b></span><input type="range" id="syAmt" min="40" max="250" step="5" value="100"></label>
       <label class="fld rng" id="lsWrap" hidden><span>Harf aralığı <b id="lsOut"></b></span><input type="range" id="lsAmt" min="0" max="100" step="1" value="0"></label>
@@ -1572,6 +1572,16 @@ var TPLS=[
 {c:'Yazı ve söz',n:'Hayat güzel',items:[TX('hayat','Lobster','ink',52,-30),TX('güzel','Lobster',PK,60,30),CL('kalp',RD,26,80)]},
 {c:'Yazı ve söz',n:'Şimdi',items:[TX('YARIN','Anton','#8a8f94',50,-36),TX('DEĞİL','Anton','#8a8f94',50,6),TX('ŞİMDİ','Anton',RD,66,64)]},
 {c:'Yazı ve söz',n:'Gülümse',items:[TX('gülümse','Caveat','ink',44,-6),CL('parilti',YL,36,-62,30),CL('parilti',YL,22,52,-36)]},
+{c:'Yazı ve söz',n:'Çıkartma · Good Times',items:[TX('Good','Titan One','#f6efe4',40,-30,0,-6,{l:'sticker',s:'#2f63e6'}),TX('Times','Titan One','#f6efe4',40,14,0,-6,{l:'sticker',s:'#2f63e6'}),TX('WOLFLANO','Titan One','#f6efe4',22,54,0,-6,{l:'sticker',s:'#2f63e6'})]},
+{c:'Yazı ve söz',n:'Çıkartma · Good Times',p:'kupa',items:[TX('Good','Titan One','#f6efe4',40,-30,0,-6,{l:'sticker',s:'#2f63e6'}),TX('Times','Titan One','#f6efe4',40,14,0,-6,{l:'sticker',s:'#2f63e6'}),TX('WOLFLANO','Titan One','#f6efe4',22,54,0,-6,{l:'sticker',s:'#2f63e6'})]},
+{c:'Yazı ve söz',n:'Çıkartma · Best Mom',items:[TX('Best','Titan One','#f6efe4',42,-22,0,-6,{l:'sticker',s:'#e2477a'}),TX('Mom','Titan One','#f6efe4',46,24,0,-6,{l:'sticker',s:'#e2477a'}),TX('EVER','Titan One','#f6efe4',18,60,0,-6,{l:'sticker',s:'#e2477a'})]},
+{c:'Yazı ve söz',n:'Çıkartma · Best Mom',p:'kupa',items:[TX('Best','Titan One','#f6efe4',42,-22,0,-6,{l:'sticker',s:'#e2477a'}),TX('Mom','Titan One','#f6efe4',46,24,0,-6,{l:'sticker',s:'#e2477a'}),TX('EVER','Titan One','#f6efe4',18,60,0,-6,{l:'sticker',s:'#e2477a'})]},
+{c:'Yazı ve söz',n:'Çıkartma · Wolflano Kids',items:[TX('WOLFLANO','Titan One','#f6efe4',26,-18,0,-6,{l:'sticker',s:'#f2a11d'}),TX('KIDS','Titan One','#f6efe4',44,22,0,-6,{l:'sticker',s:'#f2a11d'})]},
+{c:'Yazı ve söz',n:'Çıkartma · Wolflano Kids',p:'kupa',items:[TX('WOLFLANO','Titan One','#f6efe4',26,-18,0,-6,{l:'sticker',s:'#f2a11d'}),TX('KIDS','Titan One','#f6efe4',44,22,0,-6,{l:'sticker',s:'#f2a11d'})]},
+{c:'Yazı ve söz',n:'Çıkartma · Süper Baba',items:[TX('Süper','Titan One','#f6efe4',38,-20,0,-6,{l:'sticker',s:'#1f8f5c'}),TX('Baba','Titan One','#f6efe4',44,24,0,-6,{l:'sticker',s:'#1f8f5c'})]},
+{c:'Yazı ve söz',n:'Çıkartma · Süper Baba',p:'kupa',items:[TX('Süper','Titan One','#f6efe4',38,-20,0,-6,{l:'sticker',s:'#1f8f5c'}),TX('Baba','Titan One','#f6efe4',44,24,0,-6,{l:'sticker',s:'#1f8f5c'})]},
+{c:'Yazı ve söz',n:'Çıkartma · İyi Ki Varsın',items:[TX('İyi ki','Titan One','#f6efe4',34,-22,0,-6,{l:'sticker',s:'#7a4fd1'}),TX('varsın','Titan One','#f6efe4',40,20,0,-6,{l:'sticker',s:'#7a4fd1'})]},
+{c:'Yazı ve söz',n:'Çıkartma · İyi Ki Varsın',p:'kupa',items:[TX('İyi ki','Titan One','#f6efe4',34,-22,0,-6,{l:'sticker',s:'#7a4fd1'}),TX('varsın','Titan One','#f6efe4',40,20,0,-6,{l:'sticker',s:'#7a4fd1'})]},
 {c:'Yazı ve söz',n:'Kahve',items:[TX('ÖNCE','Oswald','ink',26,-34),TX('KAHVE','Anton',BR,70,12),TX('SONRA HER ŞEY','Barlow Condensed','ink',19,64)]},
 {c:'Yazı ve söz',n:'Mod',items:[TX('MOD:','Righteous','ink',46,-30),TX('PAZAR','Righteous',TC,50,20),CL('bulut','ink',40,72)]},
 {c:'Yazı ve söz',n:'Büyük hayal',items:[TX('BÜYÜK','Anton','ink',51,-34),TX('HAYAL','Anton',BL,56,20),TX('KUR','Staatliches','ink',26,66)]},
@@ -2124,9 +2134,12 @@ function place(el,o){
 /* ---------- Yazı efektleri: şekil (eğme) ve görünüm (dolu, içi boş, gölgeli) ----------
    Ekrandaki SVG ve baskı dosyasındaki tuval aynı yerleşim hesabını (warpLayout) kullanır; böylece ikisi birebir aynı çıkar. */
 var WARPS=[['none','Düz'],['arc','Kemer'],['smile','Gülümse'],['wave','Dalga'],['bulge','Balon'],['rise','Perspektif'],['dikey','Dikey']];
-var LOOKS=[['fill','Dolu'],['hollow','İçi boş'],['shadow','Gölgeli'],['extrude','3D']];
+var LOOKS=[['fill','Dolu'],['hollow','İçi boş'],['shadow','Gölgeli'],['extrude','3D'],['sticker','Çıkartma']];
+/* Çıkartma: eğik, kalın renkli kontur ve arkasında aynı rengin koyu tonunda kayık gölge (Canva tarzı "Good Times" yazısı) */
+var STK_SKEW=-11;function stkCol(o){return o.stroke||'#2f63e6';}
+function stkDark(h){var m=/^#?([0-9a-f]{6})$/i.exec(String(h||''));if(!m)return '#1b3a8c';var n=parseInt(m[1],16),f=function(v){return Math.round(v*0.62);};var r=f(n>>16&255),g=f(n>>8&255),b=f(n&255);return '#'+((1<<24)+(r<<16)+(g<<8)+b).toString(16).slice(1);}
 var mctx=document.createElement('canvas').getContext('2d');
-function isWarped(o){return (!!o.warp&&o.warp!=='none')||!!o.ls;} /* harf aralığı açık yazı da harf harf dizilir */
+function isWarped(o){return (!!o.warp&&o.warp!=='none')||!!o.ls||o.look==='sticker';} /* harf aralığı açık yazı da harf harf dizilir */
 function lookOf(o){return o.look||'fill';}
 function fontStr(f,sz){return fw(f)+' '+sz+'px '+fontStack(f);}
 /* Yazı gölgesi (kontura ek, düz görünümde): 1 = hafif (yumuşak), 2 = belirgin (keskin) */
@@ -2164,13 +2177,16 @@ function warpLayout(o,sz){
   return {g:out,by:by,w:maxX-minX+pad*2,h:maxY-minY+pad*2};
 }
 function warpSVG(o){
-  var sz=o.size,lay=warpLayout(o,sz),look=lookOf(o),W=lay.w,H=lay.h,t='',sh='';
-  lay.g.forEach(function(g){t+='<text transform="translate('+g.x.toFixed(2)+' '+g.y.toFixed(2)+') rotate('+g.r.toFixed(2)+') scale(1 '+g.sy.toFixed(3)+')" y="'+lay.by.toFixed(2)+'">'+escX(g.ch)+'</text>';});
+  var sz=o.size,lay=warpLayout(o,sz),look=lookOf(o),W=lay.w,H=lay.h,t='',sh='',sk=look==='sticker'?' skewX('+STK_SKEW+')':'';
+  if(sk){W+=sz*0.5;H+=sz*0.35;}
+  lay.g.forEach(function(g){t+='<text transform="translate('+g.x.toFixed(2)+' '+g.y.toFixed(2)+') rotate('+g.r.toFixed(2)+') scale(1 '+g.sy.toFixed(3)+')'+sk+'" y="'+lay.by.toFixed(2)+'">'+escX(g.ch)+'</text>';});
   var main;
   if(look==='hollow')main='fill="none" stroke="'+o.color+'" stroke-width="'+(sz*0.05)+'" stroke-linejoin="round"';
   else if(o.stroke&&look==='fill')main='fill="'+o.color+'" stroke="'+o.stroke+'" stroke-width="'+(sz*(o.sw||0.1))+'" stroke-linejoin="round" paint-order="stroke fill"';
   else main='fill="'+o.color+'"';
   if(look==='shadow'){var d=(sz*0.07).toFixed(2);sh='<g fill="'+shadowCol(o)+'" transform="translate('+d+' '+d+')">'+t+'</g>';}
+  if(look==='sticker'){var sc=stkCol(o),sd=stkDark(sc),sw=(sz*0.2).toFixed(2);
+    sh='<g fill="'+sd+'" stroke="'+sd+'" stroke-width="'+sw+'" stroke-linejoin="round" transform="translate('+(sz*0.05).toFixed(2)+' '+(sz*0.09).toFixed(2)+')">'+t+'</g><g fill="'+sc+'" stroke="'+sc+'" stroke-width="'+sw+'" stroke-linejoin="round">'+t+'</g>';main='fill="'+o.color+'"';}
   if(look==='extrude'){var ec=o.stroke||'#111111',dd=sz*0.09,n=10,k;for(k=n;k>=1;k--){sh+='<g fill="'+ec+'" stroke="'+ec+'" stroke-width="'+(sz*0.08)+'" stroke-linejoin="round" transform="translate('+(dd*k/n).toFixed(2)+' '+(dd*k/n).toFixed(2)+')">'+t+'</g>';}
     main='fill="'+o.color+'" stroke="'+ec+'" stroke-width="'+(sz*0.08)+'" stroke-linejoin="round" paint-order="stroke fill"';}
   var ts=tShd(o,sz),df='';if(ts){df='<defs><filter id="tsh'+o.id+'" x="-20%" y="-20%" width="140%" height="160%"><feDropShadow dx="'+ts.d.toFixed(2)+'" dy="'+ts.d.toFixed(2)+'" stdDeviation="'+(ts.b/2).toFixed(2)+'" flood-color="#000" flood-opacity="'+(ts.b?0.45:0.6)+'"/></filter></defs>';main+=' filter="url(#tsh'+o.id+')"';}
@@ -4184,7 +4200,7 @@ function keepOnTpl(o){return o.lock&&!o.thru&&!o.tpl;}
 function tplObjects(t,A,sc,ink){
   return t.items.map(function(it){
     var col=it.c==='ink'?ink:it.c==='inkinv'?(lum(ink)>0.5?'#111111':'#ffffff'):it.c,o={id:view.nextId++,x:A.cx+it.dx*sc,y:A.cy+it.dy*sc,rot:it.r||0,w:10,h:10};
-    if(it.t==='text'){o.type='text';o.value=it.v;o.font=it.f;o.color=col;o.stroke=null;o.size=it.z*sc;if(it.fx){if(it.fx.w){o.warp=it.fx.w;o.wamt=it.fx.a||50;}if(it.fx.l)o.look=it.fx.l;if(it.fx.rs)o.roster=it.fx.rs;}}
+    if(it.t==='text'){o.type='text';o.value=it.v;o.font=it.f;o.color=col;o.stroke=null;o.size=it.z*sc;if(it.fx){if(it.fx.w){o.warp=it.fx.w;o.wamt=it.fx.a||50;}if(it.fx.l)o.look=it.fx.l;if(it.fx.s)o.stroke=it.fx.s;if(it.fx.rs)o.roster=it.fx.rs;}}
     else if(it.t==='img'){
       var imageScale=it.fillArea?Math.max(A.w/it.w,A.h/it.h):sc;
       o.type='image';o.w=it.w*imageScale;o.h=it.h*imageScale;
@@ -4649,6 +4665,7 @@ function closeTab(){
    Koyu renkli üründe siyah yazı beyaza, beyaz yazı siyaha döner ki görünsün. up: büyük harfe çevir */
 var TSTY=[
  {k:'arma',n:'Arma',f:'Big Shoulders Black',c:'#111111',up:1,w:'arc',a:22},
+ {k:'cikartma',n:'Çıkartma',f:'Titan One',c:'#f6efe4',s:'#2f63e6',l:'sticker'},
  {k:'3d',n:'3D kabartma',f:'Titan One',c:'#ffffff',s:'#111111',l:'extrude',up:1},
  {k:'cizgili',n:'Çizgili kalın',f:'Bungee Inline',c:'#0b4a8f',up:1},
  {k:'sivri',n:'Sivri',f:'Metal Mania',c:'#1b2a6b',s:'#ffffff',up:1},
@@ -4661,13 +4678,13 @@ var TSTY=[
 function tstyApply(st){var o=selObj();if(!o||o.type!=='text'||o.lock){addText(st.up?'WOLFLANO':'Wolflano');o=selObj();if(!o)return;}
   var dark=lum(state.tee)<=0.55,col=st.c,sk=st.s||null;
   if(dark&&col==='#111111')col='#ffffff';else if(!dark&&col==='#ffffff'&&!st.l)col='#111111';
-  if(dark&&sk==='#ffffff'&&st.l!=='extrude')sk='#111111';
+  if(dark&&sk==='#ffffff'&&st.l!=='extrude')sk='#111111';if(st.l==='sticker')col=st.c;
   o.font=st.f;o.color=col;o.stroke=sk;o.look=st.l||'fill';if(st.up)o.value=String(o.value||'').toLocaleUpperCase('tr');
   if(st.w){o.warp=st.w;o.wamt=st.a||50;}else delete o.warp;if(st.ls)o.ls=st.ls;else delete o.ls;view.font=st.f;
   try{textIn.value=o.value;}catch(_){}refreshText(o);syncCtx();pushHist();
   if(st.k==='foto')toast('Şimdi üstüne bir fotoğraf koy ve "Yazının içine"ye bas.');}
 function buildPanels(){
-  $('#styRow').innerHTML=TSTY.map(function(t){var dark=lum(state.tee)<=0.55;return '<button type="button" class="tsb" data-sty="'+t.k+'" style="font-family:'+fontStack(t.f).replace(/"/g,"'")+';font-weight:'+fw(t.f)+';color:'+t.c+';'+(t.s?'-webkit-text-stroke:1px '+t.s+';paint-order:stroke fill;':'')+(t.l==='extrude'?'text-shadow:2px 2px 0 #111,3px 3px 0 #111;':t.l==='shadow'?'text-shadow:2px 2px 0 '+(t.s||'#111')+';':'')+'"><span>'+(t.up?'WOLF':'Wolf')+'</span><small>'+t.n+'</small></button>';}).join('');
+  $('#styRow').innerHTML=TSTY.map(function(t){var dark=lum(state.tee)<=0.55;return '<button type="button" class="tsb" data-sty="'+t.k+'" style="font-family:'+fontStack(t.f).replace(/"/g,"'")+';font-weight:'+fw(t.f)+';color:'+t.c+';'+(t.s?'-webkit-text-stroke:1px '+t.s+';paint-order:stroke fill;':'')+(t.l==='sticker'?'font-style:italic;-webkit-text-stroke:3px '+t.s+';paint-order:stroke fill;text-shadow:2px 3px 0 '+stkDark(t.s)+';':t.l==='extrude'?'text-shadow:2px 2px 0 #111,3px 3px 0 #111;':t.l==='shadow'?'text-shadow:2px 2px 0 '+(t.s||'#111')+';':'')+'"><span>'+(t.up?'WOLF':'Wolf')+'</span><small>'+t.n+'</small></button>';}).join('');
   var fg='';
   FONTS.forEach(function(f){fg+='<button class="font" data-f="'+f[0]+'" style="font-family:'+fontStack(f[0]).replace(/"/g,"'")+';font-weight:'+f[1]+'">Wolflano<small>'+f[0]+'</small></button>';});
   $('#fontGrid').innerHTML=fg;
@@ -4680,14 +4697,14 @@ function renderFxRows(){
   var o=selObj(),isT=!!(o&&o.type==='text'),f=isT?o.font:view.font,wv=isT?(o.warp||'none'):'none',lv=isT?lookOf(o):'fill',h='';
   WARPS.forEach(function(w){h+='<button class="fx'+(w[0]===wv?' on':'')+'" data-warp="'+w[0]+'" aria-label="Şekil: '+w[1]+'" aria-pressed="'+(w[0]===wv)+'"><span class="pv">'+warpSVG({value:w[0]==='dikey'?'ABC':'ABCDE',font:f,size:30,color:'currentColor',warp:w[0],wamt:w[0]==='rise'?60:w[0]==='dikey'?10:75,look:'fill'})+'</span><small>'+w[1]+'</small></button>';});
   $('#warpRow').innerHTML=h;h='';
-  LOOKS.forEach(function(l){h+='<button class="fx'+(l[0]===lv?' on':'')+'" data-look="'+l[0]+'" aria-label="Görünüm: '+l[1]+'" aria-pressed="'+(l[0]===lv)+'"><span class="pv">'+warpSVG({value:'Ag',font:f,size:30,color:'currentColor',stroke:l[0]==='shadow'?'#159b91':null,warp:'none',look:l[0]})+'</span><small>'+l[1]+'</small></button>';});
+  LOOKS.forEach(function(l){h+='<button class="fx'+(l[0]===lv?' on':'')+'" data-look="'+l[0]+'" aria-label="Görünüm: '+l[1]+'" aria-pressed="'+(l[0]===lv)+'"><span class="pv">'+warpSVG({value:'Ag',font:f,size:30,color:'currentColor',stroke:l[0]==='shadow'?'#159b91':l[0]==='sticker'?'#2f63e6':null,warp:'none',look:l[0]})+'</span><small>'+l[1]+'</small></button>';});
   $('#lookRow').innerHTML=h;
   $('#warpRow').classList.toggle('off',!isT);$('#lookRow').classList.toggle('off',!isT);
   $('#warpAmtWrap').hidden=!(isT&&o.warp&&o.warp!=='none');
   $('#syWrap').hidden=!isT;if(isT){var sv=Math.round((o.sy||1)*100);$('#syAmt').value=sv;$('#syOut').textContent=sv===100?'normal':'%'+sv;}
   $('#lsWrap').hidden=!isT||o.warp==='dikey';if(isT){var lv2=Math.round((+o.ls||0)*100);$('#lsAmt').value=lv2;$('#lsOut').textContent=lv2?'%'+lv2:'normal';}
   if(isT){var v=o.wamt==null?50:o.wamt;$('#warpAmt').value=v;$('#warpAmtOut').textContent='%'+v;}
-  $('#lookNote').hidden=!(isT&&(lv==='shadow'||lv==='extrude'));
+  $('#lookNote').hidden=!(isT&&(lv==='shadow'||lv==='extrude'||lv==='sticker'));
 }
 function fxTarget(){var o=selObj();if(tsText(o)){toast('Bu stil için önce "Yazıyı ayır"a bas, stili seç, sonra yeniden giydir.');return null;}if(!o||o.type!=='text'){toast('Önce bir yazı ekle veya seç');return null;}return o;}
 function refreshText(o){updateEl(els[o.id],o);measureText(o);fitText(o);updateSel();renderFxRows();}
@@ -5154,7 +5171,13 @@ async function drawObj(c,o,S,ox,oy,hi,imageCache){
     var items,by=0;
     if(isWarped(o)){var lay=warpLayout(o,sz);items=lay.g;by=lay.by;c.textBaseline='alphabetic';}
     else{items=[{ch:o.value,x:0,y:0,r:0,sy:1}];c.textBaseline='middle';}
-    var each=function(fn){items.forEach(function(gl){c.save();c.translate(gl.x,gl.y);c.rotate(gl.r*PI/180);c.scale(1,gl.sy);fn(gl.ch);c.restore();});};
+    var skx=look==='sticker'?Math.tan(STK_SKEW*PI/180):0;
+    var each=function(fn){items.forEach(function(gl){c.save();c.translate(gl.x,gl.y);c.rotate(gl.r*PI/180);c.scale(1,gl.sy);if(skx)c.transform(1,0,skx,1,0,0);fn(gl.ch);c.restore();});};
+    if(look==='sticker'){var stc=stkCol(o),std=stkDark(stc);c.lineWidth=sz*0.2;c.lineJoin='round';
+      c.save();c.translate(sz*0.05,sz*0.09);c.strokeStyle=std;c.fillStyle=std;each(function(ch){c.strokeText(ch,0,by);c.fillText(ch,0,by);});c.restore();
+      c.strokeStyle=stc;c.fillStyle=stc;each(function(ch){c.strokeText(ch,0,by);c.fillText(ch,0,by);});
+      c.fillStyle=o.color;each(function(ch){c.fillText(ch,0,by);});}
+    else {
     if(look==='shadow'){var d=sz*0.07;c.save();c.translate(d,d);c.fillStyle=shadowCol(o);each(function(ch){c.fillText(ch,0,by);});c.restore();}
     if(look==='extrude'){var ec=o.stroke||'#111111',dd=sz*0.09,nn=12;c.lineWidth=sz*0.08;c.strokeStyle=ec;c.fillStyle=ec;
       for(var kk=nn;kk>=1;kk--){c.save();c.translate(dd*kk/nn,dd*kk/nn);each(function(ch){c.strokeText(ch,0,by);c.fillText(ch,0,by);});c.restore();}
@@ -5165,6 +5188,7 @@ async function drawObj(c,o,S,ox,oy,hi,imageCache){
       if(o.stroke&&look==='fill'){shOn();c.lineWidth=sz*(o.sw||0.1);c.strokeStyle=o.stroke;each(function(ch){c.strokeText(ch,0,by);});shOff();}
       if(ts&&!(o.stroke&&look==='fill'))shOn();
       c.fillStyle=o.color;each(function(ch){c.fillText(ch,0,by);});shOff();
+    }
     }
   }else if(o.type==='clip'){
     var W=Math.max(2,Math.round(o.w*S)),H=Math.max(2,Math.round(o.h*S));
