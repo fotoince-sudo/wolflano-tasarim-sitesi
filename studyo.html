@@ -6825,7 +6825,7 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
     var tk='img/ortam-canvas-'+sahne+'-'+rnd()+'.jpg';await upload('site',tk,await canvasBlob(c,'image/jpeg',.9));return tk;}
   function renderAdm(){
     var w=$('#admSheet');
-    var tabs=[['sablon','Şablon'],['urun','Ürün yap'],['baski','Baskıya gönder'],['taslak','Taslak']];if(!/^(mug|canvas)$/.test(state.product))tabs.push(['manken','Mankende gör']);else if(mode==='manken')mode='sablon';if(ADM.edit)tabs.unshift(['guncelle','Güncelle']);else if(mode==='guncelle')mode='sablon';
+    var tabs=[['sablon','Stüdyo şablonu'],['urun','Koleksiyona ürün'],['baski','Baskıya gönder'],['taslak','Taslak']];if(!/^(mug|canvas)$/.test(state.product))tabs.push(['manken','Mankende gör']);else if(mode==='manken')mode='sablon';if(ADM.edit)tabs.unshift(['guncelle','Güncelle']);else if(mode==='guncelle')mode='sablon';
     var body='';
     if(mode==='guncelle')body='<p class="note">Düzenlenen ürün: <b>'+ea(ADM.edit.title||'')+'</b>. "Ürünü güncelle" yalnız ön ve arka görsellerini yeniler; ürün kodu, fiyat, kategori, açıklama ve stok aynı kalır.</p>'+(allCols().length>1?'<label class="am-all"><input type="checkbox" id="amUAll" checked><span><b>Tüm renklerde güncelle</b><small>Bu tasarımın sitedeki bütün renkleri birlikte yenilenir, eksik renkler de eklenir. Yalnız bu renk için işareti kaldır.</small></span></label>':'')+ortBox();
     if(mode==='sablon')body='<div class="am-two"><label class="am-f">Kimler görsün<select id="amVis"><option value="herkes"'+(tplVis==='herkes'?' selected':'')+'>Herkes (müşteriler de)</option><option value="ozel"'+(tplVis==='ozel'?' selected':'')+'>Sadece Wolflano</option></select></label>'+
@@ -6846,7 +6846,7 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
       '<small class="am-who">'+ea(ADM.email)+'</small>'+
       depoBox()+'<label class="am-f">Tasarım adı <small style="font-weight:500;opacity:.7">(otomatik, istersen değiştir)</small><input id="amTitle" maxlength="80" placeholder="Boş bırakırsan otomatik adlanır" value="'+ea(amTitleVal())+'"></label>'+
       '<div class="am-tabs">'+tabs.map(function(t){return '<button type="button" data-amm="'+t[0]+'"'+(t[0]===mode?' class="on"':'')+'>'+t[1]+'</button>';}).join('')+'</div>'+body+
-      '<button type="button" class="primary wide" id="amGo">'+{guncelle:'Ürünü güncelle',sablon:'Şablon olarak kaydet',urun:'Ürün olarak yayınla',baski:'Baskıya gönder',taslak:'Taslak kaydet',manken:'Mankene giydir'}[mode]+'</button></div>';
+      '<button type="button" class="primary wide" id="amGo">'+{guncelle:'Ürünü güncelle',sablon:'Stüdyoda şablon olarak kaydet',urun:'Koleksiyona ürün olarak ekle',baski:'Baskıya gönder',taslak:'Taslak kaydet',manken:'Mankene giydir'}[mode]+'</button></div>';
     if(mode==='urun'){autoCat();amSumFill();var md=w.querySelector('.am-more');if(md)md.addEventListener('change',amSumFill);}
     if(state.product==='mug')mscFill();
     dsvFill();
