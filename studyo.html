@@ -1801,7 +1801,13 @@ function cutMerge(d,man){man=man||{};stdcSync(d);((d&&d.blanks)||[]).forEach(fun
   if(cs.length)b.colors=cs;});return d;}
 /* Renkler her üründe aynı sırada ve aynı tonda: standart sıra (Beyaz, Lacivert, Siyah, Mavi, Yeşil), sonra diğerleri */
 function phColors(b){var L=((b&&b.colors)||[]).filter(function(c){return c&&(c.front||c.back)&&/^#[0-9a-f]{6}$/i.test(c.hex||'');}),ix=function(c){for(var i=0;i<STDC.length;i++)if(STDC[i].name===c.name)return i;return STDC.length;};
+  L=L.map(function(c){return phBackFix(b,c);});
   return L.map(function(c,k){var i=ix(c);return {c:i<STDC.length?Object.assign({},c,{hex:STDC[i].hex}):c,i:i,k:k};}).sort(function(a,z){return a.i-z.i||a.k-z.k;}).map(function(x){return x.c;});}
+/* Arka fotoğrafı olmayan renk (ör. çocuk tişört: ön ve arka aynı fotoğraf): aynı türdeki başka kalıbın aynı renkli arka fotoğrafı kullanılır,
+   böylece Arka seçilince tişörtün arkası görünür. Uygun arka yoksa olduğu gibi kalır. */
+function phBackFix(b,c){try{if(!b||!c||!c.front||(c.back&&phSrc(c.back)!==phSrc(c.front)))return c;var t=b.p||b.id,nm=String(c.name||'').trim().toLocaleLowerCase('tr');
+    var l=((PH.site&&PH.site.blanks)||[]).slice().sort(function(x,y){return (x&&x.cut==='erkek'?0:1)-(y&&y.cut==='erkek'?0:1);});for(var i=0;i<l.length;i++){var o=l[i];if(!o||o===b||(o.p||o.id)!==t||o.onlyColors)continue;var cs=o.colors||[];
+      for(var j=0;j<cs.length;j++){var x=cs[j];if(x&&x.back&&x.front&&phSrc(x.back)!==phSrc(x.front)&&String(x.name||'').trim().toLocaleLowerCase('tr')===nm)return Object.assign({},c,{back:x.back});}}}catch(_){}return c;}
 /* Seçilen rengin fotoğrafı: önce birebir ton, sonra aynı ad, sonra en yakın ton. Eski kayıtlarda renk tonu biraz farklı (ör. eski siyah #17181a);
    eskiden ilk renge (beyaz) düşüyordu, siyah tasarım beyaz tişörtte görünüyordu. */
 function hexRGB(h){h=String(h||'').replace('#','');return /^[0-9a-f]{6}$/i.test(h)?[parseInt(h.slice(0,2),16),parseInt(h.slice(2,4),16),parseInt(h.slice(4,6),16)]:null;}
