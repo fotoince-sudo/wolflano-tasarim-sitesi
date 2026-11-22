@@ -45,6 +45,46 @@
   "tamam": true,
   "yon": "yatay"
  },
+ "18mart-siluet": {
+  "ad": "18 Mart · Siluet",
+  "alfa": true,
+  "baski": [
+   3508,
+   4961
+  ],
+  "dpi": 300,
+  "kat": "Özel günler",
+  "kaynak": [
+   1556,
+   2001
+  ],
+  "kirpilmis": [
+   588,
+   1553
+  ],
+  "tamam": true,
+  "yon": "dikey"
+ },
+ "23nisan-ataturk": {
+  "ad": "23 Nisan · Atatürk",
+  "alfa": true,
+  "baski": [
+   3508,
+   4961
+  ],
+  "dpi": 300,
+  "kat": "Özel günler",
+  "kaynak": [
+   1556,
+   2000
+  ],
+  "kirpilmis": [
+   1512,
+   1627
+  ],
+  "tamam": true,
+  "yon": "dikey"
+ },
  "23nisan-dikey": {
   "ad": "23 Nisan",
   "baski": [
@@ -87,6 +127,26 @@
   "kirpilmis": [
    1496,
    964
+  ],
+  "tamam": true,
+  "yon": "yatay"
+ },
+ "always-with-you": {
+  "ad": "Always With You",
+  "alfa": true,
+  "baski": [
+   4961,
+   3508
+  ],
+  "dpi": 300,
+  "kat": "Aile ve aşk",
+  "kaynak": [
+   990,
+   975
+  ],
+  "kirpilmis": [
+   678,
+   631
   ],
   "tamam": true,
   "yon": "yatay"
@@ -137,6 +197,26 @@
   "tamam": true,
   "yon": "yatay"
  },
+ "asla-pes-etme": {
+  "ad": "Asla Pes Etme · Futbol",
+  "alfa": true,
+  "baski": [
+   4961,
+   3508
+  ],
+  "dpi": 300,
+  "kat": "Spor ve kulüp",
+  "kaynak": [
+   1556,
+   2001
+  ],
+  "kirpilmis": [
+   1354,
+   1280
+  ],
+  "tamam": true,
+  "yon": "yatay"
+ },
  "aydin-dikey": {
   "ad": "Aydın",
   "baski": [
@@ -182,6 +262,46 @@
   ],
   "tamam": true,
   "yon": "yatay"
+ },
+ "aynen-kanka": {
+  "ad": "Aynen Kanka",
+  "alfa": true,
+  "baski": [
+   3508,
+   4961
+  ],
+  "dpi": 300,
+  "kat": "Yazı ve söz",
+  "kaynak": [
+   1556,
+   2001
+  ],
+  "kirpilmis": [
+   490,
+   792
+  ],
+  "tamam": true,
+  "yon": "dikey"
+ },
+ "best-dad": {
+  "ad": "Best Dad Ever",
+  "alfa": true,
+  "baski": [
+   3508,
+   4961
+  ],
+  "dpi": 300,
+  "kat": "Aile ve aşk",
+  "kaynak": [
+   990,
+   975
+  ],
+  "kirpilmis": [
+   618,
+   901
+  ],
+  "tamam": true,
+  "yon": "dikey"
  },
  "bodrum-dikey": {
   "ad": "Bodrum",
@@ -229,6 +349,46 @@
   "tamam": true,
   "yon": "yatay"
  },
+ "but-first-coffee": {
+  "ad": "But First Coffee · Tembel hayvan",
+  "alfa": true,
+  "baski": [
+   4961,
+   3508
+  ],
+  "dpi": 300,
+  "kat": "Yazı ve söz",
+  "kaynak": [
+   990,
+   975
+  ],
+  "kirpilmis": [
+   822,
+   733
+  ],
+  "tamam": true,
+  "yon": "yatay"
+ },
+ "canakkale-gecilmez": {
+  "ad": "Çanakkale Geçilmez",
+  "alfa": true,
+  "baski": [
+   3508,
+   4961
+  ],
+  "dpi": 300,
+  "kat": "Özel günler",
+  "kaynak": [
+   1556,
+   2001
+  ],
+  "kirpilmis": [
+   1160,
+   1351
+  ],
+  "tamam": true,
+  "yon": "dikey"
+ },
  "cesme-dikey": {
   "ad": "Çeşme",
   "baski": [
@@ -274,6 +434,66 @@
   ],
   "tamam": true,
   "yon": "yatay"
+ },
+ "coffee-cift": {
+  "ad": "Coffee Time · Çift",
+  "alfa": true,
+  "baski": [
+   4961,
+   3508
+  ],
+  "dpi": 300,
+  "kat": "Aile ve aşk",
+  "kaynak": [
+   990,
+   975
+  ],
+  "kirpilmis": [
+   811,
+   731
+  ],
+  "tamam": true,
+  "yon": "yatay"
+ },
+ "coffee-fincan": {
+  "ad": "Coffee Time · Fincan",
+  "alfa": true,
+  "baski": [
+   3508,
+   4961
+  ],
+  "dpi": 300,
+  "kat": "Yazı ve söz",
+  "kaynak": [
+   990,
+   975
+  ],
+  "kirpilmis": [
+   613,
+   841
+  ],
+  "tamam": true,
+  "yon": "dikey"
+ },
+ "coffee-kadin": {
+  "ad": "Coffee Time · Kadın",
+  "alfa": true,
+  "baski": [
+   3508,
+   4961
+  ],
+  "dpi": 300,
+  "kat": "Yazı ve söz",
+  "kaynak": [
+   990,
+   975
+  ],
+  "kirpilmis": [
+   575,
+   818
+  ],
+  "tamam": true,
+  "yon": "dikey"
  },
  "erkek-cesme-dikey": {
   "ad": "Çeşme",
@@ -611,6 +831,126 @@
   "tamam": true,
   "yon": "yatay"
  },
+ "foto-aile": {
+  "ad": "Happy Family · fotoğraf",
+  "alfa": true,
+  "baski": [
+   4961,
+   3508
+  ],
+  "dpi": 300,
+  "kat": "Aile ve aşk",
+  "kaynak": [
+   990,
+   975
+  ],
+  "kirpilmis": [
+   990,
+   975
+  ],
+  "tamam": true,
+  "yon": "yatay"
+ },
+ "foto-anne": {
+  "ad": "Anneme · Polaroid fotoğraf",
+  "alfa": true,
+  "baski": [
+   3508,
+   4961
+  ],
+  "dpi": 300,
+  "kat": "Aile ve aşk",
+  "kaynak": [
+   990,
+   975
+  ],
+  "kirpilmis": [
+   893,
+   899
+  ],
+  "tamam": true,
+  "yon": "dikey"
+ },
+ "foto-best": {
+  "ad": "Best Friends Forever · fırça fotoğraf",
+  "alfa": true,
+  "baski": [
+   3508,
+   4961
+  ],
+  "dpi": 300,
+  "kat": "Aile ve aşk",
+  "kaynak": [
+   990,
+   975
+  ],
+  "kirpilmis": [
+   869,
+   899
+  ],
+  "tamam": true,
+  "yon": "dikey"
+ },
+ "foto-bff4": {
+  "ad": "Best Friends Forever · 4 fotoğraf",
+  "alfa": true,
+  "baski": [
+   3508,
+   4961
+  ],
+  "dpi": 300,
+  "kat": "Aile ve aşk",
+  "kaynak": [
+   990,
+   975
+  ],
+  "kirpilmis": [
+   724,
+   853
+  ],
+  "tamam": true,
+  "yon": "dikey"
+ },
+ "foto-dugun": {
+  "ad": "Düğün · Polaroid fotoğraf",
+  "alfa": true,
+  "baski": [
+   4961,
+   3508
+  ],
+  "dpi": 300,
+  "kat": "Aile ve aşk",
+  "kaynak": [
+   990,
+   975
+  ],
+  "kirpilmis": [
+   990,
+   975
+  ],
+  "tamam": true,
+  "yon": "yatay"
+ },
+ "gecmis-zarif": {
+  "ad": "Geçmiş Zarif Anılarla",
+  "alfa": true,
+  "baski": [
+   3508,
+   4961
+  ],
+  "dpi": 300,
+  "kat": "Yazı ve söz",
+  "kaynak": [
+   1556,
+   2001
+  ],
+  "kirpilmis": [
+   1279,
+   1620
+  ],
+  "tamam": true,
+  "yon": "dikey"
+ },
  "gobeklitepe-dikey": {
   "ad": "Göbeklitepe",
   "baski": [
@@ -653,6 +993,26 @@
   "kirpilmis": [
    1526,
    1024
+  ],
+  "tamam": true,
+  "yon": "yatay"
+ },
+ "happy-holidays": {
+  "ad": "Happy Holidays",
+  "alfa": true,
+  "baski": [
+   4961,
+   3508
+  ],
+  "dpi": 300,
+  "kat": "Özel günler",
+  "kaynak": [
+   990,
+   975
+  ],
+  "kirpilmis": [
+   628,
+   449
   ],
   "tamam": true,
   "yon": "yatay"
@@ -841,6 +1201,46 @@
   "tamam": true,
   "yon": "yatay"
  },
+ "hello-winter": {
+  "ad": "Hello Winter",
+  "alfa": true,
+  "baski": [
+   3508,
+   4961
+  ],
+  "dpi": 300,
+  "kat": "Özel günler",
+  "kaynak": [
+   990,
+   975
+  ],
+  "kirpilmis": [
+   809,
+   865
+  ],
+  "tamam": true,
+  "yon": "dikey"
+ },
+ "i-love-you": {
+  "ad": "I Love You",
+  "alfa": true,
+  "baski": [
+   3508,
+   4961
+  ],
+  "dpi": 300,
+  "kat": "Aile ve aşk",
+  "kaynak": [
+   990,
+   975
+  ],
+  "kirpilmis": [
+   548,
+   671
+  ],
+  "tamam": true,
+  "yon": "dikey"
+ },
  "istanbul-dikey": {
   "ad": "İstanbul",
   "baski": [
@@ -886,6 +1286,46 @@
   ],
   "tamam": true,
   "yon": "yatay"
+ },
+ "kalp-ritmi": {
+  "ad": "Kalp ritmi · isim ve tarih",
+  "alfa": true,
+  "baski": [
+   4961,
+   3508
+  ],
+  "dpi": 300,
+  "kat": "Aile ve aşk",
+  "kaynak": [
+   1556,
+   2001
+  ],
+  "kirpilmis": [
+   888,
+   339
+  ],
+  "tamam": true,
+  "yon": "yatay"
+ },
+ "kelebek": {
+  "ad": "Kelebek · Uçmakla sınırlı kalma",
+  "alfa": true,
+  "baski": [
+   3508,
+   4961
+  ],
+  "dpi": 300,
+  "kat": "Yazı ve söz",
+  "kaynak": [
+   1556,
+   2001
+  ],
+  "kirpilmis": [
+   769,
+   879
+  ],
+  "tamam": true,
+  "yon": "dikey"
  },
  "kiraz-tekirdag-dikey": {
   "ad": "Tekirdağ · Kiraz Festivali",
@@ -980,6 +1420,26 @@
   ],
   "tamam": true,
   "yon": "yatay"
+ },
+ "kizin-hedefi": {
+  "ad": "Bir kızın birden fazla hedefi",
+  "alfa": true,
+  "baski": [
+   3508,
+   4961
+  ],
+  "dpi": 300,
+  "kat": "Kadın",
+  "kaynak": [
+   1556,
+   2000
+  ],
+  "kirpilmis": [
+   724,
+   1156
+  ],
+  "tamam": true,
+  "yon": "dikey"
  },
  "kupa-10kasim": {
   "ad": "10 Kasım",
@@ -1485,6 +1945,66 @@
   "tamam": true,
   "yon": "yatay"
  },
+ "marvel-aglar": {
+  "ad": "Örümcek Adam · Ağlar sağlam",
+  "alfa": true,
+  "baski": [
+   3508,
+   4961
+  ],
+  "dpi": 300,
+  "kat": "__adm",
+  "kaynak": [
+   1556,
+   2001
+  ],
+  "kirpilmis": [
+   1492,
+   1816
+  ],
+  "tamam": true,
+  "yon": "dikey"
+ },
+ "monogram-as": {
+  "ad": "Monogram · baş harf ve tarih",
+  "alfa": true,
+  "baski": [
+   4961,
+   3508
+  ],
+  "dpi": 300,
+  "kat": "Aile ve aşk",
+  "kaynak": [
+   990,
+   975
+  ],
+  "kirpilmis": [
+   666,
+   613
+  ],
+  "tamam": true,
+  "yon": "yatay"
+ },
+ "more-coffee": {
+  "ad": "More Coffee Please · Kedi",
+  "alfa": true,
+  "baski": [
+   4961,
+   3508
+  ],
+  "dpi": 300,
+  "kat": "Yazı ve söz",
+  "kaynak": [
+   990,
+   975
+  ],
+  "kirpilmis": [
+   788,
+   707
+  ],
+  "tamam": true,
+  "yon": "yatay"
+ },
  "van-dikey": {
   "ad": "Van",
   "baski": [
@@ -1815,6 +2335,26 @@
   "kirpilmis": [
    1519,
    1003
+  ],
+  "tamam": true,
+  "yon": "yatay"
+ },
+ "yilbasi-ev": {
+  "ad": "Yılbaşı · Kış evi",
+  "alfa": true,
+  "baski": [
+   4961,
+   3508
+  ],
+  "dpi": 300,
+  "kat": "Özel günler",
+  "kaynak": [
+   990,
+   975
+  ],
+  "kirpilmis": [
+   976,
+   834
   ],
   "tamam": true,
   "yon": "yatay"

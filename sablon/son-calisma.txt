@@ -1,2 +1,27 @@
-kiraz-tekirdag-yatay kaynak (2110, 1390) -> 4961 x 3508
-kupa-kiraz-tekirdag kaynak (2534, 1140) -> 2362 x 1063
+foto-dugun alfa kaynak (990, 975) -> 4961 x 3508
+foto-anne alfa kaynak (990, 975) -> 3508 x 4961
+foto-bff4 alfa kaynak (990, 975) -> 3508 x 4961
+foto-best alfa kaynak (990, 975) -> 3508 x 4961
+foto-aile alfa kaynak (990, 975) -> 4961 x 3508
+kalp-ritmi alfa kaynak (1556, 2001) -> 4961 x 3508
+monogram-as alfa kaynak (990, 975) -> 4961 x 3508
+happy-holidays alfa kaynak (990, 975) -> 4961 x 3508
+yilbasi-ev alfa kaynak (990, 975) -> 4961 x 3508
+hello-winter alfa kaynak (990, 975) -> 3508 x 4961
+coffee-fincan alfa kaynak (990, 975) -> 3508 x 4961
+coffee-kadin alfa kaynak (990, 975) -> 3508 x 4961
+coffee-cift alfa kaynak (990, 975) -> 4961 x 3508
+always-with-you alfa kaynak (990, 975) -> 4961 x 3508
+i-love-you alfa kaynak (990, 975) -> 3508 x 4961
+best-dad alfa kaynak (990, 975) -> 3508 x 4961
+but-first-coffee alfa kaynak (990, 975) -> 4961 x 3508
+more-coffee alfa kaynak (990, 975) -> 4961 x 3508
+23nisan-ataturk alfa kaynak (1556, 2000) -> 3508 x 4961
+canakkale-gecilmez alfa kaynak (1556, 2001) -> 3508 x 4961
+18mart-siluet alfa kaynak (1556, 2001) -> 3508 x 4961
+gecmis-zarif alfa kaynak (1556, 2001) -> 3508 x 4961
+kelebek alfa kaynak (1556, 2001) -> 3508 x 4961
+aynen-kanka alfa kaynak (1556, 2001) -> 3508 x 4961
+kizin-hedefi alfa kaynak (1556, 2000) -> 3508 x 4961
+asla-pes-etme alfa kaynak (1556, 2001) -> 4961 x 3508
+marvel-aglar alfa kaynak (1556, 2001) -> 3508 x 4961
