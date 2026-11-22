@@ -3802,7 +3802,7 @@ function wBan(k,pics,def){k=k||{};if(k.show===false)return '';
   var e=k.eyebrow||def.e,t=k.title||def.t,x=k.text||def.x,l=k.line!=null&&k.line!==''?k.line:def.l;
   /* Sayfa başlığı banner'ın içinde (Hediye & Dekor): ayrı üst başlık yok, mobilde yer kaplamaz */
   if(def.h1){e=k.eyebrow&&!/hediye|dekor/i.test(k.eyebrow)?k.eyebrow:def.e;x=k.title||def.x;}
-  var hh=def.h1?'<h1 class="kbh kbh1">'+esc(def.h1).replace('&amp;','<em>&amp;</em>')+'</h1>'+(x?'<span class="kbq">'+esc(x)+'</span>':''):'<b class="kbh'+(t.length>26?' kbh-l':'')+'">'+esc(t)+'</b>'+(x?'<span class="kbs">'+esc(x)+'</span>':'');
+  var hh=def.h1?'<h1 class="kbh kbh1">'+esc(def.h1).replace('&amp;','<em>&amp;</em>')+'</h1>'+(x?'<span class="kbq">'+esc(x)+'</span>':''):'<b class="kbh'+(t.length>26?' kbh-l':'')+'">'+esc(t).replace(/(\d+) (?=\S)/g,'$1\u00a0')+'</b>'+(x?'<span class="kbs">'+esc(x)+'</span>':'');
   var inner='<div class="kbt"><span class="kbtop"><img class="kbw" src="img/wolflano-logo.png" alt="" aria-hidden="true">'+(e?'<span class="kbe">'+esc(e)+'</span>':'')+'</span>'+hh+(l?'<span class="kbl">'+esc(l)+'</span>':'')+'</div><div class="kbph">'+ph+'</div>';
   var cl='kbx'+(anim?' kban':'');kbAnimStart();return k.link?'<a class="'+cl+'" href="'+esc(k.link)+'">'+inner+'</a>':'<div class="'+cl+'">'+inner+'</div>';}
 /* Hareketli banner görselleri: üç yer (üstte büyük, ortada orta, sağ altta küçük ve arkada).
