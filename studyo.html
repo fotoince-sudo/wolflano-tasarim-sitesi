@@ -810,9 +810,20 @@ img{-webkit-touch-callout:none;-webkit-user-drag:none}
       <label class="fld rng" id="lsWrap" hidden><span>Harf aralığı <b id="lsOut"></b></span><input type="range" id="lsAmt" min="0" max="100" step="1" value="0"></label>
     </div>
     <div class="panel" data-p="clip" hidden>
+      <div class="chips scroll" id="apCats" aria-label="Arka plan bölümleri"><button type="button" data-ap="zem">Zeminler</button><button type="button" data-ap="grf">Grafikler</button><button type="button" data-ap="sek">Şekiller</button></div>
+      <div id="apZem">
+      <div class="mini-title" id="zemT" hidden>Zeminler</div>
+      <p class="note" style="margin:0 0 8px">Fotoğraflı şablonda dokunduğun zemin, fotoğraflar yerinde kalarak değişir. Şablon yoksa zemin tasarımın arkasına eklenir; büyütüp küçültebilirsin.</p>
+      <label class="fld rng" id="zemBlurW" hidden><span>Zemini flulaştır</span><input type="range" id="zemBlur" min="0" max="20" step="1" value="0"></label>
+      <div class="thumb-grid zem" id="zemGrid"></div>
+      <div class="admonly" style="margin-top:10px"><div class="mini-title">Seçili görseli zemin olarak kaydet <small style="font-weight:500;opacity:.7">(yalnız yönetici)</small></div><p class="note" style="margin:0 0 6px">Arşivden yüklediğin görseli tasarımda seç, adını yaz, hangi ürünlerde görüneceğine dokun.</p><input id="zemNm" placeholder="Zemin adı (ör. Deniz)" maxlength="30" style="width:100%;margin-bottom:6px"><div class="fxrow"><button type="button" data-zsave="tee">Tişört</button><button type="button" data-zsave="mug">Kupa</button><button type="button" data-zsave="canvas">Kanvas</button><button type="button" data-zsave="hepsi">Hepsi</button></div></div>
+      </div>
+      <div id="apGrf" hidden></div>
+      <div id="apSek" hidden>
       <button type="button" class="ghost wide" id="qrBtn" style="height:38px;margin-bottom:8px"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3h-3zM18 18h3v3h-3zM14 20h2M20 14v2"/></svg>QR kod ekle (web sitesi, Instagram, menü, telefon)</button>
       <div class="chips scroll" id="clipCats"></div>
       <div class="clip-grid" id="clipGrid"></div>
+      </div>
     </div>
     <div class="panel" data-p="image" hidden>
       <label class="primary wide" for="fileIn" style="height:44px;cursor:pointer"><svg class="i" viewBox="0 0 24 24"><path d="M12 16V4M7 9l5-5 5 5"/><path d="M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"/></svg>Fotoğraf yükle</label>
@@ -822,11 +833,6 @@ img{-webkit-touch-callout:none;-webkit-user-drag:none}
       <p class="note" id="imgNote">PNG, JPG veya WebP yükle. Net baskı için fotoğrafı büyük boyutta yükle. Fotoğrafın arkasındaki duvarı, odayı silmek için fotoğrafı seçip <b>Arka planı sil</b>'e dokun.</p>
       <div class="thumb-grid" id="upGrid"></div>
       <div class="admonly"><div class="mini-title">Mankenlerimiz <small style="font-weight:500;opacity:.7">(yalnız yönetici)</small></div><p class="note" style="margin:0 0 8px">Fotoğraf yeri seçiliyse ya da boş yer varsa manken oraya oturur; yoksa tasarıma görsel olarak eklenir. Şablon ve ürün görsellerini doldurmak için.</p><div class="thumb-grid mkg" id="mkGrid"><p class="note">Yükleniyor…</p></div></div>
-      <div class="mini-title" id="zemT">Zeminler</div>
-      <p class="note" style="margin:0 0 8px">Fotoğraflı şablonda dokunduğun zemin, fotoğraflar yerinde kalarak değişir. Şablon yoksa zemin tasarımın arkasına eklenir; büyütüp küçültebilirsin.</p>
-      <label class="fld rng" id="zemBlurW" hidden><span>Zemini flulaştır</span><input type="range" id="zemBlur" min="0" max="20" step="1" value="0"></label>
-      <div class="thumb-grid zem" id="zemGrid"></div>
-      <div class="admonly" style="margin-top:10px"><div class="mini-title">Seçili görseli zemin olarak kaydet <small style="font-weight:500;opacity:.7">(yalnız yönetici)</small></div><p class="note" style="margin:0 0 6px">Arşivden yüklediğin görseli tasarımda seç, adını yaz, hangi ürünlerde görüneceğine dokun.</p><input id="zemNm" placeholder="Zemin adı (ör. Deniz)" maxlength="30" style="width:100%;margin-bottom:6px"><div class="fxrow"><button type="button" data-zsave="tee">Tişört</button><button type="button" data-zsave="mug">Kupa</button><button type="button" data-zsave="canvas">Kanvas</button><button type="button" data-zsave="hepsi">Hepsi</button></div></div>
     </div>
     <div class="panel" data-p="wolf" hidden>
       <div class="kolaj" id="kolajBox" hidden>
@@ -885,7 +891,7 @@ img{-webkit-touch-callout:none;-webkit-user-drag:none}
   <nav class="tabs" id="tabs">
     <button data-tab="tee"><svg class="i" viewBox="0 0 24 24" stroke-linejoin="round" stroke-linecap="round"><path d="M9 3.6c.7 1.3 1.7 1.9 3 1.9s2.3-.6 3-1.9l4.6 2 1.7 4.3-3 1.3-1.1-1.8V20.5H6.8V9.4l-1.1 1.8-3-1.3 1.7-4.3z"/><path d="M9 3.6c.4 2.2 1.4 3.2 3 3.2s2.6-1 3-3.2"/></svg>Ürün</button>
     <button data-tab="text"><svg class="i" viewBox="0 0 24 24"><path d="M5 6V4h14v2M12 4v16M9 20h6"/></svg>Yazı</button>
-    <button data-tab="clip"><svg class="i" viewBox="0 0 24 24"><path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z"/></svg>Şekil</button>
+    <button data-tab="clip"><svg class="i" viewBox="0 0 24 24"><path d="M12 3l9 5-9 5-9-5z"/><path d="M3 13l9 5 9-5"/></svg>Arka plan</button>
     <button data-tab="image"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2"/><path d="M21 16l-5-5-8 9"/></svg>Görsel</button>
     <button data-tab="wolf" class="wolfai"><svg class="i" viewBox="0 0 24 24"><path d="M10 4l1.8 4.7L16.5 10.5l-4.7 1.8L10 17l-1.8-4.7L3.5 10.5l4.7-1.8z"/><path d="M18 3v4M16 5h4M19 15v3M17.5 16.5h3"/></svg>Wolf</button>
     <button data-tab="tpl"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="3" width="8" height="8" rx="1.5"/><rect x="13" y="3" width="8" height="8" rx="1.5"/><rect x="3" y="13" width="8" height="8" rx="1.5"/><rect x="13" y="13" width="8" height="8" rx="1.5"/></svg>Şablon</button>
@@ -4744,7 +4750,18 @@ wrap.addEventListener('touchmove',function(e){e.preventDefault();},{passive:fals
 wrap.addEventListener('contextmenu',function(e){e.preventDefault();});
 
 /* ---------- Sekmeler ve paneller ---------- */
+/* Arka plan sekmesi: Zeminler · Grafikler · Şekiller. Grafikler, şablon ızgarasının (Grafik grubu) bu sekmeye taşınmış hâlidir; Şablon sekmesi açılınca ızgara geri döner. */
+var AP={on:'zem'};
+function apMountGrid(toAp){var g=$('#tplGrid'),e=$('#tplEmpty'),tp=$('.panel[data-p="tpl"]'),ap=$('#apGrf');if(!g||!tp||!ap)return;
+  if(toAp){if(g.parentNode!==ap){ap.appendChild(e);ap.appendChild(g);}view.tplGrp='Grafik';view.tplCat='Tümü';}
+  else{if(g.parentNode!==tp){tp.appendChild(e);tp.appendChild(g);}if(view.tplGrp==='Grafik')view.tplGrp='Tümü';}}
+function apShow(k){AP.on=k;$$('#apCats [data-ap]').forEach(function(b){b.classList.toggle('on',b.dataset.ap===k);});
+  $('#apZem').hidden=k!=='zem';$('#apGrf').hidden=k!=='grf';$('#apSek').hidden=k!=='sek';
+  if(k==='zem'){try{renderZem();}catch(_){}}
+  if(k==='grf'){apMountGrid(true);renderTpl();renderTplPreviews();}
+  if(k==='sek'){try{renderClipGrid();}catch(_){}}}
 function openTab(name,focusInput){
+  if(name==='tpl')apMountGrid(false);
   if(name==='image'){try{renderMk();renderZem();var kk=$('#kolajKisa');if(kk)kk.hidden=!kolajOn();}catch(_){}}
   if(document.body.classList.contains('odak'))odakSet(false);
   if(name==='tee'){openProdPage();return;}
@@ -4754,7 +4771,8 @@ function openTab(name,focusInput){
   $$('#tabs button').forEach(function(b){b.classList.toggle('on',b.dataset.tab===name);});
   /* Kullanıcı kendisi yakınlaştırdıysa (iki parmak ya da büyüteç) panel açılınca görünüm değişmez */
   if(!view.uz){view.fit='area';resetZoom();}syncFitBtn();
-  if(name==='tpl'){if(tplLastGroup!==tplGroup())renderTpl();renderTplPreviews();}
+  if(name==='tpl'){renderTpl();renderTplPreviews();}
+  if(name==='clip')apShow(AP.on);
   if(name==='opt')renderOpt();
   sheet.classList.toggle('tall',name==='wolf');
   if(name==='wolf')try{wolfStDefault();wolfPhRender();kolajSync();kosSync();}catch(_){}
@@ -4959,7 +4977,7 @@ function renderTpl(){
   if(!gh[view.tplGrp||'Tümü']||view.tplGrp==='Zeminler'){view.tplGrp='Tümü';if(view.tplCat==='Zemin')view.tplCat='Tümü';}var G=view.tplGrp||'Tümü';
   if(G!=='Tümü'&&view.tplCat!=='Tümü'&&tplGrpOf(view.tplCat)!==G)view.tplCat='Tümü';
   $('#tplHead').hidden=true;
-  $('#tplGrps').innerHTML=[['Tümü',TPL_HEAD[g]||'Şablonlar']].concat(TPL_KAT.filter(function(x){return gh[x[0]];})).map(function(x){return '<button data-tg="'+x[0]+'"'+(x[0]===G&&!q?' class="on"':'')+'>'+x[1]+'</button>';}).join('');
+  $('#tplGrps').innerHTML=[['Tümü',TPL_HEAD[g]||'Şablonlar']].concat(TPL_KAT.filter(function(x){return gh[x[0]]&&x[0]!=='Grafik';})).map(function(x){return '<button data-tg="'+x[0]+'"'+(x[0]===G&&!q?' class="on"':'')+'>'+x[1]+'</button>';}).join('');
   var subs=TPL_CATS.filter(function(c){return c!=='Tümü'&&has[c]&&G!=='Tümü'&&G!=='Fotoğraflı'&&tplGrpOf(c)===G;});
   subs=[];if(subs.length>1)cc='<button data-tc="Tümü"'+(view.tplCat==='Tümü'&&!q?' class="on"':'')+'>Hepsi</button>'+subs.map(function(c){return '<button data-tc="'+c+'"'+(c===view.tplCat&&!q?' class="on"':'')+'>'+c+'</button>';}).join('');
   $('#tplCats').innerHTML=cc;$('#tplCats').hidden=!cc;
@@ -5196,12 +5214,13 @@ $('#tplQ').addEventListener('keydown',function(e){if(e.key==='Enter')this.blur()
 $('#tplQx').addEventListener('click',function(){$('#tplQ').value='';renderTpl();renderTplPreviews();});
 $('#tplKj').addEventListener('click',function(e){if(e.target.closest('[data-kj]')){openTab('wolf',true);var w=$('#kolajIn');if(w&&w.hidden)$('#kolajBtn').click();}});
 $('#tplGrid').addEventListener('click',function(e){var b=e.target.closest('[data-tpl]');if(b)applyTemplate(TPLS[+b.dataset.tpl]);});
+$('#apCats').addEventListener('click',function(e){var b=e.target.closest('[data-ap]');if(b)apShow(b.dataset.ap);});
 function ctxClick(e){
   var b=e.target.closest('[data-c]');if(!b)return;
   var c=b.dataset.c;
   if(c.indexOf('mug-vehicle-')===0){editMugVehicleText(c.slice(12));return;}
   if(c.indexOf('tee-text-')===0){editTeePhotoText(c.slice(9));return;}
-  if(c==='zem'){if(view.tab!=='image')openTab('image');setTimeout(function(){var z=$('#zemT');if(z)z.scrollIntoView({behavior:'smooth',block:'start'});},250);return;}
+  if(c==='zem'){AP.on='zem';if(view.tab!=='clip')openTab('clip');else apShow('zem');return;}
   if(c==='all'){if(enterGroup())toast('Tüm tasarım seçildi. Sol üstteki beyaz kareyle hepsini birlikte büyüt, küçült.');return;}
   if(c==='gdone'){select(null);return;}
   if(c==='gzin'||c==='gzout'){grpScale(c==='gzin'?1.05:1/1.05);return;}
