@@ -23,6 +23,8 @@ for (let i = 0; i < 6; i++) { const f = `${OUT}/test-foto-${i}.png`; fs.writeFil
 
 const browser = await chromium.launch();
 const ctx = await browser.newContext({ ...devices['iPhone 13'], locale: 'tr-TR' });
+// Çerez bandı (Google Analytics onayı) alttaki düğmeleri kapatmasın, robotun ziyareti istatistiğe de girmesin
+await ctx.addInitScript(() => { try { localStorage.setItem('wf_cerez', 'hayir'); } catch (_) {} });
 const page = await ctx.newPage();
 const hatalar = [];
 page.on('pageerror', (e) => hatalar.push('Sayfa hatası: ' + String(e.message || e).slice(0, 200)));
@@ -58,9 +60,12 @@ await adim('Ürün sayfası', async () => { await page.locator('article.card a.p
   const ok = await page.evaluate(() => { const i = document.querySelector('#gal img'); return !!(i && i.complete && i.naturalWidth > 0); }); if (!ok) throw new Error('Ürün fotoğrafı görünmüyor'); return urunHash; });
 await adim('Sepete ekle (kupa)', async () => {
   await git('#ana'); const hd = await sayfaLink('hediye'); if (!hd) throw new Error('Hediye & Dekor bağlantısı bulunamadı'); await git(hd); await page.waitForSelector('article.card', { timeout: 15000 });
-  const id = await page.evaluate(() => { const c = [...document.querySelectorAll('article.card')].find((a) => /KUPA/i.test(a.innerText) && a.querySelector('[data-add]')); return c ? c.querySelector('[data-add]').dataset.add : ''; });
-  if (!id) throw new Error('Sepete eklenecek kupa bulunamadı');
-  await page.locator(`[data-add="${id}"]`).first().click(); await page.waitForTimeout(1500);
+  // Kartlarda Sepete ekle düğmesi yok (gizli); müşteri gibi ürün sayfasına girip oradan ekle
+  const href = await page.evaluate(() => { const c = [...document.querySelectorAll('article.card')].find((a) => /KUPA/i.test(a.innerText) && !a.querySelector('[data-soldout]')); const l = c && c.querySelector('a[href^="#urun-"]'); return l ? l.getAttribute('href') : ''; });
+  if (!href) throw new Error('Sepete eklenecek kupa bulunamadı');
+  await git(href); await page.waitForTimeout(1500);
+  const btn = page.locator('main [data-add]').first(); if (!(await btn.count())) throw new Error('Ürün sayfasında Sepete ekle düğmesi yok');
+  await btn.click(); await page.waitForTimeout(1500);
   await git('#sepet'); const tx = await page.evaluate(() => document.body.innerText);
   if (/Sepetin boş/i.test(tx)) throw new Error('Ürün sepete eklenmedi'); return 'kupa sepette'; });
 await adim('Ödeme sayfası', async () => { await git('#odeme'); const tx = await page.evaluate(() => document.body.innerText); if (/Sepetin boş/i.test(tx)) throw new Error('Ödeme sayfası sepeti boş görüyor'); if (!/Ödeme/i.test(tx)) throw new Error('Ödeme sayfası açılmadı'); const n = await page.locator('input').count(); if (n < 3) throw new Error('Ödeme formu eksik (' + n + ' alan)'); });
