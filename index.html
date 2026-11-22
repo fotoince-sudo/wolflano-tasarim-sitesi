@@ -1067,6 +1067,8 @@ body:has(.ttlanding) #ann{display:none!important}
 .tsatl{display:inline-flex;align-items:center;gap:6px;margin:0 0 12px 2px;font:600 14px var(--ui);color:var(--green);text-decoration:none}.tsatl svg{width:14px;height:14px}
 
 .pcols{margin:2px 0 12px}.pcols small{display:block;margin-bottom:8px;color:var(--muted);font:500 14px var(--ui)}.pcols small b{color:var(--ink)}.pcols div{display:flex;flex-wrap:wrap;gap:10px}.pcols a{width:34px;height:34px;border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 1px #c9d1cc;display:block}.pcols a.on{box-shadow:0 0 0 2px var(--green)}
+
+.an-vid{margin-top:18px;max-width:420px}.an-vid video{display:block;width:100%;aspect-ratio:4/5;border-radius:18px;background:#eef3ef;box-shadow:0 10px 28px rgba(20,24,22,.12)}@media(min-width:900px){.an-sec .an-w:has(.an-vid){display:grid;grid-template-columns:1fr 380px;gap:28px;align-items:center}.an-vid{margin-top:0;grid-row:1/3;grid-column:2}}
 </style>
 
 <header class="top"><div class="wrap">
@@ -3620,7 +3622,10 @@ var AKP=null;function akpStart(){if(AKP)return;var rm=false;try{rm=matchMedia('(
   AKP=setInterval(function(){var L=document.querySelectorAll('img[data-akp]');if(!L.length)return;[].forEach.call(L,function(im,k){setTimeout(function(){var a;try{a=JSON.parse(im.getAttribute('data-akp'));}catch(_){return;}
     var n=((+im.dataset.k||0)+1)%a.length,pre=new Image();pre.onload=function(){im.style.opacity='0';setTimeout(function(){im.src=a[n];im.dataset.k=n;im.style.opacity='1';},350);};pre.src=a[n];},k*700);});},4200);}
 /* YENİ ANA SAYFA: tek mesaj ve tek düğme, ürünler önde, kurt imza olarak. Görsel yönetimden değişir (Ana görsel). */
-function anaYeni(){akpStart();
+/* Ana sayfa atölye videosu: ekrana girince sessiz oynar, çıkınca durur (veri harcamasın diye önceden yüklenmez) */
+function anVidWatch(){var v=document.querySelector('.an-vid video');if(!v||v.dataset.w||!('IntersectionObserver' in window))return;v.dataset.w=1;
+  new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){v.preload='auto';var pr=v.play();if(pr&&pr.catch)pr.catch(function(){});}else v.pause();});},{threshold:.5}).observe(v);}
+function anaYeni(){akpStart();setTimeout(anVidWatch,300);
   var ok='<svg viewBox="0 0 24 24" fill="none" stroke="#1d7a4a" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5L20 7"/></svg>';
   var ar='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>';
   var fr=+((D.ship||{}).free)||0;
@@ -3645,7 +3650,7 @@ function anaYeni(){akpStart();
     '<div class="an-st"><em>1</em><div><b>Ürününü ve rengini seç</b><span>Tişört, sweatshirt, kupa ya da canvas tablo.</span></div></div>'+
     '<div class="an-st"><em>2</em><div><b>Fotoğraf, yazı ya da şablon ekle</b><span>Ürünün üzerinde nasıl duracağını anında gör. Yazıyı fotoğrafla giydir.</span></div></div>'+
     '<div class="an-st"><em>3</em><div><b>Sepete ekle, biz basıp gönderelim</b><span>Onayladığın tasarım basılır, özenle paketlenir, kapına gelir.</span></div></div>'+
-  '</div></div></section>'+
+  '</div><div class="an-vid"><video src="assets/video/atolye.mp4?v=1" poster="assets/video/atolye-kapak.jpg?v=1" muted loop playsinline preload="none" controls aria-label="Baskın nasıl hazırlanıyor: Wolflano Baskı Atölyesi videosu"></video></div></div></section>'+
   '<section class="an-sec an-dk"><div class="an-w"><p class="an-ey">Wolflano tasarımları</p><h2 style="margin-top:6px">Tasarımcı gerekmez</h2>'+
     '<p class="an-lead" style="margin-top:6px">Hazır tasarımlardan birini seç, istersen adını ekle, tek dokunuşla ürününe yerleştir.</p><div class="an-tp">'+
     tps.map(function(t){return '<a href="'+tpl+'"><i><img src="tasarimlar/wolf/'+t[0]+'" alt="'+esc(t[1])+' tasarımı" loading="lazy"></i><b>'+t[1]+'</b></a>';}).join('')+
