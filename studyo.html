@@ -206,6 +206,7 @@ svg.i{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stro
 #areaBox .cgH{top:50%;left:0;right:0;height:calc(1.5px*var(--inv));margin-top:calc(-.75px*var(--inv))}
 #areaBox.onV .cgV,#areaBox.onH .cgH{display:block}
 #areaBox.onV,#areaBox.onH{opacity:1}
+#areaHint{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:calc(5px*var(--inv));padding:calc(8px*var(--inv));text-align:center;pointer-events:none;color:#5d6b63;font:500 calc(11px*var(--inv))/1.4 var(--ui)}#areaHint[hidden]{display:none}#areaHint b{font:800 calc(13px*var(--inv))/1.2 var(--ui);color:#2f7d5b}#areaHint em{font-style:normal;font-weight:800;color:#1b221e}
 #areaLabel{position:absolute;left:0;bottom:100%;margin-bottom:calc(4px*var(--inv));white-space:nowrap;font:600 calc(11px*var(--inv))/1 var(--ui);color:#1b221e;text-shadow:0 0 calc(3px*var(--inv)) #fff,0 0 calc(2px*var(--inv)) #fff}
 #selLayer{position:absolute;inset:0;pointer-events:none}.dwrap{position:absolute;inset:0;pointer-events:none}.dwrap>*{pointer-events:auto}.dwrap>#selLayer{pointer-events:none}
 /* Seçim: ince çerçeve ve iki köşe tutamağı (sol üst beyaz kare: boy, sağ alt siyah nokta: dönüş). */
@@ -720,7 +721,7 @@ img{-webkit-touch-callout:none;-webkit-user-drag:none}
       <img id="brandMark" src="img/wolflano-logo.png" alt="" aria-hidden="true" hidden>
       <div class="dwrap"><div id="passClip" aria-hidden="true"><div id="passLayer"></div></div><div id="clipLayer"><div id="objLayer"></div></div></div>
       <div id="shadeHost" aria-hidden="true"></div>
-      <div class="dwrap"><div id="areaBox"><span id="areaLabel"></span><i class="cg cgV"></i><i class="cg cgH"></i></div>
+      <div class="dwrap"><div id="areaBox"><span id="areaLabel"></span><div id="areaHint" hidden><b>Tasarımına başla</b><span>Alttan <em>Arka plan</em> ile zemin, grafik ve şekil ekle<br>ya da <em>Şablon</em> seç · <em>Yazı</em> ve <em>Görsel</em> ile kendin yap</span></div><i class="cg cgV"></i><i class="cg cgH"></i></div>
       <div id="logoZone" hidden><span>Logo</span></div><div id="faceBox" hidden><span id="faceLabel"></span></div></div>
       <div id="rulerHost" aria-hidden="true"></div>
       <div class="dwrap"><div id="selLayer"></div></div>
@@ -2370,6 +2371,7 @@ function renderObjects(){
   $$('.obj',objLayer).forEach(function(ch){if(!keep[ch.dataset.id])ch.remove();});
   for(id in els){if(!keep[id])delete els[id];}
   for(i=0;i<a.length;i++){if(a[i].type==='text')measureText(a[i]);}
+  var ah=$('#areaHint');if(ah)ah.hidden=a.length>0;
 }
 function remeasure(){cur().objs.forEach(function(o){if(o.type==='text'){if(isWarped(o)&&els[o.id])styleText(els[o.id],o);measureText(o);}});updateSel();if(view.tab==='text')renderFxRows();}
 
