@@ -4832,7 +4832,7 @@ function tplKatAny(c,t){if(t&&t.items)return tplKat(t);
   if(t&&t.data){var j='';try{j=JSON.stringify(t.data);}catch(_){}if(/"slot":(1|true)|"phEmpty"|"teePhotoBg"|"oilBg"/.test(j)||/foto[gğ]raf/i.test(String(t.title||'')))return 'Fotoğraflı';if(TPL_KURT_C.indexOf(c)>=0||/kurt|wolf/i.test(String(t.title||'')))return 'Kurt';return 'Grafik';}
   if(c==='Zemin')return '';return (TPL_KURT_C.indexOf(c)>=0||/kurt|wolf/i.test(String(c||'')))?'Kurt':'Grafik';}
 /* Ana başlık (Giyim/Kupa… şablonları) yalnız yöneticinin eklediği şablonları gösterir; hazır şablonlar kendi alt kategorilerinde */
-function tplInGrp(c,t){var g=view.tplGrp||'Tümü';if(g==='Tümü')return c!=='Zemin'&&!!(t&&t.data&&!t.items);return tplKatAny(c,t)===g;}
+function tplInGrp(c,t){var g=view.tplGrp||'Tümü';if(g==='Tümü')return c!=='Zemin'&&!!(t&&t.data&&!t.items&&t.created_by);return tplKatAny(c,t)===g;}
 function renderTpl(){
   ['Zemin','Yağlı boya','Fotoğraflı tişört','Araba ve motosiklet'].forEach(function(c){if(TPL_CATS.indexOf(c)<0)TPL_CATS.push(c);});
   var h='',cc='',q=normTR(($('#tplQ')&&$('#tplQ').value||'').trim()),n=0,g=tplGroup(),has={},dirs={},measures={};
@@ -6990,8 +6990,8 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
   /* İki yükleme üst üste binerse (sayfa açılışı + yönetici girişi) yalnız sonuncusu yazar: özel şablonlar kaybolmasın */
   var tplSeq=0;
   async function loadTpls(){var my=++tplSeq,L=[];
-    try{L=await rq('/rest/v1/admin_designs?select=id,title,thumb,data,product,note,published&kind=eq.sablon&published=eq.true&order=created_at.desc&limit=500',{anon:true})||[];}catch(_){L=[];}
-    if(ADM.on){try{var pv=await rq('/rest/v1/admin_designs?select=id,title,thumb,data,product,note,published&kind=eq.sablon&published=eq.false&order=created_at.desc&limit=500')||[];L=pv.concat(L);}catch(_){}}
+    try{L=await rq('/rest/v1/admin_designs?select=id,title,thumb,data,product,note,published,created_by&kind=eq.sablon&published=eq.true&order=created_at.desc&limit=500',{anon:true})||[];}catch(_){L=[];}
+    if(ADM.on){try{var pv=await rq('/rest/v1/admin_designs?select=id,title,thumb,data,product,note,published,created_by&kind=eq.sablon&published=eq.false&order=created_at.desc&limit=500')||[];L=pv.concat(L);}catch(_){}}
     if(my!==tplSeq)return;ADM.tpls=L;
     try{renderTpl();if(view.tab==='tpl')renderTplPreviews();}catch(_){}
   }
