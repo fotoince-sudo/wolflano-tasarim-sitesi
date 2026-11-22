@@ -45,6 +45,30 @@ for j in jobs:
         continue
     try:
         kp = f'sablon/kaynak/{ad}.png'
+        if j.get('alfa'):
+            # Saydam kaynak (kullanıcının PNG'si): saydamlık olduğu gibi korunur; fotoğraf yerleri (delikler) ve
+            # silinmiş yazı alanları kaynakta saydam bırakılmıştır. Renk x4 büyütülür, saydamlık aynı ölçüye yumuşak büyütülür.
+            im4 = Image.open(kp).convert('RGBA'); src = im4.size
+            al0 = np.asarray(im4)[..., 3]
+            ys, xs = np.where(al0 > 18)
+            box = (max(0, xs.min() - 8), max(0, ys.min() - 8), min(im4.width, xs.max() + 9), min(im4.height, ys.max() + 9))
+            im4 = im4.crop(box); crop = im4.size
+            big = up4(im4.convert('RGB'))
+            alb = im4.getchannel('A').resize(big.size, Image.LANCZOS)
+            land = big.width > big.height
+            W, H = (A3[1], A3[0]) if land else A3
+            s = min(W * .96 / big.width, H * .96 / big.height)
+            sz = (round(big.width * s), round(big.height * s))
+            rgba = big.resize(sz, Image.LANCZOS).convert('RGBA'); rgba.putalpha(alb.resize(sz, Image.LANCZOS))
+            can = Image.new('RGBA', (W, H), (0, 0, 0, 0))
+            can.paste(rgba, ((W - sz[0]) // 2, (H - sz[1]) // 2))
+            can.save(f'baski/{ad}.png', dpi=(300, 300), optimize=True)
+            k = 1600 / max(W, H)
+            can.resize((round(W * k), round(H * k)), Image.LANCZOS).save(f'sablon/web/{ad}.webp', 'WEBP', quality=88, method=6, alpha_quality=95)
+            rap[ad] = {'tamam': True, 'kaynak': list(src), 'kirpilmis': list(crop), 'baski': [W, H], 'dpi': 300, 'yon': 'yatay' if land else 'dikey', 'ad': j.get('baslik', ad), 'kat': j.get('kat', ''), 'alfa': True}
+            print(ad, 'alfa kaynak', src, '->', W, 'x', H)
+            json.dump(rap, open(rp, 'w'), ensure_ascii=False, indent=1)
+            continue
         if os.path.exists(kp):
             im = Image.open(kp).convert('RGB')
         else:
