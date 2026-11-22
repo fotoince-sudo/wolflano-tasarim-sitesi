@@ -781,6 +781,7 @@ img{-webkit-touch-callout:none;-webkit-user-drag:none}
       <button data-c="gzout" data-g="1" class="zbtn" aria-label="Hepsini küçült (%5)">−</button>
       <button data-c="gzin" data-g="1" class="zbtn" aria-label="Hepsini büyüt (%5)">+</button>
       <button data-c="gcolor" data-g="1"><i class="dot" id="gDot"></i>Renk</button>
+      <button data-c="gdup" data-g="1"><svg class="i" viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V6a2 2 0 0 1 2-2h9"/></svg>Kopyala</button>
       <button data-c="gdel" data-g="1" class="danger" id="gDel"><svg class="i" viewBox="0 0 24 24"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg><span>Sil</span></button>
       <span class="pill gsel" data-g="1">Tüm tasarım seçili</span>
       <button data-c="all" data-i="1"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" stroke-dasharray="3 2.4"/><rect x="8" y="8" width="8" height="8" rx="1"/></svg>Tümünü seç</button>
@@ -4002,6 +4003,17 @@ function dupSel(){
   c.id=view.nextId++;c.x=clamp(o.x+14,A.l,A.r);c.y=clamp(o.y+14,A.t,A.b);
   cur().objs.push(c);renderObjects();select(c.id);pushHist();
 }
+/* Tüm tasarımı kopyala: tasarım bir yandaysa kopyası ortaya göre ayna konumuna (kupanın öbür yüzüne) konur; ortadaysa biraz kaydırılır.
+   Şablonun kilitli çerçeve/fotoğraf katmanları da kopyalanır. */
+function dupGrp(){
+  var src=cur().objs.filter(function(o){return !o.oilBg&&!o.oilSlot&&!o.mugVehicleFace&&!o.mugVehicleText&&!o.zem;});if(!src.length)return;
+  var A=areaBox(view.side,cur().area),l=1e9,r=-1e9;src.forEach(function(o){var hw=Math.abs(o.w*Math.cos((o.rot||0)*PI/180))/2+Math.abs(o.h*Math.sin((o.rot||0)*PI/180))/2;l=Math.min(l,o.x-hw);r=Math.max(r,o.x+hw);});
+  var cx=(l+r)/2,dx=14,dy=14,acx=(A.l+A.r)/2,half=false;
+  var mx=2*acx-cx;if(Math.abs(mx-cx)>=(r-l)*0.6){dx=mx-cx;dy=0;half=true;}
+  var cp=src.map(function(o){var c=JSON.parse(JSON.stringify(o));c.id=view.nextId++;c.x=o.x+dx;c.y=o.y+dy;return c;});
+  cur().objs=cur().objs.concat(cp);renderAll();pushHist();if(view.grp){buildSel();syncCtx();}
+  toast(half?'Kopyası diğer yana kondu.':'Kopyası eklendi. Tasarımı küçültüp bir yana alırsan kopyası öbür yana kendiliğinden gider.');
+}
 function moveZ(dir){
   var o=selObj();if(!o)return;
   var a=cur().objs,i=a.indexOf(o),j=clamp(i+dir,0,a.length-1);
@@ -5191,6 +5203,7 @@ function ctxClick(e){
   if(c==='gdone'){select(null);return;}
   if(c==='gzin'||c==='gzout'){grpScale(c==='gzin'?1.05:1/1.05);return;}
   if(c==='gcolor'){view.gdel=false;showPop('fill');syncCtx();return;}
+  if(c==='gdup'){view.gdel=false;dupGrp();return;}
   if(c==='gdel'){if(!view.gdel){view.gdel=true;syncCtx();return;}/* Tümünü seç > Sil: çerçeve, fotoğraf, zemin ve kilitli şablon katmanları dahil etkin baskı yüzünü tamamen temizle. */cur().objs=[];select(null);renderAll();pushHist();toast('Tasarım silindi. Geri almak için ↶');return;}
   if(c!=='gdel')view.gdel=false;
   if(c==='gcenter'){var GX=grpBox(),GA=areaBox(view.side,cur().area);if(GX){var ddx=GA.cx-GX.cx,ddy=GA.cy-GX.cy;grpObjs().forEach(function(q){q.x+=ddx;q.y+=ddy;place(els[q.id],q);});updateSel();var ab2=$('#areaBox');ab2.classList.add('onV','onH');setTimeout(centerOff,900);pushHist();toast('Tasarım baskı alanına ortalandı');}return;}
