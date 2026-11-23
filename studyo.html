@@ -304,6 +304,8 @@ svg.i{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stro
 .cp-in button{height:34px;border:0;border-radius:10px;padding:0 14px;background:var(--accent);color:#fff;font:700 13px var(--ui)}
 .sw.custom input{position:absolute;inset:0;opacity:0;width:100%;height:100%;cursor:pointer}
 .sw.custom.open{outline:3px solid var(--accent);outline-offset:2px}
+/* Wolflano kurdu sahnede nakış gibi kabartmalı görünür (şekil aynen kalır; baskı dosyası etkilenmez) */
+.obj[data-k="p_logo"]>svg{filter:url(#wfEmb)}
 .pop{max-height:calc(100vh - 120px);max-height:calc(100dvh - 120px);overflow-y:auto}
 .cp-spec{flex-direction:column;align-items:stretch;gap:10px;margin-top:2px}
 .sp-sv{position:relative;height:150px;border-radius:12px;touch-action:none;cursor:crosshair;background-image:linear-gradient(to top,#000,transparent),linear-gradient(to right,#fff,transparent)}
@@ -828,6 +830,7 @@ img{-webkit-touch-callout:none;-webkit-user-drag:none}
       </div>
       <div id="apGrf" hidden></div>
       <div id="apSek" hidden>
+      <button type="button" class="ghost wide" id="brandWolfBtn" style="height:38px;margin-bottom:8px;border-color:var(--accent);color:var(--accent)"><svg class="i" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M9 4v16M15 4v16M4 9h16M4 15h16" opacity=".35"/></svg>Wolflano kurdu ekle · 5 × 5 cm · ücretsiz</button>
       <button type="button" class="ghost wide" id="qrBtn" style="height:38px;margin-bottom:8px"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3h-3zM18 18h3v3h-3zM14 20h2M20 14v2"/></svg>QR kod ekle (web sitesi, Instagram, menü, telefon)</button>
       <div class="chips scroll" id="clipCats"></div>
       <div class="clip-grid" id="clipGrid"></div>
@@ -5224,6 +5227,22 @@ $('#clipCats').addEventListener('click',function(e){
   view.clipCat=b.dataset.cat;$$('#clipCats button').forEach(function(x){x.classList.toggle('on',x===b);});renderClipGrid();
 });
 $('#clipGrid').addEventListener('click',function(e){var b=e.target.closest('[data-clip]');if(b)addClip(b.dataset.clip);});
+/* Wolflano kurdu: 5 × 5 cm marka logosu; sürüklenip istenen yere bırakılır. O yüzde yalnız kurt varsa baskı ücreti alınmaz. */
+(function(){if(document.getElementById('wfEmb'))return;document.body.insertAdjacentHTML('beforeend','<svg width="0" height="0" style="position:absolute" aria-hidden="true"><filter id="wfEmb" x="-15%" y="-15%" width="130%" height="130%" color-interpolation-filters="sRGB">'+
+  '<feTurbulence type="fractalNoise" baseFrequency="1.6 0.12" numOctaves="2" seed="7" result="n"/>'+
+  '<feColorMatrix in="n" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -0.9 .6" result="th"/>'+
+  '<feComposite in="th" in2="SourceAlpha" operator="in" result="thr"/>'+
+  '<feGaussianBlur in="SourceAlpha" stdDeviation="1.4" result="b"/>'+
+  '<feSpecularLighting in="b" surfaceScale="4" specularConstant=".85" specularExponent="16" lighting-color="#ffffff" result="sp"><feDistantLight azimuth="235" elevation="42"/></feSpecularLighting>'+
+  '<feComposite in="sp" in2="SourceAlpha" operator="in" result="spc"/>'+
+  '<feComposite in="SourceGraphic" in2="spc" operator="arithmetic" k1="0" k2="1" k3=".55" k4="0" result="lit"/>'+
+  '<feDropShadow in="SourceAlpha" dx=".6" dy="1.2" stdDeviation=".9" flood-color="#000" flood-opacity=".45" result="sh"/>'+
+  '<feMerge><feMergeNode in="sh"/><feMergeNode in="lit"/><feMergeNode in="thr"/></feMerge></filter></svg>');})();
+$('#brandWolfBtn').addEventListener('click',function(){
+  var A=areaBox(view.side,cur().area),o=newBase('clip'),s=Math.min(5*PPC,A.w,A.h);
+  o.key='p_logo';o.color=autoInk();o.w=s;o.h=s;cur().objs.push(o);renderObjects();select(o.id);pushHist();
+  toast(cur().objs.length===1?'Wolflano kurdu eklendi. Sürükleyip yerine bırak; bu baskıdan ücret alınmaz.':'Wolflano kurdu eklendi. Sürükleyip yerine bırak.');
+  if(innerWidth<700&&typeof closeTab==='function')closeTab();});
 /* Değiştir: seçili şekli/görseli (ör. şablondaki kurt logosu) kendi logon ya da fotoğrafınla aynı yerde, aynı boyutta değiştirir */
 $('#slotsIn').addEventListener('change',function(e){var fs=Array.prototype.slice.call(e.target.files||[]);e.target.value='';if(!fs.length)return;fillSlots(fs);});
 $('#swapIn').addEventListener('change',function(e){var file=e.target.files[0];e.target.value='';if(!file)return;
@@ -5577,10 +5596,12 @@ async function saveCanvas(c,name){
 
 /* ---------- Sipariş ekranı ---------- */
 function fmt(n){return Math.round(n).toLocaleString('tr-TR')+' ₺';}
+/* Bir yüzde yalnız Wolflano kurdu (marka logosu) varsa o yüzün baskı ücreti alınmaz */
+function brandOnly(s){var L=(state[s]&&state[s].objs)||[];return L.length>0&&L.every(function(q){return q.type==='clip'&&q.key==='p_logo';});}
 function priceInfo(){
   var qty=0,fees=0,i,k,disc=0;
   sizeList().forEach(function(s){qty+=state.sizes[s]||0;});
-  sidesOf().forEach(function(s){if(state[s].objs.length)fees+=areaFee(state[s].area);});
+  sidesOf().forEach(function(s){if(state[s].objs.length&&!brandOnly(s))fees+=areaFee(state[s].area);});
   var unit=basePrice()+fees;
   for(i=0;i<PRICE.tiers.length;i++){if(qty>=PRICE.tiers[i][0]){disc=PRICE.tiers[i][1];break;}}
   return {qty:qty,fees:fees,unit:unit,disc:disc,total:qty*unit*(1-disc)};
@@ -5622,7 +5643,7 @@ function renderPrice(){
   var p=priceInfo(),h='';
   h+='<div><dt>'+productLabel()+'</dt><dd>'+fmt(basePrice())+'</dd></div>';
   sidesOf().forEach(function(s){
-    var sd=state[s];h+='<div><dt>'+SIDE_NAME[s]+' baskı'+(sd.objs.length?' ('+areaTitle(s)+')':'')+'</dt><dd>'+(sd.objs.length?(areaFee(sd.area)?fmt(areaFee(sd.area)):'Fiyata dahil'):'Yok')+'</dd></div>';
+    var sd=state[s];h+='<div><dt>'+SIDE_NAME[s]+' baskı'+(sd.objs.length?' ('+areaTitle(s)+')':'')+'</dt><dd>'+(sd.objs.length?(brandOnly(s)?'Wolflano kurdu · ücretsiz':areaFee(sd.area)?fmt(areaFee(sd.area)):'Fiyata dahil'):'Yok')+'</dd></div>';
   });
   h+='<div><dt>Birim fiyat</dt><dd>'+fmt(p.unit)+'</dd></div>';
   if(!needSizesHere()){h+=isStd()?'<div><dt>Adet</dt><dd>1 · sepette değiştirilebilir</dd></div>':'<div><dt>Beden ve adet</dt><dd>Sepette seçilir</dd></div>';$('#priceList').innerHTML=h;$('#totalOut').textContent=fmt(p.unit)+' / adet';renderCart();$('#sum').value=summaryText();return;}

@@ -1698,12 +1698,12 @@ function cartKey(){
 function scCheckout(it){
   var a;try{a=JSON.parse(it.sig);}catch(_){throw new Error('Tasarım bilgisi okunamadı; tasarımı yeniden sepete ekle.');}
   if(!Array.isArray(a))throw new Error('Tasarım bilgisi eksik.');
-  var areas={},single=a[0]==='hat'||a[0]==='canvas'||(a[0]==='mug'&&a[1]==='sub');
+  var areas={},brand=[],single=a[0]==='hat'||a[0]==='canvas'||(a[0]==='mug'&&a[1]==='sub');
   ['front','logo','logo2','back'].forEach(function(sd,i){
     if((single&&sd!=='front')||(a[0]==='mug'&&(sd==='logo'||sd==='logo2'))||(a[0]==='zip'&&sd==='logo'))return;
-    var v=a[6+i];if(v&&Array.isArray(v.objs)&&v.objs.length)areas[sd]=v.area;
+    var v=a[6+i];if(v&&Array.isArray(v.objs)&&v.objs.length){areas[sd]=v.area;if(v.objs.every(function(q){return q&&q.type==='clip'&&q.key==='p_logo';}))brand.push(sd);}
   });
-  return {product:a[0],cut:a[1],sizes:it.sizes,areas:areas};
+  return {product:a[0],cut:a[1],sizes:it.sizes,areas:areas,brand:brand};
 }
 async function crmSend(o){
   try{var tk=await sbToken(),h={'Content-Type':'application/json',apikey:SB.key,'x-wf-cart-key':cartKey()};if(tk)h.Authorization='Bearer '+tk;

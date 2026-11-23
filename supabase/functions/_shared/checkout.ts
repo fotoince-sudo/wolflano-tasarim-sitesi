@@ -202,6 +202,8 @@ function studio(d: Row, x: Row) {
       (!Object.hasOwn(rules, side) || !rules[side]?.includes(area)) ||
       v.product === "canvas" && area !== "cv" + v.cut.slice(1)
     ) throw new CheckoutError("Geçersiz baskı alanı.");
+    // Only the Wolflano wolf (brand logo) on this side: no print fee.
+    if (Array.isArray(v.brand) && v.brand.includes(side)) continue;
     unit += fee(d, b, area);
   }
   // Match the existing store cart's per-design quantity tiers.

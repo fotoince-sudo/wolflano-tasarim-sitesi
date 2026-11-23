@@ -43040,6 +43040,7 @@ function studio(d, x) {
   const rules = v.product === "mug" && v.cut === "sub" ? { front: ["mugw"] } : SIDES[v.product];
   for (const [side, area] of Object.entries(areas)) {
     if (typeof area !== "string" || (!Object.hasOwn(rules, side) || !rules[side]?.includes(area)) || v.product === "canvas" && area !== "cv" + v.cut.slice(1)) throw new CheckoutError("Ge\xE7ersiz bask\u0131 alan\u0131.");
+    if (Array.isArray(v.brand) && v.brand.includes(side)) continue;
     unit += fee(d, b, area);
   }
   const tiers = [[50, 15], [25, 10], [10, 5]], discount = tiers.find((t) => q >= t[0])?.[1] || 0;
