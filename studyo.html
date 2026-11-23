@@ -1046,7 +1046,7 @@ var PRODUCTS={
 };
 var PRODUCT_ORDER=['tee','sweat','hood','zip','polo','hat','mug','canvas'];
 var SIDE_NAME={front:'Ön',logo:'Sol logo',logo2:'Sağ logo',back:'Arka'};
-/* Logo katmanı: ön yüze basılır, sol göğüste sabit 8×8 cm. Ön tasarımla çakışırsa logo önceliklidir, ön tasarımın o kısmı basılmaz. */
+/* Logo katmanı: ön yüze basılır, sol göğüste sabit 8×8 cm. Ön tasarımla çakıştığı yerde ikisi de basılır (logo üstte); her biri yalnız kendi alanının içinde basılır. */
 /* İki göğüs logosu: 'logo' giyenin sol göğsü, 'logo2' sağ göğsü (aynı 8 × 8 cm, orta çizgiye göre ayna). İkisi de ön yüze basılır. */
 function isLogoSide(s){return s==='logo'||s==='logo2';}
 function face(s){return isLogoSide(s)?'front':s;}
@@ -2422,8 +2422,8 @@ function logoBox(){return areaBox('logo','logo');}
 function interBox(a,b){var l=Math.max(a.l,b.l),t=Math.max(a.t,b.t),r=Math.min(a.r,b.r),bb=Math.min(a.b,b.b);return (r>l&&bb>t)?{l:l,t:t,r:r,b:bb,w:r-l,h:bb-t}:null;}
 /* Ön alandan logonun kapladığı kare çıkarılmış hâli (yoksa null) */
 function logoHole(A){return logoOn()?interBox(A,logoBox()):null;}
-/* Ön tasarımda iki logonun kapladığı kareler (logolar öncelikli) */
-function logoHoles(A){var L=[];if(logoOn()){var h=interBox(A,logoBox());if(h)L.push(h);}if(logo2On()){var h2=interBox(A,areaBox('logo2','logo2'));if(h2)L.push(h2);}return L;}
+/* Ön tasarımdan logo karesi artık çıkarılmaz: çakışan yerde ön tasarım da basılır (karar 2026-11-24). Fonksiyon boş liste döner; eski kesme kodu dursun diye korunur. */
+function logoHoles(A){return [];var L=[];if(logoOn()){var h=interBox(A,logoBox());if(h)L.push(h);}if(logo2On()){var h2=interBox(A,areaBox('logo2','logo2'));if(h2)L.push(h2);}return L;}
 /* ---------- Ek alan (yalnız yönetici) ----------
    A4 baskının üstüne ya da altına A4'ün yarısı kadar ek baskı alanı (A4 ile aynı en). Fiyata eklenmez, müşteri görmez.
    Yeri dikey kaydırılır (etiketinden sürükle); ext = ek alanın üst kenarının A4 üst kenarına uzaklığı (cm). */
@@ -5174,7 +5174,7 @@ $('#sideL').addEventListener('click',function(){switchSide('logo');if(!SS('logo'
 $('#sideL2').addEventListener('click',function(){switchSide('logo2');if(!SS('logo2').objs.length)toast('Sağ göğüs logo · 8 × 8 cm, sol logonun aynası. Türk bayrağı ya da ikinci bir logo için. Ön tasarımla çakışırsa logo önde kalır.');});
 $('#sideB').addEventListener('click',function(){if(mugWrap()){toast('Süblimasyon kupanın çevresini sarar; arkaya ayrıca baskı gerekmez.');return;}switchSide('back');});
 function switchSide(s){if(view.side===s)return;if(s==='logo'&&!hasLogoSide())return;if(s==='logo2'&&!hasLogo2())return;view.side=s;view.sel=null;view.grp=false;renderAll();}
-$('#areaChips').addEventListener('click',function(e){if(e.target.closest('[data-ext]')){var sd=cur();if(sd.ext!=null){delete sd.ext;toast('Ek alan kapandı.');}else{sd.ext=areaBox(view.side,sd.area).h/PPC+0.5;toast('Ek alan A4\'ün altında açıldı. Etiketinden sürükleyerek üste ya da alta kaydır. Fiyata eklenmez.');}renderAll();pushHist();return;}if(e.target.closest('[data-rmlogo]')){SS(isLogoSide(view.side)?view.side:'logo').objs=[];view.sel=null;view.grp=false;renderAll();pushHist();toast('Logo kaldırıldı. Ön tasarım artık kesilmeden basılır.');return;}var b=e.target.closest('[data-a]');if(b)selectArea(b.dataset.a,b.dataset.l==='1');});
+$('#areaChips').addEventListener('click',function(e){if(e.target.closest('[data-ext]')){var sd=cur();if(sd.ext!=null){delete sd.ext;toast('Ek alan kapandı.');}else{sd.ext=areaBox(view.side,sd.area).h/PPC+0.5;toast('Ek alan A4\'ün altında açıldı. Etiketinden sürükleyerek üste ya da alta kaydır. Fiyata eklenmez.');}renderAll();pushHist();return;}if(e.target.closest('[data-rmlogo]')){SS(isLogoSide(view.side)?view.side:'logo').objs=[];view.sel=null;view.grp=false;renderAll();pushHist();toast('Logo kaldırıldı.');return;}var b=e.target.closest('[data-a]');if(b)selectArea(b.dataset.a,b.dataset.l==='1');});
 $('#pgClose').addEventListener('click',closeProdPage);
 $('#pgBack').addEventListener('click',closeProdPage);
 $('#wfClose').addEventListener('click',closeWolf);
@@ -5538,7 +5538,7 @@ async function renderPrint(side){
   var c=document.createElement('canvas');c.width=Math.round(cm[0]*dpi/2.54);c.height=Math.round(cm[1]*dpi/2.54);
   var x=c.getContext('2d'),objs=state[side].objs;
   for(var i=0;i<objs.length;i++){await drawObj(x,objs[i],S,A.l,A.t,true);}
-  /* Logo öncelikli: ön baskı dosyasında logonun kapladığı kare boş bırakılır */
+  /* Çakışan yerde ön tasarım da basılır; logoHoles boş döner */
   if(side==='front')logoHoles(A).forEach(function(L){x.clearRect((L.l-A.l)*S,(L.t-A.t)*S,L.w*S,L.h*S);});
   return {canvas:c,dpi:Math.round(dpi)};
 }
