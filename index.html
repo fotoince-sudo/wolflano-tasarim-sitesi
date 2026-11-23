@@ -4506,7 +4506,7 @@ async function vsLoad(){if(VS.busy)return;VS.busy=true;VS.err='';
       var ra=await sbReq('/rest/v1/site_search?select=day,q,n,c&day=gte.'+new Date(Date.now()+3*3600e3-30*864e5).toISOString().slice(0,10)+'&order=day.asc&limit=5000',{token:tk});VS.ara=ra.ok&&Array.isArray(ra.j)?ra.j:[];}}
   catch(_){VS.err='Bağlantı kurulamadı.';VS.rows=[];}
   VS.busy=false;if(cur==='yonetim'&&A&&A.tab==='ziyaret'){var y=window.scrollY;adRender();window.scrollTo(0,y);}}
-var VS_PG={ana:'Ana sayfa',koleksiyon:'Koleksiyon',urun:'Ürün sayfaları',atolye:'Baskı Atölyesi','atolye-urun':'Baskı ürün sayfaları',fiyatlar:'Baskı fiyatları',studyo:'Tasarım stüdyosu',sepet:'Sepet',odeme:'Ödeme',hesabim:'Hesabım',favoriler:'Favoriler',hakkimizda:'Hakkımızda',yorumlar:'Yorumlar',sayfa:'Diğer sayfalar',siparis:'Sipariş takibi',sartlar:'Kullanım şartları',diger:'Diğer'};
+var VS_PG={ana:'Ana sayfa',koleksiyon:'Koleksiyon',urun:'Ürün sayfaları',atolye:'Baskı Atölyesi · ürün seçme sayfası','atolye-urun':'Baskı ürün sayfaları',fiyatlar:'Baskı fiyatları',studyo:'Tasarım stüdyosu · tasarım ekranı',sepet:'Sepet',odeme:'Ödeme',hesabim:'Hesabım',favoriler:'Favoriler',hakkimizda:'Hakkımızda',yorumlar:'Yorumlar',sayfa:'Özel sayfalar (Hediye, Toptan…)',siparis:'Sipariş takibi',sartlar:'Kullanım şartları',diger:'Diğer (iletişim, KVKK, iade…)'};
 var VS_SRC={direkt:'Doğrudan / yer imi',google:'Google',instagram:'Instagram',facebook:'Facebook',whatsapp:'WhatsApp',tiktok:'TikTok',youtube:'YouTube',x:'X (Twitter)',diger:'Diğer siteler'};
 function vsView(){
   if(VS.rows===null&&!VS.busy)vsLoad();
