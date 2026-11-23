@@ -188,6 +188,8 @@ svg.i{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stro
 #rulerHost .rg{stroke:#c0392b;stroke-width:1.5;vector-effect:non-scaling-stroke}
 #rulerHost text.rgt{fill:#c0392b}
 #rulerBtn.on{background:var(--ink,#111);color:#fff}
+#linesBtn.on{background:var(--ink,#111);color:#fff}
+body.nolines #areaBox::before,body.nolines #areaLabel,body.nolines #areaHint,body.nolines #logoZone,body.nolines #logoZone2,body.nolines #extBox,body.nolines #faceBox,body.nolines #rulerHost{display:none!important}
 /* Baskı sınırı: beyaz çizgi "fark" karışımıyla çizilir; altı koyuysa beyaz, açıksa siyah görünür (tasarımın her noktasında kendiliğinden) */
 #areaBox{position:absolute;pointer-events:none}
 #extBox{position:absolute;pointer-events:none;border:calc(1.5px*var(--inv)) dashed #d4a017;background:rgba(212,160,23,.06)}
@@ -716,6 +718,7 @@ img{-webkit-touch-callout:none;-webkit-user-drag:none}
     <div class="chips" id="areaChips">
     </div>
     <div class="sub-r">
+      <button class="ib" id="linesBtn" aria-label="Baskı çizgilerini gizle" aria-pressed="false"><svg class="i" viewBox="0 0 24 24"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg></button>
       <button class="ib on" id="rulerBtn" aria-label="Cetveli gizle" aria-pressed="true"><svg class="i" viewBox="0 0 24 24"><rect x="2.5" y="8" width="19" height="8" rx="1.5"/><path d="M6 8v3M9.5 8v4.5M13 8v3M16.5 8v4.5"/></svg></button>
       <button class="ib" id="odakBtn" aria-label="Tam ekran tasarla"><svg class="i" viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>
       <button class="ib" id="fitBtn" aria-label="Baskı alanına yakınlaş"><svg class="i" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6"/><path d="M20 20l-4.2-4.2"/><path class="pl" d="M11 8.5v5M8.5 11h5"/></svg></button>
@@ -2433,9 +2436,10 @@ function extBox(side){var sd=SS(side);if(!sd||sd.ext==null||sd.area!=='a4'||!(si
 function rectCW(R,k,ox,oy){k=k||1;ox=ox||0;oy=oy||0;var l=(R.l-ox)*k,t=(R.t-oy)*k,r=(R.r-ox)*k,b=(R.b-oy)*k;return 'M'+l.toFixed(1)+' '+t.toFixed(1)+'H'+r.toFixed(1)+'V'+b.toFixed(1)+'H'+l.toFixed(1)+'Z';}
 function rectCCW(R,k,ox,oy){k=k||1;ox=ox||0;oy=oy||0;var l=(R.l-ox)*k,t=(R.t-oy)*k,r=(R.r-ox)*k,b=(R.b-oy)*k;return 'M'+l.toFixed(1)+' '+t.toFixed(1)+'V'+b.toFixed(1)+'H'+r.toFixed(1)+'V'+t.toFixed(1)+'Z';}
 /* Baskı alanı + ek alan − logo delikleri, tek yol (nonzero) */
-function areaPathD(side,k,ox,oy){var A=areaBox(side,SS(side).area),E=extBox(side),HS=side==='front'?logoHoles(A):[];
+function areaPathD(side,k,ox,oy,noHoles){var A=areaBox(side,SS(side).area),E=extBox(side),HS=side==='front'&&!noHoles?logoHoles(A):[];
   return rectCW(A,k,ox,oy)+(E?rectCW(E,k,ox,oy):'')+HS.map(function(H){return rectCCW(H,k,ox,oy);}).join('');}
-function layerClip(side){if(extBox(side))return 'path(\''+areaPathD(side,1,0,0)+'\')';var A=areaBox(side,SS(side).area),HS=side==='front'?logoHoles(A):[],P2=function(x,y){return x.toFixed(1)+'px '+y.toFixed(1)+'px';};
+/* Sahnede logo ile ön baskı kesişince ikisi de görünür: seçili yüz üstte, kesişme kesikli çizgiyle gösterilir (baskı dosyası kuralı ayrı) */
+function layerClip(side){if(extBox(side))return 'path(\''+areaPathD(side,1,0,0,true)+'\')';var A=areaBox(side,SS(side).area),HS=[],P2=function(x,y){return x.toFixed(1)+'px '+y.toFixed(1)+'px';};
   if(HS.length){var pts=[P2(A.l,A.t),P2(A.r,A.t),P2(A.r,A.b),P2(A.l,A.b),P2(A.l,A.t)];HS.forEach(function(H){pts.push(P2(H.l,H.t),P2(H.l,H.b),P2(H.r,H.b),P2(H.r,H.t),P2(H.l,H.t),P2(A.l,A.t));});return 'polygon(evenodd, '+pts.join(', ')+')';}
   return 'inset('+A.t+'px '+(STAGE_W-A.r)+'px '+(STAGE_H-A.b)+'px '+A.l+'px)';}
 function setClip(el,v){el.style.clipPath=v;el.style.webkitClipPath=v;}
@@ -4737,12 +4741,15 @@ function onMove(e){
   }
 }
 /* Ortalama: tasarım baskı alanının yatay/dikey ortasına yaklaşınca oraya oturur, pembe çizgi ortada olduğunu gösterir. */
-function moveApply(gm){var o=objById(gm.id);if(!o||gm.nx==null)return;o.x=gm.nx;o.y=gm.ny;centerSnap(o);place(els[o.id],o);updateSel();}
+function moveApply(gm){var o=objById(gm.id);if(!o||gm.nx==null)return;o.x=gm.nx;o.y=gm.ny;centerSnap(o,gm);place(els[o.id],o);updateSel();}
 /* Sürüklerken: kumaş gölgesi (karışım katmanı) gizlenir, parça kendi katmanına alınır; iPhone'da takılmayı önler */
 function dragOn(o){document.body.classList.add('drg');var e=els[o.id];if(e)e.style.willChange='transform';}
 function dragOff(){document.body.classList.remove('drg');$$('#objLayer .obj').forEach(function(e){if(e.style.willChange)e.style.willChange='';});}
-function centerSnap(o){
-  var A=areaBox(view.side,cur().area),t=9/(view.s||1),ab=$('#areaBox'),ic=inkCenter(o),v=Math.abs(ic.x-A.cx)<t,h=Math.abs(ic.y-A.cy)<t;
+/* Sürükleme ortadan başladıysa ortaya yapışma, nesne ortadan bir kez çıkana kadar devre dışı: parmak oynar oynamaz nesne hemen hareket eder */
+function centerSnap(o,gm){
+  var A=areaBox(view.side,cur().area),t=6/(view.s||1),ab=$('#areaBox'),ic=inkCenter(o),dv=Math.abs(ic.x-A.cx),dh=Math.abs(ic.y-A.cy);
+  if(gm){if(gm.armV==null){gm.armV=dv>=t;gm.armH=dh>=t;}if(dv>=t)gm.armV=true;if(dh>=t)gm.armH=true;}
+  var v=dv<t&&(!gm||gm.armV),h=dh<t&&(!gm||gm.armH);
   if(v)o.x+=A.cx-ic.x;if(h)o.y+=A.cy-ic.y;
   ab.classList.toggle('onV',v);ab.classList.toggle('onH',h);
   if((v||h)&&!centerSnap.was&&navigator.vibrate){try{navigator.vibrate(8);}catch(_){}}
@@ -5157,6 +5164,9 @@ $('#odakX').addEventListener('pointerdown',function(e){e.stopPropagation();});$(
 document.addEventListener('keydown',function(e){if(e.key==='Escape'&&document.body.classList.contains('odak'))odakSet(false);});
 /* Tasarım alanındaki ipucu yazısı yalnız ilk 3 açılışta görünür */
 (function(){try{var n=+(localStorage.getItem('wf_hint_n')||0);localStorage.setItem('wf_hint_n',String(n+1));if(n>=3){var h=$('#hint');if(h)h.hidden=true;}}catch(_){}})();
+$('#linesBtn').addEventListener('click',function(){var on=document.body.classList.toggle('nolines'),b=$('#linesBtn');b.classList.toggle('on',on);b.setAttribute('aria-pressed',on?'true':'false');b.setAttribute('aria-label',on?'Baskı çizgilerini göster':'Baskı çizgilerini gizle');
+  b.innerHTML=on?'<svg class="i" viewBox="0 0 24 24"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/><path d="M4 4l16 16"/></svg>':'<svg class="i" viewBox="0 0 24 24"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>';
+  toast(on?'Baskı çizgileri gizlendi: tasarımı net gör':'Baskı çizgileri açık');});
 $('#rulerBtn').addEventListener('click',function(){RULER=!RULER;try{localStorage.setItem('wf_ruler',RULER?'1':'0');}catch(_){}renderRuler();toast(RULER?'Cetvel açık: yeşil bant baskı alanı, ölçüler cm':'Cetvel gizlendi');});
 $('#fitBtn').addEventListener('click',function(){var near=fitNear();view.fit=near?'shirt':'area';resetZoom();view.uz=!near;syncFitBtn();layout();});
 $('#sideF').addEventListener('click',function(){switchSide('front');});
