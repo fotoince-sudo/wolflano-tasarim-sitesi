@@ -511,6 +511,8 @@ body.odak .odakx{display:inline-flex}.odakx svg{width:16px;height:16px}
 #tplGrid .tpl .prev .in{transform:translateX(-50%) scale(.6)}
 .sheet:has(>.panel[data-p="tpl"]:not([hidden])){height:auto}
 .panel[data-p="tpl"]{overflow-y:visible}
+.panel[data-p="tpl"]:not([data-ap="tpl"])>.tplOwn{display:none!important}
+#tabs [data-tab="clip"]{display:none!important}
 
 
 /* Kompakt seçenekler: renk, şekil, yazı tipi panelleri daha küçük ve sade */
@@ -734,7 +736,7 @@ img{-webkit-touch-callout:none;-webkit-user-drag:none}
       <img id="brandMark" src="img/wolflano-logo.png" alt="" aria-hidden="true" hidden>
       <div class="dwrap"><div id="passClip" aria-hidden="true"><div id="passLayer"></div></div><div id="clipLayer"><div id="objLayer"></div></div></div>
       <div id="shadeHost" aria-hidden="true"></div>
-      <div class="dwrap"><div id="areaBox"><span id="areaLabel"></span><div id="areaHint" hidden><b>Tasarımına başla</b><span>Alttan <em>Arka plan</em> ile zemin, grafik ve şekil ekle<br>ya da <em>Şablon</em> seç · <em>Yazı</em> ve <em>Görsel</em> ile kendin yap</span></div><i class="cg cgV"></i><i class="cg cgH"></i></div>
+      <div class="dwrap"><div id="areaBox"><span id="areaLabel"></span><div id="areaHint" hidden><b>Tasarımına başla</b><span>Alttan <em>Şablon</em>'da şablon, zemin, hazır çizim ve şekil bul<br>ya da <em>Yazı</em> ve <em>Görsel</em> ile kendin yap</span></div><i class="cg cgV"></i><i class="cg cgH"></i></div>
       <div id="logoZone" hidden><span>Logo</span></div><div id="faceBox" hidden><span id="faceLabel"></span></div></div>
       <div id="rulerHost" aria-hidden="true"></div>
       <div class="dwrap"><div id="selLayer"></div></div>
@@ -824,7 +826,7 @@ img{-webkit-touch-callout:none;-webkit-user-drag:none}
       <label class="fld rng" id="lsWrap" hidden><span>Harf aralığı <b id="lsOut"></b></span><input type="range" id="lsAmt" min="0" max="100" step="1" value="0"></label>
     </div>
     <div class="panel" data-p="clip" hidden>
-      <div class="chips scroll" id="apCats" aria-label="Arka plan bölümleri"><button type="button" data-ap="zem">Zeminler</button><button type="button" data-ap="ciz">Hazır çizimler</button><button type="button" data-ap="grf">Grafikler</button><button type="button" data-ap="sek">Şekiller</button></div>
+      <div class="chips scroll" id="apCats" aria-label="Arka plan bölümleri"><button type="button" data-ap="tpl">Şablonlar</button><button type="button" data-ap="zem">Zeminler</button><button type="button" data-ap="ciz">Hazır çizimler</button><button type="button" data-ap="grf">Grafikler</button><button type="button" data-ap="sek">Şekiller</button></div>
       <div id="apZem">
       <div class="mini-title" id="zemT" hidden>Zeminler</div>
       <p class="note" style="margin:0 0 8px">Fotoğraflı şablonda dokunduğun zemin, fotoğraflar yerinde kalarak değişir. Şablon yoksa zemin tasarımın arkasına eklenir; büyütüp küçültebilirsin.</p>
@@ -907,7 +909,7 @@ img{-webkit-touch-callout:none;-webkit-user-drag:none}
   <nav class="tabs" id="tabs">
     <button data-tab="tee"><svg class="i" viewBox="0 0 24 24" stroke-linejoin="round" stroke-linecap="round"><path d="M9 3.6c.7 1.3 1.7 1.9 3 1.9s2.3-.6 3-1.9l4.6 2 1.7 4.3-3 1.3-1.1-1.8V20.5H6.8V9.4l-1.1 1.8-3-1.3 1.7-4.3z"/><path d="M9 3.6c.4 2.2 1.4 3.2 3 3.2s2.6-1 3-3.2"/></svg>Ürün</button>
     <button data-tab="text"><svg class="i" viewBox="0 0 24 24"><path d="M5 6V4h14v2M12 4v16M9 20h6"/></svg>Yazı</button>
-    <button data-tab="clip"><svg class="i" viewBox="0 0 24 24"><path d="M12 3l9 5-9 5-9-5z"/><path d="M3 13l9 5 9-5"/></svg>Arka plan</button>
+    <button data-tab="clip" hidden><svg class="i" viewBox="0 0 24 24"><path d="M12 3l9 5-9 5-9-5z"/><path d="M3 13l9 5 9-5"/></svg>Arka plan</button>
     <button data-tab="image"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2"/><path d="M21 16l-5-5-8 9"/></svg>Görsel</button>
     <button data-tab="wolf" class="wolfai"><svg class="i" viewBox="0 0 24 24"><path d="M10 4l1.8 4.7L16.5 10.5l-4.7 1.8L10 17l-1.8-4.7L3.5 10.5l4.7-1.8z"/><path d="M18 3v4M16 5h4M19 15v3M17.5 16.5h3"/></svg>Wolf</button>
     <button data-tab="tpl"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="3" width="8" height="8" rx="1.5"/><rect x="13" y="3" width="8" height="8" rx="1.5"/><rect x="3" y="13" width="8" height="8" rx="1.5"/><rect x="13" y="13" width="8" height="8" rx="1.5"/></svg>Şablon</button>
@@ -4805,17 +4807,24 @@ wrap.addEventListener('contextmenu',function(e){e.preventDefault();});
 
 /* ---------- Sekmeler ve paneller ---------- */
 /* Arka plan sekmesi: Zeminler · Grafikler · Şekiller. Grafikler, şablon ızgarasının (Grafik grubu) bu sekmeye taşınmış hâlidir; Şablon sekmesi açılınca ızgara geri döner. */
-var AP={on:'zem'};
+var AP={on:'tpl'};
+(function(){var tp=$('.panel[data-p="tpl"]'),cats=$('#apCats');if(!tp||!cats)return;
+  Array.prototype.forEach.call(tp.children,function(ch){ch.classList.add('tplOwn');});
+  tp.insertBefore(cats,tp.firstChild);['apZem','apCiz','apGrf','apSek'].forEach(function(id){var d=document.getElementById(id);if(d)tp.appendChild(d);});
+  tp.dataset.ap='tpl';})();
 function apMountGrid(toAp){var g=$('#tplGrid'),e=$('#tplEmpty'),tp=$('.panel[data-p="tpl"]'),ap=$('#apGrf');if(!g||!tp||!ap)return;
   if(toAp){if(g.parentNode!==ap){ap.appendChild(e);ap.appendChild(g);}view.tplGrp='Grafik';view.tplCat='Tümü';}
   else{if(g.parentNode!==tp){tp.appendChild(e);tp.appendChild(g);}if(view.tplGrp==='Grafik')view.tplGrp='Tümü';}}
-function apShow(k){AP.on=k;$$('#apCats [data-ap]').forEach(function(b){b.classList.toggle('on',b.dataset.ap===k);});
+function apShow(k){AP.on=k;var tpP=$('.panel[data-p="tpl"]');if(tpP)tpP.dataset.ap=k;$$('#apCats [data-ap]').forEach(function(b){b.classList.toggle('on',b.dataset.ap===k);});
+  if(k==='tpl'){$$('#apZem,#apCiz,#apGrf,#apSek').forEach(function(d){d.hidden=true;});apMountGrid(false);renderTpl();renderTplPreviews();return;}
   $('#apZem').hidden=k!=='zem';var ac=$('#apCiz');if(ac)ac.hidden=k!=='ciz';$('#apGrf').hidden=k!=='grf';$('#apSek').hidden=k!=='sek';
   if(k==='zem'){try{renderZem();}catch(_){}}
   if(k==='grf'){apMountGrid(true);renderTpl();renderTplPreviews();}
   if(k==='sek'){try{renderClipGrid();}catch(_){}}}
 function openTab(name,focusInput){
-  if(name==='tpl')apMountGrid(false);
+  /* Şekil sekmesinin dört bölümü (Zeminler, Hazır çizimler, Grafikler, Şekiller) Şablon sekmesinin içinde */
+  if(name==='clip'){name='tpl';}else if(name==='tpl'&&view.tab!=='tpl'){AP.on='tpl';}
+  if(name==='tpl'&&AP.on==='tpl')apMountGrid(false);
   if(name==='image'){try{renderMk();renderZem();var kk=$('#kolajKisa');if(kk)kk.hidden=!kolajOn();}catch(_){}}
   if(document.body.classList.contains('odak'))odakSet(false);
   if(name==='tee'){openProdPage();return;}
@@ -4825,8 +4834,7 @@ function openTab(name,focusInput){
   $$('#tabs button').forEach(function(b){b.classList.toggle('on',b.dataset.tab===name);});
   /* Kullanıcı kendisi yakınlaştırdıysa (iki parmak ya da büyüteç) panel açılınca görünüm değişmez */
   if(!view.uz){view.fit='area';resetZoom();}syncFitBtn();
-  if(name==='tpl'){renderTpl();renderTplPreviews();}
-  if(name==='clip')apShow(AP.on);
+  if(name==='tpl')apShow(AP.on);
   if(name==='opt')renderOpt();
   sheet.classList.toggle('tall',name==='wolf');
   if(name==='wolf')try{wolfStDefault();wolfPhRender();kolajSync();kosSync();}catch(_){}
@@ -5293,7 +5301,7 @@ function ctxClick(e){
   var c=b.dataset.c;
   if(c.indexOf('mug-vehicle-')===0){editMugVehicleText(c.slice(12));return;}
   if(c.indexOf('tee-text-')===0){editTeePhotoText(c.slice(9));return;}
-  if(c==='zem'){AP.on='zem';if(view.tab!=='clip')openTab('clip');else apShow('zem');return;}
+  if(c==='zem'){AP.on='zem';if(view.tab!=='tpl')openTab('clip');else apShow('zem');return;}
   if(c==='all'){if(enterGroup())toast('Tüm tasarım seçildi. Sol üstteki beyaz kareyle hepsini birlikte büyüt, küçült.');return;}
   if(c==='gdone'){select(null);return;}
   if(c==='gzin'||c==='gzout'){grpScale(c==='gzin'?1.05:1/1.05);return;}
