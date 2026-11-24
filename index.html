@@ -665,6 +665,31 @@ footer a{text-decoration:none}footer a:hover{color:var(--green)}
 .catmenu{position:relative;z-index:15}.catmenu .cg{position:relative}.catmenu button.gt .cv{display:inline-flex;font-size:inherit;color:var(--green)}.catmenu .its1{position:absolute;top:calc(100% + 6px);left:0;right:0;z-index:30;padding:6px;background:var(--card);border:1px solid var(--green);border-radius:14px;box-shadow:0 12px 28px rgba(16,26,20,.16)}
 .chips{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:0 0 20px;max-width:560px}.chips button{display:flex;align-items:center;justify-content:center;gap:6px;padding:9px 10px;font:600 14px var(--ui);letter-spacing:.02em;white-space:nowrap}.chips button .cv{font-size:10px;margin-left:2px}
 .kb{position:relative;display:block;width:100%;aspect-ratio:16/7;max-height:300px;border-radius:14px;overflow:hidden;margin:0 0 16px;background:var(--mint);text-decoration:none}.kb img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .8s}.kb img.on{opacity:1}.kb .kt{position:absolute;left:0;right:0;bottom:0;padding:22px 16px 12px;color:#fff;background:linear-gradient(to top,rgba(6,12,9,.7),rgba(6,12,9,0));display:flex;flex-direction:column;gap:2px}.kb .kt b{font:600 17px var(--ui)}.kb .kt span{font-size:13px;opacity:.9}
+/* Wolflano Koleksiyon (marka sayfası) */
+.wkp{background:#faf9f6;color:#111;margin:0 auto;max-width:860px;padding:8px 22px 56px;text-align:center}
+.wkp h2,.wk-tag,.wk-man b,.wk-q,.wk-kg b{font-family:"Cormorant Garamond",Georgia,"Times New Roman",serif;font-weight:500}
+.wk-hero{padding:46px 0 34px}
+.wk-logo{width:86px;height:86px;object-fit:contain;display:block;margin:0 auto 18px;mix-blend-mode:multiply}
+.wk-word{font:600 clamp(20px,5.4vw,30px)/1 var(--ui);letter-spacing:.42em;margin-right:-.42em}
+.wk-tag{font-size:clamp(28px,7.2vw,44px);line-height:1.15;margin:26px 0 12px;font-style:italic}
+.wk-sub{font:400 15px/1.6 var(--ui);color:#5c615e;margin:0}
+.wk-man{display:flex;align-items:center;gap:14px;margin:10px 0 40px}.wk-man span{flex:1;height:1px;background:#111;opacity:.35}
+.wk-man b{font-size:clamp(14px,3.6vw,19px);letter-spacing:.24em;white-space:nowrap}
+.wk-ilk{display:grid;gap:30px;text-align:left;margin:0 0 54px}
+@media(min-width:720px){.wk-ilk{grid-template-columns:repeat(3,1fr)}}
+.wk-ilk i{font:600 11px var(--ui);letter-spacing:.3em;color:var(--green,#30703f);font-style:normal}
+.wk-ilk h2{font-size:28px;margin:6px 0 8px}.wk-ilk p{font:400 14.5px/1.65 var(--ui);color:#4b504d;margin:0}
+.wk-ey{font:600 11px var(--ui);letter-spacing:.32em;text-transform:uppercase;color:#7b807d;margin:0 0 18px}
+.wk-kum{border-top:1px solid rgba(0,0,0,.12);border-bottom:1px solid rgba(0,0,0,.12);padding:38px 0 34px;margin:0 0 54px}
+.wk-kg{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.wk-kg b{display:block;font-size:clamp(40px,11vw,62px);line-height:1}.wk-kg small{font:600 12px var(--ui);letter-spacing:.1em;margin-left:3px}
+.wk-kg span{font:500 12.5px var(--ui);letter-spacing:.18em;text-transform:uppercase;color:#5c615e}
+.wk-q{font-size:clamp(22px,5.6vw,30px);font-style:italic;margin:26px 0 0}
+.wk-yak h2{font-size:clamp(28px,7vw,38px);margin:0 0 10px}.wk-yak>p{font:400 15px/1.6 var(--ui);color:#4b504d;margin:0 0 22px}
+.wk-act{display:flex;flex-wrap:wrap;gap:10px;justify-content:center}
+.wk-b{display:inline-flex;align-items:center;justify-content:center;height:46px;padding:0 22px;border-radius:999px;background:#111;color:#fff;font:600 14px var(--ui);letter-spacing:.04em;text-decoration:none;border:1px solid #111}
+.wk-b.o{background:transparent;color:#111}
+.wk-alt{font:400 14px var(--ui);color:#5c615e;margin:28px 0 0}.wk-alt a{color:var(--green,#30703f);font-weight:600;text-decoration:none}
 .kolp{padding-top:6px}.kolh{font-size:clamp(24px,6.4vw,40px);margin:0 0 10px}.kolx{display:flex;align-items:center;gap:12px;font:600 clamp(12.5px,3.4vw,15px)/1.2 var(--ui);letter-spacing:.32em;color:var(--ink);margin:0 0 12px;text-wrap:nowrap}.kolx:after{content:"";flex:1;height:1px;background:linear-gradient(90deg,var(--line),transparent)}
 .kbx{position:relative;display:grid;grid-template-columns:minmax(0,1.08fr) minmax(0,1fr);align-items:center;min-height:clamp(178px,46vw,300px);margin:0 0 16px;border-radius:16px;overflow:hidden;text-decoration:none;color:var(--ink);background:radial-gradient(120% 140% at 100% 0%,#fff 0%,rgba(255,255,255,0) 55%),linear-gradient(135deg,var(--mint) 0%,#dcefe3 100%);border:1px solid var(--line);isolation:isolate}
 .kbx:before{content:"";position:absolute;inset:auto -20% -55% 38%;height:90%;border-radius:50%;background:radial-gradient(closest-side,rgba(48,112,63,.16),rgba(48,112,63,0));z-index:-1}
@@ -4147,6 +4172,20 @@ function calc(sel){
   $('#cR').innerHTML=h;
 }
 var VIEWS={
+ /* Wolflano Koleksiyon: sade, premium marka sayfası (hazır giyim). Ürün yokken "ilk koleksiyon hazırlanıyor" gösterir. */
+ wolflano:function(){
+  if(!document.getElementById('wkFont')){var l=document.createElement('link');l.id='wkFont';l.rel='stylesheet';l.href='https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&display=swap';document.head.appendChild(l);}
+  var lg=src(D.logo||'builtin:logo'),wa='https://wa.me/905307641717?text='+encodeURIComponent('Merhaba, Wolflano Koleksiyon çıkınca haber almak istiyorum.');
+  var P=[['Sessiz Güç','Bağırmayan, kendinden emin bir duruş. Logo küçük kalır; kumaş ve kesim konuşur.'],['Sabır ve Adalet','Acele etmeden, doğru üretilir. Fiyat logonun değil, kumaşın ve emeğin karşılığıdır.'],['İtalyan Estetiği','Temiz çizgiler, ölçülü renkler, yıllarca giyilecek zamansız kesimler.']];
+  var K=[['240','gr','Tişört'],['280','gr','Polo'],['380','gr','Sweatshirt']];
+  return '<div class="wkp">'+
+   '<section class="wk-hero"><img src="'+esc(lg)+'" alt="Wolflano" class="wk-logo"><div class="wk-word">WOLFLANO</div><p class="wk-tag">Sessiz güç.<br>İtalyan estetiği, Türk ruhu.</p><p class="wk-sub">Gösterişe değil, duruşa yapılan kıyafetler.</p></section>'+
+   '<div class="wk-man"><span></span><b>LİDER • BAĞIMSIZ • KORKUSUZ</b><span></span></div>'+
+   '<section class="wk-ilk">'+P.map(function(x,i){return '<div><i>0'+(i+1)+'</i><h2>'+x[0]+'</h2><p>'+x[1]+'</p></div>';}).join('')+'</section>'+
+   '<section class="wk-kum"><p class="wk-ey">Kumaş sözümüz</p><div class="wk-kg">'+K.map(function(x){return '<div><b>'+x[0]+'<small>'+x[1]+'</small></b><span>'+x[2]+'</span></div>';}).join('')+'</div><p class="wk-q">Logoya değil, kumaşa öde.</p></section>'+
+   '<section class="wk-yak"><p class="wk-ey">Wolflano Koleksiyon</p><h2>İlk koleksiyon hazırlanıyor</h2><p>İlk parçalar çıktığında haber almak için bize yaz.</p><div class="wk-act"><a class="wk-b" href="'+wa+'" target="_blank" rel="noopener">WhatsApp ile haber al</a><a class="wk-b o" href="https://www.instagram.com/wolflano.tr" target="_blank" rel="noopener">Instagram · @wolflano.tr</a></div>'+
+   '<p class="wk-alt">Beklerken kendi tişörtünü tasarla: <a href="#tasarla">Kendin Tasarla →</a></p></section>'+
+  '</div>';},
  kurdun:function(){return kurtHTML();},
  yonetim:function(){return adminView();},
  favoriler:function(){
