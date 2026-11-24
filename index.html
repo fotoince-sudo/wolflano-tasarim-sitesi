@@ -6145,7 +6145,7 @@ async function addImages(path,files){
     try{
       var b=await procImg(files[k]),tok='img/'+Date.now().toString(36)+Math.random().toString(36).slice(2,6)+'.jpg';
       pend[tok]={blob:b,url:URL.createObjectURL(b)};
-      if(path==='hero'||path==='hero2')A.draft[path]=tok;else{var l=getp(A.draft,path+'.imgs');if(!l){setp(A.draft,path+'.imgs',[]);l=getp(A.draft,path+'.imgs');}if(l.length>=5){URL.revokeObjectURL(pend[tok].url);delete pend[tok];toast('En fazla 5 görsel olur. Önce birini sil ya da görselin altındaki “Değiştir”i kullan.');break;}l.push(tok);}
+      if(path==='hero'||path==='hero2')A.draft[path]=tok;else{var l=getp(A.draft,path+'.imgs');if(!l){setp(A.draft,path+'.imgs',[]);l=getp(A.draft,path+'.imgs');}var mx=/^detail\./.test(path)?12:5;if(l.length>=mx){URL.revokeObjectURL(pend[tok].url);delete pend[tok];toast('En fazla '+mx+' görsel olur. Önce birini sil ya da görselin altındaki “Değiştir”i kullan.');break;}l.push(tok);}
     }catch(_){toast('Görsel okunamadı');}
   }
   dirty();adRender();
