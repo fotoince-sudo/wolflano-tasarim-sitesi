@@ -42951,10 +42951,19 @@ function find(list, id) {
 function stock(p, q) {
   if (p.stock !== null && p.stock !== void 0 && p.stock !== "" && (!Number.isFinite(+p.stock) || +p.stock < q)) throw new CheckoutError("\xDCr\xFCn sto\u011Fu yetersiz.", 409);
 }
+function subPf(pf, b) {
+  pf = pf || {};
+  if (!b || !(/^sub-tee/.test(String(b.id || "")) || b.sub)) return pf;
+  const e = (x) => x === null || x === void 0 || x === "" || isNaN(+x);
+  const o = { ...pf };
+  for (const k of ["a4", "a3", "logo"]) if (!e(pf["s" + k])) o[k] = pf["s" + k];
+  if (!e(pf.sa4) && e(pf.sa3)) delete o.a3;
+  return o;
+}
 function fee(d, b, area) {
   if (/^cv/.test(area)) return 0;
   const key = ["logo", "logo2"].includes(area) ? "logo" : ["mug", "mugw"].includes(area) ? "wrap" : area;
-  const pf = d.pf || {};
+  const pf = subPf(d.pf || {}, b);
   let value = pf[key] ?? b[key];
   if (key === "a3" && pf.a3 == null) {
     value = amount(pf.a4 ?? b.a4) * amount(d.a3 ?? 2);
@@ -42964,9 +42973,10 @@ function fee(d, b, area) {
 }
 function readyPrice(d, p) {
   if (!p.pc) return vat(d, amount(p.price), "ready");
-  const pc = p.pc, pf = d.pf || {};
+  const pc = p.pc;
   const b = (d.blanks || []).find((b2) => b2.id === pc.b);
   if (!b) throw new CheckoutError("\xDCr\xFCn\xFCn fiyat referans\u0131 bulunamad\u0131.", 503);
+  const pf = subPf(d.pf || {}, b);
   const rawFee = (area) => {
     const key = ["logo", "logo2"].includes(area) ? "logo" : ["mug", "mugw"].includes(area) ? "wrap" : area;
     if (key === "a3") {

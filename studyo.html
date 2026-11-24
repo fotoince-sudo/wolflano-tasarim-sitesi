@@ -1087,7 +1087,9 @@ function sNum(x){return x===null||x===undefined||x===''||isNaN(+x)?null:+x;}
 function priceOf(product,cut){var b=siteBlank(product,cut),v=b&&sNum(b.price);return v!=null?Math.round(v*vatK('blank')*100)/100:PRODUCTS[product].price[cut];}
 function basePrice(){return priceOf(state.product,state.cut);}
 /* Baskı ücretleri: yönetimdeki "Baskı ücretleri · tüm ürünlerde aynı" (pf) önce gelir; boşsa ürünün kendi ücreti, o da yoksa örnek ücret */
-function areaFee(k){var b=siteBlank(state.product,state.cut),f=AREAS[k]?AREAS[k].fee:0,pf=(PH.site&&PH.site.pf)||{},kat=+(PH.site&&PH.site.a3)||2;
+/* Süblimasyon tişört kendi baskı ücretlerini kullanır (yönetimde doluysa) */
+function subPf(pf,b){pf=pf||{};if(!b||!(/^sub-tee/.test(String(b.id||''))||b.sub))return pf;var o={},k;for(k in pf)o[k]=pf[k];var e=function(x){return x===null||x===undefined||x===''||isNaN(+x);};['a4','a3','logo'].forEach(function(x){if(!e(pf['s'+x]))o[x]=pf['s'+x];});if(!e(pf.sa4)&&e(pf.sa3))delete o.a3;return o;}
+function areaFee(k){var b=siteBlank(state.product,state.cut),f=AREAS[k]?AREAS[k].fee:0,pf=subPf((PH.site&&PH.site.pf)||{},b),kat=+(PH.site&&PH.site.a3)||2;
   var g=function(x){var v=sNum(pf[x]);if(v==null&&b)v=sNum(b[x]);return v;};
   var a4=g('a4'),v=null;
   if(k==='a4')v=a4;else if(k==='a3'){v=sNum(pf.a3);if(v==null&&a4!=null)v=a4*kat;}else if(k==='logo'||k==='logo2')v=g('logo');else if(k==='hat')v=g('hat');

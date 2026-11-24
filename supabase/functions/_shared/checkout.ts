@@ -35,6 +35,16 @@ function stock(p: Row, q: number) {
     (!Number.isFinite(+p.stock) || +p.stock < q)
   ) throw new CheckoutError("Ürün stoğu yetersiz.", 409);
 }
+function subPf(pf: Row, b: Row): Row {
+  // Süblimasyon tişört: yönetimdeki süblimasyon ücretleri doluysa onlar kullanılır
+  pf = pf || {};
+  if (!b || !(/^sub-tee/.test(String(b.id || "")) || b.sub)) return pf;
+  const e = (x: unknown) => x === null || x === undefined || x === "" || isNaN(+(x as number));
+  const o: Row = { ...pf };
+  for (const k of ["a4", "a3", "logo"]) if (!e(pf["s" + k])) o[k] = pf["s" + k];
+  if (!e(pf.sa4) && e(pf.sa3)) delete o.a3;
+  return o;
+}
 function fee(d: Row, b: Row, area: string) {
   if (/^cv/.test(area)) return 0;
   const key = ["logo", "logo2"].includes(area)
@@ -42,7 +52,7 @@ function fee(d: Row, b: Row, area: string) {
     : ["mug", "mugw"].includes(area)
     ? "wrap"
     : area;
-  const pf = d.pf || {};
+  const pf = subPf(d.pf || {}, b);
   let value = pf[key] ?? b[key];
   if (key === "a3" && pf.a3 == null) {
     value = amount(pf.a4 ?? b.a4) * amount(d.a3 ?? 2);
@@ -53,10 +63,11 @@ function fee(d: Row, b: Row, area: string) {
 function readyPrice(d: Row, p: Row) {
   if (!p.pc) return vat(d, amount(p.price), "ready");
   // Match pcCalc/pcApply: collection pc totals are net, then ready VAT applies once.
-  const pc = p.pc, pf = d.pf || {};
+  const pc = p.pc;
   // The collection item is for sale even when its blank is hidden from the studio.
   const b = (d.blanks || []).find((b: Row) => b.id === pc.b);
   if (!b) throw new CheckoutError("Ürünün fiyat referansı bulunamadı.", 503);
+  const pf = subPf(d.pf || {}, b);
   const rawFee = (area: string) => {
     const key = ["logo", "logo2"].includes(area)
       ? "logo"
