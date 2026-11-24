@@ -2671,6 +2671,9 @@ function syncCtx0(){
   $$('#ctxBar [data-t],#stageBar [data-t]').forEach(function(b){b.hidden=b.dataset.t.split(' ').indexOf(o.type)<0;});
   if(o.type==='image'){var ts=$('#tsplitBtn'),it=$('#ctxBar [data-c="intext"]');if(ts)ts.hidden=!o.tsrc;var gr=$('#gyReBtn'),te=$('#tsEditBtn');if(gr)gr.hidden=!o.tsrc;if(te)te.hidden=!(o.tsrc&&o.tsrc.text&&o.tsrc.text.type==='text');if(it)it.hidden=!!o.tsrc||!!o.slot||!cur().objs.some(function(q){return q.type==='text';});}
   if(o.type==='clip'&&clipFixed(o.key)){$$('#ctxBar [data-c="color"],#stageBar [data-c="color"]').forEach(function(b){b.hidden=true;});if(view.pop==='color')view.pop=null;}
+  /* Yeni seçimde çubuk baştan başlar: önceki nesnede sağa kaydırılmış kalınca Renk gibi baştaki düğmeler görünmüyordu */
+  if(view.ctxFor!==o.id){view.ctxFor=o.id;var cb=$("#ctxBar");if(cb)cb.scrollLeft=0;ctx.scrollLeft=0;}
+  var rb=$('#ctxBar [data-c="color"]');if(rb){var rt=[].filter.call(rb.childNodes,function(n){return n.nodeType===3;}).pop();if(rt)rt.nodeValue=o.key==='p_logo'?'Kurt rengi':'Renk';}
   liveWarn(o);
   $('#ctxDot').style.background=o.color||'transparent';
   var q=$('#qPill');
