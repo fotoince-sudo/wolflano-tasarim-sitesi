@@ -689,6 +689,10 @@ footer a{text-decoration:none}footer a:hover{color:var(--green)}
 .wk-act{display:flex;flex-wrap:wrap;gap:10px;justify-content:center}
 .wk-b{display:inline-flex;align-items:center;justify-content:center;height:46px;padding:0 22px;border-radius:999px;background:#111;color:#fff;font:600 14px var(--ui);letter-spacing:.04em;text-decoration:none;border:1px solid #111}
 .wk-b.o{background:transparent;color:#111}
+.wk-hero{padding:30px 0 18px}.wk-hero .wk-tag{font-size:clamp(20px,5.2vw,28px);margin:14px 0 0}
+.wk-fl{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:0 0 18px}.wk-fl button{height:36px;padding:0 18px;border-radius:999px;border:1px solid #111;background:transparent;color:#111;font:600 13px var(--ui);letter-spacing:.06em}.wk-fl button.on{background:#111;color:#fff}
+.wk-grid{text-align:left;margin:0 0 50px}
+.wk-yak{margin:0 0 50px}
 .wk-alt{font:400 14px var(--ui);color:#5c615e;margin:28px 0 0}.wk-alt a{color:var(--green,#30703f);font-weight:600;text-decoration:none}
 .kolp{padding-top:6px}.kolh{font-size:clamp(24px,6.4vw,40px);margin:0 0 10px}.kolx{display:flex;align-items:center;gap:12px;font:600 clamp(12.5px,3.4vw,15px)/1.2 var(--ui);letter-spacing:.32em;color:var(--ink);margin:0 0 12px;text-wrap:nowrap}.kolx:after{content:"";flex:1;height:1px;background:linear-gradient(90deg,var(--line),transparent)}
 .kbx{position:relative;display:grid;grid-template-columns:minmax(0,1.08fr) minmax(0,1fr);align-items:center;min-height:clamp(178px,46vw,300px);margin:0 0 16px;border-radius:16px;overflow:hidden;text-decoration:none;color:var(--ink);background:radial-gradient(120% 140% at 100% 0%,#fff 0%,rgba(255,255,255,0) 55%),linear-gradient(135deg,var(--mint) 0%,#dcefe3 100%);border:1px solid var(--line);isolation:isolate}
@@ -3309,6 +3313,8 @@ function pagesNow(){var l=PAGES.map(function(p){var m={hazir:'menuHazir',tasarla
   var hi=-1;l.forEach(function(x,k){if(hi<0&&(x[0]==='hediye'||/hediye|dekor/i.test(x[1])))hi=k;});
   if(hi>=0){var it=l.splice(hi,1)[0],ki=-1;l.forEach(function(x,k){if(x[0]==='hazir')ki=k;});l.splice(ki+1,0,it);}
   return l;}
+var WK_SEL='';
+document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('[data-wk]');if(!b||!b.closest('.wkp'))return;e.preventDefault();WK_SEL=b.dataset.wk||'';route();});
 var CATS=[['erkek','Erkek'],['kadin','Kadın'],['cocuk','Çocuk']],subSel='',sub2Sel='',catOpen='',grpOpen='',typSel='',typOpen=false;
 var SIDES={tee:{front:['a4','a3','logo'],back:['a4','a3']},sweat:{front:['a4','a3','logo'],back:['a4','a3']},hood:{front:['a4','logo'],back:['a4','a3']},zip:{front:['logo'],back:['a4','a3']},polo:{front:['logo'],back:['a4','a3']},hat:{front:['hat'],back:[]}};
 var PNAME={a4:'A4 baskı',a3:'A3 baskı',logo:'Sol göğüs logo',hat:'Şapka ön baskı'};
@@ -4172,19 +4178,28 @@ function calc(sel){
   $('#cR').innerHTML=h;
 }
 var VIEWS={
- /* Wolflano Koleksiyon: sade, premium marka sayfası (hazır giyim). Ürün yokken "ilk koleksiyon hazırlanıyor" gösterir. */
+ /* Wolflano Koleksiyon: hazır giyim mağazası. Yalnız yönetimde "Wolflano Koleksiyon'da göster" işaretli ürünler; üstte sade marka başlığı, Tümü / Kadın / Erkek / Çocuk süzgeci. */
  wolflano:function(){
   if(!document.getElementById('wkFont')){var l=document.createElement('link');l.id='wkFont';l.rel='stylesheet';l.href='https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&display=swap';document.head.appendChild(l);}
   var lg=src(D.logo||'builtin:logo'),wa='https://wa.me/905307641717?text='+encodeURIComponent('Merhaba, Wolflano Koleksiyon çıkınca haber almak istiyorum.');
+  var all=PRODUCTS.filter(function(p){return p.wk;});
+  var G=[['','Tümü']].concat(CATS.filter(function(c){return /^(erkek|kad|çocuk|cocuk)/i.test(String(c[1]).toLocaleLowerCase('tr'));}));
+  G=G.filter(function(g){return !g[0]||all.some(function(p){return (p.cat||[]).indexOf(g[0])>=0;});});
+  if(WK_SEL&&!G.some(function(g){return g[0]===WK_SEL;}))WK_SEL='';
+  var list=WK_SEL?all.filter(function(p){return (p.cat||[]).indexOf(WK_SEL)>=0;}):all;
   var P=[['Sessiz Güç','Bağırmayan, kendinden emin bir duruş. Logo küçük kalır; kumaş ve kesim konuşur.'],['Sabır ve Adalet','Acele etmeden, doğru üretilir. Fiyat logonun değil, kumaşın ve emeğin karşılığıdır.'],['İtalyan Estetiği','Temiz çizgiler, ölçülü renkler, yıllarca giyilecek zamansız kesimler.']];
   var K=[['240','gr','Tişört'],['280','gr','Polo'],['380','gr','Sweatshirt']];
+  var shop=all.length?
+    '<div class="wk-fl">'+(G.length>2?G.map(function(g){return '<button type="button" data-wk="'+g[0]+'" class="'+(WK_SEL===g[0]?'on':'')+'">'+esc(g[1])+'</button>';}).join(''):'')+'</div>'+
+    '<div class="grid wk-grid">'+list.map(card).join('')+'</div>'
+   :'<section class="wk-yak"><h2>İlk koleksiyon hazırlanıyor</h2><p>İlk parçalar çıktığında haber almak için bize yaz.</p><div class="wk-act"><a class="wk-b" href="'+wa+'" target="_blank" rel="noopener">WhatsApp ile haber al</a><a class="wk-b o" href="https://www.instagram.com/wolflano.tr" target="_blank" rel="noopener">Instagram · @wolflano.tr</a></div></section>';
   return '<div class="wkp">'+
-   '<section class="wk-hero"><img src="'+esc(lg)+'" alt="Wolflano" class="wk-logo"><div class="wk-word">WOLFLANO</div><p class="wk-tag">Sessiz güç.<br>İtalyan estetiği, Türk ruhu.</p><p class="wk-sub">Gösterişe değil, duruşa yapılan kıyafetler.</p></section>'+
+   '<section class="wk-hero"><img src="'+esc(lg)+'" alt="Wolflano" class="wk-logo"><div class="wk-word">WOLFLANO</div><p class="wk-ey" style="margin:12px 0 0">Koleksiyon</p><p class="wk-tag">Sessiz güç. İtalyan estetiği, Türk ruhu.</p></section>'+
    '<div class="wk-man"><span></span><b>LİDER • BAĞIMSIZ • KORKUSUZ</b><span></span></div>'+
-   '<section class="wk-ilk">'+P.map(function(x,i){return '<div><i>0'+(i+1)+'</i><h2>'+x[0]+'</h2><p>'+x[1]+'</p></div>';}).join('')+'</section>'+
+   shop+
    '<section class="wk-kum"><p class="wk-ey">Kumaş sözümüz</p><div class="wk-kg">'+K.map(function(x){return '<div><b>'+x[0]+'<small>'+x[1]+'</small></b><span>'+x[2]+'</span></div>';}).join('')+'</div><p class="wk-q">Logoya değil, kumaşa öde.</p></section>'+
-   '<section class="wk-yak"><p class="wk-ey">Wolflano Koleksiyon</p><h2>İlk koleksiyon hazırlanıyor</h2><p>İlk parçalar çıktığında haber almak için bize yaz.</p><div class="wk-act"><a class="wk-b" href="'+wa+'" target="_blank" rel="noopener">WhatsApp ile haber al</a><a class="wk-b o" href="https://www.instagram.com/wolflano.tr" target="_blank" rel="noopener">Instagram · @wolflano.tr</a></div>'+
-   '<p class="wk-alt">Beklerken kendi tişörtünü tasarla: <a href="#tasarla">Kendin Tasarla →</a></p></section>'+
+   '<section class="wk-ilk">'+P.map(function(x,i){return '<div><i>0'+(i+1)+'</i><h2>'+x[0]+'</h2><p>'+x[1]+'</p></div>';}).join('')+'</section>'+
+   '<p class="wk-alt">Kendi tasarımını yapmak istersen: <a href="#tasarla">Kendin Tasarla →</a></p>'+
   '</div>';},
  kurdun:function(){return kurtHTML();},
  yonetim:function(){return adminView();},
@@ -4291,7 +4306,7 @@ yorumlar:function(){return rvPage();},
   var cs=(D.cats||[]).filter(function(c){return catSel?c.id===catSel:ids.indexOf(c.id)>=0;});
   var tmap={},tl=[];cs.forEach(function(c){(c.subs||[]).forEach(function(x){var n=String(x.name||'').trim();if(!n)return;var k=n.toLocaleLowerCase('tr');if(!tmap[k]){tmap[k]={n:n,ids:{}};tl.push(k);}tmap[k].ids[x.id]=1;(x.subs||[]).forEach(function(y){tmap[k].ids[y.id]=1;});});});
   if(subSel){(cs.length?cs:D.cats||[]).forEach(function(c){(c.subs||[]).forEach(function(x){if(x.id===subSel)typSel=String(x.name||'').trim().toLocaleLowerCase('tr');});});subSel='';sub2Sel='';}
-  var base=PRODUCTS.filter(function(p){var pc=p.cat||[];return catSel?pc.indexOf(catSel)>=0:pc.some(function(c){return ids.indexOf(c)>=0;});});
+  var base=PRODUCTS.filter(function(p){if(p.wk)return false;var pc=p.cat||[];return catSel?pc.indexOf(catSel)>=0:pc.some(function(c){return ids.indexOf(c)>=0;});});
   function inT(p,k){var t=tmap[k];return !!t&&(p.sub||[]).some(function(x){return t.ids[x];});}
   tl=tl.filter(function(k){return base.some(function(p){return inT(p,k);});});if(typSel&&tl.indexOf(typSel)<0)typSel='';
   var list=typSel?base.filter(function(p){return inT(p,typSel);}):base,row=typOpen||!!typSel;
@@ -5527,7 +5542,7 @@ function adminView(){
         h+='<div class="aed">'+fld('Ürün adı',pa+'.name')+'<div class="three">'+fld('Tür (ör. TİŞÖRT)',pa+'.type')+fld('Renk (ör. Gri)',pa+'.color')+fld('Etiket (ör. Yeni)',pa+'.tag')+'</div><p class="note" style="margin:0">Ürün kodu: <b>'+pCode(p)+'</b> (rengin ve türün baş harfi + kalıcı numara; yönetimde ve yapay zekâya talimat verirken bu kodu kullan)</p>'+
         pcBox(d,p,i)+'<div class="three">'+(p.pc&&pcCalc(d,p.pc)?'<label>Fiyat (₺)<input type="text" readonly value="'+pcCalc(d,p.pc).total+' (otomatik)"></label>':fld('Fiyat (₺)',pa+'.price','n'))+fld('Eski fiyat (₺)',pa+'.old','n','boş = yok')+fld('Stok (adet)',pa+'.stock','n','boş = takip yok')+'</div>'+
         '<label for="'+aid(pa+'.desc')+'">Açıklama (boş = türünün standart açıklaması, - = hiç gösterme)<textarea id="'+aid(pa+'.desc')+'" data-bind="'+pa+'.desc" data-t="s" placeholder="'+esc(pDesc(Object.assign({},p,{desc:''})))+'">'+esc(p.desc||'')+'</textarea></label>'+'<label for="'+aid(pa+'.btnote')+'">Baskı tekniği notu (boş = standart, - = hiç gösterme)<textarea id="'+aid(pa+'.btnote')+'" data-bind="'+pa+'.btnote" data-t="s" style="min-height:60px" placeholder="'+esc(btKindP(p)?btTX(btKindP(p)):'Bu üründe standart not yok')+'">'+esc(p.btnote||'')+'</textarea></label>'+'<label for="'+aid(pa+'.pnote')+'">Kumaş &amp; Duruş Notu (boş = genel not, - = hiç gösterme)<textarea id="'+aid(pa+'.pnote')+'" data-bind="'+pa+'.pnote" data-t="s" style="min-height:70px">'+esc(p.pnote||'')+'</textarea></label>'+'<label for="'+aid(pa+'.sizes')+'">Bedenler (virgülle ayır; boş = türüne göre otomatik, - = bedensiz)<input id="'+aid(pa+'.sizes')+'" data-bind="'+pa+'.sizes" data-t="s" value="'+esc(p.sizes||'')+'" placeholder="'+esc(pSizes(Object.assign({},p,{sizes:''})).join(', ')||'Bedensiz')+'"></label>'+
-        '<div><b style="font-size:14px">Kategoriler</b><div class="chk" style="margin-top:6px">'+(d.cats||[]).map(function(c){return '<label><input type="checkbox" data-cat="'+i+'" data-c="'+c.id+'"'+((p.cat||[]).indexOf(c.id)>=0?' checked':'')+'>'+esc(c.name||'Adsız')+'</label>';}).join('')+'<label><input type="checkbox" data-bind="'+pa+'.show" data-t="b"'+(p.show!==false?' checked':'')+'>Sitede göster</label></div>'+
+        '<div><b style="font-size:14px">Kategoriler</b><div class="chk" style="margin-top:6px">'+(d.cats||[]).map(function(c){return '<label><input type="checkbox" data-cat="'+i+'" data-c="'+c.id+'"'+((p.cat||[]).indexOf(c.id)>=0?' checked':'')+'>'+esc(c.name||'Adsız')+'</label>';}).join('')+'<label><input type="checkbox" data-bind="'+pa+'.show" data-t="b"'+(p.show!==false?' checked':'')+'>Sitede göster</label><label><input type="checkbox" data-bind="'+pa+'.wk" data-t="b"'+(p.wk?' checked':'')+'>Wolflano Koleksiyon\'da göster (hazır giyim)</label></div>'+
         subPick(d,p,i)+'</div>'+
         '<div class="three">'+fld('SKU / stok kodu',pa+'.sku')+fld('Barkod',pa+'.barcode')+fld('Marka',pa+'.brand','s','Wolflano')+'</div><div class="two"><label for="'+aid(pa+'.supplier')+'">Tedarikçi<select id="'+aid(pa+'.supplier')+'" data-bind="'+pa+'.supplier" data-t="s"><option value="">Kendi üretimimiz / yok</option>'+(d.suppliers||[]).map(function(s){return '<option value="'+s.id+'"'+(p.supplier===s.id?' selected':'')+'>'+esc(s.name||'Adsız')+'</option>';}).join('')+'</select></label>'+fld('Tedarikçi ürün kodu',pa+'.supSku')+'</div>'+
         '<div class="two">'+fld('Maliyet (tedarikçi para birimi)',pa+'.cost','n')+'<div style="display:flex;align-items:end;gap:8px;flex-wrap:wrap"><span class="note" id="sg-'+i+'">'+sugText(p,d)+'</span><button class="btn soft sm" data-ad="sugap" data-i="'+i+'">Fiyata uygula</button></div></div>'+
