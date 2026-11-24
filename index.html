@@ -4004,7 +4004,7 @@ var SIB=null,SIB_SRC=null,SIB_N=-1;
 function sibOf(p){if(SIB_SRC!==PRODUCTS||SIB_N!==PRODUCTS.length){SIB_SRC=PRODUCTS;SIB_N=PRODUCTS.length;SIB={};try{grpP(PRODUCTS.filter(function(x){return x.show!==false;})).forEach(function(g){if(g._vars)g._vars.forEach(function(v){SIB[v.id]=g._vars;});});}catch(_){}}
   var L=SIB[p.id];if(!L||L.length<2)return null;var me=L.filter(function(v){return v.id===p.id;})[0]||p;return [me].concat(L.filter(function(v){return v.id!==p.id;}));}
 function card(p){
-  var V=p._vars||(p.show!==false?sibOf(p):null),nm=pName(p);
+  var V=p._vars||null,F=p.show!==false?sibOf(p):null;if(F&&(!V||F.length>V.length))V=F;var nm=pName(p);
   var cgL=V||(pBack(p)?[p]:null);
   return '<article class="card'+(V?' cg':'')+'"'+(cgL?' data-cg="'+esc(JSON.stringify(cgL.map(function(v){return {i:v.id,u:IMG(v),b:pBack(v),p:pr(v),c:v.color||'',d:v.dsg?1:0,s:soldOut(v)?1:0,f:pImgCls(v)?1:0};})))+'"':'')+'><div class="phw"><a class="ph" href="#urun-'+p.id+'" aria-label="'+esc(p.name)+' detay"><img src="'+IMG(p)+'"'+pImgCls(p)+' alt="'+esc(p.name)+'" loading="lazy">'+(soldOut(p)?'':pTag(p))+'</a>'+(soldOut(p)?'<span class="stkb">Tükendi</span>':'')+favBtn(p.id)+(V?'<div class="cgd" role="radiogroup" aria-label="Renk">'+V.map(function(v,i){var h=cHex(v.color)||'#ccc';return '<button type="button" data-cgi="'+i+'"'+(i?'':' class="on"')+' role="radio" aria-checked="'+(i?'false':'true')+'" aria-label="'+esc(v.color||'Renk')+'" style="background:'+h+'"></button>';}).join('')+'</div>':'')+'</div>'+
   '<div class="meta">'+'<b class="pnm">'+esc(nm)+'</b>'+'<div class="row"><small>'+pKal(p)+p.type+(ptOf(p)==='kupa'&&p.color?' · '+esc(p.color):'')+(pDim(p)?' · <b>'+pDim(p)+'</b>':'')+'</small><span class="price">'+pr(p)+'</span></div>'+'</div>'+
