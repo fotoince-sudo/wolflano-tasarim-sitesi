@@ -2918,8 +2918,20 @@ function seoMeta(sel,attrs,val){var e=document.head.querySelector(sel);if(!e){e=
    ziyaretçi o adrese gelince site açılır ve doğrudan ilgili bölüme geçer. seoUpdate de kanonik adresi buradan alır. */
 var SEO_SL={wolflano:'wolflano-koleksiyon',hazir:'hazir-urunler',atolye:'baski-atolyesi',tasarla:'kendin-tasarla',hakkimizda:'hakkimizda',yorumlar:'yorumlar',fiyatlar:'baski-fiyatlari',kurdun:'kurdun-izinde',iletisim:'iletisim'};
 function seoSlug(t){return String(t||'').toLocaleLowerCase('tr').replace(/ç/g,'c').replace(/ğ/g,'g').replace(/ı/g,'i').replace(/i̇/g,'i').replace(/ö/g,'o').replace(/ş/g,'s').replace(/ü/g,'u').replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'');}
+/* Arama motoruna giden ürün adı: sondaki yanlış renk ve sıra numarası ("Wolflano yeşil 2", "Wolf 4") atılır, ürünün gerçek rengi eklenir.
+   Sitedeki ürün adı değişmez; yalnız başlık, açıklama ve adres böyle üretilir. */
+var SEO_RENK='beyaz|siyah|mavi|lacivert|yeşil|yesil|gri|kırmızı|kirmizi|pembe|sarı|sari|haki|krem|bej|kahve|kiremit|mor|turuncu';
+function seoName(P){var n=String(P&&P.name||'').replace(/\s+/g,' ').trim(),c=String(P&&P.color||'').trim();
+  if(c&&n.toLocaleLowerCase('tr').endsWith((' – '+c).toLocaleLowerCase('tr')))n=n.slice(0,-(c.length+3)).trim();
+  n=n.replace(new RegExp('\\s+(?:'+SEO_RENK+')?\\s*(\\d+)$','i'),function(_,k){return ' Model '+k;}).replace(new RegExp('\\s+(?:'+SEO_RENK+')$','i'),'').replace(/\s*[-–]\s*$/,'').trim()||String(P&&P.name||'');
+  if(c&&!/\d|\*|×/.test(c)&&!/kanvas|canvas/i.test(n+' '+(P.type||''))&&n.toLocaleLowerCase('tr').indexOf(c.toLocaleLowerCase('tr'))<0)n+=' – '+c;
+  return n;}
+/* Aynı tasarımın renkleri: Google'a tek ana sayfa (grubun ilk rengi) gösterilir, diğer renk sayfaları ona işaret eder */
+var SEO_ANA=null,SEO_ANA_SRC=null;
+function seoHead(P){if(SEO_ANA_SRC!==PRODUCTS){SEO_ANA_SRC=PRODUCTS;SEO_ANA={};try{grpP(PRODUCTS.filter(function(x){return x.show!==false;})).forEach(function(g){(g._vars||[g]).forEach(function(v){SEO_ANA[v.id]=(g._vars||[g])[0];});});}catch(_){}}
+  return (P&&SEO_ANA[P.id])||P;}
 function seoPath(h){h=h||'ana';if(h==='ana')return '';
-  if(h.indexOf('urun-')===0){var P=PRODUCTS.filter(function(x){return x.id===h.slice(5);})[0];return P?'urun/'+(seoSlug(P.name)||'urun')+'-'+seoSlug(P.id):null;}
+  if(h.indexOf('urun-')===0){var P=PRODUCTS.filter(function(x){return x.id===h.slice(5);})[0];return P?'urun/'+(seoSlug(seoName(P))||'urun')+'-'+seoSlug(P.id):null;}
   if(h.indexOf('kat-')===0){var c=CATS.filter(function(x){return x[0]===h.slice(4);})[0];return c?'kategori/'+(seoSlug(c[1])||seoSlug(c[0])):null;}
   if(h.indexOf('konu-')===0){var tp=topicOf(h.slice(5));return tp&&topicList(tp).length?tp.s:null;}
   if(h.indexOf('p-')===0){var x=(D.cpages||[]).filter(function(y){return y.id===h.slice(2)&&y.show!==false;})[0];return x?'sayfa/'+(seoSlug(x.title)||seoSlug(x.id)):null;}
@@ -2929,7 +2941,7 @@ window.__wfSeo=function(){var L=[{h:'ana',path:''}];
   CATS.forEach(function(c){var p=seoPath('kat-'+c[0]);if(p)L.push({h:'kat-'+c[0],path:p});});
   TOPICS.forEach(function(t){var p=seoPath('konu-'+t.s);if(p)L.push({h:'konu-'+t.s,path:p});});
   (D.cpages||[]).forEach(function(x){var p=seoPath('p-'+x.id);if(p)L.push({h:'p-'+x.id,path:p});});
-  PRODUCTS.forEach(function(P){var p=seoPath('urun-'+P.id),i=(P.imgs||[])[0]||'';if(p)L.push({h:'urun-'+P.id,path:p,img:i&&i.indexOf('builtin:')!==0?src(i):''});});
+  PRODUCTS.forEach(function(P){var p=seoPath('urun-'+P.id),i=(P.imgs||[])[0]||'',A=seoHead(P);if(p)L.push({h:'urun-'+P.id,path:p,img:i&&i.indexOf('builtin:')!==0?src(i):'',ana:A&&A.id!==P.id?seoPath('urun-'+A.id):null});});
   return {ready:ready&&PRODUCTS.length>0,dom:((D.seo||{}).domain||'https://wolflano.com.tr').replace(/\/+$/,''),items:L};};
 function seoUpdate(){
   try{
@@ -2941,10 +2953,10 @@ function seoUpdate(){
   var TPg=h.indexOf('konu-')===0?topicOf(h.slice(5)):null;
   if(TPg){title=TPg.t+' | Wolflano';desc=TPg.d.slice(0,158);}
   else if(CPg){title=(CPg.title||'')+' | Wolflano';desc=String(CPg.body||'').replace(/^##\s+/gm,'').replace(/\s+/g,' ').trim().slice(0,155);path=h;}
-  else if(P){title=productPageTitle(P.name,P.type)+' | Wolflano';desc=(P.desc&&P.desc.trim())||(P.name+' - premium kalite, İtalyan estetiği, Wolflano karakteri. KDV dahil '+tl(P.price)+'.');path='urun/'+slug(P.name)+'-'+P.id;}
+  else if(P){var sn=seoName(P);title=productPageTitle(sn,P.type)+' | Wolflano';desc=(P.desc&&P.desc.trim())||(sn+' - premium kalite, İtalyan estetiği, Wolflano karakteri. KDV dahil '+tl(P.price)+'.');path='urun/'+slug(sn)+'-'+P.id;}
   else{title=pg.t||'Wolflano';desc=pg.d||'';path=SL[h]!==undefined?SL[h]:h;}
   document.title=title;
-  var noidx=/^(odeme|sepet|hesabim|favoriler|yonetim|ara)$/.test(h),sp=seoPath(h),url=dom?dom+'/'+(sp==null?'':sp):''; /* adresi olmayan bölümlerde kanonik adres ana sayfa */
+  var noidx=/^(odeme|sepet|hesabim|favoriler|yonetim|ara)$/.test(h),sp=P&&seoHead(P)&&seoHead(P).id!==P.id?seoPath('urun-'+seoHead(P).id):seoPath(h),url=dom?dom+'/'+(sp==null?'':sp):''; /* adresi olmayan bölümlerde kanonik adres ana sayfa */
   seoMeta('meta[name=description]',{name:'description'},desc);
   seoMeta('meta[name=keywords]',{name:'keywords'},S.keywords||'');
   seoMeta('meta[name=robots]',{name:'robots'},noidx?'noindex,nofollow':'index,follow,max-image-preview:large');
@@ -2958,8 +2970,8 @@ function seoUpdate(){
   var img=function(x){var t=x&&x.imgs&&x.imgs[0];return(dom&&t&&t.indexOf('img/')===0)?dom+'/'+t:undefined;};
   var g=[{'@context':'https://schema.org','@type':'Organization',name:'Wolflano',url:dom||undefined,slogan:'Premium kalite, İtalyan estetiği, Wolflano karakteri'},
          {'@context':'https://schema.org','@type':'WebSite',name:'Wolflano',url:dom||undefined,inLanguage:'tr'}];
-  if(P){g.push({'@context':'https://schema.org','@type':'Product',name:P.name,description:desc,image:img(P),sku:P.sku||P.id,brand:{'@type':'Brand',name:P.brand||'Wolflano'},offers:{'@type':'Offer',url:url||undefined,priceCurrency:'TRY',price:String(P.price),availability:(hasStock(P)&&stQ(P)<=0)?'https://schema.org/OutOfStock':'https://schema.org/InStock',itemCondition:'https://schema.org/NewCondition'}});}
-  else if(h==='hazir'){g.push({'@context':'https://schema.org','@type':'ItemList',itemListElement:PRODUCTS.map(function(x,i){return {'@type':'ListItem',position:i+1,name:x.name,url:dom?dom+'/urun/'+slug(x.name)+'-'+x.id:undefined};})});}
+  if(P){g.push({'@context':'https://schema.org','@type':'Product',name:seoName(P),description:desc,image:img(P),sku:P.sku||P.id,brand:{'@type':'Brand',name:P.brand||'Wolflano'},offers:{'@type':'Offer',url:url||undefined,priceCurrency:'TRY',price:String(P.price),availability:(hasStock(P)&&stQ(P)<=0)?'https://schema.org/OutOfStock':'https://schema.org/InStock',itemCondition:'https://schema.org/NewCondition'}});}
+  else if(h==='hazir'){g.push({'@context':'https://schema.org','@type':'ItemList',itemListElement:PRODUCTS.map(function(x,i){return {'@type':'ListItem',position:i+1,name:seoName(x),url:dom?dom+'/'+seoPath('urun-'+x.id):undefined};})});}
   var j=document.getElementById('ldjson');if(!j){j=document.createElement('script');j.type='application/ld+json';j.id='ldjson';document.head.appendChild(j);}
   j.textContent=JSON.stringify(g);
   }catch(_){}

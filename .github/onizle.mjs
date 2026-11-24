@@ -34,6 +34,7 @@ function split(html) {
 const sp = split(tpl);
 if (sp) { tpl = sp; fs.writeFileSync(path.join(root, 'index.html'), tpl); }
 let urls = [];
+let homeHtml = null;
 
 try {
   const b = await chromium.launch(process.env.WF_CHROME ? { executablePath: process.env.WF_CHROME, args: ['--no-sandbox'] } : {});
@@ -62,17 +63,19 @@ try {
     });
     if (d.txt < 20 || /noindex/.test(d.robots)) continue;
     const url = dom + '/' + it.path;
+    // aynı tasarımın diğer renkleri: Google'a ana renk sayfası gösterilir (site haritasına da yalnız o girer)
+    const canon = it.ana ? dom + '/' + it.ana : url;
     let img = it.img || '';
     if (!/^(https?:\/\/|[a-z0-9_-]+\/)/i.test(img)) img = ''; // builtin:, data: gibi resimler paylaşımda kullanılamaz
     else if (!/^https?:/.test(img)) img = dom + '/' + img.replace(/^\/+/, '');
     if (!img) img = dom + '/assets/wolflano-paylasim.jpg';
     const head = [
       '<base href="/">',
-      `<script>if(!location.hash)history.replaceState(null,'','/#${it.h}')</script>`,
+      it.path ? `<script>if(!location.hash)history.replaceState(null,'','/#${it.h}')</script>` : '',
       `<title>${esc(d.title)}</title>`,
       `<meta name="description" content="${esc(d.desc)}">`,
-      `<link rel="canonical" href="${esc(url)}">`,
-      `<meta property="og:url" content="${esc(url)}">`,
+      `<link rel="canonical" href="${esc(canon)}">`,
+      `<meta property="og:url" content="${esc(canon)}">`,
       `<meta property="og:title" content="${esc(d.title)}">`,
       `<meta property="og:description" content="${esc(d.desc)}">`,
       `<meta property="og:image" content="${esc(img)}">`,
@@ -91,8 +94,8 @@ try {
       fs.mkdirSync(path.dirname(f), { recursive: true });
       fs.writeFileSync(f, html);
       n++;
-    }
-    urls.push(url);
+    } else homeHtml = html; // ana sayfa: Google ilk bakışta başlığı ve içeriği görsün (yayının sonunda index.html olur)
+    if (!it.ana) urls.push(url);
   }
   // Ürünün adı değişince eski adresi (urun/eski-ad-KOD) yeni adrese kalıcı yönlendir; Google 404 görmesin
   const ht = path.join(root, '.htaccess');
@@ -119,6 +122,15 @@ try {
     await t.goto('http://localhost:8898/index.html#hazir', { waitUntil: 'load' }); await t.waitForTimeout(3000);
     const len = await t.$eval('#main', (e) => e.innerText.length).catch(() => 0);
     if (errs.length || len < 50) { console.log('Ortak dosya denemesi başarısız, tek dosyaya dönülüyor:', errs.join(' | ')); throw new Error('split'); }
+  }
+  if (homeHtml) {
+    fs.writeFileSync(path.join(root, 'index.html'), homeHtml);
+    const errs = []; const t = await ctx.newPage(); t.on('pageerror', (e) => errs.push(e.message));
+    await t.goto('http://localhost:8898/', { waitUntil: 'load' }); await t.waitForTimeout(3000);
+    const ok = await t.evaluate(() => !location.hash || location.hash === '#ana').catch(() => false);
+    const len = await t.$eval('#main', (e) => e.innerText.length).catch(() => 0);
+    if (errs.length || len < 50 || !ok) { console.log('Ana sayfa önceden yazılamadı, boş kabukla devam:', errs.join(' | ')); fs.writeFileSync(path.join(root, 'index.html'), tpl); }
+    else console.log('Ana sayfa önceden yazıldı.');
   }
   await b.close();
   console.log('Arama motoru sayfaları: ' + n + ' sayfa üretildi.');
