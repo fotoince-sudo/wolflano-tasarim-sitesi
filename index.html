@@ -3313,6 +3313,8 @@ function pagesNow(){var l=PAGES.map(function(p){var m={hazir:'menuHazir',tasarla
   /* Hediye & Dekor (kategori ya da yönetimde açılan sayfa) menüde hep Koleksiyon ile Baskı Atölyesi arasında durur */
   var hi=-1;l.forEach(function(x,k){if(hi<0&&(x[0]==='hediye'||/hediye|dekor/i.test(x[1])))hi=k;});
   if(hi>=0){var it=l.splice(hi,1)[0],ki=-1;l.forEach(function(x,k){if(x[0]==='hazir')ki=k;});l.splice(ki+1,0,it);}
+  /* Hakkımızda menüde en sonda */
+  var ab=-1;l.forEach(function(x,k){if(x[0]==='hakkimizda')ab=k;});if(ab>=0)l.push(l.splice(ab,1)[0]);
   return l;}
 var WK_SEL='';
 document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('[data-wk]');if(!b||!b.closest('.wkp'))return;e.preventDefault();WK_SEL=b.dataset.wk||'';route();});
