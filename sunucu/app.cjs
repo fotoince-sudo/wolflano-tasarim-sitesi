@@ -42988,9 +42988,13 @@ function readyPrice(d, p) {
       pf[key] ?? b[key] ?? { a4: 150, logo: 100, hat: 150, wrap: 0 }[key]
     );
   };
+  const brandOnly = (k) => {
+    const L = p.dsg && p.dsg[k] && p.dsg[k].objs;
+    return Array.isArray(L) && L.length > 0 && L.every((q) => q && q.type === "clip" && q.key === "p_logo");
+  };
   let n = amount(b.price);
-  if (pc.logo) n += rawFee("logo");
-  if (pc.logo2) n += rawFee("logo2");
+  if (pc.logo && !brandOnly("logo")) n += rawFee("logo");
+  if (pc.logo2 && !brandOnly("logo2")) n += rawFee("logo2");
   if (pc.f) n += rawFee(pc.f);
   if (pc.bk) n += rawFee(pc.bk);
   return vat(d, money(n), "ready");

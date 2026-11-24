@@ -6606,7 +6606,7 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
     var ptype=o.type||TYPE_OF[state.product]||'TİŞÖRT',pcol=o.color!=null?o.color:colorName(),code=prodCode(pcol,ptype,no);data.code=code;
     /* Fiyat elle değiştirilmediyse ürün fiyat tablosuna bağlanır: taban fiyat + baskı yerleri; tablo değişince kendiliğinden güncellenir */
     var pc=null,sb=siteBlank(state.product,state.cut);
-    if(!o.wk&&sb&&sb.id&&Math.abs((+price||0)-defPrice())<0.5){var used=function(sd){return state[sd]&&state[sd].objs&&state[sd].objs.length?state[sd].area:'';};
+    if(!o.wk&&sb&&sb.id&&Math.abs((+price||0)-defPrice())<0.5){var used=function(sd){return state[sd]&&state[sd].objs&&state[sd].objs.length&&!brandOnly(sd)?state[sd].area:'';};
       pc={b:sb.id,logo:!!used('logo'),logo2:!!used('logo2'),f:used('front'),bk:used('back')};if(/^cv/.test(pc.f))pc.f='';}
     /* Ad elle yazılmadıysa "Kadın Tişört W012": aynı tasarımın başka rengi varsa onun kodu, yoksa ilk boş numara */
     var np0={type:ptype,cat:cp.cat,sub:cp.sub,dsg:data},k0=dKey(np0),same=(d.products||[]).filter(function(x){return +x.wc&&dKey(x)===k0;})[0],wc=same?+same.wc:wFree(d.products);
