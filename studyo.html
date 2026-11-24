@@ -824,7 +824,7 @@ img{-webkit-touch-callout:none;-webkit-user-drag:none}
       <label class="fld rng" id="lsWrap" hidden><span>Harf aralığı <b id="lsOut"></b></span><input type="range" id="lsAmt" min="0" max="100" step="1" value="0"></label>
     </div>
     <div class="panel" data-p="clip" hidden>
-      <div class="chips scroll" id="apCats" aria-label="Arka plan bölümleri"><button type="button" data-ap="zem">Zeminler</button><button type="button" data-ap="grf">Grafikler</button><button type="button" data-ap="sek">Şekiller</button></div>
+      <div class="chips scroll" id="apCats" aria-label="Arka plan bölümleri"><button type="button" data-ap="zem">Zeminler</button><button type="button" data-ap="ciz">Hazır çizimler</button><button type="button" data-ap="grf">Grafikler</button><button type="button" data-ap="sek">Şekiller</button></div>
       <div id="apZem">
       <div class="mini-title" id="zemT" hidden>Zeminler</div>
       <p class="note" style="margin:0 0 8px">Fotoğraflı şablonda dokunduğun zemin, fotoğraflar yerinde kalarak değişir. Şablon yoksa zemin tasarımın arkasına eklenir; büyütüp küçültebilirsin.</p>
@@ -832,6 +832,7 @@ img{-webkit-touch-callout:none;-webkit-user-drag:none}
       <div class="thumb-grid zem" id="zemGrid"></div>
       <div class="admonly" style="margin-top:10px"><div class="mini-title">Seçili görseli zemin olarak kaydet <small style="font-weight:500;opacity:.7">(yalnız yönetici)</small></div><p class="note" style="margin:0 0 6px">Arşivden yüklediğin görseli tasarımda seç, adını yaz, hangi ürünlerde görüneceğine dokun.</p><input id="zemNm" placeholder="Zemin adı (ör. Deniz)" maxlength="30" style="width:100%;margin-bottom:6px"><div class="fxrow"><button type="button" data-zsave="tee">Tişört</button><button type="button" data-zsave="mug">Kupa</button><button type="button" data-zsave="canvas">Kanvas</button><button type="button" data-zsave="hepsi">Hepsi</button></div></div>
       </div>
+      <div id="apCiz" hidden><p class="note" style="margin:0 0 8px">Şeffaf hazır çizimler: dokun, tasarımına eklensin; sonra taşı, büyüt, döndür.</p><div class="thumb-grid ciz" id="cizGrid"></div></div>
       <div id="apGrf" hidden></div>
       <div id="apSek" hidden>
       <button type="button" class="ghost wide" id="brandWolfBtn" style="height:38px;margin-bottom:8px;border-color:var(--accent);color:var(--accent)"><svg class="i" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M9 4v16M15 4v16M4 9h16M4 15h16" opacity=".35"/></svg>Wolflano kurdu ekle · 5 × 5 cm · ücretsiz</button>
@@ -847,8 +848,6 @@ img{-webkit-touch-callout:none;-webkit-user-drag:none}
       <input id="swapIn" type="file" accept="image/*" hidden><input id="slotsIn" type="file" accept="image/*" multiple hidden>
       <p class="note" id="imgNote">PNG, JPG veya WebP yükle. Net baskı için fotoğrafı büyük boyutta yükle. Fotoğrafın arkasındaki duvarı, odayı silmek için fotoğrafı seçip <b>Arka planı sil</b>'e dokun.</p>
       <div class="thumb-grid" id="upGrid"></div>
-      <div class="mini-title" style="margin-top:14px">Hazır çizimler <small style="font-weight:500;opacity:.7">· şeffaf, dokun ve ekle</small></div>
-      <div class="thumb-grid ciz" id="cizGrid"></div>
       <div class="admonly"><div class="mini-title">Mankenlerimiz <small style="font-weight:500;opacity:.7">(yalnız yönetici)</small></div><p class="note" style="margin:0 0 8px">Fotoğraf yeri seçiliyse ya da boş yer varsa manken oraya oturur; yoksa tasarıma görsel olarak eklenir. Şablon ve ürün görsellerini doldurmak için.</p><div class="thumb-grid mkg" id="mkGrid"><p class="note">Yükleniyor…</p></div></div>
     </div>
     <div class="panel" data-p="wolf" hidden>
@@ -4811,7 +4810,7 @@ function apMountGrid(toAp){var g=$('#tplGrid'),e=$('#tplEmpty'),tp=$('.panel[dat
   if(toAp){if(g.parentNode!==ap){ap.appendChild(e);ap.appendChild(g);}view.tplGrp='Grafik';view.tplCat='Tümü';}
   else{if(g.parentNode!==tp){tp.appendChild(e);tp.appendChild(g);}if(view.tplGrp==='Grafik')view.tplGrp='Tümü';}}
 function apShow(k){AP.on=k;$$('#apCats [data-ap]').forEach(function(b){b.classList.toggle('on',b.dataset.ap===k);});
-  $('#apZem').hidden=k!=='zem';$('#apGrf').hidden=k!=='grf';$('#apSek').hidden=k!=='sek';
+  $('#apZem').hidden=k!=='zem';var ac=$('#apCiz');if(ac)ac.hidden=k!=='ciz';$('#apGrf').hidden=k!=='grf';$('#apSek').hidden=k!=='sek';
   if(k==='zem'){try{renderZem();}catch(_){}}
   if(k==='grf'){apMountGrid(true);renderTpl();renderTplPreviews();}
   if(k==='sek'){try{renderClipGrid();}catch(_){}}}
