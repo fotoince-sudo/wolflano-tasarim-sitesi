@@ -509,8 +509,11 @@ body.odak .odakx{display:inline-flex}.odakx svg{width:16px;height:16px}
 #tplGrid .tpl,#tplGrid .atpl{scroll-snap-align:start}
 #tplGrid .tpl .prev{height:124px}
 #tplGrid .tpl .prev .in{transform:translateX(-50%) scale(.6)}
-.sheet:has(>.panel[data-p="tpl"]:not([hidden])){height:auto}
-.panel[data-p="tpl"]{overflow-y:visible}
+/* Şablon sekmesi tasarımı kapatmaz: panel sabit yükseklikte, içi kayar; bölüm düğmeleri üstte sabit kalır */
+.sheet:has(>.panel[data-p="tpl"]:not([hidden])){height:clamp(230px,40%,360px)}
+.panel[data-p="tpl"]{overflow-y:auto}
+.panel[data-p="tpl"]>#apCats{flex:1 1 100%;position:sticky;top:-14px;z-index:2;background:var(--panel);margin:-14px -16px 0;padding:12px 56px 8px 16px}
+.panel[data-p="tpl"]>#apZem,.panel[data-p="tpl"]>#apCiz,.panel[data-p="tpl"]>#apGrf,.panel[data-p="tpl"]>#apSek{flex:1 1 100%}
 .panel[data-p="tpl"]:not([data-ap="tpl"])>.tplOwn{display:none!important}
 #tabs [data-tab="clip"]{display:none!important}
 #areaHint{display:none!important} /* boş üründe yazı uyarısı gösterilmez */
@@ -4818,7 +4821,7 @@ var AP={on:'tpl'};
 function apMountGrid(toAp){var g=$('#tplGrid'),e=$('#tplEmpty'),tp=$('.panel[data-p="tpl"]'),ap=$('#apGrf');if(!g||!tp||!ap)return;
   if(toAp){if(g.parentNode!==ap){ap.appendChild(e);ap.appendChild(g);}view.tplGrp='Grafik';view.tplCat='Tümü';}
   else{if(g.parentNode!==tp){tp.appendChild(e);tp.appendChild(g);}if(view.tplGrp==='Grafik')view.tplGrp='Tümü';}}
-function apShow(k){AP.on=k;var tpP=$('.panel[data-p="tpl"]');if(tpP)tpP.dataset.ap=k;$$('#apCats [data-ap]').forEach(function(b){b.classList.toggle('on',b.dataset.ap===k);});
+function apShow(k){AP.on=k;var tpP=$('.panel[data-p="tpl"]');if(tpP){tpP.dataset.ap=k;tpP.scrollTop=0;}$$('#apCats [data-ap]').forEach(function(b){b.classList.toggle('on',b.dataset.ap===k);});
   if(k==='tpl'){$$('#apZem,#apCiz,#apGrf,#apSek').forEach(function(d){d.hidden=true;});apMountGrid(false);renderTpl();renderTplPreviews();return;}
   $('#apZem').hidden=k!=='zem';var ac=$('#apCiz');if(ac)ac.hidden=k!=='ciz';$('#apGrf').hidden=k!=='grf';$('#apSek').hidden=k!=='sek';
   if(k==='zem'){try{renderZem();}catch(_){}}
