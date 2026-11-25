@@ -6650,11 +6650,11 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
     if(!o.wk&&sb&&sb.id&&Math.abs((+price||0)-defPrice())<0.5){var used=function(sd){return state[sd]&&state[sd].objs&&state[sd].objs.length&&!brandOnly(sd)?state[sd].area:'';};
       pc={b:sb.id,logo:!!used('logo'),logo2:!!used('logo2'),f:used('front'),bk:used('back')};if(/^cv/.test(pc.f))pc.f='';}
     /* Ad elle yazılmadıysa "Kadın Tişört W012": aynı tasarımın başka rengi varsa onun kodu, yoksa ilk boş numara */
-    var np0={type:ptype,cat:cp.cat,sub:cp.sub,dsg:data},k0=dKey(np0),same=(d.products||[]).filter(function(x){return +x.wc&&dKey(x)===k0;})[0],wc=same?+same.wc:wFree(d.products);
+    var np0={type:ptype,cat:cp.cat,sub:cp.sub,dsg:data},k0=dKey(np0),same=(d.products||[]).filter(function(x){return (o.grp&&x.grp===o.grp)||(+x.wc&&dKey(Object.assign({},x,{grp:undefined}))===k0);})[0],wc=same?+same.wc:wFree(d.products);
     if(ADM.tTyped!==amKey()){var dn=descName(data);var mh={'kupa-kalp':'Kalp Kulplu Kupa','kupa-panel':'Siyah Panelli Kupa','kupa-renkli':'Renkli Kupa','kupa-sihirli':'Sihirli Kupa'}[state.bid||''];title=dn?dn+' '+(state.product==='mug'&&mh?mh:wHead(np0))+(/^(tee|sweat|hood|zip|polo)$/.test(state.product)&&pcol?' – '+pcol:''):wHead(np0)+' '+wFmt(wc);}else title=uniqName(title,(d.products||[]).map(function(x){return x.name;}));
     var rec=await insertRow({title:title,kind:'urun',status:'yayında',product:state.product,cut:state.cut,color:state.tee,data:data,thumb:pubUrl(imgs[0]),by_wolf:!!byWolf});
     d.products=d.products||[];
-    d.products.unshift({id:id,no:no,wc:wc,name:title,type:ptype,color:pcol,price:Math.round((+price||0)/vatK('ready')*100)/100,pc:pc||undefined,old:(+o.old>0?+o.old:null),stock:null,tag:o.tag||'',cat:cp.cat,sub:cp.sub,imgs:imgs,desc:o.desc||'',show:true,wk:o.wk?true:undefined,adesign:rec&&rec.id,dsg:data,depo:(DEPO.cur&&depoBlank(state.product,state.cut))?DEPO.cur.id:undefined});
+    d.products.unshift({id:id,no:no,wc:wc,grp:o.grp||(same&&same.grp)||undefined,name:title,type:ptype,color:pcol,price:Math.round((+price||0)/vatK('ready')*100)/100,pc:pc||undefined,old:(+o.old>0?+o.old:null),stock:null,tag:o.tag||'',cat:cp.cat,sub:cp.sub,imgs:imgs,desc:o.desc||'',show:true,wk:o.wk?true:undefined,adesign:rec&&rec.id,dsg:data,depo:(DEPO.cur&&depoBlank(state.product,state.cut))?DEPO.cur.id:undefined});
     await rq('/rest/v1/site_content?on_conflict=id',{method:'POST',body:{id:'main',data:d,updated_at:new Date().toISOString()},prefer:'resolution=merge-duplicates,return=minimal'});
     if(rec)await rq('/rest/v1/admin_designs?id=eq.'+rec.id,{method:'PATCH',body:{note:'Ürün: '+id}});
     var cn=catLabel(catId);return 'Ürün sitede yayında: "'+title+'" · Kod: '+code+(cn?' → '+cn:'')+'. Fiyatını ve açıklamasını yönetim panelindeki Koleksiyon sekmesinden değiştirebilirsin.';
@@ -6663,11 +6663,12 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
   function allCols(){if(/^(mug|canvas)$/.test(state.product))return [];return TEES.map(function(t){return t[1];}).filter(function(h,i,a){return a.indexOf(h)===i;});}
   function allColBox(){var n=allCols().length;if(n<2)return '';
     return '<label class="am-all"><input type="checkbox" id="amAll" checked><span><b>Tüm renklere uygula ('+n+' renk)</b><small>Aynı tasarım bu ürünün bütün renklerinde ayrı ayrı yayınlanır. Yalnız seçili renk için işareti kaldır.</small></span></label>';}
-  async function doProdAll(title,cat,pr,info,btn){var cols=allCols(),t0=state.tee,musicColors=saveMusicColors(),ok=[],bad=[];
+  /* Toplu (tüm renkler) kayıtta hepsine ortak grup kimliği: renklere göre logo boyu/yeri farklı olsa da sitede tek kart */
+  async function doProdAll(title,cat,pr,info,btn){var cols=allCols(),t0=state.tee,musicColors=saveMusicColors(),ok=[],bad=[],grp='t'+rnd();
     var cur=cols.filter(function(h){return String(h).toLowerCase()===String(t0).toLowerCase();});cols=cur.concat(cols.filter(function(h){return cur.indexOf(h)<0;}));
     try{for(var i=0;i<cols.length;i++){teeSwap(cols[i],true);renderShirt();renderObjects();await phWait(cols[i]);renderShirt();renderObjects();await new Promise(function(r){setTimeout(r,120);});
         var cn=colorName()||cols[i];if(btn)btn.textContent='Yayınlanıyor: '+cn+' ('+(i+1)+'/'+cols.length+')…';
-        try{await doProd(title,cat,pr,false,Object.assign({},info,{color:null}));ok.push(cn);}catch(e){if(e&&e.code==='auth')throw e;bad.push(cn);try{console.error('Renk',cn,e);}catch(_){}}}}
+        try{await doProd(title,cat,pr,false,Object.assign({},info,{color:null,grp:grp}));ok.push(cn);}catch(e){if(e&&e.code==='auth')throw e;bad.push(cn);try{console.error('Renk',cn,e);}catch(_){}}}}
     finally{teeSwap(t0);restoreMusicColors(musicColors);renderShirt();renderObjects();syncMusicInk();try{renderOpt();}catch(_){}}
     if(!ok.length)throw {msg:'Hiçbir renk yayınlanamadı. Tekrar dene.'};
     /* Kayıt kontrolü: sitede bu tasarımın kaç rengi gerçekten duruyor (biri diğerinin üzerine yazdıysa burada görünür) */
