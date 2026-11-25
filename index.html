@@ -1142,8 +1142,9 @@ body:has(.ttlanding) #ann{display:none!important}
 .blv-s img{max-width:100%;max-height:100%;border-radius:12px;display:block}
 .blv-d{display:flex;justify-content:center;gap:8px;padding:12px 0 calc(18px + env(safe-area-inset-bottom,0px))}.blv-d i{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.35)}.blv-d i.on{background:#7fd6b4;width:22px;border-radius:4px}
 .pd2 .pdi{display:grid;gap:12px}.pd2 .pdi a{display:block}.pd2 .pdi img{width:100%;height:auto;display:block;border-radius:14px;border:1px solid var(--line)}
-@media (max-width:859px){.pd2 .pd{display:flex;flex-direction:column}.pd2 .pd>.gal{order:1}.pd2 .pd>.pdi{order:2;display:flex;gap:10px;overflow-x:auto;scroll-snap-type:x mandatory;scroll-padding-left:16px;scrollbar-width:none;margin:0 -16px;padding:0 16px}.pd2 .pd>.pdi::-webkit-scrollbar{display:none}.pd2 .pd>.pdi a{flex:0 0 44%;scroll-snap-align:start}.pd2 .pd>.pdi img{border-radius:10px}.pd2 .pd>.info{order:3}}
-@media (min-width:860px){.pd2 .pd>.pdi{grid-column:1}}
+@media (max-width:859px){.pd2 .pd{display:flex;flex-direction:column}.pd2 .pd>.gal{order:1}.pd2 .pd>.pdc{order:2}.pd2 .pd>.pdi{order:3;display:flex;gap:10px;overflow-x:auto;scroll-snap-type:x mandatory;scroll-padding-left:16px;scrollbar-width:none;margin:0 -16px;padding:0 16px}.pd2 .pd>.pdi::-webkit-scrollbar{display:none}.pd2 .pd>.pdi a{flex:0 0 44%;scroll-snap-align:start}.pd2 .pd>.pdi img{border-radius:10px}.pd2 .pd>.info{order:4}}
+@media (min-width:860px){.pd2 .pd>.pdi,.pd2 .pd>.pdc{grid-column:1}}
+.pd2 .pdc .pcols{margin:0}.pd2 .pdc .pcols small{font:500 13px var(--ui);letter-spacing:0;color:var(--muted)}
 /* Başlıklar telefonda sade boyutta (kocaman yazılar yerine) */
 @media (max-width:639px){.h2{font-size:25px;letter-spacing:-.015em}.cpg h2.h2{font-size:21px}.kolh{font-size:24px}}
 .pd2 .thumbs{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;scroll-snap-type:x proximity}.pd2 .thumbs::-webkit-scrollbar{display:none}
@@ -3766,11 +3767,11 @@ function pdView(p){
   var links=[];if(p.dsg)links.push('<a href="studyo.html?hazir='+encodeURIComponent(p.id)+'">'+PD_IC.pen+'Bu tasarımı düzenle, ismini ekle</a>');
   if(hdStudio(p))links.push('<a href="'+hdStudio(p)+'">'+PD_IC.pls+(p.dsg?'Boş üründen tasarla':'Kendi tasarımını yap')+'</a>');
   links.push('<button type="button" data-fav="'+p.id+'">'+PD_IC.hrt+(favs[p.id]?'Favorilerde':'Favorilere ekle')+'</button>');
-  return '<div class="wrap page pd2">'+pdBack(p)+'<div class="pd"><div class="gal" id="gal">'+galHTML(p)+'</div><div class="info">'+
+  return '<div class="wrap page pd2">'+pdBack(p)+'<div class="pd"><div class="gal" id="gal">'+galHTML(p)+'</div>'+(function(){var c=pColRow(p);return c?'<div class="pdc">'+c+'</div>':'';})()+'<div class="info">'+
    pdBadges(p)+'<h1 class="pdn">'+esc(productPageTitle(p.name,p.type))+'</h1>'+
    '<div class="pdm">'+pTypeColor(p)+'<span class="pcode">Ürün kodu: '+pCode(p)+'</span></div>'+
    '<div class="pdp"><div class="pbig">'+prBig(p)+'</div><small>KDV dahil</small></div>'+
-   pColRow(p)+(zs.length?szBlock(zs,szTable(szKind((p.type||'')+' '+(p.name||'')),pCut(p),zs)):'')+stk(p)+
+   (zs.length?szBlock(zs,szTable(szKind((p.type||'')+' '+(p.name||'')),pCut(p),zs)):'')+stk(p)+
    (so?aysl('Bu ürün şu an tükendi. Benzerini ister misin?','Bu ürün tükenmiş, benzer bir ürün önerir misin?'):'')+
    '<div class="pda">'+add+'</div><div class="pdl">'+links.join('')+'</div>'+
    '<ul class="pdt"><li>'+PD_IC.trk+'<span><b>2–4 iş gününde kargoda</b>Özenle paketlenir, kargo takip bilgisi gönderilir</span></li><li>'+PD_IC.pen+'<span><b>Kişiye özel üretim</b>Ekranda gördüğün tasarım basılır</span></li><li>'+PD_IC.shd+'<span><b>Güvenli ödeme</b>Kartla ya da havaleyle</span></li></ul>'+
