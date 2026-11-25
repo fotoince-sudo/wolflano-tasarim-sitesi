@@ -26,7 +26,15 @@ try{if(window.top!==window.self){window.top.location.replace(location.href);}}ca
 .ib.ayb-btn,.top-actions .ib.ayb-btn{padding:0;overflow:visible;border:0;background:none;border-radius:50%}
 .ib.ayb-btn img{width:34px;height:34px;border-radius:50%;object-fit:cover;display:block;border:2px solid #7fd6b4;box-shadow:0 0 0 2px #fff,0 2px 6px rgba(0,0,0,.18)}
 #livePrice .lpk{font-style:normal;font-size:9px;font-weight:500;opacity:.6;margin-right:4px;letter-spacing:0}
-</style><style>#musicInkControl{display:inline-flex;align-items:center;gap:8px;white-space:nowrap;font-weight:650}#musicInkControl[hidden]{display:none}#musicInk{display:inline-flex;gap:8px}#musicInk .mik{flex:0 0 32px!important;width:32px!important;min-width:32px!important;height:32px!important;border-radius:50%!important;border:1.5px solid #aeb9b7!important;padding:0!important;cursor:pointer}#musicInk .mik.on{box-shadow:0 0 0 2px #fff,0 0 0 4px #159b91;border-color:#159b91}</style>
+</style><style>.gych{position:fixed;inset:0;z-index:300;background:rgba(10,16,12,.45);display:flex;align-items:flex-end;justify-content:center}
+.gych-c{width:min(100%,460px);background:#fff;border-radius:20px 20px 0 0;padding:18px 16px calc(16px + env(safe-area-inset-bottom,0px));display:grid;gap:10px}
+.gych-c b{font:700 17px var(--ui,system-ui)}.gych-c button{display:grid;grid-template-columns:28px 1fr;align-items:center;column-gap:12px;text-align:left;padding:14px;border:1.5px solid #d7e2dc;border-radius:14px;background:#fff;font:600 15px var(--ui,system-ui);color:#101a14}
+.gych-c button small{grid-column:2;font:400 12.5px var(--ui,system-ui);color:#5b6b63}.gych-c button .i{grid-row:span 2;width:26px;height:26px}.gych-c .gych-x{display:block;text-align:center;border:0;background:#eef3f0}
+.adjimg{opacity:.55}.adjtxt{pointer-events:none!important;opacity:.9}
+#tsAdjBar{position:fixed;left:10px;right:10px;bottom:calc(84px + env(safe-area-inset-bottom,0px));z-index:250;display:flex;gap:10px;align-items:center;background:#101a14;color:#fff;border-radius:14px;padding:10px 12px;font:500 13px var(--ui,system-ui)}
+#tsAdjBar[hidden]{display:none}#tsAdjBar span{flex:1}#tsAdjBar button{flex:none;height:40px;padding:0 14px;border:0;border-radius:10px;background:#7fd6b4;color:#101a14;font:700 14px var(--ui,system-ui)}
+.znone .zx{display:grid;place-items:center;aspect-ratio:1;border:2px dashed #b9c6bf;border-radius:10px;font:700 22px var(--ui,system-ui);color:#7a8a82}
+#musicInkControl{display:inline-flex;align-items:center;gap:8px;white-space:nowrap;font-weight:650}#musicInkControl[hidden]{display:none}#musicInk{display:inline-flex;gap:8px}#musicInk .mik{flex:0 0 32px!important;width:32px!important;min-width:32px!important;height:32px!important;border-radius:50%!important;border:1.5px solid #aeb9b7!important;padding:0!important;cursor:pointer}#musicInk .mik.on{box-shadow:0 0 0 2px #fff,0 0 0 4px #159b91;border-color:#159b91}</style>
 </head><body>
 <title>Online Tişört Tasarım Stüdyosu · Kendin Tasarla | Wolflano</title>
 <meta name="description" content="Ücretsiz online tasarım stüdyosu: tişört, sweatshirt, kapüşonlu, polo, şapka, kupa ve kanvas tabloyu kendin tasarla. Yazı, fotoğraf ve hazır tasarımlar ekle; gördüğün gibi basıp Türkiye'nin her yerine gönderelim.">
@@ -770,6 +778,7 @@ img{-webkit-touch-callout:none;-webkit-user-drag:none}
   <div class="ctxwrap" id="ctx" hidden>
     <div class="pop" id="colorPop" hidden></div>
     <div class="ctxbar" id="ctxBar">
+      <button data-c="zemx" id="zemxBtn" hidden><svg class="i" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M4 20L20 4"/></svg><span>Zemini kaldır</span></button>
       <button data-c="zem" id="zemBtn" hidden><svg class="i" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M3 15l5-5 4 4 3-3 6 6"/></svg><span>Zemin ekle</span></button>
       <div id="musicInkControl" role="radiogroup" aria-label="Şablon rengi" hidden><span>Şablon rengi</span><span id="musicInk"></span></div>
       <button type="button" data-c="tee-text-top" hidden>Üst yazı</button>
@@ -797,6 +806,7 @@ img{-webkit-touch-callout:none;-webkit-user-drag:none}
       <button data-c="intext" data-t="image" class="aibtn"><svg class="i" viewBox="0 0 24 24"><path d="M4 6V4h16v2M12 4v16M9 20h6"/><rect x="2.5" y="9" width="7" height="7" rx="1" stroke-dasharray="2 1.6"/></svg>İçine giydir</button>
       <button data-c="giydir" data-t="image" id="gyReBtn" class="aibtn" hidden><svg class="i" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2"/><path d="M21 16l-5-5-8 9"/></svg>Giydirmeyi değiştir</button>
       <button data-c="tsedit" data-t="image" id="tsEditBtn" hidden><svg class="i" viewBox="0 0 24 24"><path d="M4 20l4-1 11-11-3-3L5 16z"/></svg>Yazıyı düzenle</button>
+      <button data-c="tsadj" data-t="image" id="tsAdjBtn" class="aibtn" hidden><svg class="i" viewBox="0 0 24 24"><path d="M12 2v20M2 12h20M12 2l-3 3M12 2l3 3M12 22l-3-3M12 22l3-3M2 12l3-3M2 12l3 3M22 12l-3-3M22 12l-3 3"/></svg>Fotoğrafı kaydır</button>
       <button data-c="tsplit" data-t="image" id="tsplitBtn" hidden><svg class="i" viewBox="0 0 24 24"><path d="M4 6V4h16v2M12 4v16M9 20h6"/><path d="M3 21l4-4M21 21l-4-4"/></svg>Yazıyı ayır</button>
       <button data-c="crop" data-t="image"><svg class="i" viewBox="0 0 24 24"><path d="M6 2v14a2 2 0 0 0 2 2h14"/><path d="M2 6h14a2 2 0 0 1 2 2v14"/></svg>Kırp</button>
       <button data-c="wout" data-t="image" id="woutBtn"><svg class="i" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="4"/><rect x="8" y="8" width="8" height="8" rx="1.5"/></svg>Kontur</button>
@@ -2355,7 +2365,7 @@ function imageBorderWidth(o){return o.oilSlot?0.2*PPC:(o.bw||0);}
 function imageBorderColor(o){return o.oilSlot?'#ffffff':(o.bc||'#161616');}
 function imageCornerRadius(o){return o.oilSlot?0.3*PPC:o.visorRadius?Math.min(o.w,o.h)*o.visorRadius:(o.br||0);}
 function updateEl(el,o){
-  el.classList.toggle('thru',!!o.thru);
+  el.classList.toggle('thru',!!o.thru);el.classList.toggle('adjimg',!!o._adj);el.classList.toggle('adjtxt',!!o._adjT);
   if(o.type==='text'){if(!isWarped(o)&&(el.firstElementChild||el.textContent!==o.value))el.textContent=o.value;styleText(el,o);}
   else if(o.type==='clip'){el.style.color=o.color;if(o.color2)el.style.setProperty('--c2',o.color2);else el.style.removeProperty('--c2');if(el.dataset.k!==o.key){el.dataset.k=o.key;el.innerHTML=clipSVG(o.key);el.classList.toggle('phit',/^lgk_/.test(o.key));}}
   else if(o.type==='image'&&slotLive(o)){slotRender(el,o);}
@@ -2664,7 +2674,7 @@ function qualityOf(o){
   if(ppi>=75)return null;
   return {ppi:ppi,cls:'low',txt:'Fotoğraf küçük'};
 }
-function syncCtx(){syncCtx0();syncMusicInk();var teeText=state.product==='tee'&&cur().area==='a4'&&!isLand(view.side)&&cur().objs.some(function(o){return o.teePhoto;});$$('#ctxBar [data-c^="tee-text-"]').forEach(function(b){b.hidden=!teeText;});var mugText=mugWrap()&&cur().objs.some(function(o){return o.mugVehicleFace;});$$('#ctxBar [data-c^="mug-vehicle-"]').forEach(function(b){b.hidden=!mugText;});var zb=$('#zemBtn');if(zb){var layers=cur().objs;zb.hidden=!layers.length;if(!zb.hidden){ctx.hidden=false;zb.querySelector('span').textContent=tplFrame()||layers.some(function(o){return o.zem;})?'Zemini değiştir':'Zemin ekle';}}try{zemSync();}catch(_){}var sb=$('#stageBar');if(sb){var was=sb.hidden;sb.hidden=ctx.hidden||!$$('#stageBar button').some(function(b){return !b.hidden;});if(was!==sb.hidden&&!(view.g||view.drag))requestAnimationFrame(layout);}}
+function syncCtx(){syncCtx0();syncMusicInk();try{var zx=$('#zemxBtn');if(zx)zx.hidden=!zemLayer();}catch(_){}var teeText=state.product==='tee'&&cur().area==='a4'&&!isLand(view.side)&&cur().objs.some(function(o){return o.teePhoto;});$$('#ctxBar [data-c^="tee-text-"]').forEach(function(b){b.hidden=!teeText;});var mugText=mugWrap()&&cur().objs.some(function(o){return o.mugVehicleFace;});$$('#ctxBar [data-c^="mug-vehicle-"]').forEach(function(b){b.hidden=!mugText;});var zb=$('#zemBtn');if(zb){var layers=cur().objs;zb.hidden=!layers.length;if(!zb.hidden){ctx.hidden=false;zb.querySelector('span').textContent=tplFrame()||layers.some(function(o){return o.zem;})?'Zemini değiştir':'Zemin ekle';}}try{zemSync();}catch(_){}var sb=$('#stageBar');if(sb){var was=sb.hidden;sb.hidden=ctx.hidden||!$$('#stageBar button').some(function(b){return !b.hidden;});if(was!==sb.hidden&&!(view.g||view.drag))requestAnimationFrame(layout);}}
 /* Alt panel, seçim çubuğu ya da tarayıcı çubuğu açılıp kapanınca tasarım alanı yeniden sığdırılır (görsel kaybolmasın) */
 (function(){if(!window.ResizeObserver)return;var t=0,lw=0,lh=0;new ResizeObserver(function(en){var r=en[0].contentRect;if(Math.abs(r.width-lw)<1&&Math.abs(r.height-lh)<1)return;lw=r.width;lh=r.height;cancelAnimationFrame(t);t=requestAnimationFrame(function(){try{layout();}catch(_){}});}).observe(wrap);})();
 function syncCtx0(){
@@ -2680,7 +2690,7 @@ function syncCtx0(){
   var pop=$('#colorPop');
   if(!o){pop.hidden=true;return;}
   $$('#ctxBar [data-t],#stageBar [data-t]').forEach(function(b){b.hidden=b.dataset.t.split(' ').indexOf(o.type)<0;});
-  if(o.type==='image'){var ts=$('#tsplitBtn'),it=$('#ctxBar [data-c="intext"]');if(ts)ts.hidden=!o.tsrc;var gr=$('#gyReBtn'),te=$('#tsEditBtn');if(gr)gr.hidden=!o.tsrc;if(te)te.hidden=!(o.tsrc&&o.tsrc.text&&o.tsrc.text.type==='text');if(it)it.hidden=!!o.tsrc||!!o.slot||!cur().objs.some(function(q){return q.type==='text';});}
+  if(o.type==='image'){var ts=$('#tsplitBtn'),it=$('#ctxBar [data-c="intext"]'),ta=$('#tsAdjBtn');if(ts)ts.hidden=!o.tsrc;if(ta)ta.hidden=!o.tsrc;var gr=$('#gyReBtn'),te=$('#tsEditBtn');if(gr)gr.hidden=!o.tsrc;if(te)te.hidden=!(o.tsrc&&o.tsrc.text&&o.tsrc.text.type==='text');if(it)it.hidden=!!o.tsrc||!!o.slot||!cur().objs.some(function(q){return q.type==='text';});}
   if(o.type==='clip'&&clipFixed(o.key)){$$('#ctxBar [data-c="color"],#stageBar [data-c="color"]').forEach(function(b){b.hidden=true;});if(view.pop==='color')view.pop=null;}
   /* Yeni seçimde çubuk baştan başlar: önceki nesnede sağa kaydırılmış kalınca Renk gibi baştaki düğmeler görünmüyordu */
   if(view.ctxFor!==o.id){view.ctxFor=o.id;var cb=$("#ctxBar");if(cb)cb.scrollLeft=0;ctx.scrollLeft=0;}
@@ -2808,7 +2818,7 @@ function renderZem(force){try{renderMk();}catch(_){}var g=$('#zemGrid');if(!g)re
   g.innerHTML=cus.map(function(z){return '<button data-zem="z:'+z.id+'" aria-label="'+escX(z.title||'Zemin')+'"><img alt="" loading="lazy" src="'+escX(z.thumb||z.data.url)+'"><span>'+escX(z.title||'Zemin')+'</span>'+(adm?'<i class="zdel" data-zdel="'+z.id+'" role="button" aria-label="Kaldır">×</i>':'')+'</button>';}).join('')+
     (state.product==='mug'?OIL_ART.filter(function(z){return z.background;}).map(function(z){return '<button data-zem="oil:'+z.id+'" aria-label="'+escX(z.name)+' zemini"><img alt="" loading="lazy" src="assets/yagliboya/'+z.id+'-thumb.webp"><span>'+escX(z.name)+'</span></button>';}).join(''):'')+
     (state.product==='tee'&&cur().area==='a4'&&!isLand(view.side)?TEE_PHOTO_ART.map(function(z){return '<button data-zem="tee:'+z.id+'" aria-label="'+escX(z.name)+' zemini"><img alt="" loading="lazy" src="'+teePhotoAsset(z).thumb+'"><span>'+escX(z.name)+'</span></button>';}).join(''):'')+
-    ZEMS.map(function(z){return '<button data-zem="'+z[0]+'" aria-label="'+z[1]+' zemini"><img alt="" loading="lazy" src="'+zemUrl(z[0],1)+'"><span>'+z[1]+'</span></button>';}).join('')+
+    (zemLayer()&&!GIYDIR?'<button data-zem="none" aria-label="Zemini kaldır" class="znone"><span class="zx">✕</span><span>Zeminsiz</span></button>':'')+ZEMS.map(function(z){return '<button data-zem="'+z[0]+'" aria-label="'+z[1]+' zemini"><img alt="" loading="lazy" src="'+zemUrl(z[0],1)+'"><span>'+z[1]+'</span></button>';}).join('')+
     KNV.map(function(n){return '<button data-zem="kv:'+n+'" aria-label="Kanvas '+(+n)+' zemini"><img alt="" loading="lazy" src="dokular/kanvas/k/kanvas-'+n+'.jpg"><span>Kanvas '+(+n)+'</span></button>';}).join('');zemSync();}
 function zemTarget(){var f=tplFrame();if(f)return f;var o=selObj();return o&&o.type==='image'&&o.zem?o:null;}
 function zemSync(){var w=$('#zemBlurW');if(!w)return;var t=zemTarget();w.hidden=!t;if(t){var r=$('#zemBlur');if(r&&document.activeElement!==r)r.value=t.zb||0;}}
@@ -2869,7 +2879,11 @@ function replaceZemLayer(asset,frame,coveredFrame){
   if(previous&&view.sel===o.id)select(o.id);
   pushHist();if(innerWidth<700)closeTab();toast('Zemin değişti. Tasarımın yerinde.');
 }
+/* Zemini kaldır: tasarımın arkasındaki zemin katmanı silinir (fotoğraflar ve yazılar yerinde kalır) */
+function zemLayer(){return cur().objs.find(function(o){return (o.zem&&!o.slot)||o.teePhotoBg;})||null;}
+function zemRemove(){var z=zemLayer();if(!z){toast('Kaldırılacak zemin yok.');return;}cur().objs=cur().objs.filter(function(o){return o!==z;});view.sel=null;renderObjects();syncCtx();pushHist();toast('Zemin kaldırıldı.');try{renderZem&&renderZem(true);}catch(_){}}
 async function zemPick(k){
+  if(k==='none'){zemRemove();return;}
   if(GIYDIR){var ga=await zemAssetFor(k);if(ga){var gid='a'+(++assetN);assets[gid]=ga;addImageObj(gid);}else GIYDIR=null;return;}
   if(k.indexOf('tee:')===0){
     var theme=TEE_PHOTO_ART.find(function(z){return z.id===k.slice(4);});
@@ -3856,9 +3870,29 @@ function crpShape(sh){CRP.s=sh;var el=$('#crpR');if(el){el.className='crp-r'+(sh
    Yazı ya da şekil seçiliyken "Yazıyı giydir" / "Şekli giydir": müşteri bir fotoğraf yükler ya da Zeminler'den bir desen seçer; görsel yazıyı kaplayacak
    büyüklükte yazının üstüne konur ve "Yazının içine" kendiliğinden uygulanır. Böylece özelliği bilmeyen müşteri de bulur. */
 var GIYDIR=null,GIYDIR_AT=0;
-function giydirStart(){var t=selObj();if(t&&t.tsrc&&!t.lock){GIYDIR='re:'+t.id;GIYDIR_AT=Date.now();openTab('image');t=t.tsrc.text;}
-  else{if(!t||(t.type!=='text'&&t.type!=='clip')||t.lock)return;GIYDIR=t.id;GIYDIR_AT=Date.now();openTab('image');}
-  longToast((t.type==='text'?'Yazıyı':'Şekli')+' giydir: bir fotoğraf yükle ya da Zeminler\'den bir desen seç; '+(t.type==='text'?'yazının':'şeklin')+' içine yerleştireceğim.');}
+function giydirStart(){var t=selObj();if(t&&t.tsrc&&!t.lock){GIYDIR='re:'+t.id;GIYDIR_AT=Date.now();t=t.tsrc.text;}
+  else{if(!t||(t.type!=='text'&&t.type!=='clip')||t.lock)return;GIYDIR=t.id;GIYDIR_AT=Date.now();}
+  /* Ne giydirileceği sorulur: kendi fotoğrafı mı, hazır desen (zemin) mi */
+  var w=document.createElement('div');w.className='gych';w.innerHTML='<div class="gych-c" role="dialog" aria-label="Neyle giydirilsin"><b>'+(t.type==='text'?'Yazının':'Şeklin')+' içine ne gelsin?</b><button type="button" data-gy="foto"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2"/><path d="M21 16l-5-5-8 9"/></svg>Kendi fotoğrafım<small>Galeriden seç</small></button><button type="button" data-gy="desen"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M3 9h18M3 15h18M9 3v18M15 3v18"/></svg>Hazır desen<small>Ahşap, çiçek, renkli zeminler</small></button><button type="button" data-gy="x" class="gych-x">Vazgeç</button></div>';
+  document.body.appendChild(w);
+  w.addEventListener('click',function(e){var b=e.target.closest('[data-gy]');if(!b&&e.target!==w)return;var k=b?b.dataset.gy:'x';w.remove();
+    if(k==='foto'){var f=$('#fileIn');if(f)f.click();}
+    else if(k==='desen'){AP.on='zem';openTab('tpl');apShow('zem');longToast('Bir desene dokun; '+(t.type==='text'?'yazının':'şeklin')+' içine yerleşecek.');}
+    else GIYDIR=null;});}
+/* Giydirilmiş yazıda fotoğrafı kaydır: yazı ile fotoğraf geçici ayrılır, fotoğraf yarı saydam görünür (harfler altından seçilir);
+   müşteri sürükleyip büyütür, "Yerleştir"e basınca yeniden yazının içine girer */
+var TSADJ=null;
+function tsAdjStart(){var o=selObj();if(!o||!o.tsrc)return;intextSplit();var tt=$('#toast');if(tt)tt.hidden=true;var im=selObj();if(!im||im.type!=='image')return;im._adj=1;TSADJ=im.id;
+  var a=cur().objs,i=a.indexOf(im),t=a[i-1];if(t&&(t.type==='text'||t.type==='clip')){a.splice(i-1,2,im,t);t._adjT=1;}
+  renderObjects();select(im.id);
+  var bar=document.getElementById('tsAdjBar');if(!bar){bar=document.createElement('div');bar.id='tsAdjBar';document.body.appendChild(bar);}
+  bar.innerHTML='<span>Fotoğrafı sürükle, köşeden büyüt. Harfler üstte görünür.</span><button type="button" data-tsadjgo>✓ Yerleştir</button>';bar.hidden=false;}
+async function tsAdjDone(){var im=objById(TSADJ);var bar=document.getElementById('tsAdjBar');if(bar)bar.hidden=true;TSADJ=null;
+  cur().objs.forEach(function(q){delete q._adjT;});if(!im){renderObjects();return;}delete im._adj;
+  var a=cur().objs,i=a.indexOf(im),t=a[i+1];if(t&&(t.type==='text'||t.type==='clip')){a.splice(i,2,t,im);}
+  renderObjects();var tx=a[a.indexOf(im)-1],miss=false;if(tx&&(tx.type==='text'||tx.type==='clip')){if(tx.type==='text'&&!isWarped(tx))measureText(tx);var tb=objBB(tx),ib=objBB(im);miss=ib.l>tb.l+1||ib.r<tb.r-1||ib.t>tb.t+1||ib.b<tb.b-1;}
+  view.sel=im.id;await intextGo();if(miss)setTimeout(function(){longToast('Dikkat: fotoğraf yazının tamamını kaplamıyor, dışta kalan harfler görünmez. "Fotoğrafı kaydır" ile büyütebilirsin.');},400);}
+document.addEventListener('click',function(e){if(e.target.closest&&e.target.closest('[data-tsadjgo]'))tsAdjDone();});
 function giydirAfterAdd(o){if(!GIYDIR)return false;var id=GIYDIR;GIYDIR=null;if(Date.now()-GIYDIR_AT>5*60e3)return false;
   /* Giydirilmiş yazıyı yeniden giydirme: eski giydirme kaldırılır, yazı geri gelir, yeni görsel onun içine girer */
   if(typeof id==='string'&&id.indexOf('re:')===0){var L=cur().objs,r=L.filter(function(q){return q.id===+id.slice(3)&&q.tsrc;})[0];if(!r)return false;
@@ -5379,6 +5413,8 @@ function ctxClick(e){
     else if(dr.length){select(dr[dr.length-1].id);giydirStart();}
     else{view.font=(FONTS.filter(function(f){return /Anton|Big Shoulders|Unbounded/.test(f[0]);})[0]||FONTS[0])[0];addText('İSİM');var nt=selObj();if(nt){nt.size*=1.4;renderObjects();try{measureText(nt);}catch(_){}pushHist();}giydirStart();}}
   else if(c==='tsplit')intextSplit();
+  else if(c==='tsadj')tsAdjStart();
+  else if(c==='zemx')zemRemove();
   else if(c==='tsedit')openTab('text',true);
   else if(c==='wout')showWout();
   else if(c==='fx')showFx();
