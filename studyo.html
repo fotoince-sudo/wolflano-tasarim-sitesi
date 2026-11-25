@@ -26,7 +26,7 @@ try{if(window.top!==window.self){window.top.location.replace(location.href);}}ca
 .ib.ayb-btn,.top-actions .ib.ayb-btn{padding:0;overflow:visible;border:0;background:none;border-radius:50%}
 .ib.ayb-btn img{width:34px;height:34px;border-radius:50%;object-fit:cover;display:block;border:2px solid #7fd6b4;box-shadow:0 0 0 2px #fff,0 2px 6px rgba(0,0,0,.18)}
 #livePrice .lpk{font-style:normal;font-size:9px;font-weight:500;opacity:.6;margin-right:4px;letter-spacing:0}
-</style><style>#musicInkControl{display:inline-flex;align-items:center;gap:6px;white-space:nowrap;font-weight:650}#musicInkControl[hidden]{display:none}#musicInk{font:inherit;color:inherit;padding:8px;border:1px solid #aeb9b7;border-radius:8px;background:#fff}</style>
+</style><style>#musicInkControl{display:inline-flex;align-items:center;gap:8px;white-space:nowrap;font-weight:650}#musicInkControl[hidden]{display:none}#musicInk{display:inline-flex;gap:8px}#musicInk .mik{flex:0 0 32px!important;width:32px!important;min-width:32px!important;height:32px!important;border-radius:50%!important;border:1.5px solid #aeb9b7!important;padding:0!important;cursor:pointer}#musicInk .mik.on{box-shadow:0 0 0 2px #fff,0 0 0 4px #159b91;border-color:#159b91}</style>
 </head><body>
 <title>Online Tişört Tasarım Stüdyosu · Kendin Tasarla | Wolflano</title>
 <meta name="description" content="Ücretsiz online tasarım stüdyosu: tişört, sweatshirt, kapüşonlu, polo, şapka, kupa ve kanvas tabloyu kendin tasarla. Yazı, fotoğraf ve hazır tasarımlar ekle; gördüğün gibi basıp Türkiye'nin her yerine gönderelim.">
@@ -771,7 +771,7 @@ img{-webkit-touch-callout:none;-webkit-user-drag:none}
     <div class="pop" id="colorPop" hidden></div>
     <div class="ctxbar" id="ctxBar">
       <button data-c="zem" id="zemBtn" hidden><svg class="i" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M3 15l5-5 4 4 3-3 6 6"/></svg><span>Zemin ekle</span></button>
-      <label id="musicInkControl" hidden>Şablon rengi <select id="musicInk" aria-label="Şablon rengi"></select></label>
+      <div id="musicInkControl" role="radiogroup" aria-label="Şablon rengi" hidden><span>Şablon rengi</span><span id="musicInk"></span></div>
       <button type="button" data-c="tee-text-top" hidden>Üst yazı</button>
       <button type="button" data-c="mug-vehicle-left-top" hidden>Sol üst yazı</button>
       <button type="button" data-c="mug-vehicle-left-bottom" hidden>Sol alt yazı</button>
@@ -4330,6 +4330,7 @@ function renderProdPage(){
 }
 /* Hazır görsel şablon (Canva'da üretilip A3 300 dpi'a hazırlanmış şehir tasarımları): ekranda sablon/web önizlemesi, baskıda baski dalındaki tam boy dosya (hi) */
 function tplAsset(it){var id='tpl-'+it.u;if(!assets[id])assets[id]={url:it.u,w:it.aw,h:it.ah,tpl:true,hi:it.hi||''};return id;}
+var INK_HEX={white:'#ffffff',ivory:'#efe4cc',charcoal:'#33373b',red:'#b3261e',pink:'#e79ab3',navy:'#1f2f5c'};
 var MUSIC_INKS=[['white','Beyaz'],['ivory','Fildişi'],['charcoal','Antrasit'],['red','Kırmızı'],['pink','Pembe']];
 var ASTRONAUT_INKS=[['white','Beyaz'],['red','Kırmızı'],['navy','Lacivert'],['pink','Pembe']];
 function artworkInks(instrument){return instrument==='minik-kasif'?ASTRONAUT_INKS:MUSIC_INKS;}
@@ -4349,14 +4350,12 @@ function syncMusicInk(){
   var layer=musicArtwork(),control=$('#musicInkControl');
   control.hidden=!layer;
   if(layer){
-    var select=$('#musicInk'),key=layer.musicInstrument==='minik-kasif'?'children':'music';
-    if(select.dataset.palette!==key){
-      select.innerHTML=artworkInks(layer.musicInstrument).map(function(entry){
-        return '<option value="'+entry[0]+'">'+entry[1]+'</option>';
-      }).join('');
-      select.dataset.palette=key;
-    }
-    select.value=layer.musicInk;ctx.hidden=false;
+    /* Ürün açıksa beyaz, koyuysa antrasit şablon görünmez: görünür renge geçilir */
+    var tl=lum(state.tee);if(layer.musicInstrument!=='minik-kasif'&&((tl>0.5&&layer.musicInk==='white')||(tl<0.25&&layer.musicInk==='charcoal'))){var fx=tl>0.5?'charcoal':'white';layer.musicInk=fx;layer.assetId=musicArtworkAsset(layer.musicInstrument||'baglama',fx);setTimeout(renderObjects,0);}
+    var box=$('#musicInk');
+    box.innerHTML=artworkInks(layer.musicInstrument).map(function(entry){var on=entry[0]===layer.musicInk;
+      return '<button type="button" role="radio" aria-checked="'+on+'" class="mik'+(on?' on':'')+'" data-mink="'+entry[0]+'" title="'+entry[1]+'" aria-label="'+entry[1]+'" style="background:'+(INK_HEX[entry[0]]||'#ccc')+'"></button>';
+    }).join('');ctx.hidden=false;
   }
 }
 function changeMusicInk(color){
@@ -4367,7 +4366,7 @@ function changeMusicInk(color){
   if(layer.musicInstrument!=='minik-kasif'&&lum(state.tee)>0.5)layer.musicLightInk=color;
   renderObjects();syncCtx();pushHist();
 }
-$('#musicInk').addEventListener('change',function(e){changeMusicInk(e.target.value);});
+$('#musicInk').addEventListener('click',function(e){var b=e.target.closest('[data-mink]');if(!b)return;e.preventDefault();e.stopPropagation();changeMusicInk(b.dataset.mink);});
 [
   {id:'baglama',name:'Bağlamanın Sesi',frame:[540,337,361,388,27]},
   {id:'ud',name:'Udun Sesi',frame:[475,297,431,501,39]},
