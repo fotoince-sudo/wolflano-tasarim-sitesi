@@ -3237,7 +3237,10 @@ function seedBlanks(){D.seeded=D.seeded||{};if(!Array.isArray(D.blanks))return;v
       [['polo-k','kadin','Kadın polo','Kadın'],['polo-c','cocuk','Çocuk polo','Çocuk (3-14 yaş)']].forEach(function(x,k){if(have[x[0]])return;var d0=(DEF.blanks||[]).filter(function(b){return b.id===x[0];})[0]||{};
         var nb=clone(po);nb.id=x[0];nb.cut=x[1];nb.name=x[2];nb.cuts=x[3];if(x[1]==='cocuk'&&d0.price)nb.price=d0.price;D.blanks.splice(at+1+k,0,nb);});}
     D.seeded.polo=true;}}
-function applyData(){stdcSync(D);seedBlanks();autoSub(D);if(!D.vat)D.vat={mode:'excl',ready:20,blank:20,print:20};
+/* Süblimasyon tişörtler müşteriye "Standart" adıyla görünür (pamuklu olanlar Premium) */
+function stdNames(){(D.blanks||[]).forEach(function(b){if(!/^sub-tee/.test(String(b.id||'')))return;var n=String(b.name||'');if(!/s[üu]blimasyon/i.test(n))return;
+  b.name=/çocuk|cocuk/i.test(n)?'Çocuk Standart Tişört':'Standart Tişört';});}
+function applyData(){stdcSync(D);seedBlanks();stdNames();autoSub(D);if(!D.vat)D.vat={mode:'excl',ready:20,blank:20,print:20};
  pNums(D.products);pcApply(D);ALLP=D.products.map(function(p){return Object.assign({},p,{price:vp(p.price,'ready'),old:vp(p.old,'ready')});});
  PRODUCTS=ALLP.filter(function(p){return p.show!==false;});
  CATS=(D.cats||[]).filter(function(c){if(c.show===false)return false;if(/hediye|dekor/i.test(c.name||''))return false;return true;}).map(function(c){return [c.id,c.name||'Adsız'];});
