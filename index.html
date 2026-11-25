@@ -1015,6 +1015,14 @@ body:has(.ttlanding) #ann{display:none!important}
 /* YENİ ANA SAYFA (2026-11-21): tek mesaj, ürün önde; kurt imza olarak */
 .an{font-family:var(--ui);color:#101a14}
 .an-w{max-width:1160px;margin:0 auto;padding:0 20px;box-sizing:border-box}
+.an-hw{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;-webkit-overflow-scrolling:touch;margin:18px -20px 0;padding:0 20px 6px;scroll-padding-left:20px}.an-hw::-webkit-scrollbar{display:none}
+.an-hc{flex:0 0 58%;max-width:250px;scroll-snap-align:start;position:relative;display:flex;flex-direction:column;gap:4px;color:#fff;text-decoration:none}
+.an-hc i{display:block;aspect-ratio:1/2;border-radius:22px;overflow:hidden;border:5px solid #2b3a32;background:#fff;box-shadow:0 10px 24px rgba(0,0,0,.35)}
+.an-hc img{width:100%;height:100%;object-fit:cover;display:block}
+.an-hc em{position:absolute;top:10px;left:10px;width:34px;height:34px;border-radius:50%;background:#7fd6b4;color:#101a14;display:grid;place-items:center;font:800 17px var(--ui);font-style:normal;box-shadow:0 2px 8px rgba(0,0,0,.25)}
+.an-hc b{margin-top:8px;font:700 16px var(--ui)}.an-hc small{font:400 13px/1.35 var(--ui);color:#b9cbc1}
+.an-hb{display:grid;gap:10px;margin-top:18px}.an-how .an-b2{background:transparent;color:#fff;border-color:#7fd6b4}
+@media (min-width:860px){.an-hc{flex-basis:200px}}
 .an-top{background:#fff;padding:12px 0 4px;border-bottom:1px solid var(--line)}
 .an-q{display:flex;align-items:center;gap:10px;height:46px;padding:0 14px;border:1.5px solid #cfd8d2;border-radius:12px;background:#fff}
 .an-q:focus-within{border-color:var(--green)}.an-q svg{width:20px;height:20px;flex:none;fill:none;stroke:var(--muted);stroke-width:2;stroke-linecap:round}
@@ -3838,15 +3846,14 @@ function anaYeni(){akpStart();setTimeout(anVidWatch,300);
   '<section class="an-sec an-wh"><div class="an-w"><div class="an-hd"><h2>Ne tasarlamak istersin?</h2><a href="#tasarla">Tümü</a></div><div class="an-cats">'+
     cats.map(function(c,ci){var L=anaKartPics(['tisort','kupa','canvas','sweat'][ci],c[1]);return '<a class="an-cat" href="'+c[0]+'"><i><img src="'+esc(L[0])+'" alt="'+esc(c[2])+'" loading="lazy"'+(L.length>1?' data-akp="'+esc(JSON.stringify(L))+'"':'')+'></i><b>'+c[2]+'</b><small>'+c[3]+'</small></a>';}).join('')+
   '</div></div></section>'+
-  '<section class="an-sec"><div class="an-w"><div class="an-hd" style="flex-direction:column;align-items:flex-start;gap:6px"><p class="an-ey">Çok kolay</p><h2>3 adımda hazır</h2></div><div class="an-steps">'+
-    '<div class="an-st"><em>1</em><div><b>Ürününü ve rengini seç</b><span>Tişört, sweatshirt, kupa ya da canvas tablo.</span></div></div>'+
-    '<div class="an-st"><em>2</em><div><b>Fotoğraf, yazı ya da şablon ekle</b><span>Ürünün üzerinde nasıl duracağını anında gör. Yazıyı fotoğrafla giydir.</span></div></div>'+
-    '<div class="an-st"><em>3</em><div><b>Sepete ekle, biz basıp gönderelim</b><span>Onayladığın tasarım basılır, özenle paketlenir, kapına gelir.</span></div></div>'+
-  '</div><div class="an-vid"><video src="assets/video/atolye.mp4?v=1" poster="assets/video/atolye-kapak.jpg?v=1" muted loop playsinline preload="none" controls aria-label="Baskın nasıl hazırlanıyor: Wolflano Baskı Atölyesi videosu"></video></div></div></section>'+
-  '<section class="an-sec an-dk"><div class="an-w"><p class="an-ey">Wolflano tasarımları</p><h2 style="margin-top:6px">Tasarımcı gerekmez</h2>'+
-    '<p class="an-lead" style="margin-top:6px">Hazır tasarımlardan birini seç, istersen adını ekle, tek dokunuşla ürününe yerleştir.</p><div class="an-tp">'+
-    tps.map(function(t){return '<a href="'+tpl+'"><i><img src="tasarimlar/wolf/'+t[0]+'" alt="'+esc(t[1])+' tasarımı" loading="lazy"></i><b>'+t[1]+'</b></a>';}).join('')+
-    '</div><a class="an-b1" href="'+tpl+'">Tüm tasarımları gör</a></div></section>'+
+  '<section class="an-sec"><div class="an-w"><div class="an-hd" style="flex-direction:column;align-items:flex-start;gap:6px"><p class="an-ey">Baskı atölyemiz</p><h2>Tasarımın böyle basılıyor</h2></div><div><div class="an-vid"><video src="assets/video/atolye.mp4?v=1" poster="assets/video/atolye-kapak.jpg?v=1" muted loop playsinline preload="none" controls aria-label="Baskın nasıl hazırlanıyor: Wolflano Baskı Atölyesi videosu"></video></div></div></section>'+
+  /* Nasıl çalışır: stüdyonun gerçek ekranlarıyla adım adım (assets/ana) */
+  '<section class="an-sec an-dk an-how"><div class="an-w"><p class="an-ey">Nasıl çalışır?</p><h2 style="margin-top:6px">2 dakikada kendi tasarımın</h2>'+
+    '<p class="an-lead" style="margin-top:6px">Tasarımcı gerekmez. Ürünü seç, şablonu seç, fotoğrafını yükle; gerisini birlikte yapalım.</p><div class="an-hw">'+
+    [['adim-urun','Ürününü seç','Tişört, sweatshirt, kupa ya da canvas'],['adim-sablon','Şablonunu seç','Hazır şablon ya da boş sayfa'],['adim-cizgi','Fotoğrafını yükle','İstersen Wolf çizgi karaktere çevirsin'],
+     ['adim-yerlesir','Saniyeler içinde yerleşir','Parmağınla büyüt, döndür, yazını ekle'],['adim-onizle','Ürünün üstünde gör','Basılacak hali birebir önizle'],['adim-sepet','Sepete ekle','Biz basalım, 2–4 iş gününde kargoda']]
+    .map(function(a,i){return '<a class="an-hc" href="#tasarla"><i><img src="assets/ana/'+a[0]+'.webp?v=1" alt="'+esc(a[1])+'" loading="lazy" width="600" height="1200"></i><em>'+(i+1)+'</em><b>'+a[1]+'</b><small>'+a[2]+'</small></a>';}).join('')+
+    '</div><div class="an-hb"><a class="an-b1" href="#tasarla">Hemen tasarla '+ar+'</a><a class="an-b2" href="'+tpl+'">Hazır tasarımlara bak</a></div></div></section>'+
   '<section class="an-sec"><div class="an-w an-gc">'+
     '<div class="an-gift"><img src="img/ana-hediye-trabzon.jpg" alt="Elde tutulan Trabzon Hamsi baskılı kupa" loading="lazy"><div><p class="an-ey">Yılbaşı hediyesi</p><h2>Sevdiklerinin fotoğrafı, her sabah kahvesinde</h2>'+
       '<p class="an-lead">Aile, sevgili, anne, baba: fotoğrafını yükle, hazır yılbaşı tasarımına yerleşsin. Kupan özel Wolflano kutusunda gelir.</p><a class="an-b1" href="#hediye">Hediye seç</a></div></div>'+
