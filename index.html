@@ -1100,6 +1100,46 @@ body:has(.ttlanding) #ann{display:none!important}
 .pcols{margin:2px 0 12px}.pcols small{display:block;margin-bottom:8px;color:var(--muted);font:500 14px var(--ui)}.pcols small b{color:var(--ink)}.pcols div{display:flex;flex-wrap:wrap;gap:10px}.pcols a{width:34px;height:34px;border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 1px #c9d1cc;display:block}.pcols a.on{box-shadow:0 0 0 2px var(--green)}
 
 .an-vid{margin-top:18px;max-width:420px}.an-vid video{display:block;width:100%;aspect-ratio:4/5;border-radius:18px;background:#eef3ef;box-shadow:0 10px 28px rgba(20,24,22,.12)}@media(min-width:900px){.an-sec .an-w:has(.an-vid){display:grid;grid-template-columns:1fr 380px;gap:28px;align-items:center}.an-vid{margin-top:0;grid-row:1/3;grid-column:2}}
+
+/* Ürün sayfası: sade, kurumsal (Çiçeksepeti düzeni) */
+.pd2{padding-bottom:96px}
+.pd2 .info{align-items:stretch;gap:12px}
+.pd2 .pdb{display:flex;flex-wrap:wrap;gap:6px}
+.pd2 .bd{font:600 10.5px/1 var(--ui);font-style:normal;letter-spacing:.06em;padding:6px 8px;border-radius:6px;border:1px solid var(--line);color:var(--muted);background:#fff}
+.pd2 .bd.bq{border-color:#1b3a2a;color:#1b3a2a}.pd2 .bd.bg{border-color:#7fc9a6;color:#24704c;background:#f1faf5}.pd2 .bd.bn{border-color:#2f6fd0;color:#2f6fd0}
+.pd2 h1.pdn{font:500 18px/1.35 var(--ui)!important;letter-spacing:0!important;margin:0;color:var(--ink);text-align:left}
+.pd2 .pdm{display:flex;flex-wrap:wrap;align-items:center;gap:4px 10px;font:400 13px var(--ui);color:var(--muted)}
+.pd2 .pdm .pcode{margin:0;font-size:12px!important}
+.pd2 .pdp{display:flex;align-items:baseline;gap:10px;padding:10px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.pd2 .pdp .pbig{justify-content:flex-start;font:600 22px var(--ui)}.pd2 .pdp small{font:400 12px var(--ui);color:var(--muted);letter-spacing:0}
+.pd2 .pcols{margin:0}.pd2 .pcols small{font:500 13px var(--ui);letter-spacing:0}
+.pd2 .info .szs p{text-align:left;font-size:13px}
+.mainv img[src*="bilgi/"]{object-fit:contain;background:#f6f8f7}
+/* Başlıklar telefonda sade boyutta (kocaman yazılar yerine) */
+@media (max-width:639px){.h2{font-size:25px;letter-spacing:-.015em}.cpg h2.h2{font-size:21px}.kolh{font-size:24px}}
+.pd2 .thumbs{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;scroll-snap-type:x proximity}.pd2 .thumbs::-webkit-scrollbar{display:none}
+.pd2 .thumbs .thumb{flex:0 0 calc((100% - 30px)/5.4);scroll-snap-align:start}
+.pd2 .sz{height:40px;border:1px solid #cfd8d2;border-radius:8px;font:500 14px var(--ui);background:#fff}.pd2 .sz.on{background:var(--ink);border-color:var(--ink);color:#fff}
+.pd2 .pdm .pclr small{font-size:12px!important}.pd2 .pdm{text-transform:none}
+.pd2 .pda .btn{width:100%;height:50px;border-radius:10px;font:600 16px var(--ui);border:0;box-shadow:none}
+.pd2 .pdl{display:flex;flex-wrap:wrap;gap:8px}
+.pd2 .pdl a,.pd2 .pdl button{flex:1 1 auto;display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:40px;padding:0 12px;border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--ink);font:500 13px var(--ui);text-decoration:none;cursor:pointer}
+.pd2 svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.pd2 .pdt{list-style:none;margin:4px 0 0;padding:12px;display:grid;gap:10px;border:1px solid var(--line);border-radius:12px;background:#fff}
+.pd2 .pdt li{display:flex;gap:10px;align-items:flex-start;font:400 13px/1.35 var(--ui);color:var(--muted)}.pd2 .pdt li svg{color:#24704c;margin-top:1px}
+.pd2 .pdt b{display:block;font-weight:600;color:var(--ink)}
+.pd2 .pds{border-top:1px solid var(--line);padding-top:14px;display:grid;gap:10px}
+.pd2 .pds h2{font:600 15px var(--ui);margin:0;letter-spacing:0}
+.pd2 .pds p{margin:0;font:400 14px/1.6 var(--ui);color:var(--muted)}
+.pd2 .pds .pnote{margin:0;padding:10px 12px;border-left:3px solid #7fc9a6;background:#f6faf8;border-radius:0 8px 8px 0}
+.pd2 .pds .pnote b{font:600 13px var(--ui)}.pd2 .pds .pnote p{font-size:13px}
+.pd2 .pdadm{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding-top:10px;border-top:1px dashed var(--line);font:500 12px var(--ui)}
+.pd2 .pdadm a,.pd2 .pdadm button{border:1px solid var(--line);background:#fff;border-radius:8px;padding:6px 10px;font:500 12px var(--ui);color:var(--ink);text-decoration:none;cursor:pointer}
+.pd2 .pdadm button{color:#b3261e}.pd2 .pdadm small{color:var(--muted)}
+.pbar{background:#fff;box-shadow:0 -4px 16px rgba(0,0,0,.06);padding:10px 16px calc(10px + env(safe-area-inset-bottom,0px))}
+.pbar .pbp{margin-right:auto;display:grid;line-height:1.15}.pbar .pbp s{font:400 12px var(--ui);color:var(--muted)}.pbar .pbp b{font:700 20px var(--ui);color:var(--ink)}
+.pbar .btn{height:48px;min-width:52%;justify-content:center;border-radius:10px;border:0;font:600 16px var(--ui)}
+@media (min-width:860px){.pbar{display:none}.pd2{padding-bottom:24px}}
 </style>
 
 <header class="top"><div class="wrap">
@@ -3663,6 +3703,36 @@ function hdHead(){var k=Object.assign({},(D.banners||{}).hediye||{});k.show=true
 /* Geri bağlantısı: site içinden gelindiyse geldiği sayfaya döner (ör. Hediye & Dekor'dan kupaya bakınca yine Hediye & Dekor'a) */
 var NAVPREV='';window.addEventListener('hashchange',function(e){try{var o=new URL(e.oldURL),n=new URL(e.newURL);if(o.pathname===n.pathname)NAVPREV=o.hash||'#ana';}catch(_){}});
 /* Ürün sayfasının geri bağlantısı: Hediye & Dekor ürünü o sayfaya, giyim ürünü Koleksiyon'a döner (stüdyodan güncelleyip gelince de) */
+/* Ürün sayfası (Çiçeksepeti düzeni): fotoğraflar, küçük etiketler, sade ad, fiyat, renk ve beden, tek ana düğme;
+   ikincil işler küçük bağlantı; açıklama ve güven bilgileri ince çizgili bölümlerde; altta sabit fiyat + Sepete ekle şeridi */
+var PD_IC={trk:'<svg viewBox="0 0 24 24"><path d="M3 7h11v9H3zM14 10h4l3 3v3h-7z"/><circle cx="7" cy="17.5" r="1.6"/><circle cx="17.5" cy="17.5" r="1.6"/></svg>',
+ pen:'<svg viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13.5 6.5l4 4"/></svg>',
+ shd:'<svg viewBox="0 0 24 24"><path d="M12 3l8 3v6c0 4.5-3.4 8.2-8 9-4.6-.8-8-4.5-8-9V6z"/><path d="M8.5 12l2.5 2.5 4.5-5"/></svg>',
+ ret:'<svg viewBox="0 0 24 24"><path d="M4 12a8 8 0 1 0 2.4-5.7"/><path d="M4 4v4h4"/></svg>',
+ hrt:'<svg viewBox="0 0 24 24"><path d="M12 20s-7-4.4-9-8.6C1.6 8.4 3.5 5 6.8 5c2 0 3.4 1.2 5.2 3 1.8-1.8 3.2-3 5.2-3 3.3 0 5.2 3.4 3.8 6.4-2 4.2-9 8.6-9 8.6z"/></svg>',
+ pls:'<svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>'};
+function pdBadges(p){var b=[],q=pKal(p);if(q)b.push(q.indexOf('kpr')>=0?'<i class="bd bq">PREMIUM</i>':'<i class="bd">STANDART</i>');
+  if(p.dsg||hdStudio(p))b.push('<i class="bd bg">KİŞİYE ÖZEL TASARLANABİLİR</i>');if(p.tag==='Yeni'&&isNewP(p))b.push('<i class="bd bn">YENİ</i>');
+  return b.length?'<div class="pdb">'+b.join('')+'</div>':'';}
+function pdView(p){
+  var so=soldOut(p),zs=so?[]:pSizes(p),desc=pDesc(p),bt=btHTML(btNote(p,btKindP(p),desc)),ad=(sbAdmin()||WF_ADM);
+  var pn=String(p.pnote||'').trim();if(pn==='-')pn='';else if(!pn&&!(/kupa|canvas|kanvas|tablo/i.test((p.type||'')+' '+(p.name||''))||ptOf(p)==='canvas'))pn=TX('pnote');
+  var add=so?'<button type="button" class="btn sold" data-soldout="'+p.id+'">Sepete ekle</button>':'<button class="btn" data-add="'+p.id+'">Sepete ekle</button>';
+  var links=[];if(p.dsg)links.push('<a href="studyo.html?hazir='+encodeURIComponent(p.id)+'">'+PD_IC.pen+'Bu tasarımı düzenle, ismini ekle</a>');
+  if(hdStudio(p))links.push('<a href="'+hdStudio(p)+'">'+PD_IC.pls+(p.dsg?'Boş üründen tasarla':'Kendi tasarımını yap')+'</a>');
+  links.push('<button type="button" data-fav="'+p.id+'">'+PD_IC.hrt+(favs[p.id]?'Favorilerde':'Favorilere ekle')+'</button>');
+  return '<div class="wrap page pd2">'+pdBack(p)+'<div class="pd"><div class="gal" id="gal">'+galHTML(p)+'</div><div class="info">'+
+   pdBadges(p)+'<h1 class="pdn">'+esc(productPageTitle(p.name,p.type))+'</h1>'+
+   '<div class="pdm">'+pTypeColor(p)+'<span class="pcode">Ürün kodu: '+pCode(p)+'</span></div>'+
+   '<div class="pdp"><div class="pbig">'+prBig(p)+'</div><small>KDV dahil</small></div>'+
+   pColRow(p)+(zs.length?szBlock(zs,szTable(szKind((p.type||'')+' '+(p.name||'')),pCut(p),zs)):'')+stk(p)+
+   (so?aysl('Bu ürün şu an tükendi. Benzerini ister misin?','Bu ürün tükenmiş, benzer bir ürün önerir misin?'):'')+
+   '<div class="pda">'+add+'</div><div class="pdl">'+links.join('')+'</div>'+
+   '<ul class="pdt"><li>'+PD_IC.trk+'<span><b>2–4 iş gününde kargoda</b>Özenle paketlenir, kargo takip bilgisi gönderilir</span></li><li>'+PD_IC.pen+'<span><b>Kişiye özel üretim</b>Ekranda gördüğün tasarım basılır</span></li><li>'+PD_IC.shd+'<span><b>Güvenli ödeme</b>Kartla ya da havaleyle</span></li></ul>'+
+   ((desc||bt||pn)?'<section class="pds"><h2>Ürün açıklaması</h2>'+(desc?'<p>'+esc(desc)+'</p>':'')+bt+(pn?'<div class="pnote"><b>'+esc(TX('pnoteTitle'))+'</b><p>'+esc(pn)+'</p></div>':'')+'</section>':'')+
+   (ad?'<div class="pdadm">'+((p.adesign||p.dsg)&&sbAdmin()?'<a href="studyo.html?duzenle='+encodeURIComponent(p.id)+'">✎ Stüdyoda düzenle</a>':'')+'<button type="button" class="pdel" data-pdel="'+esc(p.id)+'" data-pback="1">🗑 Bu ürünü sil</button><small>yalnız sen görürsün</small></div>':'')+
+   '</div></div></div>'+
+   '<div class="sbar pbar"><div class="in"><div class="pbp">'+(p.old&&p.old>p.price?'<s>'+tl(p.old)+'</s>':'')+'<b>'+tl(p.price)+'</b></div>'+add+'</div></div>';}
 function pdBack(p){var hd=(p.cat||[]).some(isHdCat);return backLink(hd?hdHref():'#hazir',hd?'← Hediye & Dekor':'← Koleksiyon');}
 function backLink(def,lbl){return '<a class="link back" href="'+def+'" data-goback>'+(NAVPREV&&NAVPREV!==def?'← Geri':esc(lbl))+'</a>';}
 document.addEventListener('click',function(e){var a=e.target.closest&&e.target.closest('[data-goback]');if(!a||!NAVPREV)return;e.preventDefault();history.back();});
@@ -4156,6 +4226,8 @@ var DT_SAHNE={'beyaz':'beyaz','siyah':'siyah','lacivert':'lacivert','mavi':'mavi
 var DT_SKIP={'img/mwv5uqvlql95.jpg':1,'img/mwv7oacj2g5j.jpg':1,'img/mwv7lognfsvj.jpg':1,'img/mwv7locijtm5.jpg':1,'img/mwv7lodb7iov.jpg':1,'img/mwv7lohdcend.jpg':1,'img/mwv7loi9bkqf.jpg':1};
 /* 25 Kasım: katlanmış renkli tişört fotoğraflarına yanlışlıkla renk seçilmişti; bunlar her renkte görünür */
 var DT_HEPSI={'img/mwv5uqsfjblv.jpg':1,'img/mwv5uqwy0cen.jpg':1};
+function pInfo(p){var t=ptOf(p),dk=detKind(p);if(t==='kupa')return ['kupa-alan','nasil','kargo-genel'];if(t==='canvas')return ['nasil','kargo-genel'];
+  var kg=dk==='tee'?'kargo':'kargo-genel';if(dk==='tee'||dk==='sweat')return (p.dsg||p.adesign)?['tee-alan','nasil',kg]:[kg];if(dk==='polo')return ['kargo-genel'];return [];}
 function galViews(p){
   if(p.cv)return p.cv;
   var im=((p.imgs&&p.imgs.length)?p.imgs:[null]).slice(0,5),vs=im.map(function(s){return {s:s,z:1,x:50,y:50};}),k=0;
@@ -4163,6 +4235,8 @@ function galViews(p){
   try{var dk=detKind(p),dd=dk&&D.detail&&D.detail[dk],dl=(dd&&dd.imgs)||[],pc0=String(p.color||'').toLocaleLowerCase('tr').trim();if(im[0])dl.slice(0,12).forEach(function(s){if(DT_SKIP[s])return;var c=DT_HEPSI[s]?'':String((dd.col||{})[detKey(s)]||'').toLocaleLowerCase('tr').trim();if(c&&c!==pc0)return;vs.push({s:s,z:1,x:50,y:50,dt:1});});
     /* Hazır renk sahnesi: sandalyedeki Wolflano tişörtü, ürünün kendi renginde (assets/detay) */
     var sc=dk==='tee'&&im[0]&&DT_SAHNE[pc0];if(sc)vs.push({s:'assets/detay/sandalye-'+sc+'.jpg',z:1,x:50,y:50,dt:1});}catch(_){}
+  /* Bilgi görselleri (Çiçeksepeti gibi): baskı alanı, nasıl tasarlanır, sipariş ve kargo; ürün türüne göre en sona */
+  try{if(im[0])pInfo(p).forEach(function(n){vs.push({s:'assets/bilgi/'+n+'.webp',z:1,x:50,y:50,ig:1});});}catch(_){}
   /* Yakınlaştırılmış kopyalarla doldurma yok: yalnız gerçek görseller (ön, arka, ekler) görünür */
   vs.push({s:im[0],z:1,x:50,y:50,video:p.video||null});
   return vs;
@@ -4181,7 +4255,7 @@ function galHTML(p){
   h+='<div class="thumbs">';
   vs.forEach(function(w,i){
     if('video' in w)h+='<button class="thumb vt'+(w.video?'':' soonv')+(i===gv?' on':'')+'" data-view="'+i+'" data-pid="'+p.id+'" aria-label="Video">'+(w.video?'':'<img src="'+src(w.s)+'" alt="">')+'<svg class="i" viewBox="0 0 24 24" style="fill:currentColor;stroke:none"><path d="M8 5v14l11-7z"/></svg></button>';
-    else h+='<button class="thumb'+(i===gv?' on':'')+'" data-view="'+i+'" data-pid="'+p.id+'" aria-label="'+(w.bk?'Arka görünüm':'Görsel '+(i+1))+'"><img src="'+src(w.s)+'" alt="" style="transform:scale('+w.z+');transform-origin:'+w.x+'% '+w.y+'%">'+(w.bk?'<span class="bkl">Arka</span>':w.dt?'<span class="bkl">Detay</span>':'')+'</button>';
+    else h+='<button class="thumb'+(i===gv?' on':'')+'" data-view="'+i+'" data-pid="'+p.id+'" aria-label="'+(w.bk?'Arka görünüm':'Görsel '+(i+1))+'"><img src="'+src(w.s)+'" alt="" style="transform:scale('+w.z+');transform-origin:'+w.x+'% '+w.y+'%">'+(w.bk?'<span class="bkl">Arka</span>':w.dt?'<span class="bkl">Detay</span>':w.ig?'<span class="bkl">Bilgi</span>':'')+'</button>';
   });
   return h+'</div>';
 }
@@ -4361,8 +4435,7 @@ yorumlar:function(){return rvPage();},
  urun:function(id){
   var p=PRODUCTS.filter(function(x){return x.id===id;})[0];szPick='';
   if(!p)return '<div class="wrap page">'+backLink('#hazir','← Koleksiyon')+'<p class="empty">Ürün bulunamadı.</p></div>';
-  gv=0;
-  return '<div class="wrap page">'+pdBack(p)+'<div class="pd"><div class="gal" id="gal">'+galHTML(p)+'</div><div class="info"><small class="ptype">'+pTypeColor(p)+'</small>'+(function(){var zs=pSizes(p);if(!zs.length||soldOut(p))return '';return szBlock(zs,szTable(szKind((p.type||'')+' '+(p.name||'')),pCut(p),zs));})()+'<div class="ptop">'+'<h1>'+esc(productPageTitle(p.name,p.type))+'</h1>'+'<div class="pbig">'+prBig(p)+'</div><small class="pcode">Ürün kodu: '+pCode(p)+'</small></div>'+pColRow(p)+stk(p)+(soldOut(p)?aysl('Bu ürün şu an tükendi. Benzerini ister misin?','Bu ürün tükenmiş, benzer bir ürün önerir misin?'):'')+(soldOut(p)?'<button type="button" class="btn sold" data-soldout="'+p.id+'">Sepete ekle</button>':'<button class="btn" data-add="'+p.id+'">Sepete ekle</button>')+(p.dsg?'<a class="btn soft" href="studyo.html?hazir='+encodeURIComponent(p.id)+'">Bu tasarımı düzenle <small style="font-weight:500;opacity:.75">(ismini ekle)</small></a>':'')+(hdStudio(p)?'<a class="btn soft'+(p.dsg?' sm':'')+'" href="'+hdStudio(p)+'">'+(p.dsg?'Boş üründen tasarla':'Kendi tasarımını yap')+'</a>':'')+'<button class="btn soft sm" data-fav="'+p.id+'" style="gap:8px">'+(favs[p.id]?'♥ Favorilerde':'♡ Favorilere ekle')+'</button>'+((p.adesign||p.dsg)&&sbAdmin()?'<a class="btn soft sm" href="studyo.html?duzenle='+encodeURIComponent(p.id)+'" style="gap:8px">✎ Stüdyoda düzenle <small style="font-weight:500;opacity:.7">(yalnız sen görürsün)</small></a>':'')+((sbAdmin()||WF_ADM)?'<button type="button" class="btn soft sm pdel" data-pdel="'+esc(p.id)+'" data-pback="1" style="gap:8px;color:#b3261e;border-color:#b3261e">🗑 Bu ürünü sil <small style="font-weight:500;opacity:.7">(yalnız sen görürsün)</small></button>':'')+'<p style="margin:0 0 10px;color:var(--muted)"><strong>Fotoğraflarını yükle. Tasarımını gör. Beğenirsen sipariş ver.</strong></p>'+(pDesc(p)?'<p style="margin:0;color:var(--muted)">'+esc(pDesc(p))+'</p>':'')+btHTML(btNote(p,btKindP(p),pDesc(p)))+(function(){var pn=String(p.pnote||'').trim();if(pn==='-')return '';if(!pn){if(/kupa|canvas|kanvas|tablo/i.test((p.type||'')+' '+(p.name||''))||ptOf(p)==='canvas')return '';pn=TX('pnote');}return pn?'<div class="pnote"><b>'+esc(TX('pnoteTitle'))+'</b><p>'+esc(pn)+'</p></div>':'';})()+'<ul><li>Siparişler 2-4 iş gününde hazırlanır</li></ul></div></div></div>';
+  gv=0;return pdView(p);
  },
  baski:function(){return VIEWS.tasarla();},
  hediye:function(){var hh=hdHref();if(hh!=='#hediye'){setTimeout(function(){location.replace(hh);},0);return '';}return '<div class="wrap page cpg">'+hdHead()+izPromo()+(hdGrid()||'<p class="empty">Bu bölümde henüz ürün yok.</p>')+'</div>';},
