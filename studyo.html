@@ -5078,7 +5078,8 @@ var TPL_GRPS_ESKI=[['Tümü',null],['Fotoğraflı',['Yağlı boya','Fotoğraflı
   ['Spor ve ekip',['Spor ve kulüp','Okul ve sınıf','Şirket ve ekip','Doğa ve macera','Müziğin Sesi']],['Zeminler',['Zemin']],['Diğer',[]]];
 /* Sade: yalnız ürünün kendi şablonları ve zeminler (alt konu ayrımı yok) */
 var TPL_GRPS=[['Tümü',null],['Zeminler',['Zemin']],['Diğer',[]]];
-var TPL_HEAD={giyim:'Giyim şablonları',sapka:'Şapka şablonları',kupa:'Kupa şablonları',canvas:'Kanvas şablonları'};
+/* Yöneticinin kaydettiği şablonlar (Wolflano şablonları) ürün grubuna göre bu başlıkta toplanır */
+var TPL_HEAD={giyim:'Wolflano şablonları',sapka:'Wolflano şapka şablonları',kupa:'Wolflano kupa şablonları',canvas:'Wolflano kanvas şablonları'};
 function tplPhoto(t){return !!(t&&(t.oil||t.mugVehicle||t.petPhoto||t.vehiclePhoto||t.teePhoto||(t.items||[]).some(function(it){return it.t==='ph';})));}
 function tplGrpOf(c){for(var i=1;i<TPL_GRPS.length-1;i++)if(TPL_GRPS[i][1].indexOf(c)>=0)return TPL_GRPS[i][0];return 'Diğer';}
 /* Şablon kategorileri (ürünün altında sade üç başlık): Fotoğraf ekle · Kurt teması · Grafikler. İçinde şablon olmayan başlık hiç görünmez. */
