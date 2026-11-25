@@ -1115,6 +1115,9 @@ body:has(.ttlanding) #ann{display:none!important}
 .pd2 .pcols{margin:0}.pd2 .pcols small{font:500 13px var(--ui);letter-spacing:0}
 .pd2 .info .szs p{text-align:left;font-size:13px}
 .mainv img[src*="bilgi/"]{object-fit:contain;background:#f6f8f7}
+.pd2 .pdi{display:grid;gap:12px}.pd2 .pdi a{display:block}.pd2 .pdi img{width:100%;height:auto;display:block;border-radius:14px;border:1px solid var(--line)}
+@media (max-width:859px){.pd2 .pd{display:flex;flex-direction:column}.pd2 .pd>.gal{order:1}.pd2 .pd>.pdi{order:2;display:flex;gap:10px;overflow-x:auto;scroll-snap-type:x mandatory;scroll-padding-left:16px;scrollbar-width:none;margin:0 -16px;padding:0 16px}.pd2 .pd>.pdi::-webkit-scrollbar{display:none}.pd2 .pd>.pdi a{flex:0 0 44%;scroll-snap-align:start}.pd2 .pd>.pdi img{border-radius:10px}.pd2 .pd>.info{order:3}}
+@media (min-width:860px){.pd2 .pd>.pdi{grid-column:1}}
 /* Başlıklar telefonda sade boyutta (kocaman yazılar yerine) */
 @media (max-width:639px){.h2{font-size:25px;letter-spacing:-.015em}.cpg h2.h2{font-size:21px}.kolh{font-size:24px}}
 .pd2 .thumbs{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;scroll-snap-type:x proximity}.pd2 .thumbs::-webkit-scrollbar{display:none}
@@ -3716,6 +3719,8 @@ var PD_IC={trk:'<svg viewBox="0 0 24 24"><path d="M3 7h11v9H3zM14 10h4l3 3v3h-7z
 function pdBadges(p){var b=[],q=pKal(p);if(q)b.push(q.indexOf('kpr')>=0?'<i class="bd bq">PREMIUM</i>':'<i class="bd">STANDART</i>');
   if(p.dsg||hdStudio(p))b.push('<i class="bd bg">KİŞİYE ÖZEL TASARLANABİLİR</i>');if(p.tag==='Yeni'&&isNewP(p))b.push('<i class="bd bn">YENİ</i>');
   return b.length?'<div class="pdb">'+b.join('')+'</div>':'';}
+function pdInfoHTML(p){var L=pInfo(p);if(!L.length)return '';var T={'tee-alan':'Baskı alanları','nasil':'Nasıl tasarlanır','kargo':'Sipariş ve kargo','kargo-genel':'Sipariş ve kargo','kupa-alan':'Kupa baskı alanı'};
+  return '<section class="pdi" aria-label="Ürün bilgileri">'+L.map(function(n){return '<a href="assets/bilgi/'+n+'.webp" target="_blank" rel="noopener" aria-label="'+esc(T[n]||'Bilgi')+' (büyük aç)"><img src="assets/bilgi/'+n+'.webp" alt="'+esc(T[n]||'Bilgi')+'" loading="lazy" width="1080" height="1080"></a>';}).join('')+'</section>';}
 function pdView(p){
   var so=soldOut(p),zs=so?[]:pSizes(p),desc=pDesc(p),bt=btHTML(btNote(p,btKindP(p),desc)),ad=(sbAdmin()||WF_ADM);
   var pn=String(p.pnote||'').trim();if(pn==='-')pn='';else if(!pn&&!(/kupa|canvas|kanvas|tablo/i.test((p.type||'')+' '+(p.name||''))||ptOf(p)==='canvas'))pn=TX('pnote');
@@ -3733,7 +3738,7 @@ function pdView(p){
    '<ul class="pdt"><li>'+PD_IC.trk+'<span><b>2–4 iş gününde kargoda</b>Özenle paketlenir, kargo takip bilgisi gönderilir</span></li><li>'+PD_IC.pen+'<span><b>Kişiye özel üretim</b>Ekranda gördüğün tasarım basılır</span></li><li>'+PD_IC.shd+'<span><b>Güvenli ödeme</b>Kartla ya da havaleyle</span></li></ul>'+
    ((desc||bt||pn)?'<section class="pds"><h2>Ürün açıklaması</h2>'+(desc?'<p>'+esc(desc)+'</p>':'')+bt+(pn?'<div class="pnote"><b>'+esc(TX('pnoteTitle'))+'</b><p>'+esc(pn)+'</p></div>':'')+'</section>':'')+
    (ad?'<div class="pdadm">'+((p.adesign||p.dsg)&&sbAdmin()?'<a href="studyo.html?duzenle='+encodeURIComponent(p.id)+'">✎ Stüdyoda düzenle</a>':'')+'<button type="button" class="pdel" data-pdel="'+esc(p.id)+'" data-pback="1">🗑 Bu ürünü sil</button><small>yalnız sen görürsün</small></div>':'')+
-   '</div></div></div>'+
+   '</div>'+pdInfoHTML(p)+'</div></div>'+
    '<div class="sbar pbar"><div class="in"><div class="pbp">'+(p.old&&p.old>p.price?'<s>'+tl(p.old)+'</s>':'')+'<b>'+tl(p.price)+'</b></div>'+add+'</div></div>';}
 function pdBack(p){var hd=(p.cat||[]).some(isHdCat);return backLink(hd?hdHref():'#hazir',hd?'← Hediye & Dekor':'← Koleksiyon');}
 function backLink(def,lbl){return '<a class="link back" href="'+def+'" data-goback>'+(NAVPREV&&NAVPREV!==def?'← Geri':esc(lbl))+'</a>';}
@@ -4238,7 +4243,7 @@ function galViews(p){
     /* Hazır renk sahnesi: sandalyedeki Wolflano tişörtü, ürünün kendi renginde (assets/detay) */
     var sc=dk==='tee'&&im[0]&&DT_SAHNE[pc0];if(sc)vs.push({s:'assets/detay/sandalye-'+sc+'.jpg',z:1,x:50,y:50,dt:1});}catch(_){}
   /* Bilgi görselleri (Çiçeksepeti gibi): baskı alanı, nasıl tasarlanır, sipariş ve kargo; ürün türüne göre en sona */
-  try{if(im[0])pInfo(p).forEach(function(n){vs.push({s:'assets/bilgi/'+n+'.webp',z:1,x:50,y:50,ig:1});});}catch(_){}
+  /* Bilgi görselleri galeride değil, ürün sayfasında fotoğrafların altında büyük kartlar olarak (pdInfoHTML) */
   /* Yakınlaştırılmış kopyalarla doldurma yok: yalnız gerçek görseller (ön, arka, ekler) görünür */
   vs.push({s:im[0],z:1,x:50,y:50,video:p.video||null});
   return vs;
