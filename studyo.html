@@ -4568,6 +4568,7 @@ async function tplRefill(photos){
   return n;
 }
 function applyTemplate(t,silent){
+  try{state.tplN=String(t.n||'').split(/\s+[·–-]\s+/)[0].trim();}catch(_){}
   if(t.mugVehicle){if(tplFits(t))applyMugVehicleTemplate(t,silent);return;}
   if(t.petPhoto||t.vehiclePhoto){
     if(!tplFits(t))return;
@@ -6651,7 +6652,16 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
       pc={b:sb.id,logo:!!used('logo'),logo2:!!used('logo2'),f:used('front'),bk:used('back')};if(/^cv/.test(pc.f))pc.f='';}
     /* Ad elle yazılmadıysa "Kadın Tişört W012": aynı tasarımın başka rengi varsa onun kodu, yoksa ilk boş numara */
     var np0={type:ptype,cat:cp.cat,sub:cp.sub,dsg:data},k0=dKey(np0),same=(d.products||[]).filter(function(x){return (o.grp&&x.grp===o.grp)||(+x.wc&&dKey(Object.assign({},x,{grp:undefined}))===k0);})[0],wc=same?+same.wc:wFree(d.products);
-    if(ADM.tTyped!==amKey()){var dn=descName(data);var mh={'kupa-kalp':'Kalp Kulplu Kupa','kupa-panel':'Siyah Panelli Kupa','kupa-renkli':'Renkli Kupa','kupa-sihirli':'Sihirli Kupa'}[state.bid||''];title=dn?dn+' '+(state.product==='mug'&&mh?mh:wHead(np0))+(/^(tee|sweat|hood|zip|polo)$/.test(state.product)&&pcol?' – '+pcol:''):wHead(np0)+' '+wFmt(wc);}else title=uniqName(title,(d.products||[]).map(function(x){return x.name;}));
+    /* Ad kuralı (2026-11-25): [Tasarımın adı] [Fotoğraflı] [Kimin için] [Ürün]; renk ve kod adda yok.
+       Aynı tasarımın başka rengi zaten varsa onun adı kullanılır (sitede tek kart). Elle yazılan ad olduğu gibi kalır. */
+    if(ADM.tTyped!==amKey()){var mh={'kupa-kalp':'Kalp Kulplu Kupa','kupa-panel':'Siyah Panelli Kupa','kupa-renkli':'Renkli Kupa','kupa-sihirli':'Sihirli Kupa'}[state.bid||''],head=state.product==='mug'&&mh?mh:wHead(np0);
+      if(same&&same.name&&!/\bW\d{3,}\b/.test(same.name)&&String(same.type||'')===String(ptype))title=same.name;
+      else{var objs=[];['front','back','logo','logo2'].forEach(function(k){((data[k]&&data[k].objs)||[]).forEach(function(q){objs.push(q);});});
+        var tpl=objs.some(function(q){return q.tpl;})?String(state.tplN||''):'',photo=objs.some(function(q){return q.type==='image'&&!q.tpl&&!q.musicInk;}),base=tpl||descName(data);
+        if(photo&&!/fotoğraf/i.test(base))base=(base?base+' ':'')+'Fotoğraflı';
+        base=String(base||'').replace(/\s+/g,' ').trim().replace(/(^|\s)(\S)/g,function(m,a,b){return a+b.toLocaleUpperCase('tr');});
+        title=base?(base+' '+head).slice(0,60).trim():head+' '+wFmt(wc);}}
+    else title=uniqName(title,(d.products||[]).map(function(x){return x.name;}));
     var rec=await insertRow({title:title,kind:'urun',status:'yayında',product:state.product,cut:state.cut,color:state.tee,data:data,thumb:pubUrl(imgs[0]),by_wolf:!!byWolf});
     d.products=d.products||[];
     d.products.unshift({id:id,no:no,wc:wc,grp:o.grp||(same&&same.grp)||undefined,name:title,type:ptype,color:pcol,price:Math.round((+price||0)/vatK('ready')*100)/100,pc:pc||undefined,old:(+o.old>0?+o.old:null),stock:null,tag:o.tag||'',cat:cp.cat,sub:cp.sub,imgs:imgs,desc:o.desc||'',show:true,wk:o.wk?true:undefined,adesign:rec&&rec.id,dsg:data,depo:(DEPO.cur&&depoBlank(state.product,state.cut))?DEPO.cur.id:undefined});
@@ -7037,8 +7047,11 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
   /* Ürün yap özeti: ne kaydedileceği tek satırda; ayrıntılar kapalı kutuda */
   function amSumFill(){var el=$('#amSum');if(!el)return;var c=$('#amCat'),t=$('#amType'),co=$('#amColor'),p=$('#amPrice');
     var cl=c&&c.value?catLabel(c.value):'',tn=t?typeName(t.value):'';
-    var wn='';try{var cp0=catPath(c&&c.value),np0={type:t?t.value:'',cat:cp0.cat,sub:cp0.sub,dsg:{product:state.product,cut:state.cut,cins:state.cins||undefined,bid:state.bid}},L0=(ADM.site&&ADM.site.products)||[];var dn0=descName({front:state.front,back:state.back,logo:state.logo,logo2:state.logo2}),mh0={'kupa-kalp':'Kalp Kulplu Kupa','kupa-panel':'Siyah Panelli Kupa','kupa-renkli':'Renkli Kupa','kupa-sihirli':'Sihirli Kupa'}[state.bid||''];wn=dn0?dn0+' '+(state.product==='mug'&&mh0?mh0:wHead(np0))+(/^(tee|sweat|hood|zip|polo)$/.test(state.product)&&co&&co.value?' – '+co.value:''):wHead(np0)+' W…';}catch(_){}
-    el.innerHTML='<b>'+(ADM.tTyped===amKey()?ea(($('#amTitle')||{}).value||''):ea(wn)+(/W…$/.test(wn)?' <small style="font-weight:500;opacity:.7">(tasarım kodu kaydedince verilir)</small>':' <small style="font-weight:500;opacity:.7">(tasarımdaki yazılardan)</small>'))+'</b><span>'+ea(tn)+(co&&co.value?' · '+ea(co.value):'')+'</span><span>'+(cl?'Yeri: '+ea(cl):'<em>Kategori bulunamadı, aşağıdan seç</em>')+'</span><span>Fiyat: '+(p?ea(p.value):'')+' ₺ '+(ADM.where==='wk'&&!/^(mug|canvas)$/.test(state.product)?'(elle, aşağıdan değiştir)':'(otomatik)')+'</span>';
+    var wn='';try{var cp0=catPath(c&&c.value),np0={type:t?t.value:'',cat:cp0.cat,sub:cp0.sub,dsg:{product:state.product,cut:state.cut,cins:state.cins||undefined,bid:state.bid}},L0=(ADM.site&&ADM.site.products)||[];var dd0={front:state.front,back:state.back,logo:state.logo,logo2:state.logo2},mh0={'kupa-kalp':'Kalp Kulplu Kupa','kupa-panel':'Siyah Panelli Kupa','kupa-renkli':'Renkli Kupa','kupa-sihirli':'Sihirli Kupa'}[state.bid||''],head0=state.product==='mug'&&mh0?mh0:wHead(np0);
+      var ob0=[];['front','back','logo','logo2'].forEach(function(k){((dd0[k]&&dd0[k].objs)||[]).forEach(function(q){ob0.push(q);});});
+      var tp0=ob0.some(function(q){return q.tpl;})?String(state.tplN||''):'',ph0=ob0.some(function(q){return q.type==='image'&&!q.tpl&&!q.musicInk;}),b0=tp0||descName(dd0);if(ph0&&!/fotoğraf/i.test(b0))b0=(b0?b0+' ':'')+'Fotoğraflı';
+      b0=String(b0||'').replace(/\s+/g,' ').trim().replace(/(^|\s)(\S)/g,function(m,a,b){return a+b.toLocaleUpperCase('tr');});wn=b0?(b0+' '+head0).slice(0,60).trim():head0+' W…';}catch(_){}
+    el.innerHTML='<b>'+(ADM.tTyped===amKey()?ea(($('#amTitle')||{}).value||''):ea(wn)+(/W…$/.test(wn)?' <small style="font-weight:500;opacity:.7">(tasarım kodu kaydedince verilir)</small>':' <small style="font-weight:500;opacity:.7">(şablon, yazı ve fotoğraftan; aynı tasarımın başka rengi varsa onun adı)</small>'))+'</b><span>'+ea(tn)+(co&&co.value?' · '+ea(co.value):'')+'</span><span>'+(cl?'Yeri: '+ea(cl):'<em>Kategori bulunamadı, aşağıdan seç</em>')+'</span><span>Fiyat: '+(p?ea(p.value):'')+' ₺ '+(ADM.where==='wk'&&!/^(mug|canvas)$/.test(state.product)?'(elle, aşağıdan değiştir)':'(otomatik)')+'</span>';
     if(!cl){var m=$('.am-more');if(m)m.open=true;}}
   /* Pencere her açılışta Şablon sekmesiyle başlar (ürün düzenlenirken Güncelle); önceki sekme hatırlanıp yanlışlıkla ürün yayınlanmasın */
   /* Tasarım adı: elle yazılan ad yalnız AYNI ürün (tür + kesim) için korunur; ürün değişince (ör. kupadan tişörte) ad yeniden otomatik kurulur.
