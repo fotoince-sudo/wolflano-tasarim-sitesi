@@ -1015,6 +1015,13 @@ body:has(.ttlanding) #ann{display:none!important}
 /* YENİ ANA SAYFA (2026-11-21): tek mesaj, ürün önde; kurt imza olarak */
 .an{font-family:var(--ui);color:#101a14}
 .an-w{max-width:1160px;margin:0 auto;padding:0 20px;box-sizing:border-box}
+.an-bn{padding:12px 0 14px}.an-bn .an-w{display:grid;gap:12px}
+.an-bi{position:relative;display:block;height:168px;border-radius:16px;overflow:hidden;text-decoration:none;color:#101a14;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+.an-bi img{position:absolute;left:0;top:0;width:58%;height:100%;object-fit:cover;-webkit-mask-image:linear-gradient(90deg,#000 70%,transparent);mask-image:linear-gradient(90deg,#000 70%,transparent)}
+.an-bi span{position:absolute;right:14px;top:0;bottom:0;width:46%;display:flex;flex-direction:column;justify-content:center;align-items:flex-end;text-align:right;gap:2px}
+.an-bi b{font:800 23px/1.05 var(--ui);letter-spacing:-.01em;text-transform:uppercase}.an-bi b+b{color:#1f7a55}
+.an-bi small{margin-top:8px;font:500 12px/1.3 var(--ui);color:#4a5a52}
+@media (min-width:860px){.an-bn .an-w{grid-template-columns:repeat(3,1fr)}.an-bi{height:200px}}
 .an-hw{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;-webkit-overflow-scrolling:touch;margin:18px -20px 0;padding:0 20px 6px;scroll-padding-left:20px}.an-hw::-webkit-scrollbar{display:none}
 .an-hc{flex:0 0 58%;max-width:250px;scroll-snap-align:start;position:relative;display:flex;flex-direction:column;gap:4px;color:#fff;text-decoration:none}
 .an-hc i{display:block;aspect-ratio:1/2;border-radius:22px;overflow:hidden;border:5px solid #2b3a32;background:#fff;box-shadow:0 10px 24px rgba(0,0,0,.35)}
@@ -3867,9 +3874,12 @@ function anaYeni(){akpStart();setTimeout(anVidWatch,300);
     '<li><svg viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13.5 6.5l4 4"/></svg><span><b>Kişiye özel</b>siparişe özel üretim</span></li>'+
     '</ul></div></section>';
   return '<div class="an">'+top+
-  '<section class="an-hero"><div class="an-w">'+
-    '<div class="an-ban"><div class="an-tek">Dünyanın kabul ettiği teknolojiyi kullanıyoruz</div>'+wBan((D.banners||{}).ana,anaPics(),WBAN_DEF.ana)+'</div>'+
-    '<div class="an-btns"><a class="an-b1" href="#tasarla">Hemen tasarla '+ar+'</a><a class="an-b2" href="#wolflano">Wolflano Koleksiyon</a></div>'+
+  /* Görselli kampanya alanları (Çiçeksepeti gibi): büyük fotoğraf, kısa ve kalın başlık, tek dokunuş */
+  '<section class="an-bn"><div class="an-w">'+
+    [['#tasarla','img/ana-kart-tisort.jpg','Kendi tişörtünü','tasarla','Fotoğraf, yazı ya da şablon · 2 dakikada','#eef1ef'],
+     ['#hediye','img/ana-kupa-aile.jpg','Fotoğraflı kupa','yılbaşı hediyesi','Özel Wolflano kutusunda','#f6ece4'],
+     ['studyo.html?wolf=1','assets/ana/ban-cizgi.webp','Fotoğrafın','çizgi karakter olsun','Wolf senin için çizsin','#e8f4ee']]
+    .map(function(b){return '<a class="an-bi" href="'+b[0]+'" style="background:'+b[5]+'"><img src="'+b[1]+'" alt="" loading="lazy"><span><b>'+b[2]+'</b><b>'+b[3]+'</b><small>'+b[4]+'</small></span></a>';}).join('')+
   '</div></section>'+trust+homeReady()+
   '<section class="an-sec an-wh"><div class="an-w"><div class="an-hd"><h2>Ne tasarlamak istersin?</h2><a href="#tasarla">Tümü</a></div><div class="an-cats">'+
     cats.map(function(c,ci){var L=anaKartPics(['tisort','kupa','canvas','sweat'][ci],c[1]);return '<a class="an-cat" href="'+c[0]+'"><i><img src="'+esc(L[0])+'" alt="'+esc(c[2])+'" loading="lazy"'+(L.length>1?' data-akp="'+esc(JSON.stringify(L))+'"':'')+'></i><b>'+c[2]+'</b><small>'+c[3]+'</small></a>';}).join('')+
