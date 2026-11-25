@@ -1145,6 +1145,7 @@ body:has(.ttlanding) #ann{display:none!important}
 .bup .sz{height:40px;border:1px solid #cfd8d2;border-radius:8px;font:500 14px var(--ui);background:#fff}.bup .sz.on{background:var(--ink);border-color:var(--ink);color:#fff}
 .bup .info .btn:not(.soft){height:50px;border-radius:10px;border:0;font:600 16px var(--ui)}
 .bup .ptop h1{font:600 20px var(--ui)!important;letter-spacing:0!important}
+.pd2 .pdrv{display:flex;align-items:center;gap:6px;font:500 13px var(--ui);color:var(--muted);text-decoration:none}.pd2 .pdrv b{color:var(--ink)}
 /* Ürün seç ve Baskı Tasarımları: sade, kurumsal sekmeler (ince gri çerçeve, seçili koyu) */
 .tsp .tsc button,.kc4.chips button{height:40px;padding:0 6px!important;border:1px solid #cfd8d2!important;border-radius:10px!important;background:#fff!important;color:var(--ink)!important;font:500 14px var(--ui)!important;box-shadow:none!important}
 .tsp .tsc button.on,.kc4.chips button.on{background:var(--ink)!important;border-color:var(--ink)!important;color:#fff!important}
@@ -1575,7 +1576,7 @@ function crmView(){
 function crmRender(){if(cur==='yonetim'){if(A&&(A.tab==='crm'||A.tab==='depo'||A.tab==='kanal')&&admOk()){var y=window.scrollY;adRender();window.scrollTo(0,y);}return;}var m=document.getElementById('main');if(m&&cur==='crm'){var y=window.scrollY;m.innerHTML=crmView();window.scrollTo(0,y);}}
 function crmBy(e){return (C.orders||[]).filter(function(o){return String(o.mail||'').toLowerCase()===e;});}
 function crmDate(d){try{return new Date(d).toLocaleDateString('tr-TR',{day:'2-digit',month:'short',year:'numeric'});}catch(_){return '';}}
-function crmContact(o){var t=String(o.tel||'').replace(/\D/g,'');if(t.charAt(0)==='0')t='9'+t;var wa=t?'https://wa.me/'+t:'';return '<div class="crmact">'+(o.tel?'<a class="btn soft sm" href="tel:'+esc(o.tel)+'">Ara</a>':'')+(wa?'<a class="btn soft sm" target="_blank" rel="noopener" href="'+wa+'">WhatsApp</a>':'')+(o.mail||o.email?'<button type="button" class="btn soft sm" data-crm="mail" data-v="'+esc(o.mail||o.email)+'" data-n="'+esc(o.ad||'')+'">E-posta</button>':'')+'</div>';}
+function crmContact(o){var t=String(o.tel||'').replace(/\D/g,'');if(t.charAt(0)==='0')t='9'+t;var wa=t?'https://wa.me/'+t:'';return '<div class="crmact">'+(o.tel?'<a class="btn soft sm" href="tel:'+esc(o.tel)+'">Ara</a>':'')+(wa?'<a class="btn soft sm" target="_blank" rel="noopener" href="'+wa+'">WhatsApp</a>':'')+(o.mail||o.email?'<button type="button" class="btn soft sm" data-crm="mail" data-v="'+esc(o.mail||o.email)+'" data-n="'+esc(o.ad||'')+'">E-posta</button>':'')+/* Teslim edilen siparişte müşteriden yorum iste: WhatsApp'ta hazır mesaj, yorum sayfası bağlantısıyla */(wa&&/teslim/i.test(String(o.status||o.durum||''))?'<a class="btn soft sm" target="_blank" rel="noopener" href="'+wa+'?text='+encodeURIComponent('Merhaba '+String(o.ad||'').split(' ')[0]+', Wolflano siparişin ('+(o.code||'')+') eline ulaştı mı? Beğendiysen 1 dakikanı ayırıp yorum yazar mısın? Fotoğrafını da eklersen çok seviniriz: https://wolflano.com.tr/#yorumlar')+'">★ Yorum iste</a>':'')+'</div>';}
 /* ---- Doğum günü seçici (yalnız gün ve ay, 'AA-GG') ---- */
 var AYLAR=['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'];
 function dgSel(id,v,attr){var m=String(v||'').split('-'),ay=+m[0]||0,gn=+m[1]||0,o='<option value="">Gün</option>',a='<option value="">Ay</option>';
@@ -2985,7 +2986,7 @@ function siparisView(){
   var eye='<button type="button" data-eye aria-label="Şifreyi göster" aria-pressed="false"><svg class="i" viewBox="0 0 24 24"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg></button>';
   var rows=(o.items||[]).map(function(x){return '<div class="sumr"><span>'+orderLineName(x)+' × '+x.q+'</span><span>'+orderLinePrice(x)+'</span></div>';}).join('');
   var has=profile()||ACCOUNT.user;
-  return '<div class="wrap page"><p class="eyebrow">Hesabım</p><h1 class="h2">Siparişin alındı</h1><p class="lead">Teşekkürler'+(o.ad?', '+esc(o.ad.split(' ')[0]):'')+'. Sipariş özetin ve teslimat bilgilerin aşağıda.</p><div style="display:grid;gap:16px;max-width:520px;margin-top:20px">'+
+  return '<div class="wrap page"><p class="eyebrow">Hesabım</p><h1 class="h2">Siparişin alındı</h1><p class="lead">Teşekkürler'+(o.ad?', '+esc(o.ad.split(' ')[0]):'')+'. Sipariş özetin ve teslimat bilgilerin aşağıda.</p><p class="note" style="margin:8px 0 0">Ürünün eline ulaşınca <a href="#yorumlar" style="color:var(--green);font-weight:600">yorumunu ve fotoğrafını</a> bekliyoruz; yorumların yeni müşterilere güven veriyor.</p><div style="display:grid;gap:16px;max-width:520px;margin-top:20px">'+
   '<div class="panel" style="gap:8px"><h3 style="font-size:22px">Sipariş özeti</h3>'+rows+'<div class="sumr"><span>Kargo</span><span>'+(o.ship?tl(o.ship):'Ücretsiz')+'</span></div><div class="sumr t"><span>Toplam (KDV dahil)</span><span>'+tl(o.total)+'</span></div></div>'+
   bankPanel(o)+bzDlPanel()+'<div class="panel" style="gap:8px"><h3 style="font-size:22px">Teslimat bilgileri</h3><div class="sumr"><span>Ad soyad</span><span>'+esc(o.ad)+'</span></div><div class="sumr"><span>Cep telefonu</span><span>'+esc(fmtPhone(o.tel))+'</span></div><div class="sumr"><span>E-posta</span><span>'+esc(o.mail)+'</span></div><div class="sumr"><span>Adres</span><span>'+esc(o.adr+', '+o.ilce+'/'+o.il)+'</span></div>'+(o.not?'<div class="sumr"><span>Sipariş notu</span><span>'+esc(o.not)+'</span></div>':'')+'</div>'+
   (has?'<div class="panel"><h3 style="font-size:22px">Hesabın kayıtlı</h3><p class="note" style="margin:0">Bilgilerin Hesabım sayfasında saklanıyor.</p><a class="btn soft" href="#hesabim" style="justify-content:center">Hesabıma git</a></div>':
@@ -3786,7 +3787,7 @@ function bilgiOpen(L,k){var o=document.createElement('div');o.className='blv';o.
   var kd=function(e){if(e.key==='Escape')close();if(e.key==='ArrowRight')t.scrollBy({left:t.clientWidth,behavior:'smooth'});if(e.key==='ArrowLeft')t.scrollBy({left:-t.clientWidth,behavior:'smooth'});};document.addEventListener('keydown',kd);
   o.querySelector('.blv-x').addEventListener('click',close);o.addEventListener('click',function(e){if(e.target===o||e.target.classList.contains('blv-s'))close();});}
 document.addEventListener('click',function(e){var a=e.target.closest&&e.target.closest('[data-bilgi]');if(!a)return;e.preventDefault();bilgiOpen(a.dataset.bl.split(','),+a.dataset.bilgi);});
-function pdView(p){
+function pdView(p){try{if(RV.list===null&&!RV.busy)rvLoad();}catch(_){}
   var so=soldOut(p),zs=so?[]:pSizes(p),desc=pDesc(p),bt=btHTML(btNote(p,btKindP(p),desc)),ad=(sbAdmin()||WF_ADM);
   var pn=String(p.pnote||'').trim();if(pn==='-')pn='';else if(!pn&&!(/kupa|canvas|kanvas|tablo/i.test((p.type||'')+' '+(p.name||''))||ptOf(p)==='canvas'))pn=TX('pnote');
   var add=so?'<button type="button" class="btn sold" data-soldout="'+p.id+'">Sepete ekle</button>':'<button class="btn" data-add="'+p.id+'">Sepete ekle</button>';
@@ -3794,7 +3795,7 @@ function pdView(p){
   if(hdStudio(p))links.push('<a href="'+hdStudio(p)+'">'+PD_IC.pls+(p.dsg?'Boş üründen tasarla':'Kendi tasarımını yap')+'</a>');
   links.push('<button type="button" data-fav="'+p.id+'">'+PD_IC.hrt+(favs[p.id]?'Favorilerde':'Favorilere ekle')+'</button>');
   return '<div class="wrap page pd2">'+pdBack(p)+'<div class="pd"><div class="gal" id="gal">'+galHTML(p)+'</div>'+(function(){var c=pColRow(p);return c?'<div class="pdc">'+c+'</div>':'';})()+'<div class="info">'+
-   pdBadges(p)+'<h1 class="pdn">'+esc(productPageTitle(p.name,p.type))+'</h1>'+
+   pdBadges(p)+'<h1 class="pdn">'+esc(productPageTitle(p.name,p.type))+'</h1>'+((RV.list||[]).length>=RV_MIN?'<a class="pdrv" href="#yorumlar">'+rvStars(Math.round(rvAvg(RV.list)))+'<b>'+rvAvg(RV.list).toLocaleString('tr-TR')+'</b><span>('+RV.list.length+' mağaza yorumu)</span></a>':'')+
    '<div class="pdm">'+pTypeColor(p)+'<span class="pcode">Ürün kodu: '+pCode(p)+'</span></div>'+
    '<div class="pdp"><div class="pbig">'+prBig(p)+'</div><small>KDV dahil</small></div>'+
    (zs.length?szBlock(zs,szTable(szKind((p.type||'')+' '+(p.name||'')),pCut(p),zs)):'')+stk(p)+
