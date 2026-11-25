@@ -1115,6 +1115,14 @@ body:has(.ttlanding) #ann{display:none!important}
 .pd2 .pcols{margin:0}.pd2 .pcols small{font:500 13px var(--ui);letter-spacing:0}
 .pd2 .info .szs p{text-align:left;font-size:13px}
 .mainv img[src*="bilgi/"]{object-fit:contain;background:#f6f8f7}
+.blv{position:fixed;inset:0;z-index:200;background:rgba(10,16,12,.94);display:flex;flex-direction:column}
+.blv-top{display:flex;align-items:center;justify-content:space-between;padding:calc(10px + env(safe-area-inset-top,0px)) 14px 10px;color:#fff}
+.blv-n{font:600 15px var(--ui);opacity:.85}
+.blv-x{width:46px;height:46px;border-radius:50%;border:0;background:#fff;color:#101a14;font:700 20px var(--ui);cursor:pointer}
+.blv-t{flex:1;display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;-webkit-overflow-scrolling:touch}.blv-t::-webkit-scrollbar{display:none}
+.blv-s{flex:0 0 100%;scroll-snap-align:center;display:grid;place-items:center;padding:8px}
+.blv-s img{max-width:100%;max-height:100%;border-radius:12px;display:block}
+.blv-d{display:flex;justify-content:center;gap:8px;padding:12px 0 calc(18px + env(safe-area-inset-bottom,0px))}.blv-d i{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.35)}.blv-d i.on{background:#7fd6b4;width:22px;border-radius:4px}
 .pd2 .pdi{display:grid;gap:12px}.pd2 .pdi a{display:block}.pd2 .pdi img{width:100%;height:auto;display:block;border-radius:14px;border:1px solid var(--line)}
 @media (max-width:859px){.pd2 .pd{display:flex;flex-direction:column}.pd2 .pd>.gal{order:1}.pd2 .pd>.pdi{order:2;display:flex;gap:10px;overflow-x:auto;scroll-snap-type:x mandatory;scroll-padding-left:16px;scrollbar-width:none;margin:0 -16px;padding:0 16px}.pd2 .pd>.pdi::-webkit-scrollbar{display:none}.pd2 .pd>.pdi a{flex:0 0 44%;scroll-snap-align:start}.pd2 .pd>.pdi img{border-radius:10px}.pd2 .pd>.info{order:3}}
 @media (min-width:860px){.pd2 .pd>.pdi{grid-column:1}}
@@ -3720,7 +3728,16 @@ function pdBadges(p){var b=[],q=pKal(p);if(q)b.push(q.indexOf('kpr')>=0?'<i clas
   if(p.dsg||hdStudio(p))b.push('<i class="bd bg">KİŞİYE ÖZEL TASARLANABİLİR</i>');if(p.tag==='Yeni'&&isNewP(p))b.push('<i class="bd bn">YENİ</i>');
   return b.length?'<div class="pdb">'+b.join('')+'</div>':'';}
 function pdInfoHTML(p){var L=pInfo(p);if(!L.length)return '';var T={'tee-alan':'Baskı alanları','nasil':'Nasıl tasarlanır','kargo':'Sipariş ve kargo','kargo-genel':'Sipariş ve kargo','kupa-alan':'Kupa baskı alanı'};
-  return '<section class="pdi" aria-label="Ürün bilgileri">'+L.map(function(n){return '<a href="assets/bilgi/'+n+'.webp" target="_blank" rel="noopener" aria-label="'+esc(T[n]||'Bilgi')+' (büyük aç)"><img src="assets/bilgi/'+n+'.webp" alt="'+esc(T[n]||'Bilgi')+'" loading="lazy" width="1080" height="1080"></a>';}).join('')+'</section>';}
+  return '<section class="pdi" aria-label="Ürün bilgileri">'+L.map(function(n,i){return '<a href="assets/bilgi/'+n+'.webp?v=2" data-bilgi="'+i+'" data-bl="'+esc(L.join(','))+'" aria-label="'+esc(T[n]||'Bilgi')+' (büyük aç)"><img src="assets/bilgi/'+n+'.webp?v=2" alt="'+esc(T[n]||'Bilgi')+'" loading="lazy" width="1080" height="1080"></a>';}).join('')+'</section>';}
+/* Bilgi kartı görüntüleyici: tam ekran, sağa-sola kaydırılır, sağ üstte Kapat; ürün sayfası yerinde kalır */
+function bilgiOpen(L,k){var o=document.createElement('div');o.className='blv';o.setAttribute('role','dialog');o.setAttribute('aria-label','Ürün bilgileri');
+  o.innerHTML='<div class="blv-top"><span class="blv-n">'+(k+1)+' / '+L.length+'</span><button type="button" class="blv-x" aria-label="Kapat">✕</button></div><div class="blv-t">'+L.map(function(n){return '<div class="blv-s"><img src="assets/bilgi/'+n+'.webp?v=2" alt=""></div>';}).join('')+'</div><div class="blv-d">'+L.map(function(_,i){return '<i'+(i===k?' class="on"':'')+'></i>';}).join('')+'</div>';
+  document.body.appendChild(o);document.documentElement.style.overflow='hidden';var t=o.querySelector('.blv-t');t.scrollLeft=k*t.clientWidth;
+  t.addEventListener('scroll',function(){var i=Math.round(t.scrollLeft/t.clientWidth);o.querySelector('.blv-n').textContent=(i+1)+' / '+L.length;[].forEach.call(o.querySelectorAll('.blv-d i'),function(d,j){d.classList.toggle('on',j===i);});},{passive:true});
+  var close=function(){o.remove();document.documentElement.style.overflow='';document.removeEventListener('keydown',kd);};
+  var kd=function(e){if(e.key==='Escape')close();if(e.key==='ArrowRight')t.scrollBy({left:t.clientWidth,behavior:'smooth'});if(e.key==='ArrowLeft')t.scrollBy({left:-t.clientWidth,behavior:'smooth'});};document.addEventListener('keydown',kd);
+  o.querySelector('.blv-x').addEventListener('click',close);o.addEventListener('click',function(e){if(e.target===o||e.target.classList.contains('blv-s'))close();});}
+document.addEventListener('click',function(e){var a=e.target.closest&&e.target.closest('[data-bilgi]');if(!a)return;e.preventDefault();bilgiOpen(a.dataset.bl.split(','),+a.dataset.bilgi);});
 function pdView(p){
   var so=soldOut(p),zs=so?[]:pSizes(p),desc=pDesc(p),bt=btHTML(btNote(p,btKindP(p),desc)),ad=(sbAdmin()||WF_ADM);
   var pn=String(p.pnote||'').trim();if(pn==='-')pn='';else if(!pn&&!(/kupa|canvas|kanvas|tablo/i.test((p.type||'')+' '+(p.name||''))||ptOf(p)==='canvas'))pn=TX('pnote');
