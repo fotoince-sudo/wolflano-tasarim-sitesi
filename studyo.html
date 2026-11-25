@@ -2894,10 +2894,20 @@ function replaceZemLayer(asset,frame,coveredFrame){
   pushHist();if(innerWidth<700)closeTab();toast('Zemin değişti. Tasarımın yerinde.');
 }
 /* Zemini kaldır: tasarımın arkasındaki zemin katmanı silinir (fotoğraflar ve yazılar yerinde kalır) */
-function zemLayer(){return cur().objs.find(function(o){return (o.zem&&!o.slot)||o.teePhotoBg;})||null;}
+function zemLayer(){var adm=document.body.classList.contains('wfadm');return cur().objs.find(function(o){return ((o.zem&&!o.slot)||o.teePhotoBg)&&(adm||!o.tfix);})||null;}
 function zemRemove(){var z=zemLayer();if(!z){toast('Kaldırılacak zemin yok.');return;}cur().objs=cur().objs.filter(function(o){return o!==z;});view.sel=null;renderObjects();syncCtx();pushHist();toast('Zemin kaldırıldı.');try{renderZem&&renderZem(true);}catch(_){}}
 /* Fotoğraf yeri aç: Şekiller'deki "Foto yeri" şekilleri (kare, dikdörtgen, daire, elips) zeminin üzerine konur;
    "Fotoğraf yeri aç" zemini o şekillerin yerinden deler, şekiller kalkar. Sonra eklenen fotoğraflar sırayla deliklerin arkasına oturur. */
+/* Kilitli şablon: zeminin altındaki görseller fotoğraf yeri olur (müşteri yalnız fotoğrafları değiştirir); zemin, süsler ve yazılar sabitlenir */
+var TPL_FIX={'f025b2ef-964a-49f7-9225-2f517c50653c':{lock:1,img:{207:{url:'assets/sablon/2027-yaprak-sol.webp',w:378,h:330}},slot:{210:[218.55,305.17,43.5,43.5],209:[294.89,304.97,43.5,43.5]}}};
+function tplLockify(d,fx){d=JSON.parse(JSON.stringify(d));fx=fx||{};
+  ['front','back','logo','logo2'].forEach(function(sd){var L=d[sd]&&d[sd].objs;if(!L||!L.length)return;
+    var fi=-1;L.forEach(function(o,i){if(fi<0&&o.type==='image'&&(o.zem||o.fitPrintArea||o.oilBg||o.teePhotoBg))fi=i;});
+    L.forEach(function(o,i){var r=fx.img&&fx.img[o.id];if(r){var k='fx'+o.id;d.assets[k]={url:r.url,w:r.w,h:r.h};o.assetId=k;delete o.base;delete o.crop;}
+      var sr=fx.slot&&fx.slot[o.id];if(sr){o.x=sr[0];o.y=sr[1];o.w=sr[2];o.h=sr[3];o.rot=0;}
+      if(fi>=0&&i<fi&&o.type==='image'){o.slot=1;o.edge=o.edge||'none';delete o.lock;delete o.thru;delete o.inHole;return;}
+      o.lock=true;o.thru=1;o.tfix=1;delete o.inHole;});});
+  return d;}
 var FY_GEO={fy_kare:['rect',8,8,84,84],fy_yatay:['rect',4,20,92,60],fy_dikey:['rect',20,4,60,92],fy_daire:['ell',8,8,84,84],fy_elips_yatay:['ell',4,22,92,56],fy_elips_dikey:['ell',22,4,56,92]};
 function fyShapes(){return cur().objs.filter(function(o){return o.type==='clip'&&FY_GEO[o.key];});}
 function fyFrame(){var L=cur().objs;return L.find(function(o){return o.type==='image'&&!o.rot&&(o.zem||o.fitPrintArea||o.oilBg||o.teePhotoBg);})||null;}
@@ -4140,7 +4150,7 @@ document.addEventListener('change',function(e){var t=e.target;if(t&&t.dataset&&t
 
 /* Kilitli öğe taşınmaz, büyümez, silinmez; şablon değiştirince de yerinde kalır (ör. okul/kulüp logosu). */
 function toggleLock(){
-  var o=selObj();if(!o||o.oilBg||o.oilSlot)return;
+  var o=selObj();if(!o||o.oilBg||o.oilSlot||(o.tfix&&!document.body.classList.contains('wfadm')))return;
   if(o.lock)delete o.lock;else o.lock=true;
   buildSel();syncCtx();syncTextInput();pushHist();
   toast(o.lock?'Kilitlendi. Şablon değiştirsen de yerinde kalır.':'Kilit açıldı');
@@ -6575,7 +6585,7 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
   async function doTemplate(title,byWolf,o){
     o=o||{};if(!sidesWith().length)throw {msg:'Önce bir tasarım yap.'};
     var pub=o.vis!=='ozel',cat=TPL_CATS.indexOf(o.cat)>0?o.cat:'';
-    var data=await collect(),th=await designThumb(),code=tplCode();data.code=code;
+    var data=await collect(),th=await designThumb(),code=tplCode();data.code=code;if(ADM.tlock)data.tlock=true;
     title=uniqName(title,(ADM.tpls||[]).map(function(x){return x.title;}));
     var r=await insertRow({title:title,kind:'sablon',status:'yayında',published:pub,product:state.product||(data&&data.product)||null,cut:null,color:null,data:data,thumb:th,by_wolf:!!byWolf,note:cat||''});
     await loadTpls();
@@ -7072,6 +7082,7 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
     if(mode==='guncelle')body='<p class="note">Düzenlenen ürün: <b>'+ea(ADM.edit.title||'')+'</b>. "Ürünü güncelle" yalnız ön ve arka görsellerini yeniler; ürün kodu, fiyat, kategori, açıklama ve stok aynı kalır.</p>'+(allCols().length>1?'<label class="am-all"><input type="checkbox" id="amUAll" checked><span><b>Tüm renklerde güncelle</b><small>Bu tasarımın sitedeki bütün renkleri birlikte yenilenir, eksik renkler de eklenir. Yalnız bu renk için işareti kaldır.</small></span></label>':'')+ortBox();
     if(mode==='sablon')body='<div class="am-two"><label class="am-f">Kimler görsün<select id="amVis"><option value="herkes"'+(tplVis==='herkes'?' selected':'')+'>Herkes (müşteriler de)</option><option value="ozel"'+(tplVis==='ozel'?' selected':'')+'>Sadece Wolflano</option></select></label>'+
       '<label class="am-f">Kategori<select id="amTCat"><option value="">'+ea(TPL_CAT_ADM)+'</option>'+TPL_CATS.filter(function(c){return c!=='Tümü'&&c!==TPL_CAT_ADM&&c!==TPL_CAT_PRIV&&(c!==TPL_CAT_MUSIC||state.product==='tee');}).map(function(c){return '<option'+(c===tplCat?' selected':'')+'>'+ea(c)+'</option>';}).join('')+'</select></label></div>'+
+      '<label class="am-f" style="display:flex;gap:8px;align-items:center"><input type="checkbox" id="amTLock"'+(ADM.tlock?' checked':'')+' style="width:auto"> Kilitli şablon: müşteri yalnız fotoğrafları değiştirsin</label>'+
       '<p class="note">'+(tplVis==='ozel'?'Yalnız sen ve yetkililer Şablon panelinde "'+TPL_CAT_PRIV+'" altında görürsünüz; müşterinin sayfasına hiç yüklenmez.':'Müşteriler Şablon panelinde seçtiğin kategoride görür; seçince kendi ürününe uyarlanır.')+'</p>';
     if(mode==='urun')body=(/^(mug|canvas)$/.test(state.product)?'':'<div class="am-where"><b>Nereye kaydedilsin?</b><label><input type="radio" name="amWhere" value="baski"'+(ADM.where!=='wk'?' checked':'')+'><span>Baskı Tasarımları</span></label><label><input type="radio" name="amWhere" value="wk"'+(ADM.where==='wk'?' checked':'')+'><span>Wolflano Koleksiyon <small>(hazır giyim)</small></span></label></div>')+'<div class="am-sum" id="amSum"></div>'+allColBox()+'<button type="button" class="btn soft" id="amRefresh" style="width:100%;margin:6px 0 10px">Eski koleksiyon görsellerini yenile (beyaz ürünlerdeki açık hale)</button>'+
       '<details class="am-more"><summary>Ayrıntıları değiştir (tür, renk, kategori, fiyat, etiket, açıklama)</summary>'+prodInfo()+
@@ -7135,7 +7146,7 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
     var t=$('#amTitle');renderAdm();w.hidden=false;}
   function closeAdm(){var w=$('#admSheet');if(w)w.hidden=true;}
   function bindAdm(w){
-    w.addEventListener('change',function(e){if(e.target&&e.target.name==='amWhere'){ADM.where=e.target.value;renderAdm();return;}if(e.target&&e.target.id==='amType')autoCat();if(e.target&&e.target.id==='amVis'){tplVis=e.target.value;renderAdm();}if(e.target&&e.target.id==='amTCat')tplCat=e.target.value;});
+    w.addEventListener('change',function(e){if(e.target&&e.target.name==='amWhere'){ADM.where=e.target.value;renderAdm();return;}if(e.target&&e.target.id==='amType')autoCat();if(e.target&&e.target.id==='amVis'){tplVis=e.target.value;renderAdm();}if(e.target&&e.target.id==='amTLock')ADM.tlock=e.target.checked;if(e.target&&e.target.id==='amTCat')tplCat=e.target.value;});
     w.addEventListener('click',function(e){
       if(e.target===w||e.target.closest('[data-amx]')){closeAdm();return;}
       var m=e.target.closest('[data-amm]');if(m){mode=m.dataset.amm;renderAdm();return;}
@@ -7392,7 +7403,7 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
     catch(err){toast(err&&err.msg?err.msg:(err&&(err.status===401||err.status===403||err.code==='auth')?'Oturum süresi doldu, yeniden giriş yap.':'Kaydedilemedi, tekrar dene.'));}
     ADM.busy=false;},true);
   document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('[data-adtpl]');if(!b)return;e.preventDefault();e.stopPropagation();
-    var t=ADM.tpls.filter(function(x){return x.id===b.dataset.adtpl;})[0];if(!t)return;applyDesign(t.data,false);closeTab();var ne=emptySlots().length;if(ne){longToast(slotMsg(ne));slotPick();}else toast('Şablon uygulandı. Geri almak için ↶');},true);
+    var t=ADM.tpls.filter(function(x){return x.id===b.dataset.adtpl;})[0];if(!t)return;var fx=TPL_FIX[t.id],lk=fx||(t.data&&t.data.tlock);applyDesign(lk?tplLockify(t.data,fx):t.data,false);closeTab();if(lk){try{hzBlankPhotos();}catch(_){}}var ne=emptySlots().length;if(ne){longToast(slotMsg(ne));slotPick();}else toast('Şablon uygulandı. Geri almak için ↶');},true);
 
   /* ---- Başlangıç ---- */
   async function init(){
