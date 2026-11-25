@@ -1,4 +1,6 @@
-<!doctype html><html><head><script>
+<!doctype html><html><head><script>/* Stüdyo hiçbir zaman başka bir sayfanın içinde (Ürün seç penceresi) açılmaz: iç içe 'Ürün seç' üst üste binmesin */
+try{if(window.top!==window.self){window.top.location.replace(location.href);}}catch(_){}
+
 /* Google Analytics (GTM-5BK95W5G): yalnız ziyaretçi "Kabul et" derse yüklenir (KVKK: analiz çerezleri açık rızayla).
    Yönetim sayfalarında hiç yüklenmez, site sahibinin kendi girişleri sayılmaz. */
 (function(){var ID='GTM-5BK95W5G',K='wf_cerez';

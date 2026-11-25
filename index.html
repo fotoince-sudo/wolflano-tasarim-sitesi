@@ -1141,7 +1141,9 @@ if(window.parent!==window&&new URLSearchParams(location.search).get('studioPicke
     if(!link)return;
     if(link.hasAttribute('data-tasarla')&&BLANKS.some(function(b){return b.id===link.dataset.tasarla&&bSizes(b).length;}))return;
     var url=new URL(link.href,location.href);
-    if(url.origin!==location.origin||!url.pathname.endsWith('/studyo.html')||!url.searchParams.has('urun'))return;
+    if(url.origin!==location.origin||!url.pathname.endsWith('/studyo.html'))return;
+    /* ürün seçimi olmayan stüdyo bağlantısı (Wolf, düzenle…) pencere içinde değil, tüm sayfada açılır */
+    if(!url.searchParams.has('urun')){e.preventDefault();e.stopImmediatePropagation();try{window.top.location.href=url.href;}catch(_){location.href=url.href;}return;}
     e.preventDefault();e.stopImmediatePropagation();
     window.parent.postMessage({type:'wolflano-product-selected',query:url.search},location.origin);
   },true);
