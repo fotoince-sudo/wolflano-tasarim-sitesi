@@ -4438,7 +4438,7 @@ var VIEWS={
   var K=[['240','gr','Tişört'],['280','gr','Polo'],['380','gr','Sweatshirt']];
   var shop=all.length?
     '<div class="wk-fl">'+(G.length>2?G.map(function(g){return '<button type="button" data-wk="'+g[0]+'" class="'+(WK_SEL===g[0]?'on':'')+'">'+esc(g[1])+'</button>';}).join(''):'')+'</div>'+
-    '<div class="grid wk-grid">'+list.map(card).join('')+'</div>'
+    '<div class="grid wk-grid">'+grpP(list).map(card).join('')+'</div>'
    :'<section class="wk-yak"><h2>İlk koleksiyon hazırlanıyor</h2><p>İlk parçalar çıktığında haber almak için bize yaz.</p><div class="wk-act"><a class="wk-b" href="'+wa+'" target="_blank" rel="noopener">WhatsApp ile haber al</a><a class="wk-b o" href="https://www.instagram.com/wolflano.tr" target="_blank" rel="noopener">Instagram · @wolflano.tr</a></div></section>';
   return '<div class="wkp">'+
    '<section class="wk-hero"><img src="'+esc(lg)+'" alt="Wolflano" class="wk-logo"><div class="wk-word">WOLFLANO</div><p class="wk-ey" style="margin:6px 0 0">Koleksiyon</p><p class="wk-tag">Sessiz güç. İtalyan estetiği, Türk ruhu.</p></section>'+
@@ -5118,7 +5118,7 @@ function cartRows(){var ids=Object.keys(cart).filter(function(k){return cart[k]>
 document.addEventListener('change',function(e){var t=e.target;if(t&&t.name==='cT'){setShipM(t.value);if(location.hash==='#sepet'){var y=window.scrollY;$('#main').innerHTML=VIEWS.sepet();window.scrollTo(0,y);}}});
 function openCart(){closeLayer();if(location.hash==='#sepet'){var y=window.scrollY;$('#main').innerHTML=VIEWS.sepet();window.scrollTo(0,y);}else location.hash='#sepet';}
 function sepetView(){var c=cartRows();
-  if(!c.ids.length&&!c.sc.length){var l=PRODUCTS.slice(0,4);return '<div class="wrap page emp"><svg viewBox="0 0 48 48" width="64" height="64" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" aria-hidden="true"><path d="M9 16h30l-2.5 26h-25z"/><path d="M17 16v-3a7 7 0 0 1 14 0v3"/></svg><h1>Sepetinde ürün bulunmuyor</h1><p>En çok tercih edilen modellere göz at.</p><a class="btn" href="#hazir">Alışverişe başla</a></div>'+
+  if(!c.ids.length&&!c.sc.length){var l=grpP(PRODUCTS).slice(0,4);return '<div class="wrap page emp"><svg viewBox="0 0 48 48" width="64" height="64" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" aria-hidden="true"><path d="M9 16h30l-2.5 26h-25z"/><path d="M17 16v-3a7 7 0 0 1 14 0v3"/></svg><h1>Sepetinde ürün bulunmuyor</h1><p>En çok tercih edilen modellere göz at.</p><a class="btn" href="#hazir">Alışverişe başla</a></div>'+
     (l.length?'<div class="wrap feat"><div class="sec-head" style="margin-bottom:12px"><h2 class="h2" style="font-size:20px">En çok tercih edilenler</h2></div><div class="grid">'+l.map(card).join('')+'</div></div>':'');}
   var fr=+((D.ship||{}).free)||0,sh=shipFee(c.tot),kal=fr>0?Math.max(0,fr-c.tot):0,pc=fr>0?Math.min(100,Math.round(c.tot/fr*100)):100;
   return '<div class="wrap page sep"><h1 class="h2">Sepetim <span>('+c.n+' ürün)</span></h1>'+
