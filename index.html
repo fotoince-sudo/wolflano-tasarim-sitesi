@@ -4800,7 +4800,7 @@ function stPage(h){if(h==='yonetim'||h==='crm')return;var hs=location.hash||'#an
 function stEvent(e){stSend(['e:'+e]);}
 
 /* ---------- Yönetim: Ziyaretçiler ---------- */
-var VS={rows:null,busy:false,err:'',n:7};
+var VS={rows:null,busy:false,err:'',n:7,off:0};
 async function vsLoad(){if(VS.busy)return;VS.busy=true;VS.err='';
   try{var tk=await sbToken();if(!tk){VS.err='Oturum süresi doldu, yeniden giriş yap.';VS.rows=[];}
     else{var from=new Date(Date.now()+3*3600e3-95*864e5).toISOString().slice(0,10);
@@ -4819,20 +4819,25 @@ function vsView(){
   var by={};VS.rows.forEach(function(r){(by[r.day]=by[r.day]||{})[r.k]=+r.n||0;});
   var t0=Date.parse(stDay()+'T00:00:00Z');function dk(o){return new Date(t0-o*864e5).toISOString().slice(0,10);}
   function g(o,k){var d=by[dk(o)];return d&&d[k]||0;}
-  function sum(k,n){var s=0;for(var i=0;i<n;i++)s+=g(i,k);return s;}
+  function sum(k,n,o){var s=0;o=o||0;for(var i=0;i<n;i++)s+=g(i+o,k);return s;}
   var C=[['Bugün',g(0,'v'),g(0,'pv')],['Dün',g(1,'v'),g(1,'pv')],['Son 7 gün',sum('v',7),sum('pv',7)],['Son 30 gün',sum('v',30),sum('pv',30)]];
   h+='<div class="vs-c">'+C.map(function(c){return '<div><small>'+c[0]+'</small><b>'+c[1].toLocaleString('tr-TR')+'</b><span>ziyaretçi · '+c[2].toLocaleString('tr-TR')+' sayfa</span></div>';}).join('')+'</div>';
-  var N=VS.n;h+='<div class="adx-f">'+[[7,'7 gün'],[30,'30 gün'],[90,'90 gün']].map(function(x){return '<button type="button" data-vs="n" data-v="'+x[0]+'"'+(N===x[0]?' class="on"':'')+'>'+x[1]+'</button>';}).join('')+'</div>';
-  var mx=1,bars=[];for(var i=N-1;i>=0;i--){var v=g(i,'v');if(v>mx)mx=v;bars.push([dk(i),v]);}
+  /* Bugün / Dün: tek günün ayrıntısı (nereden geldiler, sayfalar, cihaz); grafik son 7 günü gösterir */
+  var N=VS.n,OF=VS.off||0,CN=N<7?7:N;h+='<div class="adx-f">'+[[1,0,'Bugün'],[1,1,'Dün'],[7,0,'7 gün'],[30,0,'30 gün'],[90,0,'90 gün']].map(function(x){var on=N===x[0]&&OF===x[1];return '<button type="button" data-vs="n" data-v="'+x[0]+'" data-o="'+x[1]+'"'+(on?' class="on"':'')+'>'+x[2]+'</button>';}).join('')+'</div>';
+  var mx=1,bars=[];for(var i=CN-1;i>=0;i--){var v=g(i,'v');if(v>mx)mx=v;bars.push([dk(i),v]);}
   var AY=['Oca','Şub','Mar','Nis','May','Haz','Tem','Ağu','Eyl','Eki','Kas','Ara'];
-  h+='<div class="vs-ch'+(N>30?' thin':'')+'" role="img" aria-label="Günlük ziyaretçi grafiği">'+bars.map(function(b,j){var d=+b[0].slice(8),m=+b[0].slice(5,7)-1,lab=N<=7||(N<=30?((bars.length-1-j)%6===0&&j>1):(d===1));
-    return '<div class="vs-b" title="'+d+' '+AY[m]+': '+b[1]+' ziyaretçi"><span class="vs-bw"><i style="height:'+Math.max(b[1]?4:1,Math.round(b[1]/mx*100))+'%">'+(N<=7&&b[1]?'<em>'+b[1]+'</em>':'')+'</i></span><small>'+(lab?d+(N>30||j===0?' '+AY[m]:''):'')+'</small></div>';}).join('')+'</div>';
-  function top(pre,names){var o={};for(var i=0;i<N;i++){var d=by[dk(i)]||{};Object.keys(d).forEach(function(k){if(k.indexOf(pre)===0){var n=k.slice(pre.length);o[n]=(o[n]||0)+d[k];}});}
+  h+='<div class="vs-ch'+(CN>30?' thin':'')+'" role="img" aria-label="Günlük ziyaretçi grafiği">'+bars.map(function(b,j){var d=+b[0].slice(8),m=+b[0].slice(5,7)-1,lab=CN<=7||(CN<=30?((bars.length-1-j)%6===0&&j>1):(d===1)),sel=N===1&&j===bars.length-1-OF;
+    return '<div class="vs-b" title="'+d+' '+AY[m]+': '+b[1]+' ziyaretçi"'+(N===1&&!sel?' style="opacity:.4"':'')+'><span class="vs-bw"><i style="height:'+Math.max(b[1]?4:1,Math.round(b[1]/mx*100))+'%">'+(CN<=7&&b[1]?'<em>'+b[1]+'</em>':'')+'</i></span><small>'+(lab?d+(CN>30||j===0?' '+AY[m]:''):'')+'</small></div>';}).join('')+'</div>';
+  /* Gün gün tablo: seçili dönemin her günü (en yeni üstte) */
+  if(N>1){var GN=['Paz','Pzt','Sal','Çar','Per','Cum','Cmt'],tr='';for(var q=0;q<N;q++){var dd=dk(q),o=by[dd]||{},sp0=(o['e:sepet']||0)+(o['e:stud-sepet']||0);if(!o.v&&q>6&&N>7)continue;
+      tr+='<div><span>'+(q===0?'Bugün':q===1?'Dün':+dd.slice(8)+' '+AY[+dd.slice(5,7)-1]+' <small>'+GN[new Date(dd+'T12:00:00Z').getUTCDay()]+'</small>')+'</span><b>'+(o.v||0)+'</b><span>'+(o.pv||0)+'</span><span>'+(o['p:studyo']||0)+'</span><span>'+sp0+'</span><span>'+(o['e:siparis']||0)+'</span></div>';}
+    h+='<div class="aed vs-gun" style="max-width:760px;overflow-x:auto"><b>Gün gün</b><style>.vs-gun .vg>div{display:grid;grid-template-columns:minmax(0,1.6fr) repeat(5,minmax(0,1fr));gap:4px;padding:7px 0;border-bottom:1px solid rgba(0,0,0,.07);font-size:13px;align-items:baseline}.vs-gun .vg>div>*:not(:first-child){text-align:right}.vs-gun .vg .vh{color:#778;font-weight:600;font-size:12px}.vs-gun small{color:#889;font-size:11px}</style><div class="vg"><div class="vh"><span>Gün</span><span>Kişi</span><span>Sayfa</span><span>Stüdyo</span><span>Sepet</span><span>Sipariş</span></div>'+tr+'</div></div>';}
+  function top(pre,names){var o={};for(var i=OF;i<OF+N;i++){var d=by[dk(i)]||{};Object.keys(d).forEach(function(k){if(k.indexOf(pre)===0){var n=k.slice(pre.length);o[n]=(o[n]||0)+d[k];}});}
     var L=Object.keys(o).map(function(k){return [k,o[k]];}).sort(function(a,b){return b[1]-a[1];});var m=L.length?L[0][1]:1,tt=L.reduce(function(s,x){return s+x[1];},0)||1;
     if(!L.length)return '<p class="note" style="margin:0">Henüz veri yok.</p>';
     return L.map(function(x){return '<div class="vs-r"><span>'+esc(names[x[0]]||x[0])+'</span><b>'+x[1].toLocaleString('tr-TR')+' <small>%'+Math.round(x[1]/tt*100)+'</small></b><i style="width:'+Math.round(x[1]/m*100)+'%"></i></div>';}).join('');}
-  var vN=sum('v',N),st=sum('p:studyo',N),sp=sum('e:sepet',N)+sum('e:stud-sepet',N),sg=sum('e:siparis',N);
-  h+='<div class="vs-g"><section><h3>Satışa giden yol</h3><p class="note" style="margin:0 0 8px">Seçili dönemde</p>'+
+  var vN=sum('v',N,OF),st=sum('p:studyo',N,OF),sp=sum('e:sepet',N,OF)+sum('e:stud-sepet',N,OF),sg=sum('e:siparis',N,OF);
+  h+='<div class="vs-g"><section><h3>Satışa giden yol</h3><p class="note" style="margin:0 0 8px">'+(N===1?(OF?'Dün':'Bugün'):'Seçili dönemde')+'</p>'+
     [['Ziyaretçi',vN],['Tasarım stüdyosunu açma',st],['Sepete ekleme',sp],['Sipariş',sg]].map(function(x,j){return '<div class="vs-f"><span>'+x[0]+'</span><b>'+x[1].toLocaleString('tr-TR')+(j&&vN?' <small>%'+(Math.round(x[1]/vN*1000)/10)+'</small>':'')+'</b></div>';}).join('')+'</section>'+
     '<section><h3>Nereden geldiler</h3>'+top('r:',VS_SRC)+'</section>'+
     '<section><h3>En çok bakılan sayfalar</h3>'+top('p:',VS_PG)+'</section>'+
@@ -4845,7 +4850,7 @@ function vsView(){
   return h+'</div>';
 }
 document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('[data-vs]');if(!b)return;e.preventDefault();
-  if(b.dataset.vs==='reload'){VS.rows=null;vsLoad();adRender();}else if(b.dataset.vs==='n'){VS.n=+b.dataset.v||7;var y=window.scrollY;adRender();window.scrollTo(0,y);}});
+  if(b.dataset.vs==='reload'){VS.rows=null;vsLoad();adRender();}else if(b.dataset.vs==='n'){VS.n=+b.dataset.v||7;VS.off=+b.dataset.o||0;var y=window.scrollY;adRender();window.scrollTo(0,y);}});
 
 /* ===== MÜŞTERİ YORUMLARI: yönetici onaylamadan yayınlanmaz ===== */
 var RV={list:null,busy:false,puan:0,foto:'',sent:false};
