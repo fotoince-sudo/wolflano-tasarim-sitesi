@@ -2964,7 +2964,7 @@ async function saveLast(L,tot,shp,yo,special,school){
   scLive().forEach(function(it){items.push({id:'tasarim',n:'Tasarım: '+(it.label||'')+' ('+scSizes(it)+')',q:scQty(it),t:scTot(it),design:scCheckout(it),r:it.roster||undefined});});
   var hm=(document.querySelector('input[name=oH]:checked')||{}).value||'guest';
   var o={mode:hm,ad:g('oAd'),mail:g('oMail'),tel:normPhone(g('oTel'))||g('oTel'),adr:g('oAdr'),il:g('oIl'),ilce:g('oIlce'),not:g('oNot'),items:items,ship:shp,total:tot+shp,pay:yo,date:new Date().toISOString().slice(0,10)};
-  var o2=JSON.parse(JSON.stringify(o));o2.onay={kvkk:!!(document.getElementById('oKvkk')||{}).checked,sozlesme:!!(document.getElementById('oSoz')||{}).checked,izin:!!(document.getElementById('oIzin')||{}).checked};o2.delivery=(document.querySelector('input[name=oT]:checked')||{}).value||'kargo';o2.izin=!!(document.getElementById('oIzin')||{}).checked;o2.special=special||null;o2.school=school||null;o2.__sc=scLive().map(function(it){return {sig:it.sig,label:it.label,tee:it.tee,pk:it.pk||[],sz:scSizes(it),q:scQty(it)};});
+  var o2=JSON.parse(JSON.stringify(o));o2.onay={kvkk:!!(document.getElementById('oKvkk')||{}).checked,sozlesme:!!(document.getElementById('oSoz')||{}).checked,izin:!!(document.getElementById('oIzin')||{}).checked};o2.delivery=shipM();o2.izin=!!(document.getElementById('oIzin')||{}).checked;o2.special=special||null;o2.school=school||null;o2.__sc=scLive().map(function(it){return {sig:it.sig,label:it.label,tee:it.tee,pk:it.pk||[],sz:scSizes(it),q:scQty(it)};});
   var saved;
   try{saved=await crmSend(o2);}catch(err){
     var quote=err.quote;

@@ -366,6 +366,8 @@ export function shipping(
   if (method !== undefined && method !== "kargo" && method !== "elden") {
     throw new CheckoutError("Teslimat yöntemi geçersiz.");
   }
+  // Kargo yönetimde kapalıysa (ship.kargo !== true) yalnız İzmir teslim noktası geçerlidir.
+  if (d.ship?.kargo !== true) method = "elden";
   const free = amount(d.ship?.free);
   if (free > 0 && sum >= free) return 0;
   const n = Math.max(1, Math.floor(Number(qty) || 1));

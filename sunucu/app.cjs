@@ -43186,6 +43186,7 @@ function shipping(d, sum, method, wholesale2 = false, qty = 1) {
   if (method !== void 0 && method !== "kargo" && method !== "elden") {
     throw new CheckoutError("Teslimat y\xF6ntemi ge\xE7ersiz.");
   }
+  if (d.ship?.kargo !== true) method = "elden";
   const free = amount(d.ship?.free);
   if (free > 0 && sum >= free) return 0;
   const n = Math.max(1, Math.floor(Number(qty) || 1));
