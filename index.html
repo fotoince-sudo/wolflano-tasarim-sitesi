@@ -4364,7 +4364,7 @@ var DT_SKIP={'img/mwv5uqvlql95.jpg':1,'img/mwv7oacj2g5j.jpg':1,'img/mwv7lognfsvj
 /* 25 Kasım: katlanmış renkli tişört fotoğraflarına yanlışlıkla renk seçilmişti; bunlar her renkte görünür */
 var DT_HEPSI={'img/mwv5uqsfjblv.jpg':1,'img/mwv5uqwy0cen.jpg':1};
 function pInfo(p){var t=ptOf(p),dk=detKind(p);if(t==='kupa')return ['kupa-alan','nasil','kargo-genel'];if(t==='canvas')return ['nasil','kargo-genel'];
-  var kg=dk==='tee'?'kargo':'kargo-genel';if(dk==='tee'||dk==='sweat')return (p.dsg||p.adesign)?(p.wk?['tee-alan',kg]:['tee-alan','nasil',kg]):[kg];if(dk==='polo')return ['kargo-genel'];return [];}
+  var kg=dk==='tee'?'kargo':'kargo-genel';if(dk==='tee'||dk==='sweat')return (p.dsg||p.adesign)?(p.wk?[kg]:['tee-alan','nasil',kg]):[kg];if(dk==='polo')return ['kargo-genel'];return [];}
 function galViews(p){
   if(p.cv)return p.cv;
   var im=((p.imgs&&p.imgs.length)?p.imgs:[null]).slice(0,5),vs=im.map(function(s){return {s:s,z:1,x:50,y:50};}),k=0;
