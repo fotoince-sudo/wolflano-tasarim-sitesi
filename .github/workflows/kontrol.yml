@@ -53,8 +53,10 @@ jobs:
           name: kontrol-sonuc
           path: kontrol-sonuc
           retention-days: 14
+      # E-posta kapalı (2026-11-26): rapor sahibine değil, her gece 04.41'de Claude'a gider; Claude düzeltir, gerekirse bildirir.
+      # Yeniden açmak için: workflow_dispatch'te ilk=evet seç.
       - name: Rapor gönder
-        if: always() && (steps.gez.outputs.bozuk != '0' || github.event.inputs.ilk == 'evet')
+        if: always() && github.event.inputs.ilk == 'evet'
         env:
           LINK: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           BOZUK: ${{ steps.gez.outputs.bozuk }}
