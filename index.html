@@ -1192,7 +1192,7 @@ body:has(.ttlanding) #ann{display:none!important}
 .pd2 .pdi{display:grid;gap:12px}.pd2 .pdi a{display:block}.pd2 .pdi img{width:100%;height:auto;display:block;border-radius:14px;border:1px solid var(--line)}
 @media (max-width:859px){.pd2 .pd{display:flex;flex-direction:column}.pd2 .pd>.gal{order:1}.pd2 .pd>.pdc{order:2}.pd2 .pd>.pdi{order:3;display:flex;gap:10px;overflow-x:auto;scroll-snap-type:x mandatory;scroll-padding-left:16px;scrollbar-width:none;margin:0 -16px;padding:0 16px}.pd2 .pd>.pdi::-webkit-scrollbar{display:none}.pd2 .pd>.pdi a{flex:0 0 44%;scroll-snap-align:start}.pd2 .pd>.pdi img{border-radius:10px}.pd2 .pd>.info{order:4}}
 @media (min-width:860px){.pd2 .pd>.pdi,.pd2 .pd>.pdc{grid-column:1}}
-.pd2 .pdc .pcols{margin:0}.pdcw{display:flex;align-items:flex-end;justify-content:space-between;gap:10px}.pdcw .pcols{min-width:0}.pdcw.one{align-items:center}.pdfav{flex:0 0 auto;display:inline-flex;align-items:center;gap:6px;min-height:38px;padding:0 12px;border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--ink);font:500 13px var(--ui);cursor:pointer;white-space:nowrap}.pdfav svg{width:18px;height:18px}.pdfav.on{border-color:var(--green);color:var(--green)}.pdfav.on svg{fill:currentColor}.pd2 .pdc .pcols small{font:500 13px var(--ui);letter-spacing:0;color:var(--muted)}
+.pd2 .pdc .pcols{margin:0}.pdcw{display:flex;flex-direction:column;align-items:flex-start;gap:12px}.pdcw .pcols{min-width:0}.pdfav{flex:0 0 auto;display:inline-flex;align-items:center;gap:6px;min-height:38px;padding:0 12px;border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--ink);font:500 13px var(--ui);cursor:pointer;white-space:nowrap}.pdfav svg{width:18px;height:18px}.pdfav.on{border-color:var(--green);color:var(--green)}.pdfav.on svg{fill:currentColor}.pd2 .pdc .pcols small{font:500 13px var(--ui);letter-spacing:0;color:var(--muted)}
 /* Başlıklar telefonda sade boyutta (kocaman yazılar yerine) */
 @media (max-width:639px){.h2{font-size:25px;letter-spacing:-.015em}.cpg h2.h2{font-size:21px}.kolh{font-size:24px}}
 .pd2 .thumbs{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;scroll-snap-type:x proximity}.pd2 .thumbs::-webkit-scrollbar{display:none}
@@ -3842,7 +3842,7 @@ function pdView(p){try{if(RV.list===null&&!RV.busy)rvLoad();}catch(_){}
    (zs.length?szBlock(zs,szTable(szKind((p.type||'')+' '+(p.name||'')),pCut(p),zs)):'')+stk(p)+
    (so?aysl('Bu ürün şu an tükendi. Benzerini ister misin?','Bu ürün tükenmiş, benzer bir ürün önerir misin?'):'')+
    '<div class="pda">'+add+'</div><div class="pdl">'+links.join('')+'</div>'+
-   '<ul class="pdt"><li>'+PD_IC.trk+'<span><b>2–4 iş gününde kargoda</b>Özenle paketlenir, kargo takip bilgisi gönderilir</span></li><li>'+PD_IC.pen+'<span><b>Kişiye özel üretim</b>Ekranda gördüğün tasarım basılır</span></li><li>'+PD_IC.shd+'<span><b>Havale / EFT ile ödeme</b>Banka bilgileri sipariş onayında gönderilir</span></li></ul>'+
+   (p.wk?'':'<ul class="pdt"><li>'+PD_IC.trk+'<span><b>2–4 iş gününde kargoda</b>Özenle paketlenir, kargo takip bilgisi gönderilir</span></li><li>'+PD_IC.pen+'<span><b>Kişiye özel üretim</b>Ekranda gördüğün tasarım basılır</span></li><li>'+PD_IC.shd+'<span><b>Havale / EFT ile ödeme</b>Banka bilgileri sipariş onayında gönderilir</span></li></ul>')+
    ((desc||bt||pn)?'<section class="pds"><h2>Ürün açıklaması</h2>'+(desc?'<p>'+esc(desc)+'</p>':'')+bt+(pn?'<div class="pnote"><b>'+esc(TX('pnoteTitle'))+'</b><p>'+esc(pn)+'</p></div>':'')+'</section>':'')+
    (ad?'<div class="pdadm">'+((p.adesign||p.dsg)&&sbAdmin()?'<a href="studyo.html?duzenle='+encodeURIComponent(p.id)+'">✎ Stüdyoda düzenle</a>':'')+'<button type="button" class="pdel" data-pdel="'+esc(p.id)+'" data-pback="1">🗑 Bu ürünü sil</button><small>yalnız sen görürsün</small></div>':'')+
    '</div>'+pdInfoHTML(p)+'</div></div>'+
@@ -4365,7 +4365,7 @@ var DT_SKIP={'img/mwv5uqvlql95.jpg':1,'img/mwv7oacj2g5j.jpg':1,'img/mwv7lognfsvj
 /* 25 Kasım: katlanmış renkli tişört fotoğraflarına yanlışlıkla renk seçilmişti; bunlar her renkte görünür */
 var DT_HEPSI={'img/mwv5uqsfjblv.jpg':1,'img/mwv5uqwy0cen.jpg':1};
 function pInfo(p){var t=ptOf(p),dk=detKind(p);if(t==='kupa')return ['kupa-alan','nasil','kargo-genel'];if(t==='canvas')return ['nasil','kargo-genel'];
-  var kg=dk==='tee'?'kargo':'kargo-genel';if(dk==='tee'||dk==='sweat')return (p.dsg||p.adesign)?(p.wk?[kg]:['tee-alan','nasil',kg]):[kg];if(dk==='polo')return ['kargo-genel'];return [];}
+  var kg=dk==='tee'?'kargo':'kargo-genel';if(dk==='tee'||dk==='sweat')if(p.wk)return [];return (p.dsg||p.adesign)?['tee-alan','nasil',kg]:[kg];if(dk==='polo')return ['kargo-genel'];return [];}
 function galViews(p){
   if(p.cv)return p.cv;
   var im=((p.imgs&&p.imgs.length)?p.imgs:[null]).slice(0,5),vs=im.map(function(s){return {s:s,z:1,x:50,y:50};}),k=0;
