@@ -4848,6 +4848,7 @@ function vsView(){
   var vN=sum('v',N,OF),st=sum('p:studyo',N,OF),sp=sum('e:sepet',N,OF)+sum('e:stud-sepet',N,OF),sg=sum('e:siparis',N,OF),wa=sum('e:whatsapp',N,OF);
   h+='<div class="vs-g"><section><h3>Satışa giden yol</h3><p class="note" style="margin:0 0 8px">'+(N===1?(OF?'Dün':'Bugün'):'Seçili dönemde')+'</p>'+
     [['Ziyaretçi',vN],['Tasarım stüdyosunu açma',st],['Sepete ekleme',sp],['WhatsApp\'tan sipariş yazma',wa],['Sipariş',sg]].map(function(x,j){return '<div class="vs-f"><span>'+x[0]+'</span><b>'+x[1].toLocaleString('tr-TR')+(j&&vN?' <small>%'+(Math.round(x[1]/vN*1000)/10)+'</small>':'')+'</b></div>';}).join('')+'</section>'+
+    '<section><h3>WhatsApp kataloğu</h3><div class="vs-f"><span>Katalog linkine tıklama</span><b>'+sum('e:katalog',N,OF).toLocaleString('tr-TR')+'</b></div><p class="note" style="margin:6px 0 0">wolflano.com.tr/katalog linkine tıklayıp WhatsApp kataloğunu açanlar. Kim olduğu değil, kaç kez açıldığı sayılır.</p></section>'+
     '<section><h3>Nereden geldiler</h3>'+top('r:',VS_SRC)+'</section>'+
     '<section><h3>En çok bakılan sayfalar</h3>'+top('p:',VS_PG)+'</section>'+
     '<section><h3>Cihaz</h3>'+top('d:',{mobil:'Telefon / tablet',masaustu:'Bilgisayar'})+'</section></div>';
