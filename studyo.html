@@ -716,9 +716,9 @@ img{-webkit-touch-callout:none;-webkit-user-drag:none}
 #tplFilters button,#tplGrps button{padding:4px 8px!important;font-size:12px!important}
 #tplHead,#tplCats{display:none!important}
 .panel[data-p="tpl"]>#tplEmpty,.panel[data-p="tpl"]>#tplGrid{flex:1 1 100%}
-#tplGrid{grid-auto-flow:column!important;grid-auto-columns:86px!important;grid-template-columns:none!important;overflow-x:auto!important;overflow-y:hidden!important;gap:6px!important;align-items:start!important;padding-bottom:2px}
+#tplGrid{grid-auto-flow:column!important;grid-auto-columns:118px!important;grid-template-columns:none!important;overflow-x:auto!important;overflow-y:hidden!important;gap:6px!important;align-items:start!important;padding-bottom:2px}
 #tplGrid .tpl,#tplGrid .atpl{padding:3px 3px 4px!important;gap:3px!important;border-radius:10px!important;height:auto!important}
-#tplGrid .tpl .prev,#tplGrid .atpl .prev{height:96px!important;border-radius:8px!important}
+#tplGrid .tpl .prev,#tplGrid .atpl .prev{height:136px!important;border-radius:8px!important}
 #tplGrid .tpl span,#tplGrid .atpl span{font:600 10.5px/1.2 var(--ui)!important;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:0}
 #tplGrid .tpl-dir-heading{display:none!important}
 </style>
@@ -5045,7 +5045,7 @@ function tplMatch(t,q){if(!q)return true;var hay=tplText(t);return q.split(/\s+/
    Şablonda p yazmıyorsa giyim şablonudur. Başka ürüne de uyuyorsa p:['kupa','sapka'] gibi yazılır. */
 /* Süslemeler şablonları: Şekil > Süslemeler'deki her parça (yıldız, bayrak flaması, kurdele, balon...) tişört, şapka, kupa ve canvas şablonlarında da çıkar.
    ek:1 = mevcut tasarımı silmez, süslemeyi üstüne ekler; rengi ürün rengine göre kendiliğinden açık/koyu olur. */
-CLIPS.forEach(function(c){if(c[2]!=='Süslemeler')return;var a=clipAsp(c[0]);TPLS.push({c:'Süslemeler',n:c[1],p:['giyim','sapka','kupa','canvas'],ek:1,box:[100,100],items:[CL(c[0],'ink',a<0.6?90:62,0,0)]});});
+/* Süslemeler (tek renk küçük simgeler) Grafikler'de tekrar gösterilmez; Şablon > Şekiller bölümünde duruyor */
 var TPL_GROUP_NAME={giyim:'giyim',sapka:'şapka',kupa:'kupa',canvas:'canvas'};
 function tplGroup(p){p=p===undefined?state.product:p;return p==='mug'?'kupa':p==='canvas'?'canvas':p==='hat'?'sapka':'giyim';}
 function tplBox(t){return t.box||[REF_W,REF_H];}
@@ -5177,7 +5177,19 @@ function renderTplPreviews(){
     inn.style.cssText='';
     tplObjects(t,{cx:REF_W/2,cy:98},1,ink).forEach(function(o){inn.appendChild(makeEl(o));});
   });
+  tplFitAll();
 }
+/* Önizleme tasarımın kendisine oturur: boş kenarlar atılır, tasarım kartı doldurur (küçük ve kesik görünmez) */
+function tplFit(prev,inn){if(!prev||!inn||!inn.children.length||!prev.clientWidth)return;
+  inn.style.transform='none';inn.style.left='0';inn.style.top='0';inn.style.transformOrigin='0 0';
+  var r0=inn.getBoundingClientRect(),x1=1e9,y1=1e9,x2=-1e9,y2=-1e9;
+  Array.prototype.forEach.call(inn.children,function(c){var r=c.getBoundingClientRect();if(!r.width&&!r.height)return;x1=Math.min(x1,r.left);y1=Math.min(y1,r.top);x2=Math.max(x2,r.right);y2=Math.max(y2,r.bottom);});
+  var w=x2-x1,h=y2-y1;if(!(w>0&&h>0)){inn.style.cssText='';return;}
+  var pw=prev.clientWidth,ph=prev.clientHeight,k=Math.min(pw*0.9/w,ph*0.9/h,4);
+  var tx=(pw-w*k)/2-(x1-r0.left)*k,ty=(ph-h*k)/2-(y1-r0.top)*k;
+  inn.style.transform='translate('+tx.toFixed(1)+'px,'+ty.toFixed(1)+'px) scale('+k.toFixed(4)+')';}
+function tplFitAll(){$$('#tplGrid .tpl').forEach(function(b){var t=TPLS[+b.dataset.tpl];if(!t||t.oil||t.c==='Zemin')return;tplFit($('.prev',b),$('.in',b));});}
+try{document.fonts&&document.fonts.ready.then(function(){setTimeout(tplFitAll,50);});}catch(_){}
 function syncTeeUI(){if(!$('#prodPage').hidden)renderProdPage();syncOpt();if(view.tab==='opt')renderOpt();}
 /* Stüdyodan çıkmadan ürün rengi ve beden değişimi (üst satırdaki renk noktası) */
 function curSize(){var l=sizeList()||[];if(!l.length||isStd())return '';try{var z=phSize();if(z&&l.indexOf(z)>=0)return z;}catch(_){}var best='',mx=0;l.forEach(function(z){if((state.sizes[z]||0)>mx){mx=state.sizes[z];best=z;}});return best||PH.want||'';}
