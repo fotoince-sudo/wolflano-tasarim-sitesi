@@ -3809,7 +3809,7 @@ var PD_IC={trk:'<svg viewBox="0 0 24 24"><path d="M3 7h11v9H3zM14 10h4l3 3v3h-7z
 function pdBadges(p){var b=[],q=pKal(p);if(q)b.push(q.indexOf('kpr')>=0?'<i class="bd bq">PREMIUM</i>':'<i class="bd">STANDART</i>');
   if((p.dsg||hdStudio(p))&&!p.wk)b.push('<i class="bd bg">KİŞİYE ÖZEL TASARLANABİLİR</i>');if(p.tag==='Yeni'&&isNewP(p))b.push('<i class="bd bn">YENİ</i>');
   return b.length?'<div class="pdb">'+b.join('')+'</div>':'';}
-function pdInfoHTML(p){var L=pInfo(p);if(!L.length)return '';var T={'tee-alan':'Baskı alanları','nasil':'Nasıl tasarlanır','kargo':'Sipariş ve kargo','kargo-genel':'Sipariş ve kargo','kupa-alan':'Kupa baskı alanı'};
+function pdInfoHTML(p){var L=pInfo(p);if(!L.length)return '';var T={'tee-alan':'Baskı alanları','nasil':'Nasıl tasarlanır','nasil-kupa':'Nasıl tasarlanır','nasil-canvas':'Nasıl tasarlanır','kargo':'Sipariş ve kargo','kargo-genel':'Sipariş ve kargo','kupa-alan':'Kupa baskı alanı'};
   return '<section class="pdi" aria-label="Ürün bilgileri">'+L.map(function(n,i){return '<a href="assets/bilgi/'+n+'.webp?v=3" data-bilgi="'+i+'" data-bl="'+esc(L.join(','))+'" aria-label="'+esc(T[n]||'Bilgi')+' (büyük aç)"><img src="assets/bilgi/'+n+'.webp?v=3" alt="'+esc(T[n]||'Bilgi')+'" loading="lazy" width="1080" height="1080"></a>';}).join('')+'</section>';}
 /* Bilgi kartı görüntüleyici: tam ekran, sağa-sola kaydırılır, sağ üstte Kapat; ürün sayfası yerinde kalır */
 function bilgiOpen(L,k){imgView(L.map(function(n){return {u:'assets/bilgi/'+n+'.webp?v=3'};}),k);}
@@ -4364,7 +4364,7 @@ var DT_SAHNE={'beyaz':'beyaz','siyah':'siyah','lacivert':'lacivert','mavi':'mavi
 var DT_SKIP={'img/mwv5uqvlql95.jpg':1,'img/mwv7oacj2g5j.jpg':1,'img/mwv7lognfsvj.jpg':1,'img/mwv7locijtm5.jpg':1,'img/mwv7lodb7iov.jpg':1,'img/mwv7lohdcend.jpg':1,'img/mwv7loi9bkqf.jpg':1};
 /* 25 Kasım: katlanmış renkli tişört fotoğraflarına yanlışlıkla renk seçilmişti; bunlar her renkte görünür */
 var DT_HEPSI={'img/mwv5uqsfjblv.jpg':1,'img/mwv5uqwy0cen.jpg':1};
-function pInfo(p){var t=ptOf(p),dk=detKind(p);if(t==='kupa')return ['kupa-alan','nasil','kargo-genel'];if(t==='canvas')return ['nasil','kargo-genel'];
+function pInfo(p){var t=ptOf(p),dk=detKind(p);if(t==='kupa')return ['kupa-alan','nasil-kupa','kargo-genel'];if(t==='canvas')return ['nasil-canvas','kargo-genel'];
   var kg=dk==='tee'?'kargo':'kargo-genel';if(dk==='tee'||dk==='sweat')if(p.wk)return [];return (p.dsg||p.adesign)?['tee-alan','nasil',kg]:[kg];if(dk==='polo')return ['kargo-genel'];return [];}
 function galViews(p){
   if(p.cv)return p.cv;
