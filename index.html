@@ -3807,7 +3807,7 @@ var PD_IC={trk:'<svg viewBox="0 0 24 24"><path d="M3 7h11v9H3zM14 10h4l3 3v3h-7z
  hrt:'<svg viewBox="0 0 24 24"><path d="M12 20s-7-4.4-9-8.6C1.6 8.4 3.5 5 6.8 5c2 0 3.4 1.2 5.2 3 1.8-1.8 3.2-3 5.2-3 3.3 0 5.2 3.4 3.8 6.4-2 4.2-9 8.6-9 8.6z"/></svg>',
  pls:'<svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>'};
 function pdBadges(p){var b=[],q=pKal(p);if(q)b.push(q.indexOf('kpr')>=0?'<i class="bd bq">PREMIUM</i>':'<i class="bd">STANDART</i>');
-  if(p.dsg||hdStudio(p))b.push('<i class="bd bg">KİŞİYE ÖZEL TASARLANABİLİR</i>');if(p.tag==='Yeni'&&isNewP(p))b.push('<i class="bd bn">YENİ</i>');
+  if((p.dsg||hdStudio(p))&&!p.wk)b.push('<i class="bd bg">KİŞİYE ÖZEL TASARLANABİLİR</i>');if(p.tag==='Yeni'&&isNewP(p))b.push('<i class="bd bn">YENİ</i>');
   return b.length?'<div class="pdb">'+b.join('')+'</div>':'';}
 function pdInfoHTML(p){var L=pInfo(p);if(!L.length)return '';var T={'tee-alan':'Baskı alanları','nasil':'Nasıl tasarlanır','kargo':'Sipariş ve kargo','kargo-genel':'Sipariş ve kargo','kupa-alan':'Kupa baskı alanı'};
   return '<section class="pdi" aria-label="Ürün bilgileri">'+L.map(function(n,i){return '<a href="assets/bilgi/'+n+'.webp?v=3" data-bilgi="'+i+'" data-bl="'+esc(L.join(','))+'" aria-label="'+esc(T[n]||'Bilgi')+' (büyük aç)"><img src="assets/bilgi/'+n+'.webp?v=3" alt="'+esc(T[n]||'Bilgi')+'" loading="lazy" width="1080" height="1080"></a>';}).join('')+'</section>';}
@@ -3831,7 +3831,7 @@ function pdView(p){try{if(RV.list===null&&!RV.busy)rvLoad();}catch(_){}
   var so=soldOut(p),zs=so?[]:pSizes(p),desc=pDesc(p),bt=btHTML(btNote(p,btKindP(p),desc)),ad=(sbAdmin()||WF_ADM);
   var pn=String(p.pnote||'').trim();if(pn==='-')pn='';else if(!pn&&!(/kupa|canvas|kanvas|tablo/i.test((p.type||'')+' '+(p.name||''))||ptOf(p)==='canvas'))pn=TX('pnote');
   var add=so?'<button type="button" class="btn sold" data-soldout="'+p.id+'">Sepete ekle</button>':'<button class="btn" data-add="'+p.id+'">Sepete ekle</button>';
-  var links=[];if(p.dsg)links.push('<a href="studyo.html?hazir='+encodeURIComponent(p.id)+'">'+PD_IC.pen+'Bu tasarımı düzenle, ismini ekle</a>');
+  var links=[];if(p.dsg&&!p.wk)links.push('<a href="studyo.html?hazir='+encodeURIComponent(p.id)+'">'+PD_IC.pen+'Bu tasarımı düzenle, ismini ekle</a>');
   if(hdStudio(p))links.push('<a href="'+hdStudio(p)+'">'+PD_IC.pls+(p.dsg?'Boş üründen tasarla':'Kendi tasarımını yap')+'</a>');
   links.push('<button type="button" data-fav="'+p.id+'">'+PD_IC.hrt+(favs[p.id]?'Favorilerde':'Favorilere ekle')+'</button>');
   return '<div class="wrap page pd2">'+pdBack(p)+'<div class="pd"><div class="gal" id="gal">'+galHTML(p)+'</div>'+(function(){var c=pColRow(p);return c?'<div class="pdc">'+c+'</div>':'';})()+'<div class="info">'+
@@ -4214,7 +4214,7 @@ function card(p){
   var cgL=V||(pBack(p)?[p]:null);
   return '<article class="card'+(V?' cg':'')+'"'+(cgL?' data-cg="'+esc(JSON.stringify(cgL.map(function(v){return {i:v.id,u:IMG(v),b:pBack(v),p:pr(v),c:v.color||'',d:v.dsg?1:0,s:soldOut(v)?1:0,f:pImgCls(v)?1:0};})))+'"':'')+'><div class="phw"><a class="ph" href="#urun-'+p.id+'" aria-label="'+esc(p.name)+' detay"><img src="'+IMG(p)+'"'+pImgCls(p)+' alt="'+esc(p.name)+'" loading="lazy">'+(soldOut(p)?'':pTag(p))+'</a>'+(soldOut(p)?'<span class="stkb">Tükendi</span>':'')+favBtn(p.id)+(V?'<div class="cgd" role="radiogroup" aria-label="Renk">'+V.map(function(v,i){var h=cHex(v.color)||'#ccc';return '<button type="button" data-cgi="'+i+'"'+(i?'':' class="on"')+' role="radio" aria-checked="'+(i?'false':'true')+'" aria-label="'+esc(v.color||'Renk')+'" style="background:'+h+'"></button>';}).join('')+'</div>':'')+'</div>'+
   '<div class="meta">'+'<b class="pnm">'+esc(nm)+'</b>'+'<div class="row"><small>'+pKal(p)+p.type+(ptOf(p)==='kupa'&&p.color?' · '+esc(p.color):'')+(pDim(p)?' · <b>'+pDim(p)+'</b>':'')+'</small><span class="price">'+pr(p)+'</span></div>'+'</div>'+
-  (soldOut(p)?'<button type="button" class="btn sm add sold" data-soldout="'+p.id+'">Sepete ekle</button>':'<button class="btn sm add" data-add="'+p.id+'">Sepete ekle</button>')+(p.dsg?'<a class="cedit" href="studyo.html?hazir='+encodeURIComponent(p.id)+'"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13.5 6.5l4 4"/></svg>Düzenle, ismini ekle</a>':'')+((sbAdmin()||WF_ADM)?'<button type="button" class="cdel" data-pdel="'+esc((V?V.map(function(v){return v.id;}):[p.id]).join(','))+'">Sil <small>(yalnız sen görürsün)</small></button>':'')+'</article>';
+  (soldOut(p)?'<button type="button" class="btn sm add sold" data-soldout="'+p.id+'">Sepete ekle</button>':'<button class="btn sm add" data-add="'+p.id+'">Sepete ekle</button>')+(p.dsg&&!p.wk?'<a class="cedit" href="studyo.html?hazir='+encodeURIComponent(p.id)+'"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13.5 6.5l4 4"/></svg>Düzenle, ismini ekle</a>':'')+((sbAdmin()||WF_ADM)?'<button type="button" class="cdel" data-pdel="'+esc((V?V.map(function(v){return v.id;}):[p.id]).join(','))+'">Sil <small>(yalnız sen görürsün)</small></button>':'')+'</article>';
 }
 
 /* Yönetici mi? Sunucuya sorulur (stüdyodaki gibi); evetse kartlarda Sil düğmesi çıkar */
@@ -4255,7 +4255,10 @@ function cgShow(c,k,back,fade){var L;try{L=JSON.parse(c.dataset.cg);}catch(_){re
   setInterval(function(){if(document.hidden)return;var now=Date.now(),vh=innerHeight;
     document.querySelectorAll('[data-cg]').forEach(function(c){if(c.dataset.cgman||c.matches(':hover'))return;var L;try{L=JSON.parse(c.dataset.cg);}catch(_){return;}
       var hasB=L.some(function(v){return v.b;});if(L.length<2&&!hasB)return;
-      if(!c.dataset.cgt){c.dataset.cgt=now+1500+Math.random()*5000;if(L.length>1)cgShow(c,Math.floor(Math.random()*L.length),false,false);return;}
+      if(!c.dataset.cgt){c.dataset.cgt=now+1500+Math.random()*5000;var fk=-1;L.forEach(function(v,i){if(fk<0&&favs[v.i])fk=i;});
+        /* favoriye alınmış renk varsa kart o renkte durur (Favorilerim'de de beğenilen renk görünür) */
+        if(fk>=0){c.dataset.cgman=1;cgShow(c,fk,false,false);return;}
+        if(L.length>1)cgShow(c,Math.floor(Math.random()*L.length),false,false);return;}
       if(now<+c.dataset.cgt)return;c.dataset.cgt=now+4000+Math.random()*4000;
       var r=c.getBoundingClientRect();if(r.bottom<-50||r.top>vh+50)return;
       var k=+c.dataset.cgk||0,b=c.dataset.cgb==='1',v=L[k]||{};
@@ -4361,7 +4364,7 @@ var DT_SKIP={'img/mwv5uqvlql95.jpg':1,'img/mwv7oacj2g5j.jpg':1,'img/mwv7lognfsvj
 /* 25 Kasım: katlanmış renkli tişört fotoğraflarına yanlışlıkla renk seçilmişti; bunlar her renkte görünür */
 var DT_HEPSI={'img/mwv5uqsfjblv.jpg':1,'img/mwv5uqwy0cen.jpg':1};
 function pInfo(p){var t=ptOf(p),dk=detKind(p);if(t==='kupa')return ['kupa-alan','nasil','kargo-genel'];if(t==='canvas')return ['nasil','kargo-genel'];
-  var kg=dk==='tee'?'kargo':'kargo-genel';if(dk==='tee'||dk==='sweat')return (p.dsg||p.adesign)?['tee-alan','nasil',kg]:[kg];if(dk==='polo')return ['kargo-genel'];return [];}
+  var kg=dk==='tee'?'kargo':'kargo-genel';if(dk==='tee'||dk==='sweat')return (p.dsg||p.adesign)?(p.wk?['tee-alan',kg]:['tee-alan','nasil',kg]):[kg];if(dk==='polo')return ['kargo-genel'];return [];}
 function galViews(p){
   if(p.cv)return p.cv;
   var im=((p.imgs&&p.imgs.length)?p.imgs:[null]).slice(0,5),vs=im.map(function(s){return {s:s,z:1,x:50,y:50};}),k=0;
