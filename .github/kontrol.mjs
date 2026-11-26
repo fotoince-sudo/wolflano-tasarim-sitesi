@@ -23,8 +23,8 @@ for (let i = 0; i < 6; i++) { const f = `${OUT}/test-foto-${i}.png`; fs.writeFil
 
 const browser = await chromium.launch();
 const ctx = await browser.newContext({ ...devices['iPhone 13'], locale: 'tr-TR' });
-// Çerez bandı (Google Analytics onayı) alttaki düğmeleri kapatmasın, robotun ziyareti istatistiğe de girmesin
-await ctx.addInitScript(() => { try { localStorage.setItem('wf_cerez', 'hayir'); } catch (_) {} });
+// Çerez bandı ve ziyaretçi anketi alttaki düğmeleri kapatmasın, robotun ziyareti istatistiğe de girmesin
+await ctx.addInitScript(() => { try { localStorage.setItem('wf_cerez', 'hayir'); localStorage.setItem('wf_anket', 'bitti'); } catch (_) {} });
 const page = await ctx.newPage();
 const hatalar = [];
 page.on('pageerror', (e) => hatalar.push('Sayfa hatası: ' + String(e.message || e).slice(0, 200)));
@@ -52,9 +52,38 @@ await adim('Fiyat ve kargo ayarları', async () => {
   if (sorun.length) throw new Error(sorun.slice(0, 6).join(' ; '));
   return 'kargo ' + d.ship.fee + ' ₺, ' + d.ship.free + ' ₺ üzeri ücretsiz';
 });
+// Aynı tasarım aynı renkte iki kez kaydedilmiş mi (kopya ürün)
+await adim('Kopya ürün', async () => {
+  const r = await fetch('https://api.wolflano.com.tr/rest/v1/site_content?select=data&id=eq.main', { headers: { apikey: 'sb_publishable_PP5xFd7ga61xaDOCHeET_Q_zfMaE_4G' } });
+  const d = (await r.json())[0].data, by = {};
+  // index.html'de gizlenen kopyalar (DEL_IDS) sayılmaz
+  let gizli = []; try { const m = fs.readFileSync('index.html', 'utf8').match(/var DEL_IDS=(\[[^\]]*\])/); if (m) gizli = JSON.parse(m[1]); } catch (_) {}
+  const imza = (p) => { const g = p.dsg || {}, A = g.assets || {}, s = [g.bid || '', g.cut || '', (p.cat || []).join(','), String(p.type || '')];
+    ['front', 'back', 'logo', 'logo2'].forEach((k) => { const x = g[k]; if (!x || !(x.objs || []).length) return; s.push(k + ':' + (x.area || ''));
+      x.objs.forEach((o) => { const a = o.assetId && A[o.assetId]; s.push([o.type, (a && (a.url || a.src)) || o.src || o.key || o.clip || o.shape || o.value || o.text || '', o.font || '', o.color || '', Math.round((+o.w || 0) / 20)].join('|')); }); });
+    return s.join('#') + '@' + String(p.color || '').toLocaleLowerCase('tr'); };
+  (d.products || []).filter((p) => p.show !== false && p.dsg && typeof p.dsg === 'object' && gizli.indexOf(p.id) < 0).forEach((p) => { const k = imza(p); (by[k] = by[k] || []).push(p); });
+  const kopya = Object.values(by).filter((l) => l.length > 1);
+  if (kopya.length) throw new Error(kopya.length + ' kopya: ' + kopya.slice(0, 5).map((l) => (l[0].name || l[0].id) + ' (' + (l[0].color || '') + ', ' + l.length + ' kez)').join(' ; '));
+  return 'kopya yok';
+});
+// Bir sayfada aynı adlı ürün iki ayrı kartta mı (aynı tasarımın renkleri tek kartta olmalı)
+async function ayniKart(hash, ad) {
+  await adim(ad, async () => {
+    await git(hash); await page.waitForTimeout(2500);
+    for (let i = 0; i < 60; i++) { const b = page.locator('[data-kolmore]'); if (!(await b.count())) break; await b.first().click(); await page.waitForTimeout(500); }
+    const ad2 = await page.evaluate(() => [...document.querySelectorAll('article.card')].map((c) => ((c.querySelector('.pnm') || {}).textContent || '').trim() + ' | ' + ((c.querySelector('.row small') || {}).textContent || '').trim()));
+    const say = {}; ad2.forEach((x) => { say[x] = (say[x] || 0) + 1; });
+    const cift = Object.entries(say).filter(([, n]) => n > 1);
+    if (cift.length) throw new Error(cift.length + ' tasarım birden çok kartta: ' + cift.slice(0, 5).map(([k, n]) => k.split(' | ')[0] + ' (' + n + ' kart)').join(' ; '));
+    return ad2.length + ' kart, tekrar yok';
+  });
+}
 await adim('Ana sayfa', async () => { await page.goto(SITE, { waitUntil: 'domcontentloaded', timeout: 45000 }); await page.waitForTimeout(4000); const t = await page.title(); if (!/wolflano/i.test(t)) throw new Error('Başlık beklenmedik: ' + t); });
 await adim('Koleksiyon', async () => { await git('#hazir'); await page.waitForSelector('article.card', { timeout: 20000 }); const n = await page.locator('article.card').count(); if (n < 10) throw new Error('Koleksiyonda az ürün var: ' + n); return n + ' ürün kartı'; });
 let urunHash = '';
+await ayniKart('#hazir', 'Koleksiyon · tekrar eden kart');
+await ayniKart('#wolflano', 'Wolflano Koleksiyon · tekrar eden kart');
 await adim('Ürün sayfası', async () => { await page.locator('article.card a.ph').first().click(); await page.waitForTimeout(2500); urunHash = await page.evaluate(() => location.hash);
   if (!/^#urun-/.test(urunHash)) throw new Error('Ürün sayfası açılmadı');
   const ok = await page.evaluate(() => { const i = document.querySelector('#gal img'); return !!(i && i.complete && i.naturalWidth > 0); }); if (!ok) throw new Error('Ürün fotoğrafı görünmüyor'); return urunHash; });
@@ -64,7 +93,7 @@ await adim('Sepete ekle (kupa)', async () => {
   const href = await page.evaluate(() => { const c = [...document.querySelectorAll('article.card')].find((a) => /KUPA/i.test(a.innerText) && !a.querySelector('[data-soldout]')); const l = c && c.querySelector('a[href^="#urun-"]'); return l ? l.getAttribute('href') : ''; });
   if (!href) throw new Error('Sepete eklenecek kupa bulunamadı');
   await git(href); await page.waitForTimeout(1500);
-  const btn = page.locator('main [data-add]').first(); if (!(await btn.count())) throw new Error('Ürün sayfasında Sepete ekle düğmesi yok');
+  const btn = page.locator('[data-add]:visible').first(); if (!(await btn.count())) throw new Error('Ürün sayfasında Sepete ekle düğmesi yok');
   await btn.click(); await page.waitForTimeout(1500);
   await git('#sepet'); const tx = await page.evaluate(() => document.body.innerText);
   if (/Sepetin boş/i.test(tx)) throw new Error('Ürün sepete eklenmedi'); return 'kupa sepette'; });
@@ -97,6 +126,26 @@ async function studyo(urun, ad) {
     return tp + ' şablon';
   });
 }
+// Stüdyo Grafikler: önizleme kartta küçük kalmasın (ne olduğu anlaşılsın)
+await adim('Stüdyo · Grafikler önizleme', async () => {
+  await page.goto(SITE + 'studyo.html?urun=tee', { waitUntil: 'domcontentloaded', timeout: 45000 });
+  await page.evaluate(() => { try { localStorage.setItem('wf_studio_guide', '1'); } catch (_) {} });
+  await page.reload({ waitUntil: 'domcontentloaded' }); await page.waitForTimeout(4000);
+  await page.locator('#tabs [data-tab="tpl"]').click(); await page.waitForTimeout(1200);
+  await page.locator('#apCats [data-ap="grf"]').click(); await page.waitForTimeout(3500);
+  const r = await page.evaluate(() => { const out = []; let n = 0;
+    document.querySelectorAll('#tplGrid .tpl').forEach((b) => { const pv = b.querySelector('.prev'), inn = b.querySelector('.in'); if (!pv || !inn || !inn.children.length) return; n++;
+      const P = pv.getBoundingClientRect(); let x1 = 1e9, y1 = 1e9, x2 = -1e9, y2 = -1e9;
+      [...inn.children].forEach((c) => { const q = c.getBoundingClientRect(); if (!q.width && !q.height) return; x1 = Math.min(x1, q.left); y1 = Math.min(y1, q.top); x2 = Math.max(x2, q.right); y2 = Math.max(y2, q.bottom); });
+      const w = x2 - x1, h = y2 - y1, ad = ((b.querySelector('span') || {}).textContent || '').trim();
+      if (!(w > 0)) return;
+      if (Math.max(w / P.width, h / P.height) < 0.6) out.push(ad + ' (küçük)');
+      else if (x1 < P.left - 3 || x2 > P.right + 3 || y1 < P.top - 3 || y2 > P.bottom + 3) out.push(ad + ' (kesik)');
+    }); return { n, out }; });
+  if (r.n < 10) throw new Error('Grafikler yüklenmedi (' + r.n + ')');
+  if (r.out.length) throw new Error(r.out.length + ' grafik önizlemesi bozuk: ' + r.out.slice(0, 6).join(' ; '));
+  return r.n + ' grafik, önizlemeler düzgün';
+});
 await studyo('tee', 'tişört');
 await studyo('mug', 'kupa');
 
