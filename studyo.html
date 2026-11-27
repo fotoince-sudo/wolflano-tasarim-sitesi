@@ -793,6 +793,7 @@ img{-webkit-touch-callout:none;-webkit-user-drag:none}
   <div class="ctxwrap" id="ctx" hidden>
     <div class="pop" id="colorPop" hidden></div>
     <div class="ctxbar" id="ctxBar">
+      <button type="button" id="fyputBtn" class="aibtn" hidden><svg class="i" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="15" rx="2"/><circle cx="9" cy="11" r="2"/><path d="M21 17l-5-5-9 8"/><path d="M17 2v6M14 5h6"/></svg><span>Fotoğraf koy</span></button>
       <button data-c="fyac" id="fyacBtn" class="aibtn" hidden><svg class="i" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><rect x="7" y="8" width="10" height="8" rx="1" stroke-dasharray="2 1.6"/></svg><span>Fotoğraf yeri aç</span></button>
       <button data-c="zemx" id="zemxBtn" hidden><svg class="i" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M4 20L20 4"/></svg><span>Zemini kaldır</span></button>
       <button data-c="zem" id="zemBtn" hidden><svg class="i" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M3 15l5-5 4 4 3-3 6 6"/></svg><span>Zemin ekle</span></button>
@@ -2702,7 +2703,7 @@ function qualityOf(o){
   if(ppi>=75)return null;
   return {ppi:ppi,cls:'low',txt:'Fotoğraf küçük'};
 }
-function syncCtx(){syncCtx0();syncMusicInk();try{var zx=$('#zemxBtn');if(zx)zx.hidden=!zemLayer();var fb=$('#fyacBtn');if(fb){fb.hidden=!(fyShapes().length&&fyTarget());if(!fb.hidden)ctx.hidden=false;}}catch(_){}var teeText=state.product==='tee'&&cur().area==='a4'&&!isLand(view.side)&&cur().objs.some(function(o){return o.teePhoto;});$$('#ctxBar [data-c^="tee-text-"]').forEach(function(b){b.hidden=!teeText;});var mugText=mugWrap()&&cur().objs.some(function(o){return o.mugVehicleFace;});$$('#ctxBar [data-c^="mug-vehicle-"]').forEach(function(b){b.hidden=!mugText;});var zb=$('#zemBtn');if(zb){var layers=cur().objs;zb.hidden=!layers.length;if(!zb.hidden){ctx.hidden=false;zb.querySelector('span').textContent=tplFrame()||layers.some(function(o){return o.zem;})?'Zemini değiştir':'Zemin ekle';}}try{zemSync();}catch(_){}var sb=$('#stageBar');if(sb){var was=sb.hidden;sb.hidden=ctx.hidden||!$$('#stageBar button').some(function(b){return !b.hidden;});if(was!==sb.hidden&&!(view.g||view.drag))requestAnimationFrame(layout);}}
+function syncCtx(){syncCtx0();syncMusicInk();try{var zx=$('#zemxBtn');if(zx)zx.hidden=!zemLayer();var fb=$('#fyacBtn');if(fb){fb.hidden=!(fyShapes().length&&fyTarget());if(!fb.hidden)ctx.hidden=false;}var fp=$('#fyputBtn');if(fp){fp.hidden=!fyFree();if(!fp.hidden)ctx.hidden=false;}}catch(_){}var teeText=state.product==='tee'&&cur().area==='a4'&&!isLand(view.side)&&cur().objs.some(function(o){return o.teePhoto;});$$('#ctxBar [data-c^="tee-text-"]').forEach(function(b){b.hidden=!teeText;});var mugText=mugWrap()&&cur().objs.some(function(o){return o.mugVehicleFace;});$$('#ctxBar [data-c^="mug-vehicle-"]').forEach(function(b){b.hidden=!mugText;});var zb=$('#zemBtn');if(zb){var layers=cur().objs;zb.hidden=!layers.length;if(!zb.hidden){ctx.hidden=false;zb.querySelector('span').textContent=tplFrame()||layers.some(function(o){return o.zem;})?'Zemini değiştir':'Zemin ekle';}}try{zemSync();}catch(_){}var sb=$('#stageBar');if(sb){var was=sb.hidden;sb.hidden=ctx.hidden||!$$('#stageBar button').some(function(b){return !b.hidden;});if(was!==sb.hidden&&!(view.g||view.drag))requestAnimationFrame(layout);}}
 /* Alt panel, seçim çubuğu ya da tarayıcı çubuğu açılıp kapanınca tasarım alanı yeniden sığdırılır (görsel kaybolmasın) */
 (function(){if(!window.ResizeObserver)return;var t=0,lw=0,lh=0;new ResizeObserver(function(en){var r=en[0].contentRect;if(Math.abs(r.width-lw)<1&&Math.abs(r.height-lh)<1)return;lw=r.width;lh=r.height;cancelAnimationFrame(t);t=requestAnimationFrame(function(){try{layout();}catch(_){}});}).observe(wrap);})();
 function syncCtx0(){
@@ -2924,6 +2925,11 @@ function tplLockify(d,fx){d=JSON.parse(JSON.stringify(d));fx=fx||{};
       o.lock=true;o.thru=1;o.tfix=1;delete o.inHole;});});
   return d;}
 var FY_GEO={fy_kare:['rect',8,8,84,84],fy_yatay:['rect',4,20,92,60],fy_dikey:['rect',20,4,60,92],fy_daire:['ell',8,8,84,84],fy_elips_yatay:['ell',4,22,92,56],fy_elips_dikey:['ell',22,4,56,92]};
+/* Delinmiş görselde (zemin ya da giydirilmiş şekil) boş fotoğraf yeri kaldı mı: "Fotoğraf koy" düğmesi o zaman görünür */
+function fyFree(){var L=cur().objs;return L.some(function(f){var a=f.type==='image'&&!f.rot&&assets[f.assetId];if(!a||!a.holes||!a.holes.length)return false;
+  return a.holes.some(function(q){var cx=f.x+(q.x+q.w/2-0.5)*f.w,cy=f.y+(q.y+q.h/2-0.5)*f.h,hw=q.w*f.w,hh=q.h*f.h;
+    return !L.some(function(z){return z!==f&&z.type==='image'&&Math.abs(z.x-cx)<hw/2&&Math.abs(z.y-cy)<hh/2;});});});}
+document.addEventListener('click',function(e){if(e.target.closest&&e.target.closest('#fyputBtn')){var f=$('#fileIn');if(f)f.click();}});
 function fyShapes(){return cur().objs.filter(function(o){return o.type==='clip'&&FY_GEO[o.key];});}
 function fyFrame(){var L=cur().objs;return L.find(function(o){return o.type==='image'&&!o.rot&&(o.zem||o.fitPrintArea||o.oilBg||o.teePhotoBg);})||null;}
 /* Delinecek katman: zemin yoksa foto yeri şeklinin altındaki görsel (ör. giydirilmiş yıldız/kalp) delinir */
@@ -2943,7 +2949,7 @@ async function fyPunch(){var full=!!(zemLayer()||fyFrame()),z=fyTarget(),S=fySha
     holes.sort(function(p,q){return Math.abs(p.y-q.y)>0.15?p.y-q.y:p.x-q.x;});
     var blob=await new Promise(function(r){c.toBlob(r,'image/png');}),id='a'+(++assetN);assets[id]={url:URL.createObjectURL(blob),w:W,h:H,nobg:true,holes:holes,part:!full||!!a.part};
     if(z.base&&z.base===z.assetId)z.base=id;z.assetId=id;delete z.zo;delete z.zb;cur().objs=cur().objs.filter(function(o){return S.indexOf(o)<0;});view.sel=null;renderObjects();syncCtx();pushHist();
-    var tt=$('#toast');if(tt)tt.hidden=true;longToast(S.length+' fotoğraf yeri açıldı. Şimdi Görsel\'den fotoğraf ekle; her biri sırayla bir yere, '+(full?'zeminin':'şeklin')+' arkasına oturur.');}
+    var tt=$('#toast');if(tt)tt.hidden=true;longToast(S.length+' fotoğraf yeri açıldı. Alttaki "Fotoğraf koy"a bas; fotoğraf kendiliğinden '+(full?'zeminin':'şeklin')+' arkasına, deliğe oturur.');}
   catch(_){toast('Fotoğraf yeri açılamadı, tekrar dene.');}}
 async function zemPick(k){
   if(k==='none'){zemRemove();return;}
