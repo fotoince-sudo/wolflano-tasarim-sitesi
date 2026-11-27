@@ -6685,7 +6685,7 @@ function ayHazir(IMG,FB){
   document.addEventListener('keydown',function(ev){if(ev.key==='Escape'&&!kt.hidden)kapat();});
   function sync(){var h=(location.hash||'').slice(1),adm=/^(yonetim|crm)/.test(h)||/[?&]admin=/.test(location.search);
     var bar=!!document.querySelector('.sbar,.cobar');fab.classList.toggle('up',bar);bal.classList.toggle('up',bar);kt.classList.toggle('up',bar);
-    fab.hidden=adm;if(adm){kt.hidden=true;bal.hidden=true;}if(!kt.hidden||/^(odeme)$/.test(h))bal.hidden=true;}
+    fab.hidden=adm;if(adm){kt.hidden=true;bal.hidden=true;}if(!kt.hidden||/^(odeme|sepet)$/.test(h))bal.hidden=true;}
   window.addEventListener('hashchange',function(){setTimeout(sync,80);});
   try{var mn=document.getElementById('main');if(mn&&window.MutationObserver)new MutationObserver(function(){sync();}).observe(mn,{childList:true});}catch(_){}
   sync();setTimeout(sync,600);
@@ -6869,7 +6869,7 @@ function ayHazir(IMG,FB){
   /* Görünürlük: yönetimde gizli; alttaki sabit çubuk (sepete ekle / ödeme) varsa onun üstüne çıkar */
   function sync(){var h=(location.hash||'').slice(1),adm=/^(yonetim|crm)/.test(h)||/[?&]admin=/.test(location.search);
     var bar=!!document.querySelector('.sbar,.cobar');fab.classList.toggle('up',bar);bal.classList.toggle('up',bar);
-    var hide=adm||!pn.hidden;fab.hidden=hide||live;lbar.hidden=adm||!pn.hidden||!live;lbar.classList.toggle('up',bar);if(hide||live||/^(odeme)$/.test(h))bal.hidden=true;}
+    var hide=adm||!pn.hidden;fab.hidden=hide||live;lbar.hidden=adm||!pn.hidden||!live;lbar.classList.toggle('up',bar);if(hide||live||/^(odeme|sepet)$/.test(h))bal.hidden=true;}
   window.addEventListener('hashchange',function(){setTimeout(sync,80);});
   try{var mn=document.getElementById('main');if(mn&&window.MutationObserver)new MutationObserver(function(){sync();}).observe(mn,{childList:true});}catch(_){}
   sync();setTimeout(sync,600);

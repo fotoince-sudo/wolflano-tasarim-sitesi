@@ -96,7 +96,10 @@ await adim('Sepete ekle (kupa)', async () => {
   const btn = page.locator('[data-add]:visible').first(); if (!(await btn.count())) throw new Error('Ürün sayfasında Sepete ekle düğmesi yok');
   await btn.click(); await page.waitForTimeout(1500);
   await git('#sepet'); const tx = await page.evaluate(() => document.body.innerText);
-  if (/Sepetin boş/i.test(tx)) throw new Error('Ürün sepete eklenmedi'); return 'kupa sepette'; });
+  if (/Sepetin boş/i.test(tx)) throw new Error('Ürün sepete eklenmedi');
+  // Aybüke'nin "hoş geldiniz" balonu sepette toplamın üstüne binmesin
+  if (await page.locator('.ayb:visible').count()) throw new Error('Aybüke balonu sepette açık kalıyor (toplamı kapatıyor)');
+  return 'kupa sepette'; });
 await adim('Ödeme sayfası', async () => { await git('#odeme'); const tx = await page.evaluate(() => document.body.innerText); if (/Sepetin boş/i.test(tx)) throw new Error('Ödeme sayfası sepeti boş görüyor'); if (!/Ödeme/i.test(tx)) throw new Error('Ödeme sayfası açılmadı'); const n = await page.locator('input').count(); if (n < 3) throw new Error('Ödeme formu eksik (' + n + ' alan)'); });
 await adim('Baskı Atölyesi', async () => { await git('#tasarla'); await page.waitForTimeout(1500); const tx = await page.evaluate(() => document.body.innerText); if (!/Tasarla|Ürün seç/i.test(tx)) throw new Error('Atölye sayfası boş'); });
 await adim('Hediye & Dekor', async () => { await git('#ana'); const h = await sayfaLink('hediye'); if (!h) throw new Error('Hediye & Dekor bağlantısı bulunamadı'); await git(h); await page.waitForTimeout(1500); const n = await page.locator('article.card').count(); if (n < 3) throw new Error('Hediye & Dekor sayfasında az ürün: ' + n); return n + ' ürün'; });
@@ -145,6 +148,68 @@ await adim('Stüdyo · Grafikler önizleme', async () => {
   if (r.n < 10) throw new Error('Grafikler yüklenmedi (' + r.n + ')');
   if (r.out.length) throw new Error(r.out.length + ' grafik önizlemesi bozuk: ' + r.out.slice(0, 6).join(' ; '));
   return r.n + ' grafik, önizlemeler düzgün';
+});
+// Stüdyo · giydir → ayır → yeniden giydir → kontur → kırp → kaydet → kayıttan aç (müşteri gibi, telefonda)
+// Geçmiş hata: kayıtlı tasarım açılınca LANO'ya kontur verince WOLF'un resmi geliyordu; "Ayır" boş görsel getiriyordu.
+await adim('Stüdyo · giydir, kontur, kaydet, aç', async () => {
+  const objs = () => page.evaluate(() => [...document.querySelectorAll('#stage .obj[data-id]')].map((e) => { const r = e.getBoundingClientRect(); const i = e.querySelector('img'); return { id: e.dataset.id, text: /\btext\b/.test(e.className), cx: r.x + r.width / 2, cy: r.y + r.height / 2, src: i ? i.src : '' }; }));
+  const toast = () => page.evaluate(() => { const t = document.getElementById('toast'); return t && !t.hidden ? t.textContent : ''; });
+  const bekle = async () => { const t0 = Date.now(); while (Date.now() - t0 < 20000) { const s = await toast(); if (!/…/.test(s)) return s; await page.waitForTimeout(300); } return toast(); };
+  const btn = (c, t) => page.locator(`#ctxBar [data-c="${c}"]${t ? `[data-t="${t}"]` : ''}:visible`).first();
+  const sec = async (id) => { const o = (await objs()).find((x) => x.id == id); if (!o) throw new Error('parça bulunamadı'); await page.mouse.click(o.cx, o.cy); await page.waitForTimeout(600); };
+  const kaydir = async (id, dy) => { const o = (await objs()).find((x) => x.id == id); await page.mouse.move(o.cx, o.cy); await page.mouse.down(); for (let k = 1; k <= 8; k++) { await page.mouse.move(o.cx, o.cy + dy * k / 8); await page.waitForTimeout(30); } await page.mouse.up(); await page.waitForTimeout(500); };
+  const desen = async (i, ne) => { await page.locator('.gych [data-gy="desen"]').click(); await page.waitForTimeout(1500);
+    const z = page.locator('#zemGrid [data-zem]:visible').filter({ hasNot: page.locator('.zx') }); if ((await z.count()) <= i) throw new Error('Desenler yüklenmedi');
+    await z.nth(i).click(); await page.waitForTimeout(1200); const t = await bekle(); if (!/yerleşti/.test(t)) throw new Error(ne + ' giydirilemedi: ' + t.slice(0, 80)); };
+  const yazi = async (v, dy) => { await page.locator('#tabs [data-tab="text"]').click(); await page.waitForTimeout(500); await page.locator('#addText').click(); await page.waitForTimeout(500);
+    await page.locator('#textIn').fill(v); await page.waitForTimeout(700); const o = (await objs()).filter((x) => x.text).pop(); if (!o) throw new Error('Yazı eklenmedi'); await kaydir(o.id, dy); return o.id; };
+  const imza = (id) => page.evaluate(async (id) => { const e = document.querySelector('#stage .obj[data-id="' + id + '"] img'); if (!e) return null; await e.decode().catch(() => {}); if (!e.naturalWidth) return null;
+    const c = document.createElement('canvas'); c.width = c.height = 24; const x = c.getContext('2d'); x.drawImage(e, 0, 0, 24, 24); const d = x.getImageData(0, 0, 24, 24).data; let s = ''; for (let i = 3; i < d.length; i += 4) s += d[i] > 60 ? '1' : '0'; return s; }, id);
+  const benzer = (a, b) => { let m = 0; for (let i = 0; i < a.length; i++) if (a[i] === b[i]) m++; return m / a.length; };
+
+  await page.goto(SITE + 'studyo.html?urun=tee', { waitUntil: 'domcontentloaded', timeout: 45000 });
+  await page.evaluate(() => { try { localStorage.setItem('wf_studio_guide', '1'); localStorage.removeItem('wf_sfav'); } catch (_) {} });
+  await page.reload({ waitUntil: 'domcontentloaded' }); await page.waitForTimeout(4500);
+  await yazi('WOLF', -35); await btn('giydir', 'text').click(); await page.waitForTimeout(400); await desen(12, 'WOLF');
+  await yazi('LANO', 35); await btn('giydir', 'text').click(); await page.waitForTimeout(400); await desen(30, 'LANO');
+  let O = await objs(); if (O.length !== 2 || O.some((o) => o.text)) throw new Error('Giydirmeden sonra ' + O.length + ' parça');
+  // WOLF: giydirilmiş parçayı yeniden giydir
+  await sec(O[0].id); await btn('giydir', 'image').click(); await page.waitForTimeout(400); await desen(40, 'WOLF (yeniden)');
+  // LANO: ayır, gevşek deseni sil, yazıyı yeniden giydir
+  O = await objs(); await sec(O[1].id); await btn('tsplit').click(); await page.waitForTimeout(800);
+  O = await objs(); if (O.length !== 3) throw new Error('Ayır çalışmadı (' + O.length + ' parça)');
+  await btn('del').click(); await page.waitForTimeout(500);
+  O = await objs(); const lt = O.find((o) => o.text); if (!lt) throw new Error('Ayırınca yazı geri gelmedi'); await sec(lt.id);
+  await btn('giydir', 'text').click(); await page.waitForTimeout(400); await desen(50, 'LANO (yeniden)');
+  // LANO: Kontur çok ince beyaz, sonra kare kırp
+  O = await objs(); await sec(O[1].id); await btn('wout').click(); await page.waitForTimeout(500);
+  await page.locator('#colorPop [data-wo="4"]').click(); await page.waitForTimeout(600); await bekle();
+  await page.locator('#colorPop [data-woc="#ffffff"]').click(); await page.waitForTimeout(600); await bekle();
+  await page.keyboard.press('Escape'); O = await objs(); await sec(O[1].id);
+  await btn('crop').click(); await page.waitForTimeout(800); await page.locator('[data-crp="sq"]').click(); await page.waitForTimeout(300);
+  await page.locator('[data-crp="ok"]').click(); await page.waitForTimeout(800); const kt = await bekle(); if (!/Kırpıldı/.test(kt)) throw new Error('Kırpma uygulanmadı: ' + kt.slice(0, 60));
+  O = await objs(); const once = []; for (const o of O) once.push(await imza(o.id));
+  if (once.some((x) => !x)) throw new Error('Parçalardan biri görünmüyor (kaydetmeden önce)');
+  // Kaydet ve kayıttan (Favoriler'deki gibi) yeniden aç
+  await page.evaluate(() => document.getElementById('saveDesign').click()); await page.waitForTimeout(4000);
+  const kayit = await page.evaluate(() => { try { const l = JSON.parse(localStorage.getItem('wf_sfav') || '[]'); const it = l[l.length - 1]; if (!it) return null;
+    const ti = (it.data.front.objs[1] || {}).tsrc; return { id: it.id, ic: ti && ti.img && it.data.assets[ti.img.assetId] ? it.data.assets[ti.img.assetId].url : '' }; } catch (_) { return null; } });
+  if (!kayit) throw new Error('Tasarım kaydedilemedi: ' + (await toast()).slice(0, 80));
+  if (!kayit.ic) throw new Error('Kayıtta giydirilmiş yazının içindeki desen yok (açınca "Ayır" boş gelir)');
+  await page.goto(SITE + 'studyo.html?fav=' + kayit.id, { waitUntil: 'domcontentloaded', timeout: 45000 }); await page.waitForTimeout(7000);
+  const R = await objs(); if (R.length !== 2) throw new Error('Kayıttan açınca ' + R.length + ' parça (2 olmalı)');
+  for (let i = 0; i < 2; i++) { const s = await imza(R[i].id); if (!s) throw new Error((i ? 'LANO' : 'WOLF') + ' açılınca görünmüyor'); if (benzer(s, once[i]) < benzer(s, once[1 - i]) || benzer(s, once[i]) < 0.9) throw new Error((i ? 'LANO' : 'WOLF') + ' açılınca başka parçanın resmini gösteriyor'); }
+  // Açılan LANO'ya kontur: kendi resmi kalmalı
+  await sec(R[1].id); await btn('wout').click(); await page.waitForTimeout(500); await page.locator('#colorPop [data-wo="1"]').click(); await page.waitForTimeout(800); await bekle(); await page.keyboard.press('Escape');
+  const R2 = await objs(); const s2 = await imza(R2[1].id); if (!s2) throw new Error('Açılan LANO kontur verince kayboldu');
+  if (benzer(s2, once[1]) < benzer(s2, once[0]) || benzer(s2, once[1]) < 0.9) throw new Error('Açılan LANO\'ya kontur verince başka parçanın (WOLF) resmi geldi');
+  // Açılan LANO'yu ayır: içindeki kendi deseni gelmeli
+  await sec(R2[1].id); await btn('tsplit').click(); await page.waitForTimeout(1500);
+  const R3 = await objs(); const ic = R3.filter((o) => !o.text && o.id !== R2[0].id);
+  if (!ic.length || !(await imza(ic[0].id))) throw new Error('Açılan LANO\'yu ayırınca içindeki desen boş geliyor');
+  if (ic[0].src !== kayit.ic) throw new Error('Açılan LANO\'yu ayırınca başka bir görsel geliyor');
+  await page.evaluate(() => { try { localStorage.removeItem('wf_sfav'); } catch (_) {} });
+  return 'WOLF/LANO giydir, ayır, kontur, kırp, kaydet, aç: düzgün';
 });
 await studyo('tee', 'tişört');
 await studyo('mug', 'kupa');
