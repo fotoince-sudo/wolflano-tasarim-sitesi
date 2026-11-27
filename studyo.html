@@ -827,7 +827,7 @@ img{-webkit-touch-callout:none;-webkit-user-drag:none}
       <button data-c="giydir" data-t="image" id="gyReBtn" class="aibtn" hidden><svg class="i" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2"/><path d="M21 16l-5-5-8 9"/></svg>Giydirmeyi değiştir</button>
       <button data-c="tsedit" data-t="image" id="tsEditBtn" hidden><svg class="i" viewBox="0 0 24 24"><path d="M4 20l4-1 11-11-3-3L5 16z"/></svg>Yazıyı düzenle</button>
       <button data-c="tsadj" data-t="image" id="tsAdjBtn" class="aibtn" hidden><svg class="i" viewBox="0 0 24 24"><path d="M12 2v20M2 12h20M12 2l-3 3M12 2l3 3M12 22l-3-3M12 22l3-3M2 12l3-3M2 12l3 3M22 12l-3-3M22 12l-3 3"/></svg>Fotoğrafı kaydır</button>
-      <button data-c="tsplit" data-t="image" id="tsplitBtn" hidden><svg class="i" viewBox="0 0 24 24"><path d="M4 6V4h16v2M12 4v16M9 20h6"/><path d="M3 21l4-4M21 21l-4-4"/></svg>Yazıyı ayır</button>
+      <button data-c="tsplit" data-t="image" id="tsplitBtn" hidden><svg class="i" viewBox="0 0 24 24"><path d="M4 6V4h16v2M12 4v16M9 20h6"/><path d="M3 21l4-4M21 21l-4-4"/></svg><span id="tsplitL">Yazıyı ayır</span></button>
       <button data-c="crop" data-t="image"><svg class="i" viewBox="0 0 24 24"><path d="M6 2v14a2 2 0 0 0 2 2h14"/><path d="M2 6h14a2 2 0 0 1 2 2v14"/></svg>Kırp</button>
       <button data-c="wout" data-t="image" id="woutBtn"><svg class="i" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="4"/><rect x="8" y="8" width="8" height="8" rx="1.5"/></svg>Kontur</button>
       <button data-c="holes" data-t="image"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><rect x="6" y="8" width="5" height="8" rx="1" stroke-dasharray="2 1.6"/><rect x="13" y="8" width="5" height="8" rx="1" stroke-dasharray="2 1.6"/></svg>Fotoğraf yerlerini aç</button>
@@ -2395,7 +2395,7 @@ function imageBorderWidth(o){return o.oilSlot?0.2*PPC:(o.bw||0);}
 function imageBorderColor(o){return o.oilSlot?'#ffffff':(o.bc||'#161616');}
 function imageCornerRadius(o){return o.oilSlot?0.3*PPC:o.visorRadius?Math.min(o.w,o.h)*o.visorRadius:(o.br||0);}
 function updateEl(el,o){
-  el.classList.toggle('thru',!!o.thru);el.classList.toggle('adjimg',!!o._adj);el.classList.toggle('adjtxt',!!o._adjT);
+  el.classList.toggle('thru',!!o.thru);if(o.type==='image'){var ha=assets[o.assetId];if(ha&&(ha.nobg||ha.holes||ha.fx))hitAlpha(o.assetId);}el.classList.toggle('adjimg',!!o._adj);el.classList.toggle('adjtxt',!!o._adjT);
   if(o.type==='text'){if(!isWarped(o)&&(el.firstElementChild||el.textContent!==o.value))el.textContent=o.value;styleText(el,o);}
   else if(o.type==='clip'){el.style.color=o.color;if(o.color2)el.style.setProperty('--c2',o.color2);else el.style.removeProperty('--c2');if(el.dataset.k!==o.key){el.dataset.k=o.key;el.innerHTML=clipSVG(o.key);el.classList.toggle('phit',/^lgk_/.test(o.key));}}
   else if(o.type==='image'&&slotLive(o)){slotRender(el,o);}
@@ -2720,7 +2720,7 @@ function syncCtx0(){
   var pop=$('#colorPop');
   if(!o){pop.hidden=true;return;}
   $$('#ctxBar [data-t],#stageBar [data-t]').forEach(function(b){b.hidden=b.dataset.t.split(' ').indexOf(o.type)<0;});
-  if(o.type==='image'){var ts=$('#tsplitBtn'),it=$('#ctxBar [data-c="intext"]'),ta=$('#tsAdjBtn');if(ts)ts.hidden=!o.tsrc;if(ta)ta.hidden=!o.tsrc;var gr=$('#gyReBtn'),te=$('#tsEditBtn');if(gr)gr.hidden=!o.tsrc;if(te)te.hidden=!(o.tsrc&&o.tsrc.text&&o.tsrc.text.type==='text');if(it)it.hidden=!!o.tsrc||!!o.slot||!cur().objs.some(function(q){return q.type==='text';});}
+  if(o.type==='image'){var ts=$('#tsplitBtn'),it=$('#ctxBar [data-c="intext"]'),ta=$('#tsAdjBtn');if(ts){ts.hidden=!o.tsrc;var tl=$('#tsplitL');if(tl)tl.textContent=o.tsrc&&o.tsrc.text&&o.tsrc.text.type==='clip'?'Şekli ayır':'Yazıyı ayır';}if(ta)ta.hidden=!o.tsrc;var gr=$('#gyReBtn'),te=$('#tsEditBtn');if(gr)gr.hidden=!o.tsrc;if(te)te.hidden=!(o.tsrc&&o.tsrc.text&&o.tsrc.text.type==='text');if(it)it.hidden=!!o.tsrc||!!o.slot||!cur().objs.some(function(q){return q.type==='text';});}
   if(o.type==='clip'&&clipFixed(o.key)){$$('#ctxBar [data-c="color"],#stageBar [data-c="color"]').forEach(function(b){b.hidden=true;});if(view.pop==='color')view.pop=null;}
   /* Yeni seçimde çubuk baştan başlar: önceki nesnede sağa kaydırılmış kalınca Renk gibi baştaki düğmeler görünmüyordu */
   if(view.ctxFor!==o.id){view.ctxFor=o.id;var cb=$("#ctxBar");if(cb)cb.scrollLeft=0;ctx.scrollLeft=0;}
@@ -4832,10 +4832,20 @@ function onDown(e){
   /* Parçalı armada seçim çerçevesi başka parçanın üstündeyse, parmağın altındaki parça seçilir */
   if(sb&&o&&o.type==='clip'&&/^lgk_/.test(o.key||'')){var un=(document.elementsFromPoint?document.elementsFromPoint(e.clientX,e.clientY):[]).filter(function(el){return el.closest&&el.closest('.obj.phit')&&!el.closest('#selLayer')&&el.tagName.toLowerCase()==='path';})[0];
     if(un){var uid=+un.closest('.obj.phit').dataset.id;if(uid&&uid!==o.id){select(uid);var uo=objById(uid);if(uo&&!uo.lock)startMove(uid,p);return;}}}
+  if(sb&&o){var hp=hitPick(e,p),OL=cur().objs;if(hp&&hp!==o&&!hp.slot&&(!hitSolid(o,p)||OL.indexOf(hp)>OL.indexOf(o))){select(hp.id);if(!hp.lock)startMove(hp.id,p);return;}}
   if(sb&&o){if(!o.lock)startMove(o.id,p);return;}
-  if(oEl&&!oEl.closest('#selLayer')){var id=+oEl.dataset.id,ob=objById(id);if(view.sel!==id)select(id);if(ob&&!ob.lock)startMove(id,p);return;}
+  if(oEl&&!oEl.closest('#selLayer')){var hq=hitPick(e,p);if(hq&&!hq.slot)oEl=document.querySelector('.obj[data-id="'+hq.id+'"]')||oEl;var id=+oEl.dataset.id,ob=objById(id);if(view.sel!==id)select(id);if(ob&&!ob.lock)startMove(id,p);return;}
   g={kind:'tap',x:e.clientX,y:e.clientY,t:performance.now()};
 }
+/* Saydam görsel (giydirilmiş şekil, delikli zemin, arka planı silinmiş fotoğraf) boş yerinden dokunulunca alttaki nesne seçilir */
+var HITMAP={};
+function hitAlpha(id){var a=assets[id];if(!a)return null;var m=HITMAP[id];if(m)return m.d?m:null;HITMAP[id]={};
+  loadImg(a.url).then(function(im){var W=Math.max(1,Math.min(256,im.naturalWidth)),H=Math.max(1,Math.round(W*im.naturalHeight/im.naturalWidth)),c=document.createElement('canvas');c.width=W;c.height=H;var x=c.getContext('2d');x.drawImage(im,0,0,W,H);HITMAP[id]={W:W,H:H,d:x.getImageData(0,0,W,H).data};}).catch(function(){HITMAP[id]={W:1,H:1,d:new Uint8ClampedArray([0,0,0,255])};});return null;}
+function hitSolid(o,p){if(!o||o.type!=='image')return true;var a=assets[o.assetId];if(!a||!(a.nobg||a.holes||a.fx))return true;var m=hitAlpha(o.assetId);if(!m)return true;
+  var r=-(o.rot||0)*PI/180,dx=p.x-o.x,dy=p.y-o.y,lx=dx*Math.cos(r)-dy*Math.sin(r),ly=dx*Math.sin(r)+dy*Math.cos(r),u=lx/o.w+0.5,v=ly/o.h+0.5;
+  if(u<0||u>1||v<0||v>1)return false;var i=Math.min(m.W-1,Math.floor(u*m.W)),j=Math.min(m.H-1,Math.floor(v*m.H));return m.d[(j*m.W+i)*4+3]>16;}
+function hitPick(e,p){var seen={},L=(document.elementsFromPoint?document.elementsFromPoint(e.clientX,e.clientY):[]).map(function(el){return el.closest&&el.closest('.obj');}).filter(function(el){if(!el||el.closest('#selLayer')||seen[el.dataset.id])return false;seen[el.dataset.id]=1;return true;});
+  for(var k=0;k<L.length;k++){var ob=objById(+L[k].dataset.id);if(ob&&hitSolid(ob,p))return ob;}return null;}
 /* Tasarım baskı alanının dışına taşabilir (dışı görünmez, baskı dosyasında kırpılır).
    Merkez, tasarımın bir kısmı alanda kalacak kadar sınırlanır ki tamamen kaybolmasın. */
 
