@@ -2942,6 +2942,16 @@ function fyFilled(f){var a=f&&f.type==='image'&&!f.rot&&assets[f.assetId];if(!a|
   a.holes.forEach(function(q){var r=fyHoleRect(f,q),p=L.find(function(z){return z!==f&&z.type==='image'&&z.inHole&&Math.abs(z.x-r.cx)<r.hw/2&&Math.abs(z.y-r.cy)<r.hh/2;});if(p)out.push({p:p,r:r});});return out;}
 /* Seçili olan delikteki fotoğrafsa onun delikli şekli/zemini bulunur */
 function fyOwner(o){if(!o||!o.inHole)return null;return cur().objs.find(function(f){return fyFilled(f).some(function(it){return it.p===o;});})||null;}
+/* Giydirmeyi değiştir / yazıyı düzenle / ayır: delikli şeklin delikleri kaybolmasın, yeni giydirmede aynı yerden yeniden açılır */
+function fyAbsHoles(o){var a=o&&assets[o.assetId];if(!a||!a.holes||!a.holes.length||o.rot)return null;
+  return a.holes.map(function(q){return {cx:o.x+(q.x+q.w/2-0.5)*o.w,cy:o.y+(q.y+q.h/2-0.5)*o.h,hw:q.w*o.w,hh:q.h*o.h,e:q.e||'rect'};});}
+async function fyPunchAbs(z,H){var a=assets[z.assetId];if(!a||!H||!H.length||z.rot)return;
+  var im=await loadImg(a.url),W=im.naturalWidth,Hh=im.naturalHeight,c=document.createElement('canvas');c.width=W;c.height=Hh;var x=c.getContext('2d');x.drawImage(im,0,0,W,Hh);
+  var kx=W/z.w,ky=Hh/z.h,l0=z.x-z.w/2,t0=z.y-z.h/2,holes=[];x.globalCompositeOperation='destination-out';
+  H.forEach(function(h){var cx=(h.cx-l0)*kx,cy=(h.cy-t0)*ky,w=h.hw*kx,hh=h.hh*ky;x.beginPath();if(h.e==='oval')x.ellipse(cx,cy,w/2,hh/2,0,0,Math.PI*2);else x.rect(cx-w/2,cy-hh/2,w,hh);x.fill();
+    holes.push({x:(h.cx-h.hw/2-l0)/z.w,y:(h.cy-h.hh/2-t0)/z.h,w:h.hw/z.w,h:h.hh/z.h,e:h.e});});
+  var blob=await new Promise(function(r){c.toBlob(r,'image/png');}),id='a'+(++assetN);assets[id]={url:URL.createObjectURL(blob),w:W,h:Hh,nobg:true,fx:1,holes:holes,part:true};
+  if(!z.base||z.base===z.assetId)z.base=id;z.assetId=id;}
 var FYADJ=null;
 function fyAdjStart(){var f=selObj(),own=fyOwner(f),pick=own?f:null;if(own)f=own;var F=fyFilled(f);if(!F.length)return;var n=(f._fyN||0)%F.length;f._fyN=n+1;var it=pick?F.find(function(x){return x.p===pick;}):F[n],p=it.p,c=p.crop;
   if(!p.base||!assets[p.base])p.base=p.assetId;var W=c?p.w/c.w:p.w,H=c?p.h/c.h:p.h;
@@ -3996,7 +4006,7 @@ document.addEventListener('click',function(e){if(e.target.closest&&e.target.clos
 function giydirAfterAdd(o){if(!GIYDIR)return false;var id=GIYDIR;GIYDIR=null;if(Date.now()-GIYDIR_AT>5*60e3)return false;
   /* Giydirilmiş yazıyı yeniden giydirme: eski giydirme kaldırılır, yazı geri gelir, yeni görsel onun içine girer */
   if(typeof id==='string'&&id.indexOf('re:')===0){var L=cur().objs,r=L.filter(function(q){return q.id===+id.slice(3)&&q.tsrc;})[0];if(!r)return false;
-    var rt=JSON.parse(JSON.stringify(r.tsrc.text));rt.id=view.nextId++;L.splice(L.indexOf(r),1,rt);renderObjects();id=rt.id;}
+    var rt=JSON.parse(JSON.stringify(r.tsrc.text));rt.id=view.nextId++;var rh=fyAbsHoles(r);if(rh)rt._holes=rh;L.splice(L.indexOf(r),1,rt);renderObjects();id=rt.id;}
   var t=cur().objs.filter(function(q){return q.id===id&&(q.type==='text'||q.type==='clip');})[0];if(!t)return false;
   if(t.type==='text'&&!isWarped(t))measureText(t);var tb=objBB(t),bw=tb.r-tb.l,bh=tb.b-tb.t,asp=(o.w&&o.h)?o.w/o.h:1,w=Math.max(bw,bh*asp)*1.06;
   o.w=w;o.h=w/asp;o.x=t.x;o.y=t.y;o.rot=0;renderObjects();select(o.id);
@@ -4022,7 +4032,8 @@ async function intextGo(){var im=selObj();if(!im||im.type!=='image'||im.lock)ret
     var blob=await new Promise(function(r){c.toBlob(r,'image/png');}),url=URL.createObjectURL(blob),id='a'+(++assetN);
     assets[id]={url:url,w:c.width,h:c.height,nobg:true,fx:1};
     var o=newBase('image');o.assetId=id;o.base=id;o.x=(tb.l+tb.r)/2;o.y=(tb.t+tb.b)/2;o.w=bw;o.h=bh;o.phs='none';o.phe='none';
-    o.tsrc={text:JSON.parse(JSON.stringify(t)),img:JSON.parse(JSON.stringify(im))};
+    o.tsrc={text:JSON.parse(JSON.stringify(t)),img:JSON.parse(JSON.stringify(im))};delete o.tsrc.text._holes;
+    if(t._holes){try{await fyPunchAbs(o,t._holes);}catch(_){}}
     var at=Math.min(objs.indexOf(t),objs.indexOf(im));cur().objs=objs.filter(function(q){return q!==t&&q!==im;});cur().objs.splice(at,0,o);
     renderObjects();select(o.id);pushHist();var tt=$('#toast');if(tt)tt.hidden=true;toast(isTx?'Fotoğraf yazının içine yerleşti. Beğenmezsen "Ayır" ya da ↶':'Fotoğraf şeklin içine yerleşti. Beğenmezsen "Ayır" ya da ↶');}
   catch(_){toast('Yapılamadı, tekrar dene.');}}
@@ -4032,14 +4043,14 @@ function tsText(o){return o&&o.tsrc&&!o.lock&&o.tsrc.text&&o.tsrc.text.type==='t
 var IRT=null,IRB=false;
 function intextRedoSoon(o){clearTimeout(IRT);var id=o.id;IRT=setTimeout(function(){var q=objById(id);if(q)intextRedo(q);},700);}
 async function intextRedo(o){if(IRB){intextRedoSoon(o);return;}var a=cur().objs,i=a.indexOf(o);if(i<0||!o.tsrc)return;IRB=true;
-  try{var t=JSON.parse(JSON.stringify(o.tsrc.text)),im=JSON.parse(JSON.stringify(o.tsrc.img));t.id=view.nextId++;im.id=view.nextId++;
+  try{var t=JSON.parse(JSON.stringify(o.tsrc.text)),im=JSON.parse(JSON.stringify(o.tsrc.img));t.id=view.nextId++;im.id=view.nextId++;var oh=fyAbsHoles(o);if(oh)t._holes=oh;
     a.splice(i,1,t,im);renderObjects();if(!isWarped(t))measureText(t);var tb=objBB(t),ib=objBB(im);
     if(ib.l>tb.l||ib.r<tb.r||ib.t>tb.t||ib.b<tb.b){var asp=(im.w&&im.h)?im.w/im.h:1,w=Math.max(tb.r-tb.l,(tb.b-tb.t)*asp)*1.06;im.w=w;im.h=w/asp;im.x=t.x;im.y=t.y;im.rot=0;renderObjects();}
     view.sel=im.id;await intextGo();var tt=$('#toast');if(tt)tt.hidden=true;}
   finally{IRB=false;}
   var nn=selObj();if(tsText(nn)&&document.activeElement===textIn&&(textIn.value||' ')!==tsText(nn).value){tsText(nn).value=textIn.value||' ';intextRedoSoon(nn);}
   if(view.tab==='text'&&document.activeElement!==textIn)syncTextInput();}
-function intextSplit(){var o=selObj();if(!o||!o.tsrc)return;var a=cur().objs,i=a.indexOf(o),t=o.tsrc.text,im=o.tsrc.img;t.id=view.nextId++;im.id=view.nextId++;
+function intextSplit(){var o=selObj();if(!o||!o.tsrc)return;var a=cur().objs,i=a.indexOf(o),t=o.tsrc.text,im=o.tsrc.img;t.id=view.nextId++;im.id=view.nextId++;var sh=fyAbsHoles(o);if(sh)t._holes=sh;
   a.splice(i,1,t,im);renderObjects();select(im.id);pushHist();toast('Ayrıldı. Fotoğrafı kaydırıp yeniden "İçine giydir"e basabilirsin.');}
 function openCrop(){
   var o=selObj();if(!o||o.type!=='image'||o.lock)return;if(!o.base||!assets[o.base])o.base=o.assetId;
