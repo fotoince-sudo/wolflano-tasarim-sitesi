@@ -6920,13 +6920,17 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
         if(photo&&!/fotoğraf/i.test(base))base=(base?base+' ':'')+'Fotoğraflı';
         base=String(base||'').replace(/\s+/g,' ').trim().replace(/(^|\s)(\S)/g,function(m,a,b){return a+b.toLocaleUpperCase('tr');});
         title=base?(base+' '+head).slice(0,60).trim():head+' '+wFmt(wc);}}
-    else title=uniqName(title,(d.products||[]).map(function(x){return x.name;}));
+    else{var gid=(same&&same.grp)||o.grp;title=uniqName(title,(d.products||[]).filter(function(x){return !(gid&&x.grp===gid)&&!(+x.wc&&+x.wc===+wc&&String(x.type||'')===String(ptype));}).map(function(x){return x.name;}));}
+    /* Aynı tasarım aynı yere zaten yayınlıysa (2026-11-27): yeni kart açılmaz, aynı grup kullanılır; aynı renk varsa o ürün yerinde güncellenir (çift kart olmasın) */
+    var grp=(same&&same.grp)||o.grp||undefined,cj=(cp.cat||[]).join(),dup=same?(d.products||[]).filter(function(x){return String(x.type||'')===String(ptype)&&(x.cat||[]).join()===cj&&String(x.color||'').toLocaleLowerCase('tr')===String(pcol||'').toLocaleLowerCase('tr')&&((grp&&x.grp===grp)||(+x.wc===+wc&&dKey(Object.assign({},x,{grp:undefined}))===k0));})[0]:null;
+    if(dup){id=dup.id;no=+dup.no||no;code=prodCode(pcol,ptype,no);data.code=code;}
     var rec=await insertRow({title:title,kind:'urun',status:'yayında',product:state.product,cut:state.cut,color:state.tee,data:data,thumb:pubUrl(imgs[0]),by_wolf:!!byWolf});
     d.products=d.products||[];
-    d.products.unshift({id:id,no:no,wc:wc,grp:o.grp||(same&&same.grp)||undefined,name:title,type:ptype,color:pcol,price:Math.round((+price||0)/vatK('ready')*100)/100,pc:pc||undefined,old:(+o.old>0?+o.old:null),stock:null,tag:o.tag||'',cat:cp.cat,sub:cp.sub,imgs:imgs,desc:o.desc||'',show:true,wk:o.wk?true:undefined,adesign:rec&&rec.id,dsg:data,depo:(DEPO.cur&&depoBlank(state.product,state.cut))?DEPO.cur.id:undefined});
+    var np={id:id,no:no,wc:wc,grp:grp,name:title,type:ptype,color:pcol,price:Math.round((+price||0)/vatK('ready')*100)/100,pc:pc||undefined,old:(+o.old>0?+o.old:null),stock:null,tag:o.tag||'',cat:cp.cat,sub:cp.sub,imgs:imgs,desc:o.desc||'',show:true,wk:o.wk?true:undefined,adesign:rec&&rec.id,dsg:data,depo:(DEPO.cur&&depoBlank(state.product,state.cut))?DEPO.cur.id:undefined};
+    var di=dup?d.products.indexOf(dup):-1;if(di>=0)d.products[di]=Object.assign({},dup,np);else d.products.unshift(np);
     await rq('/rest/v1/site_content?on_conflict=id',{method:'POST',body:{id:'main',data:d,updated_at:new Date().toISOString()},prefer:'resolution=merge-duplicates,return=minimal'});
     if(rec)await rq('/rest/v1/admin_designs?id=eq.'+rec.id,{method:'PATCH',body:{note:'Ürün: '+id}});
-    var cn=catLabel(catId);return 'Ürün sitede yayında: "'+title+'" · Kod: '+code+(cn?' → '+cn:'')+'. Fiyatını ve açıklamasını yönetim panelindeki Koleksiyon sekmesinden değiştirebilirsin.';
+    ADM.lastGrp=grp;var cn=catLabel(catId);if(dup)return 'Ürün güncellendi (yeni kart açılmadı): "'+title+'" · Kod: '+code+(cn?' → '+cn:'')+'.';return 'Ürün sitede yayında: "'+title+'" · Kod: '+code+(cn?' → '+cn:'')+'. Fiyatını ve açıklamasını yönetim panelindeki Koleksiyon sekmesinden değiştirebilirsin.';
   }
   /* Tüm renklere uygula: aynı tasarım ürünün bütün renklerinde ayrı ayrı yayınlanır (hepsi aynı W kodunu alır, Koleksiyon'da tek tasarımın renkleri olarak görünür) */
   function allCols(){if(/^(mug|canvas)$/.test(state.product))return [];return TEES.map(function(t){return t[1];}).filter(function(h,i,a){return a.indexOf(h)===i;});}
@@ -6941,8 +6945,8 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
     finally{teeSwap(t0);restoreMusicColors(musicColors);renderShirt();renderObjects();syncMusicInk();try{renderOpt();}catch(_){}}
     if(!ok.length)throw {msg:'Hiçbir renk yayınlanamadı. Tekrar dene.'};
     /* Kayıt kontrolü: sitede bu tasarımın kaç rengi gerçekten duruyor (biri diğerinin üzerine yazdıysa burada görünür) */
-    try{var vr=await rq('/rest/v1/site_content?select=data&id=eq.main'),vd=vr&&vr[0]&&vr[0].data,lp=vd&&(vd.products||[])[0];
-      if(lp&&+lp.wc){var kept=(vd.products||[]).filter(function(x){return +x.wc===+lp.wc&&x.type===lp.type&&(x.cat||[]).join()===(lp.cat||[]).join();}).length;
+    try{var vr=await rq('/rest/v1/site_content?select=data&id=eq.main'),vd=vr&&vr[0]&&vr[0].data,lg=ADM.lastGrp;
+      if(vd&&lg){var kept=(vd.products||[]).filter(function(x){return x.grp===lg;}).length;
         if(kept<ok.length)return 'Dikkat: '+ok.length+' renk gönderildi ama sitede '+kept+' renk görünüyor. Ürünü "Stüdyoda düzenle" ile açıp "Tüm renklerde güncelle" işaretli Güncelle\'ye bas; eksik renkler eklenir.';}}catch(_){}
     return ok.length+' renkte yayınlandı: '+ok.join(', ')+'.'+(bad.length?' Yayınlanamayan: '+bad.join(', ')+' (o rengi tek başına tekrar dene).':'')+' Hepsi aynı tasarım kodunu aldı.';}
   async function doPrint(title,sizes,byWolf){
