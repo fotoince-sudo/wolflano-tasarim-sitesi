@@ -189,7 +189,7 @@ svg.i{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stro
 #logoZone{position:absolute;pointer-events:none;border:calc(1.2px*var(--inv)) dashed #2f8f4e;background:rgba(47,143,78,.06)}#logoZone span{position:absolute;left:0;top:100%;margin-top:calc(2px*var(--inv));font:700 calc(9px*var(--inv)) var(--ui);color:#2f8f4e;white-space:nowrap}
 #shadeHost,#shadeHost>div{position:absolute;inset:0;pointer-events:none}#shadeHost svg{display:block}body.drg #shadeHost{visibility:hidden}#shadeHost .sh-m{mix-blend-mode:multiply}#shadeHost .sh-s{mix-blend-mode:screen}
 .obj{position:absolute;left:0;top:0;transform-origin:50% 50%;cursor:grab}
-.obj.text{white-space:pre;line-height:1.1;padding:.08em .16em}
+.obj.text{white-space:pre;line-height:1.1;padding:.08em .16em;text-align:center}
 .obj.text.warp{padding:0;line-height:0}
 .obj.warp svg{width:auto;height:auto;overflow:visible}
 .obj svg,.obj img{display:block;width:100%;height:100%;pointer-events:none}
@@ -722,6 +722,13 @@ img{-webkit-touch-callout:none;-webkit-user-drag:none}
 .txtop .txin input{width:100%;min-width:0}
 .txtop .txin span{display:none}
 .txtop .txin input{height:40px!important}
+.txtop .txin textarea{display:block;width:100%;min-width:0;height:40px;max-height:92px;resize:none;border-radius:12px;border:1px solid var(--line2);background:var(--panel2);color:var(--ink);padding:9px 12px;font:600 16px/1.3 var(--ui);overflow-y:auto}
+.txtop .txin textarea:disabled{opacity:.55}
+#bigTx{position:fixed;left:8px;right:8px;top:calc(env(safe-area-inset-top,0px) + 8px);z-index:400;background:#fff;border:1.5px solid #5ec08f;border-radius:16px;box-shadow:0 10px 30px rgba(0,0,0,.25);padding:10px;display:flex;flex-direction:column;gap:8px}
+#bigTx[hidden]{display:none}#bigTx b{font:700 13px var(--ui);color:#1b221e}#bigTx small{font:500 12px var(--ui);color:#6b746f}
+#bigTx textarea{width:100%;min-height:96px;max-height:34vh;resize:none;border:1px solid var(--line2);border-radius:12px;padding:10px 12px;font:600 18px/1.35 var(--ui);background:var(--panel2);color:var(--ink)}
+#bigTx .bt-row{display:flex;justify-content:space-between;align-items:center;gap:8px}#bigTx button{height:38px;border-radius:999px;padding:0 18px;font:700 14px var(--ui);background:#5ec08f;color:#fff;border:1.5px solid #111}
+.txtop #bigTxBtn{flex:none;width:40px;height:40px;border-radius:12px;border:1.5px solid #5ec08f;background:#fff;display:grid;place-items:center;padding:0}
 .txtop #addText{flex:none;height:40px;padding:0 12px;white-space:nowrap;font-size:13.5px}
 .panel[data-p="text"] .mini-title{margin:10px 0 6px!important}
 #fontGrid{display:flex!important;grid-template-columns:none!important;overflow-x:auto;gap:6px!important;padding-bottom:2px;scrollbar-width:none}
@@ -860,7 +867,7 @@ img{-webkit-touch-callout:none;-webkit-user-drag:none}
     <button class="sheet-x" id="sheetX" aria-label="Paneli kapat"><svg class="i" viewBox="0 0 24 24" style="width:18px;height:18px"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
     <div class="panel" data-p="text" hidden>
       <!-- Sıra: yazıyı yaz/ekle → yazı tipi → hazır stiller → şekil → görünüm → ince ayarlar -->
-      <div class="txtop"><label class="fld txin"><span>Yazıyı düzenle</span><input id="textIn" type="text" maxlength="40" disabled placeholder="Önce bir yazı ekle veya seç" autocomplete="off"></label><button class="primary" id="addText">+ Yeni yazı</button></div>
+      <div class="txtop"><label class="fld txin"><span>Yazıyı düzenle</span><textarea id="textIn" rows="1" maxlength="200" disabled placeholder="Önce bir yazı ekle veya seç" autocomplete="off" enterkeyhint="enter"></textarea></label><button type="button" id="bigTxBtn" aria-label="Büyük kutuda yaz" title="Büyük kutuda yaz (yazıya çift dokunarak da açılır)"><svg class="i" viewBox="0 0 24 24" style="width:18px;height:18px"><path d="M14 4h6v6M10 20H4v-6M20 4l-7 7M4 20l7-7"/></svg></button><button class="primary" id="addText">+ Yeni yazı</button></div>
       <div class="mini-title">Yazı tipi</div>
       <div class="fonts" id="fontGrid"></div>
       <div class="mini-title">Hazır yazı stilleri</div>
@@ -1963,7 +1970,7 @@ function depoBlank(product,cut){var d=DEPO.cur;if(!d||d.product!==product||(d.cu
 (function(){function fix(){var a=document.activeElement;if(a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)&&a.type!=='range')return;if(window.scrollY||document.documentElement.scrollTop||document.body.scrollTop){window.scrollTo(0,0);document.documentElement.scrollTop=0;document.body.scrollTop=0;}}
   document.addEventListener('focusout',function(e){var t=e.target;if(t&&/^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName))setTimeout(fix,120);setTimeout(fix,450);},true);
   if(window.visualViewport){var h0=visualViewport.height;visualViewport.addEventListener('resize',function(){var h=visualViewport.height;if(h>h0-40)setTimeout(fix,80);h0=Math.max(h0,h);});}
-  document.addEventListener('keydown',function(e){var t=e.target;if(e.key==='Enter'&&t&&t.id==='textIn'){try{t.blur();}catch(_){}}},true);})();
+  document.addEventListener('keydown',function(e){var t=e.target;if(e.key==='Enter'&&t&&t.id==='textIn'&&t.tagName!=='TEXTAREA'){try{t.blur();}catch(_){}}},true);})();
 /* 2026-11-25: Standart (süblimasyon) tişört artık Unisex değil; erkek ya da kadın olarak, seçilen kesimle kaydedilir */
 function isUni(bid){bid=bid==null?(state&&state.bid)||'':bid;if(/^sub-/.test(bid))return false;try{var l=(PH.site&&PH.site.blanks)||[],b=l.filter(function(x){return x.id===bid;})[0];return !!(b&&/unisex|uniseks/i.test(String(b.name||'')+' '+String(b.cuts||'')));}catch(_){return false;}}
 function phBlank(product,cut){var db=depoBlank(product,cut);if(db)return db;var l=(PH.site&&PH.site.blanks)||[];var m=l.filter(function(b){return b.show!==false&&(b.p||b.id)===product&&(!b.cut||b.cut===cut);});return blankPick(m,cut);}
@@ -2346,7 +2353,15 @@ function shadowColOf(o){var l=lookOf(o);if(l==='shadow')return shadowCol(o);if(l
 function shadowCol(o){return o.stroke||(String(o.color).toLowerCase()==='#159b91'?'#111111':'#159b91');}
 function escX(t){return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 function w0dikey(o){return o.warp==='dikey';}
-function warpLayout(o,sz){
+/* Çok satırlı yazı (2026-11-27): her satır ayrı dizilir, alt alta ortalanır; harf numaraları (harf harf renk) tüm yazıya göre kalır */
+function warpLayout(o,sz){var v=String(o.value||' ');if(v.indexOf('\n')<0)return warpLayout1(o,sz);
+  var ls=v.split('\n'),off=0,parts=[],lh=sz*1.1;mctx.font=fontStr(o.font,sz);
+  ls.forEach(function(l){var lay=warpLayout1(Object.assign({},o,{value:l||' '}),sz);lay.g.forEach(function(g){g.i+=off;});parts.push(lay);off+=Array.from(l).length+1;});
+  var W=0,H=0;parts.forEach(function(p){W=Math.max(W,p.w);});var gap=lh,tot=(parts.length-1)*gap;var out=[];
+  parts.forEach(function(p,k){var dy=-tot/2+k*gap;p.g.forEach(function(g){g.y+=dy;out.push(g);});});
+  H=tot+Math.max.apply(null,parts.map(function(p){return p.h;}));
+  return {g:out,by:parts[0].by,w:W,h:H};}
+function warpLayout1(o,sz){
   mctx.font=fontStr(o.font,sz);
   var chars=Array.from(o.value||' '),ws=chars.map(function(c){return mctx.measureText(c).width;});
   var gap=w0dikey(o)?0:(+o.ls||0)*sz;
@@ -2731,6 +2746,7 @@ function syncTextInput(){
   textIn.disabled=!isT;if(!(dt&&document.activeElement===textIn))textIn.value=isT?String(src.value||'').replace(/^\s+$/,''):'';
   $$('#fontGrid .font').forEach(function(b){b.classList.toggle('on',b.dataset.f===(isT?src.font:view.font));});
   if(view.tab==='text')renderFxRows();
+  txGrow();
 }
 function qualityOf(o){
   var a=assets[o.assetId];if(!a||a.bg)return null;
@@ -5077,7 +5093,7 @@ function onUp(e){
 }
 function tapObject(id){
   var now=performance.now(),o=objById(id);
-  if(lastTap.id===id&&now-lastTap.t<380){lastTap={id:0,t:0};if(o&&o.type==='text')openTab('text',true);}
+  if(lastTap.id===id&&now-lastTap.t<380){lastTap={id:0,t:0};if(o&&o.type==='text'){if(!openBigTx())openTab('text',true);}}
   else lastTap={id:id,t:now};
 }
 wrap.addEventListener('pointerdown',onDown,{passive:false});
@@ -5524,10 +5540,20 @@ $('#fontGrid').addEventListener('click',function(e){
   syncTextInput();
 });
 textIn.addEventListener('input',function(){
-  var o=selObj();if(tsText(o)){tsText(o).value=textIn.value===''?' ':textIn.value;intextRedoSoon(o);return;}if(!o||o.type!=='text')return;
+  txGrow();var o=selObj();if(tsText(o)){if(/\n/.test(textIn.value))textIn.value=textIn.value.replace(/\n+/g,' ');tsText(o).value=textIn.value===''?' ':textIn.value;intextRedoSoon(o);return;}if(!o||o.type!=='text')return;
+  var bt=$('#bigTxIn');if(bt&&document.activeElement!==bt)bt.value=textIn.value;
   var ov=o.value;o.value=textIn.value===''?' ':textIn.value;lcRealign(o,ov,o.value);updateEl(els[o.id],o);measureText(o);updateSel();if(view.pop==='fill'&&hasLC(o))showPopRefresh();
 });
 textIn.addEventListener('change',pushHist);
+function txGrow(){try{textIn.style.height='40px';textIn.style.height=Math.min(92,Math.max(40,textIn.scrollHeight+2))+'px';}catch(_){}}
+/* Görsel üzerinde düzenleme: yazıya çift dokununca üstte büyük yazı kutusu açılır; Enter alt satıra geçer, tasarım altta canlı değişir */
+function openBigTx(){var o=selObj();if(!o||o.type!=='text'||tsText(o))return false;var b=$('#bigTx');
+  if(!b){b=document.createElement('div');b.id='bigTx';b.innerHTML='<b>Yazıyı düzenle</b><textarea id="bigTxIn" maxlength="200" enterkeyhint="enter"></textarea><div class="bt-row"><small>Alt satıra geçmek için Enter (↵)</small><button type="button" id="bigTxOk">Tamam</button></div>';document.body.appendChild(b);
+    $('#bigTxIn').addEventListener('input',function(){textIn.value=this.value;textIn.dispatchEvent(new Event('input'));});
+    $('#bigTxOk').addEventListener('click',function(){closeBigTx();});}
+  $('#bigTxIn').value=String(o.value||'').replace(/^\s+$/,'');b.hidden=false;setTimeout(function(){var t=$('#bigTxIn');t.focus();try{t.setSelectionRange(t.value.length,t.value.length);}catch(_){}},30);return true;}
+document.addEventListener('click',function(e){if(e.target.closest&&e.target.closest('#bigTxBtn')){if(!openBigTx())toast('Önce bir yazı ekle veya seç');}});
+function closeBigTx(){var b=$('#bigTx');if(!b||b.hidden)return;b.hidden=true;try{$('#bigTxIn').blur();}catch(_){}pushHist();syncTextInput();txGrow();}
 $('#warpRow').addEventListener('click',function(e){
   var b=e.target.closest('[data-warp]');if(!b)return;var o=fxTarget();if(!o)return;
   o.warp=b.dataset.warp;if(o.wamt==null)o.wamt=50;refreshText(o);pushHist();
@@ -5707,7 +5733,7 @@ async function drawObj(c,o,S,ox,oy,hi,imageCache){
     c.font=font;c.textAlign='center';c.lineJoin='round';
     var items,by=0;
     var lay=null;if(isWarped(o)){lay=warpLayout(o,sz);items=lay.g;by=lay.by;c.textBaseline='alphabetic';}
-    else{items=[{ch:o.value,x:0,y:0,r:0,sy:1}];c.textBaseline='middle';}
+    else{var tl=String(o.value||'').split('\n'),tlh=sz*1.1;items=tl.map(function(l,k){return {ch:l,x:0,y:(k-(tl.length-1)/2)*tlh,r:0,sy:1,i:-1};});c.textBaseline='middle';}
     var skx=look==='sticker'?Math.tan(STK_SKEW*PI/180):0;
     var each=function(fn){items.forEach(function(gl){c.save();c.translate(gl.x,gl.y);c.rotate(gl.r*PI/180);c.scale(1,gl.sy);if(skx)c.transform(1,0,skx,1,0,0);fn(gl.ch);c.restore();});};
     var eachC=function(fn,st){items.forEach(function(gl){var col=lcAt(o,gl.i)||o.color;if(st)c.strokeStyle=col;else c.fillStyle=col;c.save();c.translate(gl.x,gl.y);c.rotate(gl.r*PI/180);c.scale(1,gl.sy);if(skx)c.transform(1,0,skx,1,0,0);fn(gl.ch);c.restore();});};
