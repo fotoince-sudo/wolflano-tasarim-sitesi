@@ -36,13 +36,20 @@ try{if(window.top!==window.self){window.top.location.replace(location.href);}}ca
 .znone .zx{display:grid;place-items:center;aspect-ratio:1;border:2px dashed #b9c6bf;border-radius:10px;font:700 22px var(--ui,system-ui);color:#7a8a82}
 #musicInkControl{display:inline-flex;align-items:center;gap:8px;white-space:nowrap;font-weight:650}#musicInkControl[hidden]{display:none}#musicInk{display:inline-flex;gap:8px}#musicInk .mik{flex:0 0 32px!important;width:32px!important;min-width:32px!important;height:32px!important;border-radius:50%!important;border:1.5px solid #aeb9b7!important;padding:0!important;cursor:pointer}#musicInk .mik.on{box-shadow:0 0 0 2px #fff,0 0 0 4px #159b91;border-color:#159b91}
 /* Sekme paneli açıkken Ortala/Öne/Arkaya çubuğu gizlenir; Wolf paneli sıkı, ürün üstte görünür kalır */
-body.tabon #stageBar{display:none!important}
+#stageBar{display:none!important}
 #sheet.tall{height:clamp(250px,44%,380px)!important}
 .panel[data-p="wolf"] .wolfp{gap:8px}
 .panel[data-p="wolf"] .kolaj{padding:0 0 8px;margin-bottom:8px;gap:8px}
 .panel[data-p="wolf"] #kolajBtn{min-height:0;height:40px;padding:6px 14px;font-size:14.5px;width:calc(100% - 52px)}
 #wolfChatOpen{min-height:38px!important;font-size:14.5px!important;margin-bottom:0!important}
 #wolfPh:empty{display:none}
+.kjin .wst2 .kjmode{display:flex;gap:6px;flex:1;min-width:0}.kjin .wst2 .kjmode button{flex:1;min-height:0;padding:7px 10px;border-radius:999px}.kjin .wst2 .kjmode small{display:none}.kjin .wst2 .kjmode b{font-size:13px}
+#kolajGo{height:42px;padding:0 14px}
+body.tabon #hint{display:none!important}
+.wphsel #wolfPhUp,.wphsel #wolfPhX{width:auto;padding:6px 12px;font-size:13px;border-radius:999px}.wphsel img{width:44px!important;height:44px!important}
+#kolajNote{font-size:12px!important;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.kjin{gap:8px!important}
+
 .wphic{margin-left:auto;width:36px;height:36px;border-radius:10px;border:1px solid #30703f;background:var(--panel2);color:#30703f;display:grid;place-items:center;padding:0;cursor:pointer}.wphic[hidden]{display:none}.wphic .i{width:20px;height:20px}
 .wst2{min-width:0}.wst2 .wstl{flex:none}.wst2 #wolfSt{flex:1;min-width:0}
 </style>
@@ -776,11 +783,6 @@ img{-webkit-touch-callout:none;-webkit-user-drag:none}
       <div class="dwrap"><div id="selLayer"></div></div>
     </div>
     <div class="stagebar" id="stageBar" hidden>
-      <button data-c="center" data-t="text clip image"><svg class="i" viewBox="0 0 24 24"><path d="M12 3v18M3 12h18"/><rect x="7" y="7" width="10" height="10" rx="2"/></svg>Ortala</button>
-      <button data-c="gcenter" data-g="1"><svg class="i" viewBox="0 0 24 24"><path d="M12 3v18M3 12h18"/><rect x="7" y="7" width="10" height="10" rx="2"/></svg>Ortala</button>
-      <button data-c="fill" data-t="image"><svg class="i" viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>Doldur</button>
-      <button data-c="fwd" data-t="text clip image"><svg class="i" viewBox="0 0 24 24"><path d="M12 19V5M5 12l7-7 7 7"/></svg>Öne</button>
-      <button data-c="bwd" data-t="text clip image"><svg class="i" viewBox="0 0 24 24"><path d="M12 5v14M5 12l7 7 7-7"/></svg>Arkaya</button>
     </div>
     <div class="mlive" id="mugLive" hidden aria-label="Kupada gerçek görünüm"><b>Kupada gerçek görünüm</b><div><figure><canvas id="mlR" width="300" height="300"></canvas><figcaption>Sağ elde</figcaption></figure><figure><canvas id="mlL" width="300" height="300"></canvas><figcaption>Sol elde</figcaption></figure></div></div>
     <button type="button" class="odakx" id="odakX" aria-label="Tam ekrandan çık"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5"/></svg>Küçült</button>
@@ -807,36 +809,41 @@ img{-webkit-touch-callout:none;-webkit-user-drag:none}
       <button type="button" data-c="tee-text-bottom" hidden>Alt yazı</button>
       <button type="button" data-c="tee-text-left" hidden>Sol yazı</button>
       <button type="button" data-c="tee-text-right" hidden>Sağ yazı</button>
-      <button data-c="fx" data-t="image" class="aibtn" id="fxBtn"><svg class="i" viewBox="0 0 24 24"><path d="M12 3l1.8 4.2L18 9l-4.2 1.8L12 15l-1.8-4.2L6 9l4.2-1.8z"/><path d="M19 15l.8 1.7 1.7.8-1.7.8-.8 1.7-.8-1.7-1.7-.8 1.7-.8z"/></svg>Wolf çizsin · Tarz</button>
-      <button data-c="color" data-t="text clip"><i class="dot" id="ctxDot"></i>Renk</button>
-      <button data-c="zout" data-t="text clip image" class="zbtn" aria-label="Küçült (%5)">−</button>
-      <button data-c="zin" data-t="text clip image" class="zbtn" aria-label="Büyüt (%5)">+</button>
-      <button data-c="del" data-t="text clip image" class="danger"><svg class="i" viewBox="0 0 24 24"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg>Sil</button>
-      <button data-c="swap" data-t="clip image"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="10" r="1.6"/><path d="M21 16l-5-5-8 8"/></svg>Değiştir</button>
-      <button data-c="all" data-t="text clip image"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" stroke-dasharray="3 2.4"/><rect x="8" y="8" width="8" height="8" rx="1"/></svg>Tümünü seç</button>
-      <button data-c="flip" data-t="text clip image"><svg class="i" viewBox="0 0 24 24"><path d="M12 3v18" stroke-dasharray="2 2"/><path d="M9 6L3 18h6zM15 6l6 12h-6z"/></svg>Ayna çevir</button>
-      <button data-c="mirr" data-t="text clip image"><svg class="i" viewBox="0 0 24 24"><path d="M12 3v18" stroke-dasharray="2 2"/><path d="M4 8h5v8H4zM15 8h5v8h-5z"/></svg>Karşıya kopyala</button>
-      <button data-c="dup" data-t="text clip image"><svg class="i" viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V6a2 2 0 0 1 2-2h9"/></svg>Kopyala</button>
-      <button data-c="lock" data-t="text clip image" id="lockBtn"><svg class="i" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg><span>Kilitle</span></button>
-      <button data-c="giydir" data-t="text" class="aibtn"><svg class="i" viewBox="0 0 24 24"><path d="M4 6V4h16v2M12 4v16M9 20h6"/><path d="M15.5 9.5l2-2 3 3-2 2" /><circle cx="18.5" cy="16.5" r="2.5"/></svg>Yazıyı giydir</button>
-      <button data-c="giydir" data-t="clip" class="aibtn"><svg class="i" viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/><circle cx="12" cy="11" r="2"/></svg>Şekli giydir</button>
       <button data-c="edit" data-t="text"><svg class="i" viewBox="0 0 24 24"><path d="M4 20l4-1 11-11-3-3L5 16z"/></svg>Düzenle</button>
       <button data-c="font" data-t="text"><svg class="i" viewBox="0 0 24 24"><path d="M5 6V4h14v2M12 4v16M9 20h6"/></svg>Yazı tipi</button>
+      <button data-c="color" data-t="text clip"><i class="dot" id="ctxDot"></i>Renk</button>
       <button data-c="stroke" data-t="text"><svg class="i" viewBox="0 0 24 24"><rect x="5" y="5" width="14" height="14" rx="3" stroke-dasharray="3 2.4"/></svg>Kontur</button>
+      <button data-c="giydir" data-t="text" class="aibtn"><svg class="i" viewBox="0 0 24 24"><path d="M4 6V4h16v2M12 4v16M9 20h6"/><path d="M15.5 9.5l2-2 3 3-2 2" /><circle cx="18.5" cy="16.5" r="2.5"/></svg>Yazıyı giydir</button>
+      <button data-c="giydir" data-t="clip" class="aibtn"><svg class="i" viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/><circle cx="12" cy="11" r="2"/></svg>Şekli giydir</button>
+      <button data-c="swap" data-t="clip image"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="10" r="1.6"/><path d="M21 16l-5-5-8 8"/></svg>Değiştir</button>
+      <button data-c="crop" data-t="image"><svg class="i" viewBox="0 0 24 24"><path d="M6 2v14a2 2 0 0 0 2 2h14"/><path d="M2 6h14a2 2 0 0 1 2 2v14"/></svg>Kırp</button>
+      <button data-c="fx" data-t="image" id="fxBtn"><svg class="i" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="5" stroke-dasharray="3 2.4"/><rect x="8" y="8" width="8" height="8" rx="2"/></svg>Kenar</button>
+      <button data-c="wout" data-t="image" id="woutBtn"><svg class="i" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="4"/><rect x="8" y="8" width="8" height="8" rx="1.5"/></svg>Kontur</button>
+      <button data-c="nobg" data-t="image" id="nobgBtn"><svg class="i" viewBox="0 0 24 24"><path d="M4 20l10-10"/><path d="M15 3l1 2 2 1-2 1-1 2-1-2-2-1 2-1z"/><path d="M19 11l.6 1.4L21 13l-1.4.6L19 15l-.6-1.4L17 13l1.4-.6z"/></svg>Arka planı sil</button>
       <button data-c="intext" data-t="image" class="aibtn"><svg class="i" viewBox="0 0 24 24"><path d="M4 6V4h16v2M12 4v16M9 20h6"/><rect x="2.5" y="9" width="7" height="7" rx="1" stroke-dasharray="2 1.6"/></svg>İçine giydir</button>
       <button data-c="giydir" data-t="image" id="gyReBtn" class="aibtn" hidden><svg class="i" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2"/><path d="M21 16l-5-5-8 9"/></svg>Giydirmeyi değiştir</button>
       <button data-c="tsedit" data-t="image" id="tsEditBtn" hidden><svg class="i" viewBox="0 0 24 24"><path d="M4 20l4-1 11-11-3-3L5 16z"/></svg>Yazıyı düzenle</button>
       <button data-c="tsadj" data-t="image" id="tsAdjBtn" class="aibtn" hidden><svg class="i" viewBox="0 0 24 24"><path d="M12 2v20M2 12h20M12 2l-3 3M12 2l3 3M12 22l-3-3M12 22l3-3M2 12l3-3M2 12l3 3M22 12l-3-3M22 12l-3 3"/></svg>Fotoğrafı kaydır</button>
       <button data-c="tsplit" data-t="image" id="tsplitBtn" hidden><svg class="i" viewBox="0 0 24 24"><path d="M4 6V4h16v2M12 4v16M9 20h6"/><path d="M3 21l4-4M21 21l-4-4"/></svg><span id="tsplitL">Yazıyı ayır</span></button>
-      <button data-c="crop" data-t="image"><svg class="i" viewBox="0 0 24 24"><path d="M6 2v14a2 2 0 0 0 2 2h14"/><path d="M2 6h14a2 2 0 0 1 2 2v14"/></svg>Kırp</button>
-      <button data-c="wout" data-t="image" id="woutBtn"><svg class="i" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="4"/><rect x="8" y="8" width="8" height="8" rx="1.5"/></svg>Kontur</button>
       <button data-c="holes" data-t="image"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><rect x="6" y="8" width="5" height="8" rx="1" stroke-dasharray="2 1.6"/><rect x="13" y="8" width="5" height="8" rx="1" stroke-dasharray="2 1.6"/></svg>Fotoğraf yerlerini aç</button>
-      <button data-c="nobg" data-t="image" id="nobgBtn"><svg class="i" viewBox="0 0 24 24"><path d="M4 20l10-10"/><path d="M15 3l1 2 2 1-2 1-1 2-1-2-2-1 2-1z"/><path d="M19 11l.6 1.4L21 13l-1.4.6L19 15l-.6-1.4L17 13l1.4-.6z"/></svg>Arka planı sil</button>
+      <button data-c="zout" data-t="text clip image" class="zbtn" aria-label="Küçült (%5)">−</button>
+      <button data-c="zin" data-t="text clip image" class="zbtn" aria-label="Büyüt (%5)">+</button>
+      <button data-c="center" data-t="text clip image"><svg class="i" viewBox="0 0 24 24"><path d="M12 3v18M3 12h18"/><rect x="7" y="7" width="10" height="10" rx="2"/></svg>Ortala</button>
+      <button data-c="fill" data-t="image"><svg class="i" viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>Doldur</button>
+      <button data-c="fwd" data-t="text clip image"><svg class="i" viewBox="0 0 24 24"><path d="M12 19V5M5 12l7-7 7 7"/></svg>Öne</button>
+      <button data-c="bwd" data-t="text clip image"><svg class="i" viewBox="0 0 24 24"><path d="M12 5v14M5 12l7 7 7-7"/></svg>Arkaya</button>
+      <button data-c="flip" data-t="text clip image"><svg class="i" viewBox="0 0 24 24"><path d="M12 3v18" stroke-dasharray="2 2"/><path d="M9 6L3 18h6zM15 6l6 12h-6z"/></svg>Ayna çevir</button>
+      <button data-c="mirr" data-t="text clip image"><svg class="i" viewBox="0 0 24 24"><path d="M12 3v18" stroke-dasharray="2 2"/><path d="M4 8h5v8H4zM15 8h5v8h-5z"/></svg>Karşıya kopyala</button>
+      <button data-c="dup" data-t="text clip image"><svg class="i" viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V6a2 2 0 0 1 2-2h9"/></svg>Kopyala</button>
+      <button data-c="lock" data-t="text clip image" id="lockBtn"><svg class="i" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg><span>Kilitle</span></button>
+      <button data-c="all" data-t="text clip image"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" stroke-dasharray="3 2.4"/><rect x="8" y="8" width="8" height="8" rx="1"/></svg>Tümünü seç</button>
+      <button data-c="del" data-t="text clip image" class="danger"><svg class="i" viewBox="0 0 24 24"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg>Sil</button>
       <span class="pill" id="qPill" data-t="image"></span>
       <span class="pill mid" id="ovPill" data-t="text clip image" hidden>Taşan kısım basılmaz</span>
     
       <button data-c="gzout" data-g="1" class="zbtn" aria-label="Hepsini küçült (%5)">−</button>
       <button data-c="gzin" data-g="1" class="zbtn" aria-label="Hepsini büyüt (%5)">+</button>
+      <button data-c="gcenter" data-g="1"><svg class="i" viewBox="0 0 24 24"><path d="M12 3v18M3 12h18"/><rect x="7" y="7" width="10" height="10" rx="2"/></svg>Ortala</button>
       <button data-c="gcolor" data-g="1"><i class="dot" id="gDot"></i>Renk</button>
       <button data-c="gdup" data-g="1"><svg class="i" viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V6a2 2 0 0 1 2-2h9"/></svg>Kopyala</button>
       <button data-c="gdel" data-g="1" class="danger" id="gDel"><svg class="i" viewBox="0 0 24 24"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg><span>Sil</span></button>
@@ -897,13 +904,10 @@ img{-webkit-touch-callout:none;-webkit-user-drag:none}
       <div class="kolaj" id="kolajBox" hidden>
         <button class="primary wide" id="kolajBtn" type="button"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="4" width="8" height="10" rx="1" transform="rotate(-6 7 9)"/><rect x="12" y="3" width="9" height="7" rx="1" transform="rotate(5 16.5 6.5)"/><rect x="11" y="12" width="10" height="8" rx="1"/></svg>Kolaj yap</button>
         <div class="kjin" id="kolajIn" hidden>
-          <div class="wstep"><i>1</i>Fotoğraflarını seç <em id="kolajCnt">0 / 15</em></div>
+          <div class="wstep"><i>1</i>Fotoğraflar <em id="kolajCnt">0 / 15</em><label class="wphic" for="kolajFile" aria-label="Fotoğraf ekle"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="15" rx="2"/><circle cx="9" cy="11" r="2"/><path d="M21 17l-5-5-9 8"/><path d="M17 2v6M14 5h6"/></svg></label></div>
           <div class="kjg" id="kolajGrid"></div>
-          <label class="ghost wide kjadd" for="kolajFile"><svg class="i" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Fotoğraf ekle</label>
           <input id="kolajFile" type="file" accept="image/*" multiple hidden>
-          <div class="wstep"><i>2</i>Düzeni seç</div>
-          <div class="kjmode" id="kolajMode" role="radiogroup" aria-label="Kolaj düzeni"><button type="button" data-kjm="serbest" class="on" role="radio" aria-checked="true"><b>Serbest</b><small>karışık, hafif eğik, albüm gibi</small></button><button type="button" data-kjm="duzenli" role="radio" aria-checked="false"><b>Düzenli</b><small>eşit kutular, düz, simetrik</small></button></div>
-          <div class="wstep"><i>3</i>Wolf yerleştirsin</div>
+          <div class="wstep wst2"><i>2</i><span class="wstl">Düzen</span><div class="kjmode" id="kolajMode" role="radiogroup" aria-label="Kolaj düzeni"><button type="button" data-kjm="serbest" class="on" role="radio" aria-checked="true"><b>Serbest</b><small>karışık, hafif eğik, albüm gibi</small></button><button type="button" data-kjm="duzenli" role="radio" aria-checked="false"><b>Düzenli</b><small>eşit kutular, düz, simetrik</small></button></div></div>
           <button class="primary wide" id="kolajGo" type="button" disabled>Fotoğrafları tasarla</button>
           <p class="note" id="kolajNote">Tabloya en fazla 15 (35 × 50) ya da 30 (50 × 70; düzenli kolajda 35), süblimasyon kupaya 7, tişört ve sweatshirt'e 12 fotoğraf. Düzenli seçersen fotoğraflar eşit kutulara düz ve simetrik dizilir (ör. 50 × 70'te 35 fotoğraf: 5 × 7). Wolf fotoğraflardaki yüzleri bulur: fotoğrafı yüzlere göre kırpar ve hiçbir yüzün üstünü başka fotoğrafla kapatmaz. Fotoğrafların dikey ya da yatay oluşuna göre karışık bir kolaj kurar: kimi hafif sola, kimi hafif sağa eğik, kimi düz. Zemin hafif dokulu açık krem, fotoğraflar köşeleri hafif yuvarlak beyaz çerçeveli. Beğenmezsen yeniden dokun, Wolf başka bir yerleşim dener.</p>
         </div>
@@ -3045,7 +3049,7 @@ function loadFile(file){
     if(nq&&nq.cls==='low')longToast('Fotoğraf eklendi. Fotoğraf biraz küçük; elinde daha büyük bir sürümü varsa onu yüklersen daha net basılır.');
     else if(mugWrap()&&view.aiNext!=='wolf'&&!((selObj()||{}).inHole)&&/jpe?g|hei[cf]/i.test(file.type||file.name||'')){
       /* Saran kupada düz fotoğraf kutu gibi durmasın: yalnız fotoğraflarda (JPG/HEIC) kenarlar kendiliğinden yumuşar; PNG logo ve çizimlere dokunulmaz (Wolf çizsin · Tarz → Kenar → Düz ile geri alınır) */
-      applyFx(null,'soft',null).then(function(){longToast('Fotoğraf kupaya uysun diye kenarları yumuşatıldı. İstemezsen "Wolf çizsin · Tarz" → Kenar → Düz.');});}
+      applyFx(null,'soft',null).then(function(){longToast('Fotoğraf kupaya uysun diye kenarları yumuşatıldı. İstemezsen "Kenar" → Düz.');});}
     else aiHint();
   };
   im.onerror=function(){toast('Bu dosya açılamadı. PNG veya JPG dene.');};
@@ -4106,7 +4110,7 @@ document.addEventListener('change',function(e){var t=e.target;if(!t||!t.dataset|
 function fxPop(){
   var o=selObj(),pop=$('#colorPop');if(!o||o.type!=='image'||view.pop!=='fx')return;
   var st=o.phs||'none',ed=o.phe||'none',sf=o.phf==null?0.5:o.phf;
-  pop.innerHTML='<div class="fxp"><b>Wolf çizsin <em class="aitag">Yapay zekâ</em></b><div class="fxc ai">'+AI_ST.filter(function(s){return kurtOk(s[0]);}).map(function(s){return '<button type="button" data-ais="'+s[0]+'"'+(st==='ai-'+s[0]?' class="on"':'')+(AI_BUSY||fxBusy?' disabled':'')+'>'+s[1]+'</button>';}).join('')+'</div><small class="ainote">'+(AI_BUSY?'Wolf çiziyor…':'Gerçek çizim gibi sonuç · 30-60 sn · günde 3 ücretsiz hak, sonrası 50 ₺')+'</small>'+
+  pop.innerHTML='<div class="fxp">'+
     /* "Hızlı filtre" satırı kaldırıldı (Wolf'un tarzlarıyla aynı seçenekler iki kez görünüyordu); yalnız asıl fotoğrafa dönüş kaldı */
     (st!=='none'?'<div class="fxc"><button type="button" data-phs="none"'+(fxBusy?' disabled':'')+'>↺ Asıl fotoğraf</button></div>':'')+
     '<b>Kenar</b><div class="fxc">'+PHE.map(function(s){return '<button type="button" data-phe="'+s[0]+'"'+(s[0]===ed?' class="on"':'')+(fxBusy?' disabled':'')+'>'+s[1]+'</button>';}).join('')+'</div>'+
@@ -4163,9 +4167,9 @@ function aiDone(){clearInterval(aiTimer);aiTimer=null;}
 ['pointerdown','mousedown','touchstart'].forEach(function(ev){document.addEventListener(ev,function(e){var t=e.target.closest&&e.target.closest('.toast.tap');if(t)e.stopPropagation();},true);});
 function aiHint(){
   if(view.aiNext==='wolf'){view.aiNext=false;setTimeout(function(){try{if(view.tab!=='wolf')openTab('wolf');else wolfPhRender();}catch(_){}},200);return;}
-  if(view.aiNext){view.aiNext=false;try{closeTab();}catch(_){}setTimeout(function(){view.pop=null;showFx();},250);return;}
+  if(view.aiNext){view.aiNext=false;setTimeout(function(){try{if(view.tab!=='wolf')openTab('wolf');else wolfPhRender();}catch(_){}},200);return;}
   var t=toastEl();t.classList.add('long','tap');t.style.pointerEvents='auto';t.innerHTML='Fotoğraf eklendi. <b style="text-decoration:underline">Wolf çizsin</b>: karikatür, kalem çizim ya da yağlı boyaya çevirmek için dokun.';t.hidden=false;clearTimeout(toastT);
-  var sid=view.sel;t.onclick=function(){t.onclick=null;t.hidden=true;try{closeTab();}catch(_){}if(sid!=null&&view.sel!==sid)try{select(sid);}catch(_){}view.pop=null;showFx();};toastT=setTimeout(function(){t.hidden=true;t.onclick=null;},7000);
+  var sid=view.sel;t.onclick=function(){t.onclick=null;t.hidden=true;if(sid!=null&&view.sel!==sid)try{select(sid);}catch(_){}view.pop=null;try{if(view.tab!=='wolf')openTab('wolf');else wolfPhRender();}catch(_){}};toastT=setTimeout(function(){t.hidden=true;t.onclick=null;},7000);
   var b=$('#fxBtn');if(b){b.classList.remove('pulse');void b.offsetWidth;b.classList.add('pulse');}}
 function wolfPhRender(){var e=$('#wolfPh');if(!e)return;var o=selObj();
   if(o&&o.type==='image'){var a=assets[(o.base&&assets[o.base])?o.base:o.assetId]||{};
@@ -4191,7 +4195,7 @@ async function aiStyle(st){
     var img=await aiCall({style:st,orient:a.w>a.h*1.15?'landscape':'portrait',image:src});
     if(!img)return;
     var id=await aiAsset(img),na=assets[id];o.assetId=id;o.phs='ai-'+st;o.phe='none';o.h=o.w*na.h/na.w;
-    renderObjects();updateSel();syncCtx();pushHist();toast('Wolf çizdi. Beğenmezsen Wolf çizsin · Tarz → Gerçek ile asıl fotoğrafa dönersin.');
+    renderObjects();updateSel();syncCtx();pushHist();toast('Wolf çizdi. Beğenmezsen Kenar → ↺ Asıl fotoğraf ile geri dönersin.');
   }catch(_){longToast('Wolf şu an çizemedi. Biraz sonra yeniden dene.');}
   finally{AI_BUSY=false;aiDone();}
 }
