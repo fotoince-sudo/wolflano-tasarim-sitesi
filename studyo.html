@@ -958,6 +958,7 @@ img{-webkit-touch-callout:none;-webkit-user-drag:none}
     <button data-tab="image"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2"/><path d="M21 16l-5-5-8 9"/></svg>Görsel</button>
     <button data-tab="wolf" class="wolfai"><svg class="i" viewBox="0 0 24 24"><path d="M10 4l1.8 4.7L16.5 10.5l-4.7 1.8L10 17l-1.8-4.7L3.5 10.5l4.7-1.8z"/><path d="M18 3v4M16 5h4M19 15v3M17.5 16.5h3"/></svg>Wolf</button>
     <button data-tab="tpl"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="3" width="8" height="8" rx="1.5"/><rect x="13" y="3" width="8" height="8" rx="1.5"/><rect x="3" y="13" width="8" height="8" rx="1.5"/><rect x="13" y="13" width="8" height="8" rx="1.5"/></svg>Şablon</button>
+    <button data-tab="sek"><svg class="i" viewBox="0 0 24 24"><circle cx="7.5" cy="7.5" r="4"/><rect x="13" y="13" width="8" height="8" rx="1.5"/><path d="M16.5 3l4 7h-8z"/><path d="M7.5 13.5l1.4 2.9 3.1.4-2.3 2.2.6 3.1-2.8-1.5-2.8 1.5.6-3.1L3 16.8l3.1-.4z"/></svg>Şekiller</button>
   </nav>
 </div>
 
@@ -5053,7 +5054,7 @@ var AP={on:'tpl'};
 function apMountGrid(toAp){var g=$('#tplGrid'),e=$('#tplEmpty'),tp=$('.panel[data-p="tpl"]'),ap=$('#apGrf');if(!g||!tp||!ap)return;
   if(toAp){if(g.parentNode!==ap){ap.appendChild(e);ap.appendChild(g);}view.tplGrp='Grafik';view.tplCat='Tümü';}
   else{if(g.parentNode!==tp){tp.appendChild(e);tp.appendChild(g);}if(view.tplGrp==='Grafik')view.tplGrp='Tümü';}}
-function apShow(k){AP.on=k;var tpP=$('.panel[data-p="tpl"]');if(tpP){tpP.dataset.ap=k;tpP.scrollTop=0;}$$('#apCats [data-ap]').forEach(function(b){b.classList.toggle('on',b.dataset.ap===k);});
+function apShow(k){AP.on=k;try{if(view.tab==='tpl')$$('#tabs button').forEach(function(b){b.classList.toggle('on',b.dataset.tab===(k==='sek'?'sek':'tpl'));});}catch(_){}var tpP=$('.panel[data-p="tpl"]');if(tpP){tpP.dataset.ap=k;tpP.scrollTop=0;}$$('#apCats [data-ap]').forEach(function(b){b.classList.toggle('on',b.dataset.ap===k);});try{var ac=$('#apCats [data-ap="'+k+'"]'),cw=$('#apCats');if(ac&&cw)cw.scrollLeft=Math.max(0,ac.offsetLeft-cw.clientWidth/2+ac.offsetWidth/2);}catch(_){}
   if(k==='tpl'){$$('#apZem,#apCiz,#apGrf,#apSek').forEach(function(d){d.hidden=true;});apMountGrid(false);renderTpl();renderTplPreviews();return;}
   $('#apZem').hidden=k!=='zem';var ac=$('#apCiz');if(ac)ac.hidden=k!=='ciz';$('#apGrf').hidden=k!=='grf';$('#apSek').hidden=k!=='sek';
   if(k==='zem'){try{renderZem();}catch(_){}}
@@ -5061,7 +5062,9 @@ function apShow(k){AP.on=k;var tpP=$('.panel[data-p="tpl"]');if(tpP){tpP.dataset
   if(k==='sek'){try{renderClipGrid();}catch(_){}}}
 function openTab(name,focusInput){
   /* Şekil sekmesinin dört bölümü (Zeminler, Hazır çizimler, Grafikler, Şekiller) Şablon sekmesinin içinde */
-  if(name==='clip'){name='tpl';}else if(name==='tpl'&&view.tab!=='tpl'){AP.on='tpl';}
+  /* Alttaki "Şekiller": Şablon panelinin Şekiller bölümünü doğrudan açar; Şablon ile arasında geçiş paneli kapatmaz */
+  if(name==='sek'||(name==='tpl'&&view.tab==='tpl')){var want=name==='sek'?'sek':'tpl';if(view.tab==='tpl'&&AP.on!==want&&!focusInput){apShow(want);return;}if(name==='sek'){AP.on='sek';name='tpl';}}
+  else if(name==='clip'){name='tpl';}else if(name==='tpl'&&view.tab!=='tpl'){AP.on='tpl';}
   if(name==='tpl'&&AP.on==='tpl')apMountGrid(false);
   if(name==='image'){try{renderMk();renderZem();var kk=$('#kolajKisa');if(kk)kk.hidden=!kolajOn();}catch(_){}}
   if(document.body.classList.contains('odak'))odakSet(false);
