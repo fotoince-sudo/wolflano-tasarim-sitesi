@@ -2954,6 +2954,18 @@ async function fyPunchAbs(z,H){var a=assets[z.assetId];if(!a||!H||!H.length||z.r
     holes.push({x:(h.cx-h.hw/2-l0)/z.w,y:(h.cy-h.hh/2-t0)/z.h,w:h.hw/z.w,h:h.hh/z.h,e:h.e});});
   var blob=await new Promise(function(r){c.toBlob(r,'image/png');}),id='a'+(++assetN);assets[id]={url:URL.createObjectURL(blob),w:W,h:Hh,nobg:true,fx:1,holes:holes,part:true};
   if(!z.base||z.base===z.assetId)z.base=id;z.assetId=id;}
+/* Delikli şablon müşteriye açılınca: örnek fotoğraflar çıkar, delikler boş kalır ve "N fotoğraf yeri var" sorulur (yönetici örneği görür) */
+function fyClearSamples(){var n=0;['front','logo','logo2','back'].forEach(function(sd){var S=state[sd];if(!S||!S.objs)return;var L=S.objs;
+  L.filter(function(f){var a=f.type==='image'&&assets[f.assetId];return a&&a.holes&&a.holes.length;}).forEach(function(f){var H=assets[f.assetId].holes;n+=H.length;
+    H.forEach(function(q){var r=fyHoleRect(f,q);for(var i=L.length-1;i>=0;i--){var z=L[i];if(z!==f&&z.type==='image'&&z.inHole&&Math.abs(z.x-r.cx)<r.hw/2&&Math.abs(z.y-r.cy)<r.hh/2)L.splice(i,1);}});});});
+  if(n){view.sel=null;renderAll();try{hist=[];hpos=-1;pushHist();}catch(_){}}return n;}
+function fyAsk(n){var o=document.getElementById('hzAsk');if(o)o.remove();var w=document.createElement('div');w.id='hzAsk';
+  w.style.cssText='position:fixed;left:12px;right:12px;bottom:96px;z-index:9999;background:#fff;border-radius:18px;box-shadow:0 10px 40px #0003;padding:16px;font:500 14px var(--ui);text-align:center;max-width:460px;margin:0 auto';
+  w.innerHTML='<b style="display:block;font-size:16px;margin-bottom:4px">Bu tasarımda '+n+' fotoğraf yeri var</b><span style="display:block;color:#5a625d;font-size:13px;margin-bottom:12px">Fotoğrafını seç, kendiliğinden yerine otursun.'+(n>1?' Sonrakiler için alttaki "Fotoğraf koy"a bas.':'')+'</span>'+
+    '<button type="button" data-fygo style="display:block;width:100%;padding:13px;border-radius:12px;border:2px solid #111;background:var(--brand,#3d8b7a);color:#fff;font:700 15px var(--ui);margin-bottom:8px">📷 Fotoğraf yükle</button>'+
+    '<button type="button" data-fyx style="background:none;border:0;color:#5a625d;font:500 13px var(--ui);padding:4px 10px">Sonra eklerim</button>';
+  document.body.appendChild(w);
+  w.addEventListener('click',function(e){if(e.target.closest('[data-fyx]')){w.remove();return;}if(e.target.closest('[data-fygo]')){w.remove();view.fyRep=null;var f=$('#fileIn');if(f)f.click();}});}
 var FYADJ=null;
 function fyAdjStart(){var f=selObj(),own=fyOwner(f),pick=own?f:null;if(own)f=own;var F=fyFilled(f);if(!F.length)return;var n=(f._fyN||0)%F.length;f._fyN=n+1;var it=pick?F.find(function(x){return x.p===pick;}):F[n],p=it.p,c=p.crop;
   if(!p.base||!assets[p.base])p.base=p.assetId;var W=c?p.w/c.w:p.w,H=c?p.h/c.h:p.h;
@@ -7514,7 +7526,7 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
     catch(err){toast(err&&err.msg?err.msg:(err&&(err.status===401||err.status===403||err.code==='auth')?'Oturum süresi doldu, yeniden giriş yap.':'Kaydedilemedi, tekrar dene.'));}
     ADM.busy=false;},true);
   document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('[data-adtpl]');if(!b)return;e.preventDefault();e.stopPropagation();
-    var t=ADM.tpls.filter(function(x){return x.id===b.dataset.adtpl;})[0];if(!t)return;var fx=TPL_FIX[t.id],lk=fx||(t.data&&t.data.tlock);applyDesign(lk?tplLockify(t.data,fx):t.data,false);closeTab();if(lk){try{hzBlankPhotos();}catch(_){}}var ne=emptySlots().length;if(ne){longToast(slotMsg(ne));slotPick();}else toast('Şablon uygulandı. Geri almak için ↶');},true);
+    var t=ADM.tpls.filter(function(x){return x.id===b.dataset.adtpl;})[0];if(!t)return;var fx=TPL_FIX[t.id],lk=fx||(t.data&&t.data.tlock);applyDesign(lk?tplLockify(t.data,fx):t.data,false);closeTab();if(lk){try{hzBlankPhotos();}catch(_){}}var nh=0;if(!document.body.classList.contains('wfadm')){try{nh=fyClearSamples();}catch(_){}}var ne=emptySlots().length;if(ne){longToast(slotMsg(ne));slotPick();}else if(nh){fyAsk(nh);}else toast('Şablon uygulandı. Geri almak için ↶');},true);
 
   /* ---- Başlangıç ---- */
   async function init(){
