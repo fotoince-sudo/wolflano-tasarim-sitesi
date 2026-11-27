@@ -34,7 +34,18 @@ try{if(window.top!==window.self){window.top.location.replace(location.href);}}ca
 #tsAdjBar{position:fixed;left:10px;right:10px;bottom:calc(84px + env(safe-area-inset-bottom,0px));z-index:250;display:flex;gap:10px;align-items:center;background:#101a14;color:#fff;border-radius:14px;padding:10px 12px;font:500 13px var(--ui,system-ui)}
 #tsAdjBar[hidden]{display:none}#tsAdjBar span{flex:1}#tsAdjBar button{flex:none;height:40px;padding:0 14px;border:0;border-radius:10px;background:#7fd6b4;color:#101a14;font:700 14px var(--ui,system-ui)}
 .znone .zx{display:grid;place-items:center;aspect-ratio:1;border:2px dashed #b9c6bf;border-radius:10px;font:700 22px var(--ui,system-ui);color:#7a8a82}
-#musicInkControl{display:inline-flex;align-items:center;gap:8px;white-space:nowrap;font-weight:650}#musicInkControl[hidden]{display:none}#musicInk{display:inline-flex;gap:8px}#musicInk .mik{flex:0 0 32px!important;width:32px!important;min-width:32px!important;height:32px!important;border-radius:50%!important;border:1.5px solid #aeb9b7!important;padding:0!important;cursor:pointer}#musicInk .mik.on{box-shadow:0 0 0 2px #fff,0 0 0 4px #159b91;border-color:#159b91}</style>
+#musicInkControl{display:inline-flex;align-items:center;gap:8px;white-space:nowrap;font-weight:650}#musicInkControl[hidden]{display:none}#musicInk{display:inline-flex;gap:8px}#musicInk .mik{flex:0 0 32px!important;width:32px!important;min-width:32px!important;height:32px!important;border-radius:50%!important;border:1.5px solid #aeb9b7!important;padding:0!important;cursor:pointer}#musicInk .mik.on{box-shadow:0 0 0 2px #fff,0 0 0 4px #159b91;border-color:#159b91}
+/* Sekme paneli açıkken Ortala/Öne/Arkaya çubuğu gizlenir; Wolf paneli sıkı, ürün üstte görünür kalır */
+body.tabon #stageBar{display:none!important}
+#sheet.tall{height:clamp(250px,44%,380px)!important}
+.panel[data-p="wolf"] .wolfp{gap:8px}
+.panel[data-p="wolf"] .kolaj{padding:0 0 8px;margin-bottom:8px;gap:8px}
+.panel[data-p="wolf"] #kolajBtn{min-height:0;height:40px;padding:6px 14px;font-size:14.5px;width:calc(100% - 52px)}
+#wolfChatOpen{min-height:38px!important;font-size:14.5px!important;margin-bottom:0!important}
+#wolfPh:empty{display:none}
+.wphic{margin-left:auto;width:36px;height:36px;border-radius:10px;border:1px solid #30703f;background:var(--panel2);color:#30703f;display:grid;place-items:center;padding:0;cursor:pointer}.wphic[hidden]{display:none}.wphic .i{width:20px;height:20px}
+.wst2{min-width:0}.wst2 .wstl{flex:none}.wst2 #wolfSt{flex:1;min-width:0}
+</style>
 </head><body>
 <title>Online Tişört Tasarım Stüdyosu · Kendin Tasarla | Wolflano</title>
 <meta name="description" content="Ücretsiz online tasarım stüdyosu: tişört, sweatshirt, kapüşonlu, polo, şapka, kupa ve kanvas tabloyu kendin tasarla. Yazı, fotoğraf ve hazır tasarımlar ekle; gördüğün gibi basıp Türkiye'nin her yerine gönderelim.">
@@ -907,10 +918,9 @@ img{-webkit-touch-callout:none;-webkit-user-drag:none}
         </div>
       </div>
       <div class="wolfp"><b>Wolf tasarlasın</b>
-      <div class="wstep"><i>1</i>Fotoğraf <em>isteğe bağlı</em></div>
+      <div class="wstep"><i>1</i>Fotoğraf <em>isteğe bağlı</em><button type="button" class="wphic" id="wolfPhIc" aria-label="Fotoğraf yükle"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="15" rx="2"/><circle cx="9" cy="11" r="2"/><path d="M21 17l-5-5-9 8"/><path d="M17 2v6M14 5h6"/></svg></button></div>
       <div class="wolfph" id="wolfPh"></div>
-      <div class="wstep"><i>2</i>Tarz seç</div>
-      <div class="fxc ai" id="wolfSt"></div>
+      <div class="wstep wst2"><i>2</i><span class="wstl">Tarz</span><div class="fxc ai" id="wolfSt"></div></div>
       <div class="wstep"><i>3</i>Fikrin <em>isteğe bağlı</em><span class="wch"><button type="button" data-wch="sehir" class="on">Şehir</button><button type="button" data-wch="gun">Özel gün</button><button type="button" data-wch="meslek">Meslek</button></span></div>
       <textarea id="wolfIn" rows="1" enterkeyhint="done" placeholder="Örn. ay ışığında uluyan kurt, Çeşme ya da Öğretmen"></textarea>
       <div class="wcity" id="wolfCity"></div>
@@ -4130,11 +4140,12 @@ function wolfPhRender(){var e=$('#wolfPh');if(!e)return;var o=selObj();
   if(o&&o.type==='image'){var a=assets[(o.base&&assets[o.base])?o.base:o.assetId]||{};
     e.innerHTML='<div class="wphsel"><img src="'+String(a.url||'').replace(/"/g,'&quot;')+'" alt=""><div>Bu fotoğraf çizilecek<span><button type="button" id="wolfPhUp">Değiştir</button><button type="button" id="wolfPhX">Fotoğrafsız tasarla</button></span></div></div>'+
       (mugWrap()?'<div class="fxc ai wlay"><button type="button" data-wlay="center"'+(wolfLay!=='double'?' class="on"':'')+'>Ortada, yanları süslü</button><button type="button" data-wlay="double"'+(wolfLay==='double'?' class="on"':'')+'>İki yanda, çiçek çerçeveli</button></div>':'');}
-  else e.innerHTML='<button type="button" class="ghost" id="wolfPhUp">Fotoğraf ekle</button>';}
+  else e.innerHTML='';
+  var ic=$('#wolfPhIc');if(ic)ic.hidden=!!(o&&o.type==='image');}
 var wolfLay='center';
 document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('[data-wlay]');if(!b)return;wolfLay=b.dataset.wlay;wolfPhRender();});
 document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('#wolfPhX');if(!b)return;try{select(null);}catch(_){}wolfPhRender();});
-document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('#wolfPhUp');if(!b)return;view.aiNext='wolf';var f=$('#fileIn');if(f)f.click();});
+document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('#wolfPhUp,#wolfPhIc');if(!b)return;view.aiNext='wolf';var f=$('#fileIn');if(f)f.click();});
 function popClose(){view.pop=null;view.kAll=false;view.spOpen=false;var p=$('#colorPop');if(p)p.hidden=true;}
 async function aiStyle(st){
   var o=selObj();if(!o||o.type!=='image'||AI_BUSY||fxBusy)return;
@@ -4955,7 +4966,7 @@ function openTab(name,focusInput){
   if(document.body.classList.contains('odak'))odakSet(false);
   if(name==='tee'){openProdPage();return;}
   if(view.tab===name&&!focusInput){closeTab();return;}
-  view.tab=name;sheet.hidden=false;
+  view.tab=name;sheet.hidden=false;document.body.classList.add('tabon');
   $$('.panel').forEach(function(p){p.hidden=p.dataset.p!==name;});
   $$('#tabs button').forEach(function(b){b.classList.toggle('on',b.dataset.tab===name);});
   /* Kullanıcı kendisi yakınlaştırdıysa (iki parmak ya da büyüteç) panel açılınca görünüm değişmez */
@@ -4972,7 +4983,7 @@ function openTab(name,focusInput){
   layout();
 }
 function closeTab(){
-  view.tab=null;sheet.hidden=true;setTimeout(syncOpt,0);
+  view.tab=null;sheet.hidden=true;document.body.classList.remove('tabon');setTimeout(syncOpt,0);
   $$('#tabs button').forEach(function(b){b.classList.remove('on');});
   if(!view.uz){view.fit='shirt';resetZoom();}syncFitBtn();layout();
 }
