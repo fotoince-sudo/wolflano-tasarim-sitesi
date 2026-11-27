@@ -793,6 +793,7 @@ img{-webkit-touch-callout:none;-webkit-user-drag:none}
   <div class="ctxwrap" id="ctx" hidden>
     <div class="pop" id="colorPop" hidden></div>
     <div class="ctxbar" id="ctxBar">
+      <button type="button" id="fyadjBtn" class="aibtn" hidden><svg class="i" viewBox="0 0 24 24"><path d="M12 3v18M3 12h18M12 3l-3 3M12 3l3 3M12 21l-3-3M12 21l3-3M3 12l3-3M3 12l3 3M21 12l-3-3M21 12l-3 3"/></svg><span>Fotoğrafı ayarla</span></button>
       <button type="button" id="fyputBtn" class="aibtn" hidden><svg class="i" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="15" rx="2"/><circle cx="9" cy="11" r="2"/><path d="M21 17l-5-5-9 8"/><path d="M17 2v6M14 5h6"/></svg><span>Fotoğraf koy</span></button>
       <button data-c="fyac" id="fyacBtn" class="aibtn" hidden><svg class="i" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><rect x="7" y="8" width="10" height="8" rx="1" stroke-dasharray="2 1.6"/></svg><span>Fotoğraf yeri aç</span></button>
       <button data-c="zemx" id="zemxBtn" hidden><svg class="i" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M4 20L20 4"/></svg><span>Zemini kaldır</span></button>
@@ -2703,7 +2704,7 @@ function qualityOf(o){
   if(ppi>=75)return null;
   return {ppi:ppi,cls:'low',txt:'Fotoğraf küçük'};
 }
-function syncCtx(){syncCtx0();syncMusicInk();try{var zx=$('#zemxBtn');if(zx)zx.hidden=!zemLayer();var fb=$('#fyacBtn');if(fb){fb.hidden=!(fyShapes().length&&fyTarget());if(!fb.hidden)ctx.hidden=false;}var fp=$('#fyputBtn');if(fp){fp.hidden=!fyFree();if(!fp.hidden)ctx.hidden=false;}}catch(_){}var teeText=state.product==='tee'&&cur().area==='a4'&&!isLand(view.side)&&cur().objs.some(function(o){return o.teePhoto;});$$('#ctxBar [data-c^="tee-text-"]').forEach(function(b){b.hidden=!teeText;});var mugText=mugWrap()&&cur().objs.some(function(o){return o.mugVehicleFace;});$$('#ctxBar [data-c^="mug-vehicle-"]').forEach(function(b){b.hidden=!mugText;});var zb=$('#zemBtn');if(zb){var layers=cur().objs;zb.hidden=!layers.length;if(!zb.hidden){ctx.hidden=false;zb.querySelector('span').textContent=tplFrame()||layers.some(function(o){return o.zem;})?'Zemini değiştir':'Zemin ekle';}}try{zemSync();}catch(_){}var sb=$('#stageBar');if(sb){var was=sb.hidden;sb.hidden=ctx.hidden||!$$('#stageBar button').some(function(b){return !b.hidden;});if(was!==sb.hidden&&!(view.g||view.drag))requestAnimationFrame(layout);}}
+function syncCtx(){syncCtx0();syncMusicInk();try{var zx=$('#zemxBtn');if(zx)zx.hidden=!zemLayer();var fb=$('#fyacBtn');if(fb){fb.hidden=!(fyShapes().length&&fyTarget());if(!fb.hidden)ctx.hidden=false;}var fp=$('#fyputBtn');if(fp){fp.hidden=!fyFree();if(!fp.hidden)ctx.hidden=false;}var fj=$('#fyadjBtn');if(fj){var so=selObj();fj.hidden=!!FYADJ||!(fyFilled(so).length||fyOwner(so));if(!fj.hidden)ctx.hidden=false;}}catch(_){}var teeText=state.product==='tee'&&cur().area==='a4'&&!isLand(view.side)&&cur().objs.some(function(o){return o.teePhoto;});$$('#ctxBar [data-c^="tee-text-"]').forEach(function(b){b.hidden=!teeText;});var mugText=mugWrap()&&cur().objs.some(function(o){return o.mugVehicleFace;});$$('#ctxBar [data-c^="mug-vehicle-"]').forEach(function(b){b.hidden=!mugText;});var zb=$('#zemBtn');if(zb){var layers=cur().objs;zb.hidden=!layers.length;if(!zb.hidden){ctx.hidden=false;zb.querySelector('span').textContent=tplFrame()||layers.some(function(o){return o.zem;})?'Zemini değiştir':'Zemin ekle';}}try{zemSync();}catch(_){}var sb=$('#stageBar');if(sb){var was=sb.hidden;sb.hidden=ctx.hidden||!$$('#stageBar button').some(function(b){return !b.hidden;});if(was!==sb.hidden&&!(view.g||view.drag))requestAnimationFrame(layout);}}
 /* Alt panel, seçim çubuğu ya da tarayıcı çubuğu açılıp kapanınca tasarım alanı yeniden sığdırılır (görsel kaybolmasın) */
 (function(){if(!window.ResizeObserver)return;var t=0,lw=0,lh=0;new ResizeObserver(function(en){var r=en[0].contentRect;if(Math.abs(r.width-lw)<1&&Math.abs(r.height-lh)<1)return;lw=r.width;lh=r.height;cancelAnimationFrame(t);t=requestAnimationFrame(function(){try{layout();}catch(_){}});}).observe(wrap);})();
 function syncCtx0(){
@@ -2930,6 +2931,30 @@ function fyFree(){var L=cur().objs;return L.some(function(f){var a=f.type==='ima
   return a.holes.some(function(q){var cx=f.x+(q.x+q.w/2-0.5)*f.w,cy=f.y+(q.y+q.h/2-0.5)*f.h,hw=q.w*f.w,hh=q.h*f.h;
     return !L.some(function(z){return z!==f&&z.type==='image'&&Math.abs(z.x-cx)<hw/2&&Math.abs(z.y-cy)<hh/2;});});});}
 document.addEventListener('click',function(e){if(e.target.closest&&e.target.closest('#fyputBtn')){var f=$('#fileIn');if(f)f.click();}});
+/* Deliğe oturan fotoğrafı ayarlama: fotoğraf geçici olarak öne gelir ve tamamı yarı saydam görünür; müşteri kaydırıp köşeden büyütür,
+   "Yerleştir"e basınca fotoğraf yeniden deliğin biçiminde kırpılıp şeklin/zeminin arkasına oturur */
+function fyHoleRect(f,q){return {cx:f.x+(q.x+q.w/2-0.5)*f.w,cy:f.y+(q.y+q.h/2-0.5)*f.h,hw:q.w*f.w,hh:q.h*f.h,e:q.e};}
+function fyFilled(f){var a=f&&f.type==='image'&&!f.rot&&assets[f.assetId];if(!a||!a.holes)return [];var L=cur().objs,out=[];
+  a.holes.forEach(function(q){var r=fyHoleRect(f,q),p=L.find(function(z){return z!==f&&z.type==='image'&&z.inHole&&Math.abs(z.x-r.cx)<r.hw/2&&Math.abs(z.y-r.cy)<r.hh/2;});if(p)out.push({p:p,r:r});});return out;}
+/* Seçili olan delikteki fotoğrafsa onun delikli şekli/zemini bulunur */
+function fyOwner(o){if(!o||!o.inHole)return null;return cur().objs.find(function(f){return fyFilled(f).some(function(it){return it.p===o;});})||null;}
+var FYADJ=null;
+function fyAdjStart(){var f=selObj(),own=fyOwner(f),pick=own?f:null;if(own)f=own;var F=fyFilled(f);if(!F.length)return;var n=(f._fyN||0)%F.length;f._fyN=n+1;var it=pick?F.find(function(x){return x.p===pick;}):F[n],p=it.p,c=p.crop;
+  if(!p.base||!assets[p.base])p.base=p.assetId;var W=c?p.w/c.w:p.w,H=c?p.h/c.h:p.h;
+  if(c){p.x=p.x-(c.x+c.w/2-0.5)*W;p.y=p.y-(c.y+c.h/2-0.5)*H;}p.w=W;p.h=H;p.assetId=p.base;p.crop=null;p.phs='none';p.phe='none';p._adj=1;
+  var L=cur().objs;L.splice(L.indexOf(p),1);L.splice(L.indexOf(f)+1,0,p);f._adjT=1;FYADJ={p:p.id,f:f.id,r:it.r};
+  renderObjects();select(p.id);
+  var bar=document.getElementById('tsAdjBar');if(!bar){bar=document.createElement('div');bar.id='tsAdjBar';document.body.appendChild(bar);}
+  bar.innerHTML='<span>Fotoğrafı sürükle, köşeden büyüt. Yalnız delikte kalan kısım görünecek.</span><button type="button" data-fyadjgo>✓ Yerleştir</button>';bar.hidden=false;}
+async function fyAdjDone(){var S=FYADJ;FYADJ=null;var bar=document.getElementById('tsAdjBar');if(bar)bar.hidden=true;if(!S)return;
+  var p=objById(S.p),f=objById(S.f);if(f)delete f._adjT;if(!p||!f){renderObjects();return;}delete p._adj;var r=S.r;
+  /* fotoğraf deliği kaplamıyorsa kaplayacak kadar büyütülür ve kaydırılır */
+  var k=Math.max(1,r.hw/p.w,r.hh/p.h);p.w*=k;p.h*=k;
+  p.x=Math.min(r.cx-r.hw/2+p.w/2,Math.max(r.cx+r.hw/2-p.w/2,p.x));p.y=Math.min(r.cy-r.hh/2+p.h/2,Math.max(r.cy+r.hh/2-p.h/2,p.y));
+  var l=p.x-p.w/2,t=p.y-p.h/2;p.crop={x:Math.max(0,(r.cx-r.hw/2-l)/p.w),y:Math.max(0,(r.cy-r.hh/2-t)/p.h),w:Math.min(1,r.hw/p.w),h:Math.min(1,r.hh/p.h)};if(r.e==='oval')p.crop.s='oval';
+  p.w=r.hw*1.02;p.h=r.hh*1.02;p.x=r.cx;p.y=r.cy;p.rot=0;
+  var L=cur().objs;L.splice(L.indexOf(p),1);L.splice(L.indexOf(f),0,p);renderObjects();select(p.id);await applyFx('none','none',null);select(f.id);syncCtx();pushHist();}
+document.addEventListener('click',function(e){if(!e.target.closest)return;if(e.target.closest('#fyadjBtn'))fyAdjStart();else if(e.target.closest('[data-fyadjgo]'))fyAdjDone();});
 function fyShapes(){return cur().objs.filter(function(o){return o.type==='clip'&&FY_GEO[o.key];});}
 function fyFrame(){var L=cur().objs;return L.find(function(o){return o.type==='image'&&!o.rot&&(o.zem||o.fitPrintArea||o.oilBg||o.teePhotoBg);})||null;}
 /* Delinecek katman: zemin yoksa foto yeri şeklinin altındaki görsel (ör. giydirilmiş yıldız/kalp) delinir */
@@ -6063,7 +6088,7 @@ function sfavGet(){try{return JSON.parse(localStorage.getItem('wf_sfav')||'[]')|
 async function savedAssets(lean){
     var used={},out={};['front','logo','logo2','back'].forEach(function(sd){(SS(sd).objs||[]).forEach(function(o){if(o.type!=='image')return;if(o.assetId)used[o.assetId]=1;if(lean)return;
       if(o.base&&o.base!==o.assetId&&assets[o.base])used[o.base]=1;var ti=o.tsrc&&o.tsrc.img;if(ti){if(ti.assetId&&assets[ti.assetId])used[ti.assetId]=1;if(ti.base&&assets[ti.base])used[ti.base]=1;}});});
-    for(var id in used){var a=assets[id];if(!a)continue;var u=a.url;if(!/^(https?:|data:)/.test(u)){try{u=await blobToData(await (await fetch(u)).blob());}catch(_){u='';}}if(u){out[id]={url:u,w:a.w,h:a.h};if(a.hi)out[id].hi=a.hi;}}
+    for(var id in used){var a=assets[id];if(!a)continue;var u=a.url;if(!/^(https?:|data:)/.test(u)){try{u=await blobToData(await (await fetch(u)).blob());}catch(_){u='';}}if(u){out[id]={url:u,w:a.w,h:a.h};if(a.hi)out[id].hi=a.hi;if(a.holes){out[id].holes=a.holes;if(a.part)out[id].part=1;}}}
     return out;}
 async function buildSaved(bid,lean){
     var out=await savedAssets(lean);
@@ -6549,7 +6574,7 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
     for(var id in used){
       var a=assets[id];if(!a)continue;var u=a.url;
       if(!/^https?:/.test(u)){var b=await (await fetch(u)).blob();var ext=/png/.test(b.type)?'png':(/webp/.test(b.type)?'webp':'jpg');var p='tas/g-'+rnd()+'.'+ext;await upload('site',p,b);u=pubUrl(p);a.url=u;}
-      out[id]={url:u,w:a.w,h:a.h};if(a.hi)out[id].hi=a.hi;
+      out[id]={url:u,w:a.w,h:a.h};if(a.hi)out[id].hi=a.hi;if(a.holes){out[id].holes=a.holes;if(a.part)out[id].part=1;}
     }
     return {v:1,product:state.product,cut:state.cut,cins:(/^sub-/.test(String(state.bid||''))&&state.cins)||undefined,bid:state.bid||undefined,tee:state.tee,kulp:kulpHex()||undefined,brand:state.brand!==false,front:JSON.parse(JSON.stringify(state.front)),logo:JSON.parse(JSON.stringify(SS('logo'))),logo2:JSON.parse(JSON.stringify(SS('logo2'))),back:JSON.parse(JSON.stringify(state.back)),assets:out};
   }
@@ -6580,7 +6605,7 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
   function applyDesign(d,full){
     if(!d||!d.front)return;
     var map={};
-    Object.keys(d.assets||{}).forEach(function(k){var a=d.assets[k],nid='a'+(++assetN);assets[nid]={url:a.url,w:a.w||1,h:a.h||1};if(a.hi)assets[nid].hi=a.hi;map[k]=nid;});
+    Object.keys(d.assets||{}).forEach(function(k){var a=d.assets[k],nid='a'+(++assetN);assets[nid]={url:a.url,w:a.w||1,h:a.h||1};if(a.holes){assets[nid].holes=a.holes;assets[nid].nobg=true;if(a.part)assets[nid].part=1;}if(a.hi)assets[nid].hi=a.hi;map[k]=nid;});
     /* Şablon: yalnız şu an açık yüze (Ön, Logo ya da Arka) yerleşir; diğer yüzlerdeki tasarımlar olduğu gibi kalır.
        Kaynak alan yeni alandan büyükse (ör. A4 şablon logoya) tasarım alana sığacak kadar küçültülür. */
     if(!full){
