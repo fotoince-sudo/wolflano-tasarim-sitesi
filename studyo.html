@@ -2447,8 +2447,22 @@ async function slotBake(o){var n=(slotBakeN[o.id]||0)+1;slotBakeN[o.id]=n;
   try{var id=await fxProcess(o.base,o.phs||'none',o.phe||'none',o.phf==null?0.5:o.phf,o.crop,o.wout,o.woc);if(slotBakeN[o.id]!==n)return;o.assetId=id;renderObjects();updateSel();draftSoon();}catch(_){}}
 function makeEl(o){var el=document.createElement('div');el.className='obj'+(o.type==='text'?' text':'');el.dataset.id=o.id;updateEl(el,o);return el;}
 function measureText(o){var el=els[o.id];if(o.type!=='text'||!el)return;o.w=el.offsetWidth;o.h=el.offsetHeight*(o.sy||1);}
+/* Grafiklerde koyu ürün rengi: siyah/koyu gri çizgi ve yazılar beyaza (koyu gri açık griye) döner, renkli kısımlar (kırmızı kalp vb.) aynı kalır.
+   Açık renkli üründe asıl hâli kullanılır. Ekranda, önizlemede ve baskı dosyasında (tam boy dosya da çevrilir) aynı kural. */
+var INV={};
+/* Yalnız çoğu koyu ve renksiz olan grafiklerde (çizgi, siluet, yazı) çevrilir; renkli çizimlerin koyu konturları olduğu gibi kalır */
+function invPix(x,W,H){var im=x.getImageData(0,0,W,H),d=im.data,op=0,dk=0,i;for(i=0;i<d.length;i+=4){if(d[i+3]<8)continue;op++;var r=d[i],g=d[i+1],b=d[i+2];if(Math.max(r,g,b)-Math.min(r,g,b)<60&&(0.299*r+0.587*g+0.114*b)<102)dk++;}
+  var ratio=op?dk/op:0;if(ratio<0.5)return ratio;
+  for(i=0;i<d.length;i+=4){if(d[i+3]<8)continue;var r2=d[i],g2=d[i+1],b2=d[i+2];if(Math.max(r2,g2,b2)-Math.min(r2,g2,b2)<60&&(0.299*r2+0.587*g2+0.114*b2)<102){var v=255-(r2+g2+b2)/3;d[i]=d[i+1]=d[i+2]=v;}}x.putImageData(im,0,0);return ratio;}
+async function invCanvas(u){var im=await loadImg(u),W=im.naturalWidth,H=im.naturalHeight,c=document.createElement('canvas');c.width=W;c.height=H;var x=c.getContext('2d');x.drawImage(im,0,0);c._ok=invPix(x,W,H)>=0.5;return c._ok?c:im;}
+function teeDark(){try{return lum(state.tee||'#ffffff')<0.4;}catch(_){return false;}}
+function invFor(id){var r=INV[id];if(r===id)return id;if(r&&r!=='…'&&assets[r])return r;if(r==='…'||!assets[id])return null;INV[id]='…';var a=assets[id];
+  invCanvas(a.url).then(function(c){if(!(c instanceof HTMLCanvasElement)){INV[id]=id;throw 0;}return new Promise(function(ok){c.toBlob(function(bl){ok({c:c,bl:bl});},'image/png');});}).then(function(z){var nid='inv-'+id;assets[nid]={url:URL.createObjectURL(z.bl),w:a.w||z.c.width,h:a.h||z.c.height,tpl:a.tpl,inv:1,hi:a.hi||'',hiSrc:a.hi||'',nobg:true};INV[id]=nid;
+    try{renderObjects();}catch(_){}try{if(view.tab==='tpl')renderTplPreviews();}catch(_){}}).catch(function(e){if(e!==0)delete INV[id];});return null;}
+function invSync(L){(L||[]).forEach(function(o){if(!o.autoInv||o.type!=='image')return;if(o.base&&o.base!==o.assetId&&o.base!==o.invSrc)return;var orig=o.invSrc||o.assetId;if(!assets[orig])return;
+  var want=teeDark()?invFor(orig):orig;if(want&&want!==o.assetId){o.invSrc=orig;o.assetId=want;if(o.base)o.base=want;}});}
 function renderObjects(){
-  fitMugBackdrop();
+  fitMugBackdrop();try{['front','logo','logo2','back'].forEach(function(sd){if(state[sd])invSync(state[sd].objs);});}catch(_){}
   var keep={},a=cur().objs,i,id;
   for(i=0;i<a.length;i++){
     var o=a[i];keep[o.id]=1;
@@ -4585,7 +4599,7 @@ function tplObjects(t,A,sc,ink){
       var imageScale=it.fillArea?Math.max(A.w/it.w,A.h/it.h):sc;
       o.type='image';o.w=it.w*imageScale;o.h=it.h*imageScale;
       if(it.musicInstrument){o.musicInstrument=it.musicInstrument;o.musicInk=lum(state.tee)>0.5?(it.musicInstrument==='minik-kasif'?'navy':'charcoal'):'white';o.assetId=musicArtworkAsset(o.musicInstrument,o.musicInk);o.lock=true;o.thru=1;}
-      else o.assetId=tplAsset(it);
+      else{o.assetId=tplAsset(it);if(tplKat(t)==='Grafik'&&!t.oil){o.autoInv=1;if(teeDark()){var iv=invFor(o.assetId);o.invSrc=o.assetId;if(iv)o.assetId=iv;}}}
     }
     else if(it.t==='ph'){o.type='image';o.slot=1;o.phEmpty=1;o.edge=it.e;o.phe='none';o.w=it.w*sc;o.h=it.h*sc;o.assetId=phAsset(it.e,it.w/it.h);}
     else{o.type='clip';o.key=it.k;o.color=col;o.w=it.w*sc;o.h=it.w*sc*clipAsp(it.k);}
@@ -4889,7 +4903,7 @@ var HITMAP={};
 /* Görselin saydam yeri var mı (şekil gibi giydirilebilir) ve içinde kapalı saydam alan (fotoğraf yeri) var mı: eski kayıtlarda delik bilgisi yoksa buradan bulunur */
 function alphaInfo(id,m){var a=assets[id];if(!a||a.alphaChecked)return;a.alphaChecked=1;var W=m.W,H=m.H,d=m.d,N=W*H,tr=new Uint8Array(N),any=0,i;
   for(i=0;i<N;i++){if(d[i*4+3]<16){tr[i]=1;any++;}}if(!any)return;a.hasAlpha=1;
-  if(a.holes||a.up)return;/* müşterinin yüklediği logo/fotoğraflarda harf boşlukları foto yeri sanılmasın */var seen=new Uint8Array(N),st=[],bord=0;
+  if(a.holes||a.up||a.tpl||a.inv)return;/* müşterinin yüklediği logo/fotoğraflarda harf boşlukları foto yeri sanılmasın */var seen=new Uint8Array(N),st=[],bord=0;
   function push(k){if(tr[k]&&!seen[k]){seen[k]=1;st.push(k);}}
   for(i=0;i<W;i++){push(i);push((H-1)*W+i);}for(i=0;i<H;i++){push(i*W);push(i*W+W-1);}bord=st.length;
   while(st.length){var k=st.pop(),xx=k%W,yy=(k/W)|0;if(xx>0)push(k-1);if(xx<W-1)push(k+1);if(yy>0)push(k-W);if(yy<H-1)push(k+W);}
@@ -4898,7 +4912,11 @@ function alphaInfo(id,m){var a=assets[id];if(!a||a.alphaChecked)return;a.alphaCh
     while(q.length){var k2=q.pop(),cx=k2%W,cy=(k2/W)|0;n++;if(cx<x0)x0=cx;if(cx>x1)x1=cx;if(cy<y0)y0=cy;if(cy>y1)y1=cy;
       [k2-1,k2+1,k2-W,k2+W].forEach(function(j){if(j<0||j>=N)return;if(Math.abs((j%W)-cx)>1)return;if(tr[j]&&!seen[j]){seen[j]=1;q.push(j);}});}
     var bw=x1-x0+1,bh=y1-y0+1,fill=n/(bw*bh),asp=bw/bh;
-    if(n>=0.015*N&&Math.min(bw,bh)>=0.12*mn&&fill>=0.6&&asp>0.33&&asp<3)holes.push({x:x0/W,y:y0/H,w:bw/W,h:bh/H,e:fill>0.9?'rect':'oval'});}
+    /* Gerçek fotoğraf yeri dolu bir şeklin içinden açılmıştır: deliğin hemen dışı her yönde boyalı olmalı (çizgi resimdeki fincan içi gibi alanlar elenir) */
+    var ring=0,rok=0,dd=Math.max(3,Math.round(0.04*mn)),ecx=(x0+x1)/2,ecy=(y0+y1)/2,erx=bw/2+dd,ery=bh/2+dd,rect=fill>0.9;
+    for(var t2=0;t2<96;t2++){var an=t2/96*Math.PI*2,px,py;if(rect){var k3=t2/96*4,sd=Math.floor(k3),fr=k3-sd;px=sd===0?x0-dd+fr*(bw+2*dd):sd===1?x1+dd:sd===2?x1+dd-fr*(bw+2*dd):x0-dd;py=sd===0?y0-dd:sd===1?y0-dd+fr*(bh+2*dd):sd===2?y1+dd:y1+dd-fr*(bh+2*dd);}else{px=ecx+erx*Math.cos(an);py=ecy+ery*Math.sin(an);}
+      px=Math.round(px);py=Math.round(py);if(px<0||py<0||px>=W||py>=H)continue;ring++;if(d[(py*W+px)*4+3]>128)rok++;}
+    if(n>=0.015*N&&Math.min(bw,bh)>=0.12*mn&&fill>=0.6&&asp>0.33&&asp<3&&ring>40&&rok/ring>=0.85)holes.push({x:x0/W,y:y0/H,w:bw/W,h:bh/H,e:fill>0.9?'rect':'oval'});}
   if(holes.length){holes.sort(function(p,q){return Math.abs(p.y-q.y)>0.15?p.y-q.y:p.x-q.x;});a.holes=holes;a.nobg=true;a.part=bord>0;setTimeout(function(){try{renderObjects();syncCtx();}catch(_){}},0);}}
 /* Saydam yeri olan görsel şekil gibi giydirilebilir (ör. kayıttan açılan giydirilmiş yıldız) */
 function fyShapeImg(o){var a=o&&o.type==='image'&&!o.slot&&!o.inHole&&!o.lock&&assets[o.assetId];return !!(a&&(a.hasAlpha||a.holes));}
@@ -5688,8 +5706,10 @@ async function drawObj(c,o,S,ox,oy,hi,imageCache){
   }else if(o.type==='image'&&assets[o.assetId]){
     /* Baskı dosyasında hazır şablonun tam boy (A3 300 dpi) dosyası kullanılır; ekrandaki önizleme (1600 px) baskıda, özellikle büyük canvasta pikselleşiyordu */
     var AS=assets[o.assetId],im2=null;
+    /* Grafik: baskı anında ürün rengine göre kesinleştirilir (ekrandaki çeviri henüz bitmemiş olsa da) */
+    if(o.autoInv){if(!teeDark()&&AS.inv&&o.invSrc&&assets[o.invSrc])AS=assets[o.invSrc];else if(teeDark()&&!AS.inv){try{im2=await invCanvas(hi&&AS.hi?AS.hi:AS.url);}catch(_){im2=null;}}}
     var get=function(u){if(!imageCache)return loadImg(u);if(!imageCache.has(u))imageCache.set(u,loadImg(u));return imageCache.get(u);};
-    if(hi&&AS.hi){try{im2=await get(AS.hi);}catch(e){if(imageCache)throw e;}}
+    if(!im2&&hi&&AS.hi){try{im2=AS.inv&&AS.hiSrc?await invCanvas(AS.hiSrc):await get(AS.hi);}catch(e){if(imageCache)throw e;}}
     if(!im2)im2=await get(AS.url);
     var rx=-o.w*S/2,ry=-o.h*S/2,rw=o.w*S,rh=o.h*S,rr=imageCornerRadius(o)*S;
     function rp(ix){var r=Math.max(0,rr-ix);c.beginPath();if(c.roundRect)c.roundRect(rx+ix,ry+ix,rw-2*ix,rh-2*ix,r);else c.rect(rx+ix,ry+ix,rw-2*ix,rh-2*ix);}
