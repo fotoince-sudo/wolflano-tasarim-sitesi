@@ -43,6 +43,7 @@ try{if(window.top!==window.self){window.top.location.replace(location.href);}}ca
 .panel[data-p="wolf"] #kolajBtn{min-height:0;height:40px;padding:6px 14px;font-size:14.5px;width:calc(100% - 52px)}
 #wolfChatOpen{min-height:38px!important;font-size:14.5px!important;margin-bottom:0!important}
 #wolfPh:empty{display:none}
+.fyph{position:absolute;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:calc(2px*var(--inv));background:rgba(255,255,255,.6);border:calc(1.5px*var(--inv)) dashed #159b91;border-radius:calc(6px*var(--inv));color:#159b91;cursor:pointer;pointer-events:auto;z-index:3}.fyph.ov{border-radius:50%}.fyph svg{width:34%;max-width:calc(40px*var(--inv));height:auto;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linejoin:round}.fyph span{font-weight:700;font-family:var(--ui,system-ui);line-height:1}
 .kjin .wst2 .kjmode{display:flex;gap:6px;flex:1;min-width:0}.kjin .wst2 .kjmode button{flex:1;min-height:0;padding:7px 10px;border-radius:999px}.kjin .wst2 .kjmode small{display:none}.kjin .wst2 .kjmode b{font-size:13px}
 #kolajGo{height:42px;padding:0 14px}
 body.tabon #hint{display:none!important}
@@ -2458,6 +2459,7 @@ function renderObjects(){
   for(id in els){if(!keep[id])delete els[id];}
   for(i=0;i<a.length;i++){if(a[i].type==='text')measureText(a[i]);}
   var ah=$('#areaHint');if(ah)ah.hidden=a.length>0;
+  try{fyHints();}catch(_){}
 }
 function remeasure(){cur().objs.forEach(function(o){if(o.type==='text'){if(isWarped(o)&&els[o.id])styleText(els[o.id],o);measureText(o);}});updateSel();if(view.tab==='text')renderFxRows();}
 
@@ -2966,6 +2968,15 @@ function fyAsk(n){var o=document.getElementById('hzAsk');if(o)o.remove();var w=d
     '<button type="button" data-fyx style="background:none;border:0;color:#5a625d;font:500 13px var(--ui);padding:4px 10px">Sonra eklerim</button>';
   document.body.appendChild(w);
   w.addEventListener('click',function(e){if(e.target.closest('[data-fyx]')){w.remove();return;}if(e.target.closest('[data-fygo]')){w.remove();view.fyRep=null;var f=$('#fileIn');if(f)f.click();}});}
+/* Boş fotoğraf yerinde kamera simgesi (yalnız ekranda, baskıya girmez); dokununca galeri açılır, fotoğraf o deliğe oturur */
+function fyHints(){$$('.fyph',objLayer).forEach(function(e){e.remove();});if(typeof FYADJ!=='undefined'&&FYADJ)return;var L=cur().objs;
+  L.forEach(function(f){var a=f.type==='image'&&!f.rot&&assets[f.assetId];if(!a||!a.holes)return;
+    a.holes.forEach(function(q){var r=fyHoleRect(f,q);if(L.some(function(z){return z!==f&&z.type==='image'&&Math.abs(z.x-r.cx)<r.hw/2&&Math.abs(z.y-r.cy)<r.hh/2;}))return;
+      var d=document.createElement('div');d.className='fyph'+(q.e==='oval'?' ov':'');d.style.left=(r.cx-r.hw/2)+'px';d.style.top=(r.cy-r.hh/2)+'px';d.style.width=r.hw+'px';d.style.height=r.hh+'px';
+      d.innerHTML='<svg viewBox="0 0 24 24"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg><span style="font-size:'+Math.min(r.hw,r.hh)*0.15+'px">Fotoğraf</span>';
+      d.addEventListener('pointerdown',function(e){e.stopPropagation();});
+      d.addEventListener('click',function(e){e.stopPropagation();view.fyRep=null;var fi=$('#fileIn');if(fi)fi.click();});
+      objLayer.appendChild(d);});});}
 var FYADJ=null;
 function fyAdjStart(){var f=selObj(),own=fyOwner(f),pick=own?f:null;if(own)f=own;var F=fyFilled(f);if(!F.length)return;var n=(f._fyN||0)%F.length;f._fyN=n+1;var it=pick?F.find(function(x){return x.p===pick;}):F[n],p=it.p,c=p.crop;
   if(!p.base||!assets[p.base])p.base=p.assetId;var W=c?p.w/c.w:p.w,H=c?p.h/c.h:p.h;
