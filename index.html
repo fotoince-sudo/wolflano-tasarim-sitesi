@@ -358,7 +358,7 @@ th{font-size:13px;letter-spacing:.05em;text-transform:uppercase;color:var(--mute
 .arow{display:grid;grid-template-columns:56px 1fr auto;gap:12px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:10px}
 .arow img{width:56px;height:56px;object-fit:cover;border-radius:10px;background:var(--mint)}
 .arow b{display:block}.arow small{color:var(--muted)}
-.tnl{display:grid;gap:8px;margin-top:4px}.tnc{display:grid;grid-template-columns:22px 1fr;gap:10px;align-items:start;border:1.5px solid var(--line);border-radius:14px;padding:12px;background:var(--card);cursor:pointer}.tnc:has(input:checked){border-color:var(--green);background:#f1faf4}.tnc input{margin:3px 0 0;accent-color:var(--green);width:18px;height:18px}.tnc b{display:block;font-size:15px}.tnc small{display:block;color:var(--muted);font-size:13px;line-height:1.45;margin-top:2px}.tnc .lk{font-size:13px}
+.tnl{display:grid;gap:8px;margin-top:4px}.tnc{display:grid;grid-template-columns:22px 1fr;gap:10px;align-items:start;border:1.5px solid var(--line);border-radius:14px;padding:12px;background:var(--card);cursor:pointer}.tnc:has(input:checked){border-color:var(--green);background:#f1faf4}.tnc input{margin:3px 0 0;accent-color:var(--green);width:18px;height:18px}.tnc b{display:block;font-size:15px}.tnc small{display:block;color:var(--muted);font-size:13px;line-height:1.45;margin-top:2px}.tnc .lk{font-size:13px}.tnbs{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:6px;margin-top:2px}.tnb{display:inline-flex;align-items:center;gap:5px;min-height:34px;padding:0 11px;border-radius:999px;border:1.5px solid var(--green);color:var(--green);background:#fff;font:700 13px var(--ui,Manrope),sans-serif;text-decoration:none;white-space:nowrap}.tnb.on{background:var(--green);color:#fff;border-color:#111}.tnc.tnc-f{grid-template-columns:22px 1fr 72px}.tnf{position:relative;width:72px;height:72px;padding:0;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--mint);cursor:zoom-in;align-self:start}.tnf img{width:100%;height:100%;object-fit:cover;display:block}.tnf i{position:absolute;right:4px;bottom:4px;width:20px;height:20px;border-radius:6px;background:rgba(255,255,255,.9);font:700 12px/20px sans-serif;font-style:normal;text-align:center;color:#1d2420}.tnfa{display:flex;gap:12px;align-items:center}.tnfa img{width:84px;height:84px;object-fit:cover;border-radius:12px;border:1px solid var(--line)}
 .alist{display:grid;gap:10px;max-width:760px}
 .legal{max-width:760px}.legal h2{font:700 17px var(--ui);margin:22px 0 6px}.legal p{line-height:1.6;margin:0 0 8px}
 img{-webkit-touch-callout:none;-webkit-user-drag:none;user-drag:none}
@@ -4287,16 +4287,27 @@ var CARGO={provider:null,quote:function(q){return Promise.resolve(null);}},shipQ
 function tnPts(){return (D.points||[]).filter(function(p){return p&&p.aktif!==false&&p.ad;});}
 function tnTxt(p){return p.ad+(p.adres?', '+p.adres:'')+(p.ilce?' / '+p.ilce:'');}
 function tnCards(){var ps=tnPts(),sel='';try{sel=localStorage.getItem('wf_tn')||'';}catch(_){}if(ps.length===1)sel=ps[0].id;
-  return '<div class="tnl" role="radiogroup" aria-label="Teslim noktası">'+ps.map(function(p,i){return '<label class="tnc"><input type="radio" name="oTN" id="oTN'+i+'" value="'+esc(p.id)+'"'+(sel===p.id?' checked':'')+'><span><b>'+esc(p.ad)+'</b>'+
+  return '<div class="tnl" role="radiogroup" aria-label="Teslim noktası">'+ps.map(function(p,i){var ft=p.foto&&/^https:\/\//.test(p.foto);return '<label class="tnc'+(ft?' tnc-f':'')+'"><input type="radio" name="oTN" id="oTN'+i+'" value="'+esc(p.id)+'"'+(sel===p.id?' checked':'')+'><span><b>'+esc(p.ad)+'</b>'+
     (p.adres?'<small>'+esc(p.adres)+(p.ilce?' · '+esc(p.ilce):'')+'</small>':(p.ilce?'<small>'+esc(p.ilce)+'</small>':''))+(p.saat?'<small>'+esc(p.saat)+'</small>':'')+
-    (p.telGoster&&p.ptel?'<small>Tel: <a class="lk" href="tel:'+esc(String(p.ptel).replace(/\s/g,''))+'">'+esc(p.ptel)+'</a></small>':'')+
-    (p.harita&&/^https:\/\//.test(p.harita)?'<small><a class="lk" href="'+esc(p.harita)+'" target="_blank" rel="noopener">Haritada gör ›</a></small>':'')+'</span></label>';}).join('')+'</div>';}
+    '</span>'+(ft?'<button type="button" class="tnf" data-tnimg="'+esc(p.id)+'" aria-label="'+esc(p.ad)+' fotoğrafını büyüt"><img src="'+esc(p.foto)+'" alt="" loading="lazy"><i aria-hidden="true">⤢</i></button>':'')+tnBtns(p)+'</label>';}).join('')+'</div>';}
+function openTnLB(id){var p=tnPts().filter(function(x){return x.id===id;})[0];if(!p||!p.foto)return;zl=0;
+  $('#layer').innerHTML='<div class="lb" role="dialog" aria-modal="true" aria-label="Teslim noktasının fotoğrafı"><button class="ib lbx" data-close aria-label="Kapat">'+IC.x+'</button><div class="lbs" id="lbs"><img id="lbi" src="'+esc(p.foto)+'" alt="'+esc(p.ad)+'" style="width:100%;max-width:min(100%,720px)"></div><div class="lbc"><span style="padding:0 8px;font-weight:700">'+esc(p.ad)+'</span><button data-lz="-1" aria-label="Uzaklaştır">−</button><span id="lbz">100%</span><button data-lz="1" aria-label="Yakınlaştır">+</button></div></div>';}
+document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('[data-tnimg]');if(!b)return;e.preventDefault();e.stopPropagation();openTnLB(b.dataset.tnimg);},true);
+/* Google Haritalar'daki gibi işlem düğmeleri: Yol tarifi, Ara, Haritada gör */
+var TN_IC={yol:'<svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor" aria-hidden="true"><path d="M21.7 11.3l-9-9a1 1 0 0 0-1.4 0l-9 9a1 1 0 0 0 0 1.4l9 9a1 1 0 0 0 1.4 0l9-9a1 1 0 0 0 0-1.4zM14 14.5V12h-4v3H8v-4a1 1 0 0 1 1-1h5V7.5l3.5 3.5z"/></svg>',
+  ara:'<svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor" aria-hidden="true"><path d="M6.6 10.8a15.1 15.1 0 0 0 6.6 6.6l2.2-2.2a1 1 0 0 1 1-.25 11.4 11.4 0 0 0 3.6.57 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.25.2 2.45.57 3.57a1 1 0 0 1-.25 1z"/></svg>',
+  har:'<svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor" aria-hidden="true"><path d="M12 2a7 7 0 0 0-7 7c0 5.2 7 13 7 13s7-7.8 7-13a7 7 0 0 0-7-7zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5z"/></svg>'};
+function tnBtns(p){var q=[p.ad?String(p.ad).split('·').pop().trim():'',p.adres,p.ilce,'İzmir'].filter(Boolean).join(', '),hm=p.harita&&/^https:\/\//.test(p.harita);
+  var b='<a class="tnb on" href="https://www.google.com/maps/dir/?api=1&destination='+encodeURIComponent(q)+'" target="_blank" rel="noopener">'+TN_IC.yol+'Yol tarifi</a>';
+  if(p.telGoster&&p.ptel)b+='<a class="tnb" href="tel:'+esc(String(p.ptel).replace(/\s/g,''))+'">'+TN_IC.ara+'Ara</a>';
+  b+='<a class="tnb" href="'+(hm?esc(p.harita):'https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(q))+'" target="_blank" rel="noopener">'+TN_IC.har+'Harita</a>';
+  return '<span class="tnbs">'+b+'</span>';}
 function tnSel(){var r=document.querySelector('input[name=oTN]:checked');if(!r)return null;return tnPts().filter(function(p){return p.id===r.value;})[0]||null;}
 function tnApply(){var p=tnSel(),a=document.getElementById('oAdr'),c=document.getElementById('oIlce');if(!a||!c)return;
   if(p){a.value='Teslim noktası: '+tnTxt(p);c.value=p.ilce||'Teslim noktası';try{localStorage.setItem('wf_tn',p.id);}catch(_){}}else{a.value='İzmir teslim noktasından teslim alacak';c.value='Teslim noktası';}}
 document.addEventListener('change',function(e){if(e.target&&e.target.name==='oTN')tnApply();});
 new MutationObserver(function(){var f=document.getElementById('coForm');if(f&&!f.dataset.tnx&&document.querySelector('input[name=oTN]')){f.dataset.tnx='1';tnApply();}}).observe(document.documentElement,{childList:true,subtree:true});
-var TN={priv:null,busy:false,err:'',f:null,open:null,del:null,saving:false};
+var TN={up:false,priv:null,busy:false,err:'',f:null,open:null,del:null,saving:false};
 function tnRefresh(){if(cur==='yonetim'&&A&&A.tab==='tnokta'){var y=window.scrollY;adRender();window.scrollTo(0,y);}}
 async function tnLoad(){if(TN.busy)return;TN.busy=true;TN.err='';
   try{var tk=await sbToken();if(!tk){TN.err='Oturum süresi doldu, yeniden giriş yap.';TN.priv={};}
@@ -4305,7 +4316,7 @@ async function tnLoad(){if(TN.busy)return;TN.busy=true;TN.err='';
 async function tnSavePriv(pv){var tk=await sbToken();if(!tk){toast('Oturum süresi doldu, yeniden giriş yap.');return false;}
   var r=await sbReq('/rest/v1/admin_kv?on_conflict=id',{method:'POST',token:tk,prefer:'resolution=merge-duplicates,return=minimal',body:{id:'tnokta',data:{points:pv},updated_at:new Date().toISOString()}});
   if(!r.ok){toast('Özel bilgiler kaydedilemedi ('+r.status+')');return false;}TN.priv=pv;return true;}
-var TN_PUB=['ad','ilce','adres','saat','harita','aktif','telGoster'],TN_PRV=['yetkili','tel','eposta','baslangic','odeme','not'];
+var TN_PUB=['ad','ilce','adres','saat','harita','aktif','telGoster','foto'],TN_PRV=['yetkili','tel','eposta','baslangic','odeme','not'];
 function tnView(){if(TN.priv===null&&!TN.busy)tnLoad();var pts=A.draft.points||[];
   var h='<div class="alist"><p class="note" style="margin:0">Müşterinin siparişini gelip alacağı yerler. <b>Müşterilere göster</b> işaretli noktalar sepette ve ödemede listelenir, müşteri siparişte birini seçer; seçtiği nokta siparişin adresine yazılır. Yetkili, telefon, ödeme ve not yalnız sende görünür.</p>';
   if(TN.err)h+='<p class="note" style="color:var(--red)">'+esc(TN.err)+'</p>';
@@ -4323,6 +4334,7 @@ function tnForm(isNew){var f=TN.f;
     i('ad','Yer adı','Örn. Karşıyaka · Deniz Kırtasiye')+i('ilce','İlçe','Örn. Karşıyaka')+i('saat','Açık saatler','Örn. Hafta içi 09.00–19.00, Cumartesi 10.00–16.00')+
     '<label>Açık adres<textarea data-tnf="adres" rows="2" placeholder="Mahalle, sokak, no">'+esc(f.adres||'')+'</textarea></label>'+
     i('harita','Harita bağlantısı (Google Haritalar\'da "Paylaş" → bağlantıyı kopyala)','https://maps.app.goo.gl/…','url')+
+    '<label>İş yerinin fotoğrafı (müşteri kartta küçük görür, dokununca büyür)'+(f.foto?'<span class="tnfa"><img src="'+esc(f.foto)+'" alt=""><button type="button" class="btn soft sm" data-tn="fdel">Fotoğrafı kaldır</button></span>':'')+(TN.up?'<span class="note">Yükleniyor…</span>':'<input type="file" accept="image/*" data-tnfoto="1">')+'</label>'+
     '<div class="chk"><label><input type="checkbox" data-tnf="aktif"'+(f.aktif!==false?' checked':'')+'>Müşterilere göster (sepette seçilebilsin)</label></div>'+
     '<small class="note" style="margin:6px 0 0">Yalnız senin göreceğin bilgiler</small>'+
     '<div class="two">'+i('yetkili','Yetkili kişi')+i('tel','Telefon','05xx xxx xx xx','tel')+'</div>'+
@@ -4332,14 +4344,17 @@ function tnForm(isNew){var f=TN.f;
     '<label>Not (anlaşma şartları vb.)<textarea data-tnf="not" rows="2">'+esc(f.not||'')+'</textarea></label>'+
     '<div class="mini" style="gap:8px;flex-wrap:wrap"><button class="btn sm" data-tn="save"'+(TN.saving?' disabled':'')+'>'+(TN.saving?'Kaydediliyor…':'Kaydet')+'</button><button class="btn soft sm" data-tn="cancel">Vazgeç</button>'+
     (isNew?'':'<button class="btn soft sm" data-tn="del" style="color:var(--red)">'+(TN.del===f.id?'Emin misin? Sil':'Sil')+'</button>')+'</div></div>';}
+document.addEventListener('change',async function(e){var t=e.target;if(!t||!t.dataset||!t.dataset.tnfoto)return;var fl=t.files&&t.files[0];if(!fl||TN.up)return;
+  TN.f=tnRead();TN.up=true;tnRefresh();try{var u=await udUpload(fl);TN.f.foto=u;toast('Fotoğraf eklendi, Kaydet\'e bas');}catch(err){toast(/auth/.test(String(err&&err.message))?'Oturum süresi doldu, yeniden giriş yap.':'Fotoğraf yüklenemedi, tekrar dene.');}TN.up=false;tnRefresh();});
 function tnRead(){var f=Object.assign({},TN.f);document.querySelectorAll('[data-tnf]').forEach(function(n){var k=n.dataset.tnf;f[k]=n.type==='checkbox'?n.checked:String(n.value||'').trim();});return f;}
 document.addEventListener('click',async function(e){var b=e.target.closest&&e.target.closest('[data-tn]');if(!b)return;e.preventDefault();var a=b.dataset.tn;
   if(a==='new'){TN.f={id:'tn'+Date.now().toString(36),aktif:true};TN.del=null;tnRefresh();return;}
+  if(a==='fdel'){TN.f=tnRead();delete TN.f.foto;tnRefresh();return;}
   if(a==='cancel'){TN.f=null;TN.del=null;tnRefresh();return;}
   if(a==='open'){var id=b.dataset.id;if(TN.f&&TN.f.id===id){TN.f=null;tnRefresh();return;}var p=(A.draft.points||[]).filter(function(x){return x.id===id;})[0]||{};TN.f=Object.assign({},p,(TN.priv||{})[id]||{});TN.del=null;tnRefresh();return;}
   if(a==='del'){var did=TN.f&&TN.f.id;if(!did)return;if(TN.del!==did){TN.del=did;tnRefresh();return;}
     A.draft.points=(A.draft.points||[]).filter(function(x){return x.id!==did;});var pv=Object.assign({},TN.priv||{});delete pv[did];TN.f=null;TN.del=null;A.dirty=true;await adSave();await tnSavePriv(pv);tnRefresh();return;}
-  if(a==='save'){if(TN.saving)return;var f=tnRead();if(!f.ad){toast('Yer adını yaz');return;}if(f.harita&&!/^https:\/\//.test(f.harita)){toast('Harita bağlantısı https:// ile başlamalı');return;}
+  if(a==='save'){if(TN.saving||TN.up)return;var f=tnRead();if(!f.ad){toast('Yer adını yaz');return;}if(f.harita&&!/^https:\/\//.test(f.harita)){toast('Harita bağlantısı https:// ile başlamalı');return;}
     var pub={id:f.id},prv={};TN_PUB.forEach(function(k){if(f[k]!==''&&f[k]!=null)pub[k]=f[k];});pub.aktif=f.aktif!==false;pub.telGoster=!!f.telGoster;if(pub.telGoster&&f.tel)pub.ptel=f.tel;
     TN_PRV.forEach(function(k){if(f[k])prv[k]=f[k];});
     var L=(A.draft.points||[]).slice(),ix=L.map(function(x){return x.id;}).indexOf(f.id);if(ix<0)L.push(pub);else L[ix]=pub;A.draft.points=L;
