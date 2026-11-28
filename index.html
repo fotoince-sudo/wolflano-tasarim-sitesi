@@ -4199,8 +4199,15 @@ var NM_FIX={2:'Dolunay Ailesi',94:'Kiss Me Darling',106:'Kalpli D Harfi',105:'Ma
 /* Kartta tek satıra sığmayan uzun adların kısası (2026-11-28) */
 var NM_SHORT={'Zulmü Alkışlayamam Bayraklı':'Zulme Karşı Bayrak','Hoş Geldin 2027 Hoşçakal 2026':'Hoşçakal 2026','Kalp Ritmi İsimli Sevgililer':'Kalp Ritmi','Seninle Her Yer Ev Sen & Ben':'Seninle Her Yer Ev','Eskişehir Odunpazarı Evleri':'Odunpazarı Evleri','Sarı Gül Sepeti Desenli Yazı':'Sarı Güllü Yazı','Osmanlı İmparatorluğu ve Kurt':'Osmanlı ve Kurt','Cengiz Han İmparatorluğu':'Cengiz Han Mirası','Balıkçılar ve Kurt Yağlı Boya':'Balıkçılar ve Kurt','Birlikte Her Şey Daha Güzel Mavi Kurt':'Birlikte Daha Güzel','İzmir Saat Kulesi ve Boyoz':'Saat Kulesi ve Boyoz','Anneciğim Anneler Günü':'Anneciğim','İyi Anlar Kahveyle Başlar':'Kahveyle Başlar','Ride Free Motosikletli Kurt':'Ride Free Kurt','Kızılelma ve İstanbul Gecesi':'Kızılelma İstanbul','Gaziantep Fıstıklı Baklava':'Antep Baklavası','Trabzon Hamsi ve Sümela':'Hamsi ve Sümela','Anıtkabir – Atamızı Saygıyla Anıyoruz':'Anıtkabir','10 Kasım 1938 Saygı ve Özlemle':'10 Kasım 1938','Ride Free Motosiklet Kulübü':'Ride Free Kulüp','Wolflano Sale and Distribution':'Sale & Distribution','Gün Batımında Uluyan Kurt':'Gün Batımı Kurdu','Cengiz Han’ın Özel Savaşçıları':'Han’ın Savaşçıları','Türk Bayraklı Atatürk Portresi':'Bayraklı Atatürk','Atatürk Portresi Gün Batımı':'Atatürk Gün Batımı','Antik Sütunlu Anadolu Kurdu':'Antik Sütunlu Kurt','Ege Limanında Gün Batımı':'Ege Limanı'};
 var NM_SMALL={ve:1,ile:1,and:1,of:1,'&':1,da:1,de:1};
+function nmShort(t){var L=23;t=String(t||'').replace(/\s+/g,' ').trim();if(t.length<=L)return t;
+  var a=(t.split(/\s+[–:|-]\s+|\s*\(.*?\)\s*|,\s*/).filter(Boolean)[0]||t).trim();if(a.length<=L&&a.length>=4)return a;
+  var v=a.split(/\s+ve\s+/i);if(v.length>1&&v[0].length>=4&&v[0].length<=L)return v[0];
+  var DROP={ve:1,ile:1,the:1,and:1,of:1,'&':1,özel:1,isimli:1,desenli:1,yazılı:1,logolu:1,temalı:1,baskılı:1,motifli:1,serisi:1,koleksiyonu:1};
+  var k=a.split(' ').filter(function(x,i){return !i||!DROP[x.toLocaleLowerCase('tr')];});
+  /* Türkçede asıl isim sondadır: sığmazsa baştaki sözcükler atılır ("… Mavi Kurt" kalır) */
+  while(k.length>1&&k.join(' ').length>L)k.shift();while(k.length>1&&DROP[k[0].toLocaleLowerCase('tr')])k.shift();return k.join(' ');}
 function nmWho(p){var c=p.cat||[];if(c.indexOf('kadin')>=0&&c.indexOf('erkek')>=0)return 'Unisex';return c.indexOf('kadin')>=0?'Kadın':c.indexOf('erkek')>=0?'Erkek':c.indexOf('cocuk')>=0?'Çocuk':'';}
-function nmFix(p){var n=String(p.name||'').trim();if(!n||n.indexOf(' · ')>=0)return n;
+function nmFix(p){var n=String(p.name||'').trim();if(!n)return n;var ix=n.indexOf(' · ');if(ix>=0){var h=n.slice(0,ix);return h.length>23&&!NM_SHORT[h]?nmShort(h)+n.slice(ix):(NM_SHORT[h]?NM_SHORT[h]+n.slice(ix):n);}
   var T=String(p.type||'').toLocaleUpperCase('tr'),foto=/fotoğraflı/i.test(n),fer=/fermuarl/i.test(n),kk=/kalp\s+kulplu/i.test(n),es=/eşofman/i.test(n);
   var typ={'TİŞÖRT':'Tişört','POLO':'Polo Tişört','POLO TİŞÖRT':'Polo Tişört','SWEATSHIRT':'Sweatshirt','KAPÜŞONLU':(fer?'Fermuarlı Kapüşonlu':'Kapüşonlu'),'KUPA':(kk?'Kalp Kulplu Kupa':'Kupa'),'CANVAS TABLO':'Kanvas Tablo','KANVAS TABLO':'Kanvas Tablo','EŞOFMAN':'Eşofman Altı','AYAKKABI':'Spor Ayakkabı'}[T];
   if(!typ){typ=String(p.type||'').toLocaleLowerCase('tr');typ=typ.charAt(0).toLocaleUpperCase('tr')+typ.slice(1);}
@@ -4212,7 +4219,7 @@ function nmFix(p){var n=String(p.name||'').trim();if(!n||n.indexOf(' · ')>=0)re
     .replace(/\s+[1-9]\s*$/,'').replace(/\bW\d{3}\b/g,'').split(',')[0].replace(/^[\s–\-]+|[\s–\-]+$/g,'').replace(/\s+/g,' ').trim();
     if(p.color&&/Kupa/.test(typ)){var cw=String(p.color).trim();if(cw&&new RegExp('\\s'+cw+'$','i').test(t))t=t.slice(0,-cw.length).trim();}
     t=t.split(' ').map(function(w,i){if(i&&NM_SMALL[w.toLocaleLowerCase('tr')])return w.toLocaleLowerCase('tr');return w===w.toLocaleLowerCase('tr')?w.charAt(0).toLocaleUpperCase('tr')+w.slice(1):w;}).join(' ');}
-  if(NM_SHORT[t])t=NM_SHORT[t];
+  if(NM_SHORT[t])t=NM_SHORT[t];else t=nmShort(t);
   if(!t)t=+p.wc?'Wolflano '+wFmt(+p.wc):'Wolflano';
   return t+' · '+(foto?'Fotoğraflı ':'')+(who?who+' ':'')+typ;}
 function nmParts(p){var n=String(p.name||''),i=n.indexOf(' · ');return i<0?null:[n.slice(0,i),n.slice(i+3)];}

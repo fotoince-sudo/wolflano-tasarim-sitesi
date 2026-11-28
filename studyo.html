@@ -6973,6 +6973,15 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
     if(!g&&!/^(Kupa|Canvas)/.test(t)){var c=p.cat||[];g=c.indexOf('kadin')>=0&&c.indexOf('erkek')>=0?'Unisex':c.indexOf('kadin')>=0?'Kadın':c.indexOf('erkek')>=0?'Erkek':c.indexOf('cocuk')>=0?'Çocuk':'';}
     return (g?g+' ':'')+t;}
   function wFmt(n){var x=String(n);while(x.length<3)x='0'+x;return 'W'+x;}
+  /* Kartta tek satıra sığsın diye tasarım adı en çok 22 harf (sitedeki nmShort ile aynı kural) */
+  function nmShort(t){var L=23;t=String(t||'').replace(/\s+/g,' ').trim();if(t.length<=L)return t;
+  var a=(t.split(/\s+[–:|-]\s+|\s*\(.*?\)\s*|,\s*/).filter(Boolean)[0]||t).trim();if(a.length<=L&&a.length>=4)return a;
+  var v=a.split(/\s+ve\s+/i);if(v.length>1&&v[0].length>=4&&v[0].length<=L)return v[0];
+  var DROP={ve:1,ile:1,the:1,and:1,of:1,'&':1,özel:1,isimli:1,desenli:1,yazılı:1,logolu:1,temalı:1,baskılı:1,motifli:1,serisi:1,koleksiyonu:1};
+  var k=a.split(' ').filter(function(x,i){return !i||!DROP[x.toLocaleLowerCase('tr')];});
+  /* Türkçede asıl isim sondadır: sığmazsa baştaki sözcükler atılır ("… Mavi Kurt" kalır) */
+  while(k.length>1&&k.join(' ').length>L)k.shift();while(k.length>1&&DROP[k[0].toLocaleLowerCase('tr')])k.shift();return k.join(' ');}
+  
   function wFree(list){var u={};(list||[]).forEach(function(p){if(p&&+p.wc)u[+p.wc]=1;});for(var i=1;;i++)if(!u[i])return i;}
   async function doProd(title,catId,price,byWolf,o){
     o=o||{};var cp=catPath(catId);
@@ -6999,7 +7008,7 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
         var tpl=objs.some(function(q){return q.tpl;})?String(state.tplN||''):'',photo=objs.some(function(q){return q.type==='image'&&!q.tpl&&!q.musicInk;}),base=tpl||descName(data);
         /* Ad kuralı (2026-11-28): "Tasarımın adı · [Fotoğraflı] Kimin için Ürün"; kartta kalın satır tasarım adı, ince satır ürün türü */
         base=String(base||'').replace(/fotoğraflı/ig,'').replace(/\s+/g,' ').trim().replace(/(^|\s)(\S)/g,function(m,a,b){return a+b.toLocaleUpperCase('tr');});
-        title=(base?base.slice(0,40).trim():'Wolflano '+wFmt(wc))+' · '+(photo?'Fotoğraflı ':'')+head;}}
+        title=(base?nmShort(base):'Wolflano '+wFmt(wc))+' · '+(photo?'Fotoğraflı ':'')+head;}}
     else{var gid=(same&&same.grp)||o.grp;title=uniqName(title,(d.products||[]).filter(function(x){return !(gid&&x.grp===gid)&&!(+x.wc&&+x.wc===+wc&&String(x.type||'')===String(ptype));}).map(function(x){return x.name;}));}
     /* Aynı tasarım aynı yere zaten yayınlıysa (2026-11-27): yeni kart açılmaz, aynı grup kullanılır; aynı renk varsa o ürün yerinde güncellenir (çift kart olmasın) */
     var grp=(same&&same.grp)||o.grp||undefined,cj=(cp.cat||[]).join(),dup=same?(d.products||[]).filter(function(x){return String(x.type||'')===String(ptype)&&(x.cat||[]).join()===cj&&String(x.color||'').toLocaleLowerCase('tr')===String(pcol||'').toLocaleLowerCase('tr')&&((grp&&x.grp===grp)||(+x.wc===+wc&&dKey(Object.assign({},x,{grp:undefined}))===k0));})[0]:null;
