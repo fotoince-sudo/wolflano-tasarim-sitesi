@@ -6997,9 +6997,9 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
       if(same&&same.name&&!/\bW\d{3,}\b/.test(same.name)&&String(same.type||'')===String(ptype))title=same.name;
       else{var objs=[];['front','back','logo','logo2'].forEach(function(k){((data[k]&&data[k].objs)||[]).forEach(function(q){objs.push(q);});});
         var tpl=objs.some(function(q){return q.tpl;})?String(state.tplN||''):'',photo=objs.some(function(q){return q.type==='image'&&!q.tpl&&!q.musicInk;}),base=tpl||descName(data);
-        if(photo&&!/fotoğraf/i.test(base))base=(base?base+' ':'')+'Fotoğraflı';
-        base=String(base||'').replace(/\s+/g,' ').trim().replace(/(^|\s)(\S)/g,function(m,a,b){return a+b.toLocaleUpperCase('tr');});
-        title=base?(base+' '+head).slice(0,60).trim():head+' '+wFmt(wc);}}
+        /* Ad kuralı (2026-11-28): "Tasarımın adı · [Fotoğraflı] Kimin için Ürün"; kartta kalın satır tasarım adı, ince satır ürün türü */
+        base=String(base||'').replace(/fotoğraflı/ig,'').replace(/\s+/g,' ').trim().replace(/(^|\s)(\S)/g,function(m,a,b){return a+b.toLocaleUpperCase('tr');});
+        title=(base?base.slice(0,40).trim():'Wolflano '+wFmt(wc))+' · '+(photo?'Fotoğraflı ':'')+head;}}
     else{var gid=(same&&same.grp)||o.grp;title=uniqName(title,(d.products||[]).filter(function(x){return !(gid&&x.grp===gid)&&!(+x.wc&&+x.wc===+wc&&String(x.type||'')===String(ptype));}).map(function(x){return x.name;}));}
     /* Aynı tasarım aynı yere zaten yayınlıysa (2026-11-27): yeni kart açılmaz, aynı grup kullanılır; aynı renk varsa o ürün yerinde güncellenir (çift kart olmasın) */
     var grp=(same&&same.grp)||o.grp||undefined,cj=(cp.cat||[]).join(),dup=same?(d.products||[]).filter(function(x){return String(x.type||'')===String(ptype)&&(x.cat||[]).join()===cj&&String(x.color||'').toLocaleLowerCase('tr')===String(pcol||'').toLocaleLowerCase('tr')&&((grp&&x.grp===grp)||(+x.wc===+wc&&dKey(Object.assign({},x,{grp:undefined}))===k0));})[0]:null;

@@ -900,7 +900,7 @@ body.cko #nav,body.cko .menu-btn,body.cko .lang,body.cko #cartBtn,body.cko #ann{
 .ptop h1{margin:0}
 .info{gap:10px}
 .info .ptype{display:block;width:100%;text-align:center;margin:0}
-.card .pnm{display:block;white-space:nowrap;text-overflow:ellipsis;height:1.35em;overflow:hidden;font:600 14.5px/1.3 var(--ui);color:var(--ink);margin:2px 0 3px}
+.card .pnm{display:block;white-space:nowrap;text-overflow:ellipsis;height:1.35em;overflow:hidden;font:600 14.5px/1.3 var(--ui);color:var(--ink);margin:2px 0 3px}.card .psub{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font:500 12.5px/1.3 var(--ui);color:var(--muted);margin:-2px 0 4px}
 .ph img.dimg{transform:scale(1.18);transform-origin:50% 26%}
 .card .pnm{min-height:0}.cgd i{width:14px;height:14px;border-radius:50%;border:1px solid rgba(0,0,0,.22);margin:2px 0}.cgd{position:absolute;left:8px;bottom:8px;display:flex;gap:6px;padding:5px 7px;border-radius:999px;background:rgba(255,255,255,.88);box-shadow:0 2px 8px rgba(0,0,0,.12);z-index:2}.cgd button{width:18px;height:18px;border-radius:50%;border:1px solid rgba(0,0,0,.22);padding:0;cursor:pointer;position:relative}.cgd button.on{box-shadow:0 0 0 2px var(--bg,#fff),0 0 0 3.5px var(--green)}.cgd button::after{content:"";position:absolute;inset:-7px}
 .card .cdel{display:block;margin:2px auto 0;border:0;background:none;color:#b3261e;font:600 12.5px var(--ui);text-decoration:underline;text-underline-offset:3px;padding:4px 6px;cursor:pointer}.card .cdel small{font:500 11px var(--ui);color:var(--muted)}
@@ -3319,7 +3319,7 @@ function stdNames(){(D.blanks||[]).forEach(function(b){if(!/^sub-tee/.test(Strin
   (D.products||[]).forEach(function(p){var d=p.dsg||{};if(!/^sub-/.test(String(d.bid||'')))return;var c=p.cat||[];if(!(c.indexOf('erkek')>=0&&c.indexOf('kadin')>=0))return;
     var g=(d.cins||d.cut)==='kadin'?'kadin':'erkek',pre=g==='kadin'?'k-':'e-';p.cat=[g];p.sub=(p.sub||[]).filter(function(x){var q=String(x).slice(0,2);return !(q==='e-'||q==='k-')||q===pre;});
     p.name=String(p.name||'').replace(/^Unisex\s+/i,(g==='kadin'?'Kadın':'Erkek')+' ');});}
-function applyData(){stdcSync(D);seedBlanks();stdNames();autoSub(D);if(!D.vat)D.vat={mode:'excl',ready:20,blank:20,print:20};
+function applyData(){stdcSync(D);try{(D.products||[]).forEach(function(p){if(p&&p.name)p.name=nmFix(p);});}catch(_){}seedBlanks();stdNames();autoSub(D);if(!D.vat)D.vat={mode:'excl',ready:20,blank:20,print:20};
  pNums(D.products);pcApply(D);ALLP=D.products.map(function(p){return Object.assign({},p,{price:vp(p.price,'ready'),old:vp(p.old,'ready')});});
  PRODUCTS=ALLP.filter(function(p){return p.show!==false;});
  CATS=(D.cats||[]).filter(function(c){if(c.show===false)return false;if(/hediye|dekor/i.test(c.name||''))return false;return true;}).map(function(c){return [c.id,c.name||'Adsız'];});
@@ -4192,6 +4192,27 @@ function grpP(list){var by={},out=[];list.forEach(function(p){
 var NEWN=6,NEWSET=null,NEWSRC=null,NEWLEN=-1;
 function isNewP(p){if(!NEWSET||NEWSRC!==PRODUCTS||NEWLEN!==PRODUCTS.length){NEWSRC=PRODUCTS;NEWLEN=PRODUCTS.length;NEWSET={};grpP(PRODUCTS.filter(function(x){return x.tag==='Yeni';})).sort(function(a,b){return (+b.no||0)-(+a.no||0);}).slice(0,NEWN).forEach(function(x){(x._vars||[x]).forEach(function(v){NEWSET[v.id]=1;});});}return !!NEWSET[p.id];}
 function pTag(p){if(!p.tag||/çok\s*satan/i.test(p.tag))return '';if(p.tag==='Yeni'&&!isNewP(p))return '';return '<span class="tag">'+esc(p.tag)+'</span>';}
+/* Ürün adı kuralı (2026-11-28): "Tasarımın adı · [Fotoğraflı] Kimin için Ürün". Kartta kalın satır tasarımın adı,
+   altındaki ince satır ürün türü (kupada rengi de aynı satırda). Eski adlar yüklenirken bu biçime çevrilir;
+   yönetimde bir sonraki Kaydet'te kalıcı olur. Adı olmayan ya da aynı adı taşıyan tasarımlara tasarıma bakılarak ad verildi (NM_FIX, W kodu → ad). */
+var NM_FIX={2:'Dolunay Ailesi',94:'Kiss Me Darling',106:'Kalpli D Harfi',105:'Mavi Şimşek W',113:'Kurt Başlı Wolflano',104:'Gitarın Sesi Çerçeveli',118:'Zulmü Alkışlayamam',119:'Zulmü Alkışlayamam Bayraklı',120:'Üstte Gök Çökmedikçe',121:'Türk Milleti İçin',109:'Hoş Geldin 2027 Hoşçakal 2026',108:'Hoş Geldin 2027'};
+var NM_SMALL={ve:1,ile:1,and:1,of:1,'&':1,da:1,de:1};
+function nmWho(p){var c=p.cat||[];if(c.indexOf('kadin')>=0&&c.indexOf('erkek')>=0)return 'Unisex';return c.indexOf('kadin')>=0?'Kadın':c.indexOf('erkek')>=0?'Erkek':c.indexOf('cocuk')>=0?'Çocuk':'';}
+function nmFix(p){var n=String(p.name||'').trim();if(!n||n.indexOf(' · ')>=0)return n;
+  var T=String(p.type||'').toLocaleUpperCase('tr'),foto=/fotoğraflı/i.test(n),fer=/fermuarl/i.test(n),kk=/kalp\s+kulplu/i.test(n),es=/eşofman/i.test(n);
+  var typ={'TİŞÖRT':'Tişört','POLO':'Polo Tişört','POLO TİŞÖRT':'Polo Tişört','SWEATSHIRT':'Sweatshirt','KAPÜŞONLU':(fer?'Fermuarlı Kapüşonlu':'Kapüşonlu'),'KUPA':(kk?'Kalp Kulplu Kupa':'Kupa'),'CANVAS TABLO':'Kanvas Tablo','KANVAS TABLO':'Kanvas Tablo','EŞOFMAN':'Eşofman Altı','AYAKKABI':'Spor Ayakkabı'}[T];
+  if(!typ){typ=String(p.type||'').toLocaleLowerCase('tr');typ=typ.charAt(0).toLocaleUpperCase('tr')+typ.slice(1);}
+  var who=/Kupa|Kanvas|Ayakkabı/.test(typ)?'':nmWho(p);
+  var t=NM_FIX[+p.wc];
+  if(!t){t=n.replace(/Tarihden/gi,'Tarihten').replace(/Wolf\s*Lano/gi,'Wolflano').replace(/(\d{2})\s*[×x]\s*(\d{2})/g,'')
+    .replace(/(^|\s)(Erkek|Kadın|Çocuk|Unisex|Tişörtü|Tişört|Kupası|Kupa|Sweatshirt|Polo|Kanvas|Canvas|Tablo|Fermuarlı|Kapüşonlu|Eşofman|Altı|Spor|Ayakkabı|Fotoğraflı)(?=\s|$|,|–|-)/gi,' ')
+    .replace(/(^|\s)Kalp\s+Kulplu(?=\s|$)/gi,' ').replace(/\s*[–-]\s*[A-ZÇĞİÖŞÜa-zçğıöşü]+\s*$/,function(m){var w=m.replace(/[–-]/,'').trim();return /^(Beyaz|Siyah|Lacivert|Mavi|Yeşil|Sarı|Kırmızı|Gri|Antrasit|Pembe|Mor|Turuncu|Bordo|Krem|Bej)$/i.test(w)||(p.color&&w.toLocaleLowerCase('tr')===String(p.color).toLocaleLowerCase('tr'))?'':m;})
+    .replace(/\s+[1-9]\s*$/,'').replace(/\bW\d{3}\b/g,'').split(',')[0].replace(/^[\s–\-]+|[\s–\-]+$/g,'').replace(/\s+/g,' ').trim();
+    if(p.color&&/Kupa/.test(typ)){var cw=String(p.color).trim();if(cw&&new RegExp('\\s'+cw+'$','i').test(t))t=t.slice(0,-cw.length).trim();}
+    t=t.split(' ').map(function(w,i){if(i&&NM_SMALL[w.toLocaleLowerCase('tr')])return w.toLocaleLowerCase('tr');return w===w.toLocaleLowerCase('tr')?w.charAt(0).toLocaleUpperCase('tr')+w.slice(1):w;}).join(' ');}
+  if(!t)t=+p.wc?'Wolflano '+wFmt(+p.wc):'Wolflano';
+  return t+' · '+(foto?'Fotoğraflı ':'')+(who?who+' ':'')+typ;}
+function nmParts(p){var n=String(p.name||''),i=n.indexOf(' · ');return i<0?null:[n.slice(0,i),n.slice(i+3)];}
 function pName(p){var n=String(p.name||'').trim(),t=String(p.type||'').trim(),c=String(p.color||'').trim();if(c&&n.length>c.length+3&&n.slice(-(c.length+3))===' – '+c)n=n.slice(0,-(c.length+3));return n||t;}
 /* Arka yüzünde baskı olan giyim ürününün arka fotoğrafı (kartta zaman zaman gösterilir) */
 function pBack(p){var d=p&&p.dsg;if(!d||!/^(tee|sweat|hood|zip|polo)$/.test(d.product||''))return '';var L=p.imgs||[];
@@ -4219,7 +4240,7 @@ function card(p){
   var V=p._vars||null,F=p.show!==false?sibOf(p):null;if(F&&(!V||F.length>V.length))V=F;var nm=pName(p);
   var cgL=V||(pBack(p)?[p]:null);
   return '<article class="card'+(V?' cg':'')+'"'+(cgL?' data-cg="'+esc(JSON.stringify(cgL.map(function(v){return {i:v.id,u:IMG(v),b:pBack(v),p:pr(v),c:v.color||'',d:v.dsg?1:0,s:soldOut(v)?1:0,f:pImgCls(v)?1:0};})))+'"':'')+'><div class="phw"><a class="ph" href="#urun-'+p.id+'" aria-label="'+esc(p.name)+' detay"><img src="'+IMG(p)+'"'+pImgCls(p)+' alt="'+esc(p.name)+'" loading="lazy">'+(soldOut(p)?'':pTag(p))+'</a>'+(soldOut(p)?'<span class="stkb">Tükendi</span>':'')+favBtn(p.id)+(V?'<div class="cgd" role="radiogroup" aria-label="Renk">'+V.map(function(v,i){var h=cHex(v.color)||'#ccc';return '<button type="button" data-cgi="'+i+'"'+(i?'':' class="on"')+' role="radio" aria-checked="'+(i?'false':'true')+'" aria-label="'+esc(v.color||'Renk')+'" style="background:'+h+'"></button>';}).join('')+'</div>':'')+'</div>'+
-  '<div class="meta">'+'<b class="pnm">'+esc(nm)+'</b>'+'<div class="row"><small>'+pKal(p)+p.type+(ptOf(p)==='kupa'&&p.color?' · '+esc(p.color):'')+(pDim(p)?' · <b>'+pDim(p)+'</b>':'')+'</small><span class="price">'+pr(p)+'</span></div>'+'</div>'+
+  (function(){var np=nmParts(p);return np?'<div class="meta"><b class="pnm">'+esc(np[0])+'</b><span class="psub">'+esc(np[1])+(ptOf(p)==='kupa'&&p.color?' · '+esc(p.color):'')+'</span><div class="row"><small>'+pKal(p)+(pDim(p)?'<b>'+pDim(p)+'</b>':''):'<div class="meta">'+'<b class="pnm">'+esc(nm)+'</b>'+'<div class="row"><small>'+pKal(p)+p.type+(ptOf(p)==='kupa'&&p.color?' · '+esc(p.color):'')+(pDim(p)?' · <b>'+pDim(p)+'</b>':'');})()+'</small><span class="price">'+pr(p)+'</span></div>'+'</div>'+
   (soldOut(p)?'<button type="button" class="btn sm add sold" data-soldout="'+p.id+'">Sepete ekle</button>':'<button class="btn sm add" data-add="'+p.id+'">Sepete ekle</button>')+(p.dsg&&!isWk(p)?'<a class="cedit" href="studyo.html?hazir='+encodeURIComponent(p.id)+'"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13.5 6.5l4 4"/></svg>Düzenle, ismini ekle</a>':'')+((sbAdmin()||WF_ADM)?'<button type="button" class="cdel" data-pdel="'+esc((V?V.map(function(v){return v.id;}):[p.id]).join(','))+'">Sil <small>(yalnız sen görürsün)</small></button>':'')+'</article>';
 }
 
