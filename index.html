@@ -4127,7 +4127,7 @@ function kbStart(){if(KBT){clearInterval(KBT);KBT=null;}var e=$('#kb');if(!e||e.
 var SBT=null;
 function shipRender(){var a=$('#ann');if(!a)return;a.classList.toggle('ann-tn',!kargoOn());if(SBT){clearInterval(SBT);SBT=null;}
   var m=TX('shipMsgs');if(typeof m==='string')m=m.split('\n');/* Hediye paketi mesajı hiçbir yerde gösterilmez */if(Array.isArray(m))m=m.filter(function(x){return !/hediye\s+paket/i.test(String(x||''));});var fr=+((D.ship||{}).free)||0;
-  if(!kargoOn()){fr=0;m=(m||[]).filter(function(x){return !/kargo/i.test(String(x||''));});m.unshift('Şimdilik yalnız İzmir içi teslim noktası');}
+  if(!kargoOn()){fr=0;m=(m||[]).filter(function(x){return !/kargo/i.test(String(x||''));});m.unshift('Teslimat: Şimdilik yalnız İzmir içi teslim noktası');}
   m=(m||[]).map(function(x){return String(x||'').trim();}).filter(function(x){return x&&(x.indexOf('{ucretsiz}')<0||fr>0);}).map(function(x){return x.replace('{ucretsiz}',tl(fr));});
   if(TX('showShip')===false||!m.length){a.hidden=true;a.innerHTML='';return;}
   a.hidden=false;
