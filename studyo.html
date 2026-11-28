@@ -12,14 +12,14 @@ try{if(window.top!==window.self){window.top.location.replace(location.href);}}ca
   var v=null;try{v=localStorage.getItem(K);}catch(_){}
   if(v==='evet'){yukle();return;}if(v==='hayir')return;
   function bant(){if(adm()||document.getElementById('wfCerez'))return;var b=document.createElement('div');b.id='wfCerez';b.setAttribute('role','region');b.setAttribute('aria-label','Çerez tercihi');b.setAttribute('data-notr','');
-    b.style.cssText='position:fixed;left:12px;bottom:calc(12px + env(safe-area-inset-bottom,0px));z-index:60;max-width:min(calc(100vw - 96px),420px);background:#101a14;color:#fff;border-radius:14px;padding:12px 14px;font:13.5px/1.45 Manrope,system-ui,sans-serif;box-shadow:0 8px 24px rgba(0,0,0,.28)';
+    b.style.cssText='position:fixed;left:12px;bottom:calc(68px + env(safe-area-inset-bottom,0px));z-index:60;max-width:min(calc(100vw - 96px),420px);background:#101a14;color:#fff;border-radius:14px;padding:12px 14px;font:13.5px/1.45 Manrope,system-ui,sans-serif;box-shadow:0 8px 24px rgba(0,0,0,.28)';
     b.innerHTML='Siteyi geliştirmek için Google Analytics ve Google Ads çerezleriyle ziyaret ve reklam istatistiği tutmak istiyoruz. <a href="#kvkk" style="color:#7fd6b4">Ayrıntılar</a><div style="display:flex;gap:8px;margin-top:10px"><button type="button" data-c="evet" style="flex:1;height:40px;border-radius:10px;border:0;background:#7fd6b4;color:#101a14;font:800 14px Manrope,system-ui,sans-serif;cursor:pointer">Kabul et</button><button type="button" data-c="hayir" style="flex:1;height:40px;border-radius:10px;border:1px solid #7fd6b4;background:none;color:#fff;font:700 14px Manrope,system-ui,sans-serif;cursor:pointer">Reddet</button></div>';
     b.addEventListener('click',function(e){var t=e.target.closest('[data-c]');if(!t)return;try{localStorage.setItem(K,t.getAttribute('data-c'));}catch(_){}b.remove();if(t.getAttribute('data-c')==='evet')yukle();});
     document.body.appendChild(b);}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(bant,1200);});else setTimeout(bant,1200);
 })();
 </script>
-<meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover"><style>html,body{touch-action:manipulation}:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}
+<meta charset=utf8><script>/* Ürünle açılışta site verisi gelene kadar varsayılan (yanlış) tişört ve fiyat gösterilmez */(function(){try{if(/[?&](urun|hazir|fav|depo)=/.test(location.search)){var h=document.documentElement;h.classList.add("wfBoot");setTimeout(function(){h.classList.remove("wfBoot");},6000);}}catch(_){}})();</script><style>html.wfBoot #shirtHost,html.wfBoot #shadeHost,html.wfBoot #sheetBg,html.wfBoot #brandMark,html.wfBoot #passClip,html.wfBoot #areaBox,html.wfBoot #livePrice,html.wfBoot #objLayer,html.wfBoot #rulerHost{visibility:hidden}html.wfBoot #wrap::after{content:"";position:absolute;left:50%;top:42%;width:34px;height:34px;margin:-17px 0 0 -17px;border:3px solid rgba(0,0,0,.12);border-top-color:#3f8f55;border-radius:50%;animation:wfspin .8s linear infinite;z-index:3}@keyframes wfspin{to{transform:rotate(360deg)}}</style><meta name=viewport content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover"><style>html,body{touch-action:manipulation}:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}
 /* Wolf paneli: 3 adım ve Tasarla düğmesi kaydırmadan görünsün */
 #sheet.tall{height:clamp(330px,62%,500px)}
 /* Yardım düğmesi: "?" yerine Aybüke'nin profil resmi (dikkat çeker, ne olduğu anlaşılır) */
@@ -238,7 +238,7 @@ body.nolines #areaBox::before,body.nolines #areaLabel,body.nolines #areaHint,bod
 #areaBox.onV .cgV,#areaBox.onH .cgH{display:block}
 #areaBox.onV,#areaBox.onH{opacity:1}
 #areaHint{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:calc(5px*var(--inv));padding:calc(8px*var(--inv));text-align:center;pointer-events:none;color:#5d6b63;font:500 calc(11px*var(--inv))/1.4 var(--ui)}#areaHint[hidden]{display:none}#areaHint b{font:800 calc(13px*var(--inv))/1.2 var(--ui);color:#2f7d5b}#areaHint em{font-style:normal;font-weight:800;color:#1b221e}
-#areaLabel{position:absolute;left:0;bottom:100%;margin-bottom:calc(4px*var(--inv));white-space:nowrap;font:600 calc(11px*var(--inv))/1 var(--ui);color:#1b221e;text-shadow:0 0 calc(3px*var(--inv)) #fff,0 0 calc(2px*var(--inv)) #fff}
+#areaLabel{position:absolute;left:0;bottom:100%;margin-bottom:calc(4px*var(--inv));white-space:nowrap;font:600 calc(11px*var(--inv))/1 var(--ui);color:#1b221e;background:rgba(255,255,255,.88);padding:calc(3px*var(--inv)) calc(7px*var(--inv));border-radius:calc(6px*var(--inv))}
 #selLayer{position:absolute;inset:0;pointer-events:none}.dwrap{position:absolute;inset:0;pointer-events:none}.dwrap>*{pointer-events:auto}.dwrap>#selLayer{pointer-events:none}
 /* Seçim: ince çerçeve ve iki köşe tutamağı (sol üst beyaz kare: boy, sağ alt siyah nokta: dönüş). */
 .selbox{position:absolute;left:0;top:0;transform-origin:50% 50%;border:calc(1px*var(--inv)) solid rgba(20,24,22,.55);box-shadow:0 0 0 calc(1px*var(--inv)) rgba(255,255,255,.6);pointer-events:auto;cursor:move;--rot:0deg}
@@ -867,7 +867,7 @@ img{-webkit-touch-callout:none;-webkit-user-drag:none}
     <button class="sheet-x" id="sheetX" aria-label="Paneli kapat"><svg class="i" viewBox="0 0 24 24" style="width:18px;height:18px"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
     <div class="panel" data-p="text" hidden>
       <!-- Sıra: yazıyı yaz/ekle → yazı tipi → hazır stiller → şekil → görünüm → ince ayarlar -->
-      <div class="txtop"><label class="fld txin"><span>Yazıyı düzenle</span><textarea id="textIn" rows="1" maxlength="200" disabled placeholder="Önce bir yazı ekle veya seç" autocomplete="off" enterkeyhint="enter"></textarea></label><button type="button" id="bigTxBtn" aria-label="Büyük kutuda yaz" title="Büyük kutuda yaz (yazıya çift dokunarak da açılır)"><svg class="i" viewBox="0 0 24 24" style="width:18px;height:18px"><path d="M14 4h6v6M10 20H4v-6M20 4l-7 7M4 20l7-7"/></svg></button><button class="primary" id="addText">+ Yeni yazı</button></div>
+      <div class="txtop"><label class="fld txin"><span>Yazıyı düzenle</span><textarea id="textIn" rows="1" maxlength="200" placeholder="Yazını buraya yaz" autocomplete="off" enterkeyhint="enter"></textarea></label><button type="button" id="bigTxBtn" aria-label="Büyük kutuda yaz" title="Büyük kutuda yaz (yazıya çift dokunarak da açılır)"><svg class="i" viewBox="0 0 24 24" style="width:18px;height:18px"><path d="M14 4h6v6M10 20H4v-6M20 4l-7 7M4 20l7-7"/></svg></button><button class="primary" id="addText">+ Yeni yazı</button></div>
       <div class="mini-title">Yazı tipi</div>
       <div class="fonts" id="fontGrid"></div>
       <div class="mini-title">Hazır yazı stilleri</div>
@@ -1007,8 +1007,8 @@ img{-webkit-touch-callout:none;-webkit-user-drag:none}
     <section><h3 id="sizeHead">Beden ve adet</h3><div class="size-grid" id="sizeGrid"></div></section>
     <section id="rosterSec" hidden><h3>İsim ve numara listesi</h3><p class="note" style="margin:0 0 10px">Her ürün için ayrı yaz. Boş bıraktığın ürüne isim veya numara basılmaz.</p><div id="rosterList" class="rs"></div></section>
     <section><h3>Fiyat</h3><dl class="price" id="priceList"></dl></section>
-    <section><h3>Dosyalar</h3><div id="files" class="btnrow"></div></section>
-    <section><h3>Sipariş özeti</h3><textarea id="sum" readonly rows="9"></textarea><div class="btnrow" style="margin-top:8px"><button class="ghost" id="copyBtn">Özeti kopyala</button></div></section>
+    <section id="filesSec"><h3>Dosyalar</h3><div id="files" class="btnrow"></div></section>
+    <section id="sumSec"><h3>Sipariş özeti</h3><textarea id="sum" readonly rows="9"></textarea><div class="btnrow" style="margin-top:8px"><button class="ghost" id="copyBtn">Özeti kopyala</button></div></section>
     <section id="cartSec" hidden><h3>Sepet</h3><div id="cartList"></div><dl class="price"><div><dt>Sepet toplamı</dt><dd id="cartTot">0 ₺</dd></div></dl><div class="btnrow"><button class="ghost" id="newDesign">Yeni tasarım ekle</button><button class="ghost" id="copyAll">Sepeti kopyala</button></div><p class="note" id="cartHint" style="margin-top:8px">Her tasarımda bedenleri ve adetleri değiştirebilirsin. Aynı tasarımı başka bedenle eklemek için yukarıdaki bedenleri değiştirip tekrar Sepete ekle.</p></section>
   </div>
   <div class="o-foot">
@@ -2159,6 +2159,7 @@ window.phSite=function(d){PH.site=d;PH.media=d.media||'';try{if(d.ship&&+d.ship.
   try{var q=new URLSearchParams(location.search),rn=q.get('renk'),bd=q.get('beden');if(bd)PH.want=bd;
     phApplyColors();if(rn!=null){var cs=phColors(phBlank(state.product,state.cut)),c=(/^\d+$/.test(rn)?cs[+rn]:null)||cs.filter(function(x){return x.name===rn||String(x.hex).toLowerCase()===String(rn).toLowerCase();})[0];if(c)state.tee=c.hex;}}catch(_){}
   try{renderAll();}catch(_){}
+  try{setTimeout(function(){document.documentElement.classList.remove('wfBoot');},120);}catch(_){}
   /* Hazır baskılı ürün: müşteri aynı tasarımı açıp ismini ekleyebilir, yazıyı ya da rengi değiştirebilir */
   try{var hz=new URLSearchParams(location.search).get('hazir');if(hz&&!PH.hzDone){var hp=(d.products||[]).filter(function(x){return x.id===hz;})[0];
     if(hp&&hp.dsg){PH.hzDone=1;var go=function(n){if(window.wfApplyDesign){try{window.wfApplyDesign(hp.dsg,true);if(new URLSearchParams(location.search).get('baski'))setTimeout(baskiPanel,600,hp);
@@ -2743,7 +2744,7 @@ function select(id){
 }
 function syncTextInput(){
   var o=selObj(),dt=tsText(o),isT=(o&&o.type==='text'&&!o.lock)||!!dt,src=dt||o;
-  textIn.disabled=!isT;if(!(dt&&document.activeElement===textIn))textIn.value=isT?String(src.value||'').replace(/^\s+$/,''):'';
+  textIn.disabled=false;textIn.placeholder=isT?'':'Yazını buraya yaz';if(!(dt&&document.activeElement===textIn))textIn.value=isT?String(src.value||'').replace(/^\s+$/,''):'';
   $$('#fontGrid .font').forEach(function(b){b.classList.toggle('on',b.dataset.f===(isT?src.font:view.font));});
   if(view.tab==='text')renderFxRows();
   txGrow();
@@ -5497,7 +5498,7 @@ $('#odakBtn').addEventListener('click',function(){odakSet(!document.body.classLi
 $('#odakX').addEventListener('pointerdown',function(e){e.stopPropagation();});$('#odakX').addEventListener('click',function(){odakSet(false);});
 document.addEventListener('keydown',function(e){if(e.key==='Escape'&&document.body.classList.contains('odak'))odakSet(false);});
 /* Tasarım alanındaki ipucu yazısı yalnız ilk 3 açılışta görünür */
-(function(){try{var n=+(localStorage.getItem('wf_hint_n')||0);localStorage.setItem('wf_hint_n',String(n+1));if(n>=3){var h=$('#hint');if(h)h.hidden=true;}}catch(_){}})();
+(function(){try{var n=+(localStorage.getItem('wf_hint_n')||0);localStorage.setItem('wf_hint_n',String(n+1));if(n>=3){var h=$('#hint');if(h)h.hidden=true;}else setTimeout(function(){var h2=$('#hint');if(h2)h2.classList.add('gone');},8000);}catch(_){}})();
 $('#linesBtn').addEventListener('click',function(){var on=document.body.classList.toggle('nolines'),b=$('#linesBtn');b.classList.toggle('on',on);b.setAttribute('aria-pressed',on?'true':'false');b.setAttribute('aria-label',on?'Baskı çizgilerini göster':'Baskı çizgilerini gizle');
   b.innerHTML=on?'<svg class="i" viewBox="0 0 24 24"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/><path d="M4 4l16 16"/></svg>':'<svg class="i" viewBox="0 0 24 24"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>';
   toast(on?'Baskı çizgileri gizlendi: tasarımı net gör':'Baskı çizgileri açık');});
@@ -5540,7 +5541,9 @@ $('#fontGrid').addEventListener('click',function(e){
   syncTextInput();
 });
 textIn.addEventListener('input',function(){
-  txGrow();var o=selObj();if(tsText(o)){if(/\n/.test(textIn.value))textIn.value=textIn.value.replace(/\n+/g,' ');tsText(o).value=textIn.value===''?' ':textIn.value;intextRedoSoon(o);return;}if(!o||o.type!=='text')return;
+  txGrow();var o=selObj();
+  /* Seçili yazı yokken kutuya yazmaya başlayınca yeni yazı kendiliğinden eklenir */
+  if(!tsText(o)&&(!o||o.type!=='text'||o.lock)){var v=textIn.value;if(!v.trim())return;var tb=view.tab;view.tab='_';try{addText(v);}finally{view.tab=tb;}syncTextInput();try{textIn.focus();textIn.setSelectionRange(textIn.value.length,textIn.value.length);}catch(_){}return;}if(tsText(o)){if(/\n/.test(textIn.value))textIn.value=textIn.value.replace(/\n+/g,' ');tsText(o).value=textIn.value===''?' ':textIn.value;intextRedoSoon(o);return;}if(!o||o.type!=='text')return;
   var bt=$('#bigTxIn');if(bt&&document.activeElement!==bt)bt.value=textIn.value;
   var ov=o.value;o.value=textIn.value===''?' ':textIn.value;lcRealign(o,ov,o.value);updateEl(els[o.id],o);measureText(o);updateSel();if(view.pop==='fill'&&hasLC(o))showPopRefresh();
 });
@@ -6033,7 +6036,7 @@ function renderPrice(){
     var sd=state[s];h+='<div><dt>'+SIDE_NAME[s]+' baskı'+(sd.objs.length?' ('+areaTitle(s)+')':'')+'</dt><dd>'+(sd.objs.length?(brandOnly(s)?'Wolflano kurdu · ücretsiz':areaFee(sd.area)?fmt(areaFee(sd.area)):'Fiyata dahil'):'Yok')+'</dd></div>';
   });
   h+='<div><dt>Birim fiyat</dt><dd>'+fmt(p.unit)+'</dd></div>';
-  if(!needSizesHere()){h+=isStd()?'<div><dt>Adet</dt><dd>1 · sepette değiştirilebilir</dd></div>':'<div><dt>Beden ve adet</dt><dd>Sepette seçilir</dd></div>';$('#priceList').innerHTML=h;$('#totalOut').textContent=fmt(p.unit)+' / adet';renderCart();$('#sum').value=summaryText();return;}
+  if(!needSizesHere()){h+=isStd()?'<div><dt>Adet</dt><dd>1 · sepette değiştirilebilir</dd></div>':(function(){var k=Object.keys(state.sizes||{}).filter(function(z){return state.sizes[z]>0;});return k.length?'<div><dt>Beden</dt><dd>'+k.join(', ')+' · sepette değiştirilebilir</dd></div>':'<div><dt>Beden ve adet</dt><dd>Sepette seçilir</dd></div>';})();$('#priceList').innerHTML=h;$('#totalOut').textContent=fmt(p.unit)+' / adet';renderCart();$('#sum').value=summaryText();return;}
   h+='<div><dt>Adet</dt><dd>'+p.qty+'</dd></div>';
   if(p.disc)h+='<div><dt>Adet indirimi</dt><dd>%'+Math.round(p.disc*100)+'</dd></div>';
   $('#priceList').innerHTML=h;
@@ -6069,6 +6072,7 @@ async function openOrder(){
   try{if(!(history.state&&history.state.wfOrder))history.pushState({wfOrder:1},'');}catch(_){}
   var bs=$('#brandSec');bs.hidden=BRAND_OFF||state.product!=='polo';$('#brandChk').checked=state.brand!==false;
   renderSizes();renderPrice();renderFiles();
+  try{var am=!!(window.__admOn&&window.__admOn());$('#sumSec').hidden=!am;$('#filesSec').hidden=!am&&!dl;}catch(_){}
   var th=$('#thumbs');th.textContent='';
   var sides=sidesOf();
   var views=[];if(mugWrap()){await orderMugViews(th);views.push(['front',true]);}else sides.forEach(function(sd){views.push([sd,false]);});
@@ -6090,7 +6094,12 @@ async function orderMugViews(th){
     f.dataset.side='front';f.setAttribute('role','button');f.setAttribute('aria-label','Kupa tasarımını düzenle');
     f.appendChild(c);var cap=document.createElement('figcaption');cap.textContent=hs[1];f.appendChild(cap);th.appendChild(f);}catch(e){try{console.error('Kupa önizleme',e);}catch(_){}}}}
 function closeOrder(){$('#order').hidden=true;}
-$('#doneBtn').addEventListener('click',openOrder);
+/* Bitti: şablonda boş fotoğraf yeri kaldıysa önizlemeye geçmeden fotoğraf istenir (gri "Fotoğrafını ekle" kutusu siparişe gitmesin) */
+function doneGo(){try{if(!(window.__admOn&&window.__admOn())){var sds=['front','back','logo','logo2'].filter(function(x){return state[x]&&state[x].objs&&state[x].objs.some(function(o){return o.phEmpty;});});
+  if(sds.length){var sd=sds.indexOf(view.side)>=0?view.side:sds[0];if(view.side!==sd)switchSide(sd);var n=emptySlots().length;
+    longToast((n>1?n+' fotoğraf yeri boş. Fotoğraflarını seç':'Fotoğraf yeri boş. Fotoğrafını seç')+'; istemediğin boş yeri seçip silebilirsin.');try{slotPick();}catch(_){}return;}}}catch(_){}
+  openOrder();}
+$('#doneBtn').addEventListener('click',doneGo);
 /* Önizlemeden tasarıma dönüş: geri tuşu, kapat düğmesi veya ön/arka görsele dokunma */
 function leaveOrder(){if(history.state&&history.state.wfOrder){try{history.back();return;}catch(_){}}closeOrder();}
 window.addEventListener('popstate',function(){if(!$('#order').hidden)closeOrder();});
