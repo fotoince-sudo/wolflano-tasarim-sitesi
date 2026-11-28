@@ -5245,7 +5245,11 @@ function tplMen(){return state.cut==='erkek'&&tplGroup()==='giyim';}
 var TPL_HIDE=[];
 function tplKey(t){return t.n+(t.g?'|'+t.g:'')+'|'+[].concat(t.p||'giyim').join(',');}
 function tplHid(t){return TPL_HIDE.indexOf(tplKey(t))>=0;}
+/* Erkek üründe "Kadın …" adlı, kadın üründe "Erkek …" adlı şablonlar çıkmaz */
+function tplSexOk(nm){nm=String(nm||'').trim();if(state.cut==='erkek'&&/^kad[ıi]n\b/i.test(nm))return false;if(state.cut==='kadin'&&/^erkek\b/i.test(nm))return false;return true;}
+window.tplSexOk=tplSexOk;
 function tplFits(t,g){g=g||tplGroup();
+  if(!tplSexOk(t.n))return false;
   /* Eski 'giyim' şablonlarını yalnız tişörte bağla; ürünler ortak şablon kullanmaz. */
   if(t.product&&t.product!==state.product)return false;
   if(!t.product&&[].concat(t.p||'giyim').indexOf('giyim')>=0&&state.product!=='tee')return false;
@@ -5277,7 +5281,7 @@ function teeTemplateGroups(grid){
         dir='serbest';
       }
     }
-    card.hidden=filter!=='Tümü'&&filter!==dir;
+    card.hidden=filter!=='Tümü'&&dir!=='serbest'&&filter!==dir;
     groups[dir].push(card);
   });
   if(filter==='Tümü'){
@@ -5326,7 +5330,7 @@ function tplKatAny(c,t){if(t&&t.items)return tplKat(t);
   if(t&&t.data){var j='';try{j=JSON.stringify(t.data);}catch(_){}if(/"slot":(1|true)|"phEmpty"|"teePhotoBg"|"oilBg"/.test(j)||/foto[gğ]raf/i.test(String(t.title||'')))return 'Fotoğraflı';if(TPL_KURT_C.indexOf(c)>=0||/kurt|wolf/i.test(String(t.title||'')))return 'Kurt';return 'Grafik';}
   if(c==='Zemin')return '';return (TPL_KURT_C.indexOf(c)>=0||/kurt|wolf/i.test(String(c||'')))?'Kurt':'Grafik';}
 /* Ana başlık (Giyim/Kupa… şablonları) yalnız yöneticinin eklediği şablonları gösterir; hazır şablonlar kendi alt kategorilerinde */
-function tplInGrp(c,t){var g=view.tplGrp||'Tümü';if(g==='Tümü')return c!=='Zemin'&&!!(t&&t.data&&!t.items);return tplKatAny(c,t)===g;}
+function tplInGrp(c,t){var g=view.tplGrp||'Tümü';if(g==='Tümü'){if(c==='Zemin')return false;if(t&&t.data&&!t.items)return true;if(window.__admOn&&window.__admOn())return false;var k=tplKatAny(c,t);return !!k&&k!=='Grafik';}return tplKatAny(c,t)===g;}
 function renderTpl(){
   ['Zemin','Yağlı boya','Fotoğraflı tişört','Araba ve motosiklet'].forEach(function(c){if(TPL_CATS.indexOf(c)<0)TPL_CATS.push(c);});
   var h='',cc='',q=normTR(($('#tplQ')&&$('#tplQ').value||'').trim()),n=0,g=tplGroup(),has={},dirs={},measures={};
@@ -5337,21 +5341,23 @@ function renderTpl(){
   if(view.tplCat!=='Tümü'&&!has[view.tplCat])view.tplCat='Tümü';
   if(view.tplDir!=='Tümü'&&view.tplDir!=='dikey'&&view.tplDir!=='yatay')view.tplDir='Tümü';
   if(view.tplArea!=='Tümü'&&!measures[view.tplArea])view.tplArea='Tümü';
+  /* Müşteride şablon paneli sade: konu grupları ve Dikey/Yatay düğmeleri yok; şablonlar seçili baskı alanının yönüne göre gelir (A4 yatay seçilince yataylar) */
+  var amT=!!(window.__admOn&&window.__admOn());if(!amT){if(view.tplGrp!=='Grafik'){view.tplGrp='Tümü';view.tplDir=(state.product==='tee'||state.product==='sweat'||state.product==='polo')?(isLand(view.side)?'yatay':'dikey'):'Tümü';}else view.tplDir='Tümü';}
   var fc='';
   ['dikey','yatay'].forEach(function(v){fc+='<button data-td="'+v+'"'+(view.tplDir===v?' class="on"':'')+' aria-pressed="'+(view.tplDir===v?'true':'false')+'">'+(v==='dikey'?'Dikey':'Yatay')+'</button>';});
   $('#tplFilters').hidden=!(state.product==='tee'||state.product==='sweat'||state.product==='polo'||state.product==='canvas');
   if($('#tplFilters').hidden)view.tplDir='Tümü';
-  $('#tplFilters').innerHTML=fc;
+  $('#tplFilters').innerHTML=fc;if(!amT)$('#tplFilters').hidden=true;
   var gh={'Tümü':1};TPLS.forEach(function(t){if(tplFits(t,g)){var k=tplKat(t);if(k)gh[k]=1;}});
   /* Zeminler sekmesi kaldırıldı: zeminler alttaki "Zemini değiştir" düğmesinden seçiliyor, burada boş sekme kafa karıştırıyordu */
   if(!gh[view.tplGrp||'Tümü']||view.tplGrp==='Zeminler'){view.tplGrp='Tümü';if(view.tplCat==='Zemin')view.tplCat='Tümü';}var G=view.tplGrp||'Tümü';
   if(G!=='Tümü'&&view.tplCat!=='Tümü'&&tplGrpOf(view.tplCat)!==G)view.tplCat='Tümü';
   $('#tplHead').hidden=true;
-  $('#tplGrps').innerHTML=[['Tümü',TPL_HEAD[g]||'Şablonlar']].concat(TPL_KAT.filter(function(x){return gh[x[0]]&&x[0]!=='Grafik';})).map(function(x){return '<button data-tg="'+x[0]+'"'+(x[0]===G&&!q?' class="on"':'')+'>'+x[1]+'</button>';}).join('');
+  $('#tplGrps').innerHTML=[['Tümü',TPL_HEAD[g]||'Şablonlar']].concat(TPL_KAT.filter(function(x){return gh[x[0]]&&x[0]!=='Grafik';})).map(function(x){return '<button data-tg="'+x[0]+'"'+(x[0]===G&&!q?' class="on"':'')+'>'+x[1]+'</button>';}).join('');$('#tplGrps').hidden=!amT;
   var subs=TPL_CATS.filter(function(c){return c!=='Tümü'&&has[c]&&G!=='Tümü'&&G!=='Fotoğraflı'&&tplGrpOf(c)===G;});
   subs=[];if(subs.length>1)cc='<button data-tc="Tümü"'+(view.tplCat==='Tümü'&&!q?' class="on"':'')+'>Hepsi</button>'+subs.map(function(c){return '<button data-tc="'+c+'"'+(c===view.tplCat&&!q?' class="on"':'')+'>'+c+'</button>';}).join('');
   $('#tplCats').innerHTML=cc;$('#tplCats').hidden=!cc;
-  TPLS.forEach(function(t,i){if(!tplFits(t,g))return;if(view.tplDir&&view.tplDir!=='Tümü'&&tplOrientation(t)!==view.tplDir)return;if(view.tplArea&&view.tplArea!=='Tümü'&&tplAreaName(t)!==view.tplArea)return;if(q){if(!tplMatch(t,q))return;}else if(view.tplCat!=='Tümü'&&t.c!==view.tplCat)return;else if(view.tplCat==='Tümü'&&!tplInGrp(t.c,t))return;n++;h+='<button class="tpl" data-tpl="'+i+'" data-tpl-dir="'+tplOrientation(t)+'"><div class="prev"><div class="in"></div></div><span>'+t.n+'</span></button>';});
+  TPLS.forEach(function(t,i){if(!tplFits(t,g))return;if(view.tplDir&&view.tplDir!=='Tümü'){var tor=tplOrientation(t);if(tor!=='serbest'&&tor!==view.tplDir)return;}if(view.tplArea&&view.tplArea!=='Tümü'&&tplAreaName(t)!==view.tplArea)return;if(q){if(!tplMatch(t,q))return;}else if(view.tplCat!=='Tümü'&&t.c!==view.tplCat)return;else if(view.tplCat==='Tümü'&&!tplInGrp(t.c,t))return;n++;h+='<button class="tpl" data-tpl="'+i+'" data-tpl-dir="'+tplOrientation(t)+'"><div class="prev"><div class="in"></div></div><span>'+t.n+'</span></button>';});
   var kjh='';
   var kjb=$('#tplKj');if(kjb){kjb.innerHTML=kjh;kjb.hidden=!kjh;}
   $('#tplGrid').innerHTML=h;tplLastGroup=g;var em=$('#tplEmpty');em.textContent=q?'Bu aramayla eşleşen şablon yok. Başka bir kelime dene.':view.tplCat===TPL_CAT_MUSIC?'Müzik şablonları yakında burada.':'Bu ürünün ('+TPL_GROUP_NAME[g]+') baskı ölçüsüne özel şablonlar hazırlanıyor, çok yakında burada.';em.hidden=n>0;$('#tplQx').hidden=!q;
@@ -7627,7 +7633,7 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){clea
     baseTplA();
     var g=$('#tplGrid'),q=(($('#tplQ')&&$('#tplQ').value)||'').trim().toLocaleLowerCase('tr-TR');if(!g)return;if(!ADM.tpls.length){tplAdmMarks();$('#tplEmpty').hidden=g.children.length>0;teeTemplateGroups(g);return;}
     if((view.tplCat===TPL_CAT_ADM||view.tplCat===TPL_CAT_PRIV)&&!q)g.innerHTML='';
-    var l=ADM.tpls.filter(function(t){if(!admFit(t))return false;return q?String(t.title||'').toLocaleLowerCase('tr-TR').indexOf(q)>=0:((view.tplCat==='Tümü'&&tplInGrp(tplCatOf(t),t))||view.tplCat===tplCatOf(t)||(view.tplCat===TPL_CAT_PRIV&&!t.published));});
+    var l=ADM.tpls.filter(function(t){if(!admFit(t)||!window.tplSexOk(t.title))return false;return q?String(t.title||'').toLocaleLowerCase('tr-TR').indexOf(q)>=0:((view.tplCat==='Tümü'&&tplInGrp(tplCatOf(t),t))||view.tplCat===tplCatOf(t)||(view.tplCat===TPL_CAT_PRIV&&!t.published));});
     if(l.length)g.insertAdjacentHTML('afterbegin',l.map(function(t){return '<button class="atpl" data-adtpl="'+ea(t.id)+'" data-tpl-dir="'+admTplOrientation(t)+'"><div class="prev" style="background:#eef1ef"><img alt="" src="'+ea(t.thumb||'')+'" crossorigin="anonymous" loading="lazy" onload="wfTrim(this)" style="width:100%;height:100%;object-fit:contain"></div><span>'+(t.published?'':'🔒 ')+ea(t.title)+'</span></button>';}).join(''));
     tplAdmMarks();
     $('#tplEmpty').hidden=g.children.length>0;

@@ -4672,11 +4672,15 @@ function kurHTML(full){
   return h;
 }
 /* Ürün seç kartının rengini değiştirir (renk noktası ya da kendiliğinden dönüş) */
-function tcShow(card,id,k,fade){var b=BLANKS.filter(function(x){return x.id===id;})[0],c=b&&bColors(b)[k];if(!c||!card)return;tcSel[id]=k;
+function tcShow(card,id,k,fade){var b=BLANKS.filter(function(x){return x.id===id;})[0],c=b&&bColors(b)[k];if(!c||!card)return;
+  /* Seçili renk, kartta görünen fotoğrafla aynı anda değişir (geçiş sırasında dokunan müşteri gördüğü rengin sayfasına gider) */
+  var apply=function(){tcSel[id]=k;card.querySelectorAll('[data-tcc]').forEach(function(y){var on=+y.dataset.j===k;y.classList.toggle('on',on);y.setAttribute('aria-checked',on);});
+    var go=card.querySelector('[data-tcgo]');if(go)go.href=studioURL(b.p||b.rid||b.id,b.cut,b.rid||b.id)+'&renk='+encodeURIComponent(c.hex);};
   var im=card.querySelector('[data-tci]'),u=src(c.front||c.back);if(im&&im.getAttribute('src')!==u){var al=(b.name||'')+(c.name?' – '+c.name:'')+' baskıya uygun';
-    if(fade){var pre=new Image();pre.onload=function(){im.classList.add('cgfade');setTimeout(function(){im.src=u;im.alt=al;requestAnimationFrame(function(){im.classList.remove('cgfade');});},260);};pre.src=u;}else{im.src=u;im.alt=al;}}
-  card.querySelectorAll('[data-tcc]').forEach(function(y){var on=+y.dataset.j===k;y.classList.toggle('on',on);y.setAttribute('aria-checked',on);});
-  var go=card.querySelector('[data-tcgo]');if(go)go.href=studioURL(b.p||b.rid||b.id,b.cut,b.rid||b.id)+'&renk='+encodeURIComponent(c.hex);}
+    if(fade){var pre=new Image();pre.onload=function(){if(card.dataset.tcman)return;im.classList.add('cgfade');setTimeout(function(){if(card.dataset.tcman){im.classList.remove('cgfade');return;}im.src=u;im.alt=al;apply();requestAnimationFrame(function(){im.classList.remove('cgfade');});},260);};pre.src=u;return;}else{im.src=u;im.alt=al;}}
+  apply();}
+/* Karta dokunulduğu an kendiliğinden renk dönüşü durur */
+document.addEventListener('pointerdown',function(e){var c=e.target.closest&&e.target.closest('.tsp .card');if(c)c.dataset.tcman=1;},true);
 /* Ürün seç de Koleksiyon gibi canlı: her kart kendi aralığıyla (4–8 sn) renklerini karışık gösterir; dokunulan ya da üstünde durulan kart durur */
 (function(){var rm=false;try{rm=matchMedia('(prefers-reduced-motion: reduce)').matches;}catch(_){}if(rm)return;
   setInterval(function(){if(document.hidden)return;var now=Date.now(),vh=innerHeight;
