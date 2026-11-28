@@ -6694,7 +6694,11 @@ function ayHazir(IMG,FB){
   try{var mn=document.getElementById('main');if(mn&&window.MutationObserver)new MutationObserver(function(){sync();}).observe(mn,{childList:true});}catch(_){}
   sync();setTimeout(sync,600);
   var seen=false;try{seen=sessionStorage.getItem('wf_ayb_hi')==='1';}catch(_){}
-  if(!seen)setTimeout(function hi(){if(document.getElementById('wfCerez')){setTimeout(hi,1500);return;}var h=(location.hash||'').slice(1);if(fab.hidden||!kt.hidden||/^(odeme|sepet|yonetim|crm)/.test(h))return;bal.hidden=false;try{sessionStorage.setItem('wf_ayb_hi','1');}catch(_){}},3500);
+  if(!seen)setTimeout(function hi(){if(document.getElementById('wfCerez')){setTimeout(hi,1500);return;}var h=(location.hash||'').slice(1);if(fab.hidden||!kt.hidden||/^(odeme|sepet|yonetim|crm)/.test(h))return;bal.hidden=false;try{sessionStorage.setItem('wf_ayb_hi','1');}catch(_){}
+    /* Selam balonu ürün adını ve fiyatı kapatmasın: müşteri sayfayı kaydırınca ya da başka sayfaya geçince kendiliğinden kapanır (Aybüke düğmesi yerinde kalır) */
+    var y0=window.scrollY||0;function balGit(){window.removeEventListener('scroll',balKay);window.removeEventListener('hashchange',balGit);if(!bal.hidden)hideBal();}
+    function balKay(){if(Math.abs((window.scrollY||0)-y0)>220)balGit();}
+    window.addEventListener('scroll',balKay,{passive:true});window.addEventListener('hashchange',balGit);},3500);
 }
 /* AYBÜKE (sitenin her sayfasında): sağ alttaki yuvarlak resim; müşteriye ürün bulmada yardım edip satışa yönlendirir.
    Cevabı sunucudaki yardım asistanı (yardim, mode: site) verir; ürün listesi ve fiyatlar buradan gider, önerilen ürünler kart olarak gösterilir.

@@ -186,8 +186,10 @@ await adim('Stüdyo · giydir, kontur, kaydet, aç', async () => {
   await page.locator('#colorPop [data-wo="4"]').click(); await page.waitForTimeout(600); await bekle();
   await page.locator('#colorPop [data-woc="#ffffff"]').click(); await page.waitForTimeout(600); await bekle();
   await page.keyboard.press('Escape'); O = await objs(); await sec(O[1].id);
-  await btn('crop').click(); await page.waitForTimeout(800); await page.locator('[data-crp="sq"]').click(); await page.waitForTimeout(300);
-  await page.locator('[data-crp="ok"]').click(); await page.waitForTimeout(800); const kt = await bekle(); if (!/Kırpıldı/.test(kt)) throw new Error('Kırpma uygulanmadı: ' + kt.slice(0, 60));
+  // Kırp giydirilmiş parçada bilerek gizli (27.11 kararı); düğme görünüyorsa dene, gizliyse atla
+  let kirp = 'kırp giydirilmişte kapalı';
+  if (await btn('crop').count()) { await btn('crop').click(); await page.waitForTimeout(800); await page.locator('[data-crp="sq"]').click(); await page.waitForTimeout(300);
+    await page.locator('[data-crp="ok"]').click(); await page.waitForTimeout(800); const kt = await bekle(); if (!/Kırpıldı/.test(kt)) throw new Error('Kırpma uygulanmadı: ' + kt.slice(0, 60)); kirp = 'kırp'; }
   O = await objs(); const once = []; for (const o of O) once.push(await imza(o.id));
   if (once.some((x) => !x)) throw new Error('Parçalardan biri görünmüyor (kaydetmeden önce)');
   // Kaydet ve kayıttan (Favoriler'deki gibi) yeniden aç
@@ -209,7 +211,7 @@ await adim('Stüdyo · giydir, kontur, kaydet, aç', async () => {
   if (!ic.length || !(await imza(ic[0].id))) throw new Error('Açılan LANO\'yu ayırınca içindeki desen boş geliyor');
   if (ic[0].src !== kayit.ic) throw new Error('Açılan LANO\'yu ayırınca başka bir görsel geliyor');
   await page.evaluate(() => { try { localStorage.removeItem('wf_sfav'); } catch (_) {} });
-  return 'WOLF/LANO giydir, ayır, kontur, kırp, kaydet, aç: düzgün';
+  return 'WOLF/LANO giydir, ayır, kontur, ' + kirp + ', kaydet, aç: düzgün';
 });
 await studyo('tee', 'tişört');
 await studyo('mug', 'kupa');
